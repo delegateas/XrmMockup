@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>d4f99f23-a452-4f6f-abf4-54fc5c792d5a</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>XrmMockupShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DataMethods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Domain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupExecutionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupServiceProviderAndFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupServiceSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XmlHandling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmMockupBase.cs" />
+  </ItemGroup>
+</Project>
