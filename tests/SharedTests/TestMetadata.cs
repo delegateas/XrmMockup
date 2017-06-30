@@ -1,0 +1,62 @@
+﻿using System;
+using System.Text;
+using System.Collections.Generic;
+using DG.Some.Namespace;
+using System.Linq;
+using Microsoft.Xrm.Sdk;
+using System.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Xrm.Sdk.Query;
+using System.ServiceModel;
+
+namespace DG.XrmMockupTest {
+
+    [TestClass]
+    public class TestMetadata : UnitTestBase {
+
+        [TestMethod]
+        public void TestSetttingAttributes() {
+            using (var context = new Xrm(orgAdminUIService)) {
+                var acc = new Account();
+                acc.Id = orgAdminUIService.Create(acc);
+
+                acc.Attributes["name"] = "Jon";
+                orgAdminUIService.Update(acc);
+
+                try {
+                    acc.Attributes["illegalName"] = 1;
+                    orgAdminUIService.Update(acc);
+                    Assert.Fail("FaultException should have been thrown");
+                } catch (FaultException) {
+                } catch (Exception e) {
+                    Assert.Fail(
+                         string.Format("Unexpected exception of type {0} caught: {1}",
+                                        e.GetType(), e.Message)
+                    );
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestCRURestrictions() {
+            using (var context = new Xrm(orgAdminUIService)) {
+                var acc = new Account();
+                acc.Attributes.Add("opendeals_state", 22);
+                acc.Id = orgAdminUIService.Create(acc);
+
+                var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
+                Assert.AreNotEqual(retrieved.OpenDeals_State, 22);
+
+                orgAdminUIService.Update(acc);
+                retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
+                Assert.AreNotEqual(retrieved.OpenDeals_State, 22);
+
+                retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("isprivate")) as Account;
+                Assert.IsFalse(retrieved.Attributes.ContainsKey("isprivate"));
+
+            }
+        }
+
+    }
+
+}

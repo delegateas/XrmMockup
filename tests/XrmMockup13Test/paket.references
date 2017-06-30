@@ -1,0 +1,3 @@
+﻿group crm2013 
+	Microsoft.CrmSdk.CoreAssemblies
+	Microsoft.IdentityModel

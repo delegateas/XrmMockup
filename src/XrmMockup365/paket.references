@@ -1,0 +1,4 @@
+﻿group crm365 
+	Microsoft.CrmSdk.CoreAssemblies
+	Microsoft.IdentityModel
+	Microsoft.CrmSdk.Workflow

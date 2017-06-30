@@ -1,0 +1,45 @@
+﻿using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
+using System;
+using System.Collections.Generic;
+
+namespace DG.Tools {
+    public class MetadataSkeleton {
+        public Dictionary<string, EntityMetadata> Metadata;
+        public List<Entity> Currencies;
+        public Entity BaseOrganization;
+        public Entity RootBusinessUnit;
+        public List<MetaPlugin> Plugins;
+        
+    }
+
+    public class MetaPlugin {
+        public string FilteredAttributes;
+        public int Mode;
+        public string Name;
+        public int Rank;
+        public int Stage;
+        public string MessageName;
+        public string AssemblyName;
+        public string PrimaryEntity;
+    }
+
+
+    public class RolePrivilege {
+        public bool CanBeGlobal;
+        public bool CanBeDeep;
+        public bool CanBeLocal;
+        public bool CanBeBasic;
+        public AccessRights AccessRight;
+        public PrivilegeDepth PrivilegeDepth;
+    }
+
+    public class SecurityRole {
+        public Dictionary<string, Dictionary<AccessRights, RolePrivilege>> Privileges;
+        public string Name;
+        public EntityReference BusinessUnitId;
+        public Guid RoleId;
+        public Guid RoleTemplateId;
+    }
+}

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>90c1c72b-c544-485a-b718-acfaee516106</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SharedPluginsAndCodeactivites</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AccountCurrencyBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountChainPostPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountPostImagePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountPostPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountPreImagePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountSetStatePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AccountWorkflowActivity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
+  </ItemGroup>
+</Project>
