@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
+using Microsoft.Xrm.Sdk.Messages;
 
 namespace DG.XrmMockupTest {
 
@@ -55,6 +56,19 @@ namespace DG.XrmMockupTest {
                 Assert.IsFalse(retrieved.Attributes.ContainsKey("isprivate"));
 
             }
+        }
+
+
+        [TestMethod]
+        public void RetrieveEntityMetadata() {
+            var req = new RetrieveEntityRequest() {
+                LogicalName = Account.EntityLogicalName
+            };
+            var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
+
+            Assert.IsNotNull(resp);
+            Assert.IsNotNull(resp.EntityMetadata);
+            Assert.AreEqual(req.LogicalName, resp.EntityMetadata.LogicalName);
         }
 
     }

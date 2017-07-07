@@ -1103,9 +1103,11 @@ namespace DG.Tools {
             }
             return null;
         }
+
+
         internal RelationshipMetadataBase GetRelationshipMetadata(string name, Guid metadataId, EntityReference userRef) {
             if (name == null && metadataId == Guid.Empty) {
-                throw new FaultException("Relationship name is required when attribute id is not specified");
+                throw new FaultException("Relationship name is required when MetadataId is not specified");
             }
             var metadata = GetRelationshipMetadataDefaultNull(name, metadataId, userRef);
             if (metadata == null) {
@@ -1113,6 +1115,17 @@ namespace DG.Tools {
             }
             return metadata;
         }
+
+
+        internal EntityMetadata GetEntityMetadata(string name, Guid metadataId, EntityReference userRef) {
+            if (name == null && metadataId == Guid.Empty) {
+                throw new FaultException("Entity logical name is required when MetadataId is not specified");
+            }
+            if (name != null && Metadata.ContainsKey(name)) return Metadata[name];
+            if (metadataId != Guid.Empty) return Metadata.FirstOrDefault(x => x.Value.MetadataId == metadataId).Value;
+            throw new FaultException("Could not find matching entity");
+        }
+
 
         internal void Associate(EntityReference target, Relationship relationship, EntityReferenceCollection relatedEntities, EntityReference userRef) {
             var relatedLogicalName = relatedEntities.FirstOrDefault()?.LogicalName;

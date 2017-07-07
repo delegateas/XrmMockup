@@ -1,3 +1,6 @@
+#### 0.3.2-beta - July 7 2017
+* Added support for `RetrieveEntityRequest`
+
 #### 0.3.1-beta - July 4 2017
 * A lot of minor code refactoring
 * Rename of a few files
