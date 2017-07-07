@@ -23,14 +23,13 @@ namespace DG.XrmMockupTest
                 var version = (RetrieveVersionResponse) orgAdminUIService.Execute(new RetrieveVersionRequest());
 #if XRM_MOCKUP_TEST_2011
                 Assert.AreEqual("5", version.Version.Substring(0, 1));
-#endif
-#if XRM_MOCKUP_TEST_2013
+#elif XRM_MOCKUP_TEST_2013
                 Assert.AreEqual("6", version.Version.Substring(0, 1));
-#endif
-#if XRM_MOCKUP_TEST_2015
+#elif XRM_MOCKUP_TEST_2015
                 Assert.AreEqual("7", version.Version.Substring(0, 1));
-#endif
-#if XRM_MOCKUP_TEST_2016
+#elif XRM_MOCKUP_TEST_2016
+                Assert.AreEqual("8", version.Version.Substring(0, 1));
+#elif XRM_MOCKUP_TEST_365
                 Assert.AreEqual("8", version.Version.Substring(0, 1));
 #endif
             }

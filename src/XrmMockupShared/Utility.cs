@@ -34,7 +34,7 @@ namespace DG.Tools {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             clone.KeyAttributes = entity.KeyAttributes;
 #endif
             return clone.SetAttributes(entity.Attributes, metadata, cols);
@@ -278,7 +278,7 @@ namespace DG.Tools {
             return securityRoles;
         }
 
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity) {
             var reference = entity.ToEntityReference();
             reference.KeyAttributes = entity.KeyAttributes;
