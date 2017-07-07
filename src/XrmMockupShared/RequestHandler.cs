@@ -140,41 +140,8 @@ namespace DG.Tools {
                 }
             }
             // Core operation
-            OrganizationResponse response = null;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            var assignRequest = request as AssignRequest;
-            var setstateRequest = request as SetStateRequest;
-            if (assignRequest != null) {
-                var targetEntity = dataMethods.GetDbEntityDefaultNull(assignRequest.Target);
-                if (targetEntity.Attributes["ownerid"] as EntityReference != assignRequest.Assignee) {
-                    var req = new UpdateRequest();
-                    req.Target = new Entity(assignRequest.Target.LogicalName, assignRequest.Target.Id);
-                    req.Target.Attributes["ownerid"] = assignRequest.Assignee;
-                    Execute(req, userRef, parentPluginContext);
-                }
-                response = new AssignResponse();
-            } else if (setstateRequest != null) {
-                var targetEntity = dataMethods.GetDbEntityDefaultNull(setstateRequest.EntityMoniker);
-                if (targetEntity.Attributes["statecode"] as OptionSetValue != setstateRequest.State ||
-                    targetEntity.Attributes["statuscode"] as OptionSetValue != setstateRequest.Status) {
-                    var req = new UpdateRequest();
-                    req.Target = new Entity(setstateRequest.EntityMoniker.LogicalName, setstateRequest.EntityMoniker.Id);
-                    req.Target.Attributes["statecode"] = setstateRequest.State;
-                    req.Target.Attributes["statuscode"] = setstateRequest.Status;
-                    Execute(req, userRef, parentPluginContext);
-                }
-                response = new SetStateResponse();
-            } else {
-#endif
-                if (workflowManager.GetActionDefaultNull(request.RequestName) != null) {
-                    response = ExecuteAction(request);
-                } else {
-                    response = ExecuteCore(request, userRef);
-                }
+            OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            }
-#endif
 
             // Post operation
             if (settings.TriggerProcesses && entityInfo != null) {
@@ -187,6 +154,39 @@ namespace DG.Tools {
             }
 
             return response;
+        }
+
+        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext) {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+            if (request is AssignRequest assignRequest) {
+                var targetEntity = dataMethods.GetDbEntityDefaultNull(assignRequest.Target);
+                if (targetEntity.Attributes["ownerid"] as EntityReference != assignRequest.Assignee) {
+                    var req = new UpdateRequest();
+                    req.Target = new Entity(assignRequest.Target.LogicalName, assignRequest.Target.Id);
+                    req.Target.Attributes["ownerid"] = assignRequest.Assignee;
+                    Execute(req, userRef, parentPluginContext);
+                }
+                return new AssignResponse();
+            }
+
+            if (request is SetStateRequest setstateRequest) {
+                var targetEntity = dataMethods.GetDbEntityDefaultNull(setstateRequest.EntityMoniker);
+                if (targetEntity.Attributes["statecode"] as OptionSetValue != setstateRequest.State ||
+                    targetEntity.Attributes["statuscode"] as OptionSetValue != setstateRequest.Status) {
+                    var req = new UpdateRequest();
+                    req.Target = new Entity(setstateRequest.EntityMoniker.LogicalName, setstateRequest.EntityMoniker.Id);
+                    req.Target.Attributes["statecode"] = setstateRequest.State;
+                    req.Target.Attributes["statuscode"] = setstateRequest.Status;
+                    Execute(req, userRef, parentPluginContext);
+                }
+                return new SetStateResponse();
+            }
+#endif
+            if (workflowManager.GetActionDefaultNull(request.RequestName) != null) {
+                return ExecuteAction(request);
+            }
+
+            return ExecuteCore(request, userRef);
         }
 
         private string RequestNameToMessageName(string requestName) {
@@ -373,7 +373,7 @@ namespace DG.Tools {
 
 
         #region Execute methods for the various requests
-
+        
         private OrganizationResponse ExecuteCore(OrganizationRequest request, EntityReference userRef) {
             if (request is RetrieveMultipleRequest) return Execute((RetrieveMultipleRequest)request, userRef);
             if (request is RetrieveRequest) return Execute((RetrieveRequest)request, userRef);
@@ -388,6 +388,7 @@ namespace DG.Tools {
             if (request is RetrieveVersionRequest) return Execute((RetrieveVersionRequest)request, userRef);
             if (request is FetchXmlToQueryExpressionRequest) return Execute((FetchXmlToQueryExpressionRequest)request, userRef);
             if (request is ExecuteMultipleRequest) return Execute((ExecuteMultipleRequest)request, userRef);
+            if (request is RetrieveEntityRequest) return Execute((RetrieveEntityRequest)request, userRef);
             if (request is RetrieveRelationshipRequest) return Execute((RetrieveRelationshipRequest)request, userRef);
             if (request is GrantAccessRequest) return Execute((GrantAccessRequest)request, userRef);
             if (request is ModifyAccessRequest) return Execute((ModifyAccessRequest)request, userRef);
@@ -496,6 +497,12 @@ namespace DG.Tools {
             var resp = new RetrieveRelationshipResponse();
             resp.Results.Add("RelationshipMetadata",
                 dataMethods.GetRelationshipMetadata(request.Name, request.MetadataId, userRef));
+            return resp;
+        }
+
+        private RetrieveEntityResponse Execute(RetrieveEntityRequest request, EntityReference userRef) {
+            var resp = new RetrieveEntityResponse();
+            resp.Results.Add("EntityMetadata", dataMethods.GetEntityMetadata(request.LogicalName, request.MetadataId, userRef));
             return resp;
         }
 
