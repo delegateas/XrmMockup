@@ -63,7 +63,8 @@ namespace WorkflowExecuter {
         public Guid UserId { get; set; }
 
         public int WorkflowCategory { get; set; }
-#if XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+
+#if !XRM_MOCKUP_2011
         public int WorkflowMode { get; set; }
 #endif
     }

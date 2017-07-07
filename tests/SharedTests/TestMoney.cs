@@ -1,4 +1,4 @@
-﻿#if XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016 || XRM_MOCKUP_TEST_365
+﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
 using System;
 using System.Text;
 using System.Collections.Generic;

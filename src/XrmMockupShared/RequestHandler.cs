@@ -86,7 +86,7 @@ namespace DG.Tools {
                 }
 
             }
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             var primaryRef = GetPrimaryEntityReferenceFromRequestWithKeyAttributes(request);
 #else
             var primaryRef = GetPrimaryEntityReferenceFromRequest(request);
@@ -141,7 +141,7 @@ namespace DG.Tools {
             }
             // Core operation
             OrganizationResponse response = null;
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             var assignRequest = request as AssignRequest;
             var setstateRequest = request as SetStateRequest;
             if (assignRequest != null) {
@@ -172,7 +172,7 @@ namespace DG.Tools {
                     response = ExecuteCore(request, userRef);
                 }
 
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             }
 #endif
 
@@ -264,7 +264,7 @@ namespace DG.Tools {
             return null;
         }
 
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         private EntityReference GetPrimaryEntityReferenceFromRequestWithKeyAttributes(OrganizationRequest request) {
             if (request is RetrieveRequest) return ((RetrieveRequest)request).Target;
             if (request is CreateRequest) return ((CreateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
@@ -394,10 +394,10 @@ namespace DG.Tools {
             if (request is RevokeAccessRequest) return Execute((RevokeAccessRequest)request, userRef);
             if (request is WinOpportunityRequest) return Execute((WinOpportunityRequest)request, userRef);
             if (request is LoseOpportunityRequest) return Execute((LoseOpportunityRequest)request, userRef);
-#if XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             if (request is CalculateRollupFieldRequest) return Execute((CalculateRollupFieldRequest)request, userRef);
 #endif
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (request is UpsertRequest) return Execute((UpsertRequest)request, userRef);
 #endif
             throw new NotImplementedException("Execute for the given request has not been implemented yet.");
@@ -547,14 +547,14 @@ namespace DG.Tools {
             return toReturn;
         }
 
-#if XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         private CalculateRollupFieldResponse Execute(CalculateRollupFieldRequest request, EntityReference userRef) {
             var resp = new CalculateRollupFieldResponse();
             resp.Results["Entity"] = dataMethods.CalculateRollUpField(request.Target, request.FieldName, userRef);
             return resp;
         }
 #endif
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         private UpsertResponse Execute(UpsertRequest request, EntityReference userRef) {
             var resp = new UpsertResponse();
             var target = request.Target;

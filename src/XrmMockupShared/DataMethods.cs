@@ -227,13 +227,13 @@ namespace DG.Tools {
                 throw new FaultException("You must provide a LogicalName");
             }
 
-#if !XRM_MOCKUP_2016
-            if (columnSet == null) {
-                throw new FaultException("The columnset parameter must not be null");
-            }
-#else
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (columnSet == null && entRef.KeyAttributes.Count == 0) {
                 throw new FaultException("The columnset parameter must not be null when no KeyAttributes are provided");
+            }
+#else
+            if (columnSet == null) {
+                throw new FaultException("The columnset parameter must not be null");
             }
 #endif
 
@@ -247,7 +247,7 @@ namespace DG.Tools {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{entity.LogicalName}'");
             }
 
-#if XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             var attributes = GetMetadata(entity.LogicalName).Attributes.Where(
                 m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
@@ -274,7 +274,7 @@ namespace DG.Tools {
                 RemoveUnsettableAttributes("Retrieve", entity);
             }
 
-#if XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             HandlePrecision(entity);
 #endif
             if (relatedEntityQuery != null) {
@@ -391,7 +391,7 @@ namespace DG.Tools {
 
         internal Entity GetDbEntityDefaultNull(EntityReference reference) {
             if (!db.ContainsKey(reference.LogicalName) || !db[reference.LogicalName].ContainsKey(reference.Id)) {
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 if (db.ContainsKey(reference.LogicalName) && reference.KeyAttributes.Count > 0) {
 
                     var records = db[reference.LogicalName].Where(x => reference.KeyAttributes.All(y => x.Value.Attributes[y.Key] == y.Value));
@@ -897,7 +897,7 @@ namespace DG.Tools {
 
         public void Update(Entity entity, EntityReference userRef, MockupServiceSettings.Role serviceRole) {
             var entRef = entity.ToEntityReference();
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             entRef.KeyAttributes = entity.KeyAttributes;
 #endif
             var dbEntity = GetDbEntity(entRef);
@@ -924,7 +924,7 @@ namespace DG.Tools {
             }
 
             var ownerRef = entity.GetAttributeValue<EntityReference>("ownerid");
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null) {
                 CheckAssignPermission(dbEntity, ownerRef, userRef);
             }
@@ -960,7 +960,7 @@ namespace DG.Tools {
                 HandleCurrencies(dbEntity);
             }
 
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (updEntity.Attributes.ContainsKey("statecode") || updEntity.Attributes.ContainsKey("statuscode")) {
                 HandleCurrencies(dbEntity);
             }
@@ -968,7 +968,7 @@ namespace DG.Tools {
 
             if (ownerRef != null) {
                 SetOwner(dbEntity, ownerRef);
-#if XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 // cascade like assign, but with updaterequests
                 foreach (var relatedEntities in GetDbEntityWithRelatedEntities(dbEntity.ToEntityReference(), EntityRole.Referenced, userRef).RelatedEntities) {
                     var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
@@ -1301,7 +1301,7 @@ namespace DG.Tools {
             }
         }
 
-#if XRM_MOCKUP_2015 || XRM_MOCKUP_2016
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal Entity CalculateRollUpField(EntityReference entRef, string fieldName, EntityReference userRef) {
             var dbEntity = GetDbEntity(entRef);
             var metadata = GetMetadata(entRef.LogicalName);
