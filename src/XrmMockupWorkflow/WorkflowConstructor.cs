@@ -200,7 +200,7 @@ namespace WorkflowExecuter {
                 return new Persist();
             }
 
-            throw new NotImplementedException("Unkown activity, implement the compressor.");
+            throw new NotImplementedException("Unknown activity, implement the compressor.");
         }
 
         private static WorkflowNode CompressPostpone(WorkflowParser.Postpone postpone) {

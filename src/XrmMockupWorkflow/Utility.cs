@@ -78,7 +78,7 @@ namespace WorkflowExecuter {
                         return (DateTime)toBeTypedVariable;
 
                     default:
-                        throw new NotImplementedException($"Unkown cast type '{parameters[1]}' in direct cast in workflow");
+                        throw new NotImplementedException($"Unknown cast type '{parameters[1]}' in direct cast in workflow");
                 }
             }
 

@@ -262,7 +262,7 @@ namespace DG.Tools {
                 else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
 
                 if (definition == null) {
-                    throw new NotImplementedException("Unkown type when parsing calculated attr");
+                    throw new NotImplementedException("Unknown type when parsing calculated attr");
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
                 tree.Execute(entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true)), RequestHandler.GetCurrentOffset(), service, serviceFactory, trace);
@@ -1443,7 +1443,7 @@ namespace DG.Tools {
 
         internal void SetSecurityRole(EntityReference entRef, Guid[] securityRoles) {
             if (securityRoles.Any(s => !SecurityRoles.ContainsKey(s))) {
-                throw new MockupException($"Unkown security role");
+                throw new MockupException($"Unknown security role");
             }
             var user = GetDbEntityDefaultNull(entRef);
             if (user == null) {
