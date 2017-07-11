@@ -848,7 +848,12 @@ namespace DG.Tools {
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd,
                 Dictionary<string, Dictionary<Guid, Entity>> db) {
             var collection = new List<Entity>();
-            foreach (var linkedRecord in db[linkEntity.LinkToEntityName].Values) {
+
+            if (!db.TryGetValue(linkEntity.LinkToEntityName, out Dictionary<Guid, Entity> linkedRecords)) {
+                linkedRecords = new Dictionary<Guid, Entity>();
+            }
+
+            foreach (var linkedRecord in linkedRecords.Values) {
 
                 if (!Utility.MatchesCriteria(linkedRecord, linkEntity.LinkCriteria)) continue;
 
@@ -969,43 +974,54 @@ namespace DG.Tools {
             if (ownerRef != null) {
                 SetOwner(dbEntity, ownerRef);
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                // cascade like assign, but with updaterequests
-                foreach (var relatedEntities in GetDbEntityWithRelatedEntities(dbEntity.ToEntityReference(), EntityRole.Referenced, userRef).RelatedEntities) {
-                    var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
-                    var req = new UpdateRequest();
-                    switch (relationshipMeta.CascadeConfiguration.Assign) {
-                        case CascadeType.Cascade:
-                            foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                                req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
-                                req.Target.Attributes["ownerid"] = ownerRef;
-                                RequestHandler.Execute(req, userRef, null);
-                            }
-                            break;
-                        case CascadeType.Active:
-                            foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                                if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["statecode"] as OptionSetValue)?.Value == 0) {
-                                    req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
-                                    req.Target.Attributes["ownerid"] = ownerRef;
-                                    RequestHandler.Execute(req, userRef, null);
-                                }
-                            }
-                            break;
-                        case CascadeType.UserOwned:
-                            foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                                var currentOwner = dbEntity.Attributes["ownerid"] as EntityReference;
-                                if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["ownerid"] as EntityReference)?.Id == currentOwner.Id) {
-                                    req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
-                                    req.Target.Attributes["ownerid"] = ownerRef;
-                                    RequestHandler.Execute(req, userRef, null);
-                                }
-                            }
-                            break;
-                    }
-                }
+                CascadeOwnerUpdate(dbEntity, userRef, ownerRef);
 #endif
             }
             Touch(dbEntity, userRef);
         }
+
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        internal void CascadeOwnerUpdate(Entity dbEntity, EntityReference userRef, EntityReference ownerRef) {
+            // Cascade like Assign, but with UpdateRequests
+            foreach (var relatedEntities in GetDbEntityWithRelatedEntities(dbEntity.ToEntityReference(), EntityRole.Referenced, userRef).RelatedEntities) {
+                var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.FirstOrDefault(r => r.SchemaName == relatedEntities.Key.SchemaName);
+                if (relationshipMeta == null) continue;
+
+                var req = new UpdateRequest();
+                switch (relationshipMeta.CascadeConfiguration.Assign) {
+                    case CascadeType.Cascade:
+                        foreach (var relatedEntity in relatedEntities.Value.Entities) {
+                            req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
+                            req.Target.Attributes["ownerid"] = ownerRef;
+                            RequestHandler.Execute(req, userRef, null);
+                        }
+                        break;
+
+                    case CascadeType.Active:
+                        foreach (var relatedEntity in relatedEntities.Value.Entities) {
+                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["statecode"] as OptionSetValue)?.Value == 0) {
+                                req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
+                                req.Target.Attributes["ownerid"] = ownerRef;
+                                RequestHandler.Execute(req, userRef, null);
+                            }
+                        }
+                        break;
+
+                    case CascadeType.UserOwned:
+                        foreach (var relatedEntity in relatedEntities.Value.Entities) {
+                            var currentOwner = dbEntity.Attributes["ownerid"] as EntityReference;
+                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["ownerid"] as EntityReference)?.Id == currentOwner.Id) {
+                                req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
+                                req.Target.Attributes["ownerid"] = ownerRef;
+                                RequestHandler.Execute(req, userRef, null);
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+#endif
 
         internal string RetrieveVersion() {
             Assembly sdk = AppDomain.CurrentDomain.GetAssemblies()
@@ -1041,6 +1057,7 @@ namespace DG.Tools {
             var dbEntity = GetDbEntityWithRelatedEntities(target, EntityRole.Referenced, userRef);
             CheckAssignPermission(dbEntity, assignee, userRef);
 
+            // Cascade
             foreach (var relatedEntities in dbEntity.RelatedEntities) {
                 var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
                 var req = new AssignRequest();
@@ -1279,9 +1296,11 @@ namespace DG.Tools {
 
         private void SetOwner(Entity entity, EntityReference owner) {
             var ownershipType = Metadata.GetMetadata(entity.LogicalName).OwnershipType;
+
             if (!ownershipType.HasValue) {
                 throw new MockupException($"No ownership type set for '{entity.LogicalName}'");
             }
+
             if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned)) {
                 if (GetDbEntityDefaultNull(owner) == null) {
                     throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");

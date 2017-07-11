@@ -102,13 +102,10 @@ namespace DG.Tools {
             if (condition.AttributeName == null) {
                 return Matches(entity.Id, condition.Operator, condition.Values);
             }
-
-            if (!entity.Attributes.ContainsKey(condition.AttributeName)) {
-                if (condition.Operator != ConditionOperator.Null)
-                    return false;
-                return true;
-            }
-            var attr = ConvertToComparableObject(entity.Attributes[condition.AttributeName]);
+            
+            var attr = entity.Attributes.ContainsKey(condition.AttributeName) 
+                ? ConvertToComparableObject(entity.Attributes[condition.AttributeName])
+                : null;
             var values = condition.Values.Select(v => ConvertToComparableObject(v));
             return Matches(attr, condition.Operator, values);
         }
@@ -137,22 +134,25 @@ namespace DG.Tools {
         }
 
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values) {
-            if (attr == null && op != ConditionOperator.Null && op != ConditionOperator.NotNull) return false;
             switch (op) {
                 case ConditionOperator.Null:
                     return attr == null;
+
                 case ConditionOperator.NotNull:
                     return attr != null;
+
                 case ConditionOperator.Equal:
-                    return attr.Equals(values.First());
+                    return values.First().Equals(attr);
+
                 case ConditionOperator.NotEqual:
-                    return !attr.Equals(values.First());
+                    return !values.First().Equals(attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
                 case ConditionOperator.LessEqual:
                 case ConditionOperator.LessThan:
                     return Compare((IComparable)attr, op, (IComparable)values.First());
+
                 case ConditionOperator.Like:
                     var sAttr = (string)attr;
                     var pattern = (string)values.First();
@@ -163,9 +163,9 @@ namespace DG.Tools {
                     } else if (pattern.Last() == '%') {
                         return sAttr.StartsWith(pattern.Substring(0, pattern.Length - 1));
                     } else {
-                        throw new NotImplementedException(
-                            String.Format("The like matching for '{0}' has not been implemented yet", pattern));
+                        throw new NotImplementedException($"The like matching for '{pattern}' has not been implemented yet");
                     }
+
                 case ConditionOperator.NextXYears:
                     var now = DateTime.Now;
                     DateTime date;
@@ -178,8 +178,7 @@ namespace DG.Tools {
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
 
                 default:
-                    throw new NotImplementedException(
-                        String.Format("The ConditionOperator '{0}' has not been implemented yet.", op.ToString()));
+                    throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
             }
 
         }
