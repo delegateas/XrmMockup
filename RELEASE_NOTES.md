@@ -1,3 +1,7 @@
+#### 0.3.3-beta - July 11 2017
+* Fixed queries ignoring certain conditions like `NotEqual` if attribute was null
+* Fixed queries assuming that the linked entity-table already exists
+
 #### 0.3.2-beta - July 7 2017
 * Added support for `RetrieveEntityRequest`
 
