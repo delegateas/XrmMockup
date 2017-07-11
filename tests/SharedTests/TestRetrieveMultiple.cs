@@ -48,6 +48,8 @@ namespace DG.XrmMockupTest {
             account3.Address1_City = "Lyngby";
             account4.Address1_City = "Lyngby";
 
+            account1.DoNotEMail = true;
+
             account1.Id = orgAdminUIService.Create(account1);
             account2.Id = orgAdminUIService.Create(account2);
             account3.Id = orgAdminUIService.Create(account3);
@@ -340,6 +342,33 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(2, result.Length);
                 Assert.AreEqual(account1.Id, result[0].AccountId);
                 Assert.AreEqual(account2.Id, result[1].AccountId);
+            }
+        }
+
+        [TestMethod]
+        public void RetrieveMultipleNotEqualsNullCheck() {
+            using (var context = new Xrm(orgAdminUIService)) {
+
+                var acc = new Account() { };
+                acc.Id = orgAdminService.Create(acc);
+
+                var contact1 = new Contact() {
+                    ParentCustomerId = acc.ToEntityReference()
+                };
+                contact1.Id = orgAdminService.Create(contact1);
+
+                var contact2 = new Contact() {
+                    DoNotEMail = true,
+                    ParentCustomerId = acc.ToEntityReference()
+                };
+                contact2.Id = orgAdminService.Create(contact2);
+                
+
+                var isTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail == true).ToList();
+                var isNotTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail != true).ToList();
+
+                Assert.AreEqual(1, isTrue.Count);
+                Assert.AreEqual(1, isNotTrue.Count);
             }
         }
     }
