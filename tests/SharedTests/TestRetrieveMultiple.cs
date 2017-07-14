@@ -309,6 +309,42 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
+        public void TestNestedJoinsLinkedSelectOnId()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var res = contact1.Id;
+
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
+                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
+                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
+
+
+                orgAdminUIService.Associate(
+                    Contact.EntityLogicalName, contact1.Id, new Relationship("account_primary_contact"), relatedEntities);
+
+                var query =
+                    from con in context.ContactSet
+                    join acc in context.AccountSet
+                    on con.ContactId equals acc.PrimaryContactId.Id
+                    join lead in context.LeadSet
+                    on acc.AccountId equals lead.ParentAccountId.Id
+                    where con.Id == res
+                    select new { con.Id, con.LastName, acc.Name, lead.Subject };
+
+                var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
+                Assert.AreEqual(4, result.Count());
+
+                foreach (var r in result)
+                {
+                    Assert.AreEqual(contact1.LastName, r.LastName);
+                    Assert.IsTrue(account1.Name == r.Name || account2.Name == r.Name);
+                    Assert.IsTrue(r.Subject.StartsWith("Some"));
+                }
+            }
+        }
+
+        [TestMethod]
         public void TestFilter() {
             using (var context = new Xrm(orgAdminUIService)) {
 

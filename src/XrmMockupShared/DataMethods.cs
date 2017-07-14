@@ -826,7 +826,8 @@ namespace DG.Tools {
 
         private void KeepAttributesAndAliasAttributes(Entity entity, ColumnSet toKeep) {
             var clone = entity.CloneEntity(GetMetadata(entity.LogicalName), toKeep);
-            clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains(".")));
+            if(toKeep != null && !toKeep.AllColumns)
+                clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains(".")));
             entity.Attributes.Clear();
             entity.Attributes.AddRange(clone.Attributes);
         }
