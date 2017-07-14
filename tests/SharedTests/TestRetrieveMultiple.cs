@@ -151,7 +151,7 @@ namespace DG.XrmMockupTest {
                 // Create and check account user/bu
                 var acc = new Account();
                 acc.Id = orgAdminUIService.Create(acc);
-                
+
                 acc = orgAdminUIService.Retrieve<Account>(acc.Id);
                 Assert.AreEqual(acc.OwnerId.Id, crm.AdminUser.Id);
 
@@ -398,13 +398,92 @@ namespace DG.XrmMockupTest {
                     ParentCustomerId = acc.ToEntityReference()
                 };
                 contact2.Id = orgAdminService.Create(contact2);
-                
+
 
                 var isTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail == true).ToList();
                 var isNotTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail != true).ToList();
 
                 Assert.AreEqual(1, isTrue.Count);
                 Assert.AreEqual(1, isNotTrue.Count);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveMultipleFilterNullOr()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.Address1_Country == null || acc.Name == "account1"
+                    select acc;
+
+                var result = query.ToList();
+                Assert.AreEqual(4, result.Count);
+                var accResult = result.FirstOrDefault();
+                Assert.AreEqual("account1", accResult.Name);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveMultipleFilterNullAnd()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.Address1_Country == null && acc.Name == "account1"
+                    select acc;
+
+                var result = query.ToList();
+                Assert.AreEqual(1, result.Count);
+                var accResult = result.FirstOrDefault();
+                Assert.AreEqual("account1", accResult.Name);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveMultipleFilterGreaterThan5UnderlyingNull()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.NumberOfEmployees >= 5
+                    select acc;
+
+                var result = query.ToList();
+                Assert.AreEqual(0, result.Count);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveMultipleFilterNullOrGreaterThan()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.NumberOfEmployees != null || acc.NumberOfEmployees >= 5
+                    select acc;
+
+                var result = query.ToList();
+                Assert.AreEqual(0, result.Count);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveMultipleFilterOrWithNullValue()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.NumberOfEmployees == null && acc.NumberOfEmployees >= 5
+                    select acc;
+
+                var result = query.ToList();
+                Assert.AreEqual(0, result.Count);
             }
         }
     }
