@@ -142,10 +142,10 @@ namespace DG.Tools {
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return values.First().Equals(attr);
+                    return Equals(values.First(),attr);
 
                 case ConditionOperator.NotEqual:
-                    return !values.First().Equals(attr);
+                    return !Equals(values.First(),attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -154,6 +154,8 @@ namespace DG.Tools {
                     return Compare((IComparable)attr, op, (IComparable)values.First());
 
                 case ConditionOperator.Like:
+                    if (attr == null)
+                        return false;
                     var sAttr = (string)attr;
                     var pattern = (string)values.First();
                     if (pattern.First() == '%' && (pattern.Last() == '%')) {
@@ -184,6 +186,9 @@ namespace DG.Tools {
         }
 
         public static bool Compare(IComparable attr, ConditionOperator op, IComparable value) {
+            // if atleast one of the two compare values are null. Then compare returns null
+            if (attr == null || value == null)
+                return false;
             switch (op) {
                 case ConditionOperator.GreaterEqual:
                     return attr.CompareTo(value) >= 0;
