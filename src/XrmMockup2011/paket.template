@@ -7,7 +7,7 @@ include-referenced-projects true
 dependencies
   Microsoft.CrmSdk.CoreAssemblies >= 5
 files
-    ../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator.exe ==> content/Metadata/
-	../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator.exe.config ==> content/Metadata/
-	../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator.pdb ==> content/Metadata/
+    ../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator11.exe ==> content/Metadata/
+	../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator11.exe.config ==> content/Metadata/
+	../MetadataGen/MetadataGenerator11/bin/Release/MetadataGenerator11.pdb ==> content/Metadata/
 	../../files/TypeDeclarations.cs ==> content/Metadata/
