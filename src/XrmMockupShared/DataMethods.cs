@@ -739,8 +739,12 @@ namespace DG.Tools {
                 Guid guid;
                 if (r is EntityReference) {
                     guid = (r as EntityReference).Id;
-                } else {
+                } else if (r is Guid) {
                     guid = (Guid)r;
+                } else if (r is EntityCollection) {
+                    continue;
+                } else {
+                    throw new NotImplementedException($"{r.GetType()} not implemented in HasCircularReference");
                 }
                 if (guid == entity.Id) return true;
             }
