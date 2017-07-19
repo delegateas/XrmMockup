@@ -5211,6 +5211,16 @@ namespace DG.Some.Namespace {
             }
         }
         
+        [RelationshipSchemaName("business_unit_dg_man")]
+        public IEnumerable<dg_man> business_unit_dg_man {
+            get {
+                return GetRelatedEntities<dg_man>("business_unit_dg_man", null);
+            }
+            set {
+                SetRelatedEntities("business_unit_dg_man", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("business_unit_activitypointer")]
         public IEnumerable<ActivityPointer> business_unit_activitypointer {
             get {
@@ -9446,6 +9456,17 @@ namespace DG.Some.Namespace {
             }
         }
         
+        [AttributeLogicalName("dg_driver")]
+        [RelationshipSchemaName("dg_dg_man_dg_bus_Driver")]
+        public dg_man dg_dg_man_dg_bus_Driver {
+            get {
+                return GetRelatedEntity<dg_man>("dg_dg_man_dg_bus_Driver", null);
+            }
+            set {
+                SetRelatedEntity("dg_dg_man_dg_bus_Driver", null, value);
+            }
+        }
+        
         [AttributeLogicalName("owningbusinessunit")]
         [RelationshipSchemaName("business_unit_dg_bus")]
         public BusinessUnit business_unit_dg_bus {
@@ -10143,6 +10164,406 @@ namespace DG.Some.Namespace {
         }
         
         public static dg_HasRidden Retrieve(IOrganizationService service, Guid id, params Expression<Func<dg_HasRidden,object>>[] attrs) {
+            return service.Retrieve(id, attrs);
+        }
+    }
+    
+    /// <summary>
+    /// <para>Display Name: Man</para>
+    /// </summary>
+    [EntityLogicalName("dg_man")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class dg_man : ExtendedEntity<dg_manState, dg_man_statuscode> {
+        
+        public const string EntityLogicalName = "dg_man";
+        
+        public const int EntityTypeCode = 10013;
+        
+        public dg_man() : 
+                base(EntityLogicalName) {
+        }
+        
+        public dg_man(Guid Id) : 
+                base(EntityLogicalName, Id) {
+        }
+        
+        private string DebuggerDisplay {
+            get {
+                return GetDebuggerDisplay("dg_name");
+            }
+        }
+        
+        [AttributeLogicalName("dg_manid")]
+        public override Guid Id {
+            get {
+                return base.Id;
+            }
+            set {
+                SetId("dg_manid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for entity instances</para>
+        /// <para>Display Name: Man</para>
+        /// </summary>
+        [AttributeLogicalName("dg_manid")]
+        public Guid? dg_manId {
+            get {
+                return GetAttributeValue<Guid?>("dg_manid");
+            }
+            set {
+                SetId("dg_manid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time that the record was migrated.</para>
+        /// <para>Display Name: Record Created On</para>
+        /// </summary>
+        [AttributeLogicalName("overriddencreatedon")]
+        public DateTime? OverriddenCreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("overriddencreatedon");
+            }
+            set {
+                SetAttributeValue("overriddencreatedon", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Owner Id</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId {
+            get {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+            set {
+                SetAttributeValue("ownerid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who modified the record.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+        
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber {
+            get {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfbyname")]
+        public string ModifiedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("modifiedonbehalfbyname");
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfbyname")]
+        public string CreatedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("createdonbehalfbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the record was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+        
+        [AttributeLogicalName("createdbyname")]
+        public string CreatedByName {
+            get {
+                return GetAttributeValue<string>("createdbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Reason for the status of the Man</para>
+        /// <para>Display Name: Status Reason</para>
+        /// </summary>
+        [AttributeLogicalName("statuscode")]
+        public dg_man_statuscode? statuscode {
+            get {
+                return GetOptionSetValue<dg_man_statuscode>("statuscode");
+            }
+            set {
+                SetOptionSetValue("statuscode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>The name of the custom entity.</para>
+        /// <para>Display Name: Name</para>
+        /// </summary>
+        [AttributeLogicalName("dg_name")]
+        public string dg_name {
+            get {
+                return GetAttributeValue<string>("dg_name");
+            }
+            set {
+                SetAttributeValue("dg_name", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the record was modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn {
+            get {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Owner Id Type</para>
+        /// </summary>
+        [AttributeLogicalName("owneridtype")]
+        public string OwnerIdType {
+            get {
+                return GetAttributeValue<string>("owneridtype");
+            }
+            set {
+                SetAttributeValue("owneridtype", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Time Zone Rule Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("timezoneruleversionnumber")]
+        public int? TimeZoneRuleVersionNumber {
+            get {
+                return GetAttributeValue<int?>("timezoneruleversionnumber");
+            }
+            set {
+                SetAttributeValue("timezoneruleversionnumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who created the record.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who modified the record.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for the team that owns the record.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam {
+            get {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyname")]
+        public string ModifiedByName {
+            get {
+                return GetAttributeValue<string>("modifiedbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for the business unit that owns the record</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit {
+            get {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Time zone code that was in use when the record was created.</para>
+        /// <para>Display Name: UTC Conversion Time Zone Code</para>
+        /// </summary>
+        [AttributeLogicalName("utcconversiontimezonecode")]
+        public int? UTCConversionTimeZoneCode {
+            get {
+                return GetAttributeValue<int?>("utcconversiontimezonecode");
+            }
+            set {
+                SetAttributeValue("utcconversiontimezonecode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Sequence number of the import that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber {
+            get {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the record.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Name of the owner</para>
+        /// </summary>
+        [AttributeLogicalName("owneridname")]
+        public string OwnerIdName {
+            get {
+                return GetAttributeValue<string>("owneridname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Status of the Man</para>
+        /// <para>Display Name: Status</para>
+        /// </summary>
+        [AttributeLogicalName("statecode")]
+        public dg_manState? statecode {
+            get {
+                return GetOptionSetValue<dg_manState>("statecode");
+            }
+            set {
+                SetOptionSetValue("statecode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for the user that owns the record.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser {
+            get {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+        
+        [AttributeLogicalName("owningbusinessunit")]
+        [RelationshipSchemaName("business_unit_dg_man")]
+        public BusinessUnit business_unit_dg_man {
+            get {
+                return GetRelatedEntity<BusinessUnit>("business_unit_dg_man", null);
+            }
+            set {
+                SetRelatedEntity("business_unit_dg_man", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("owninguser")]
+        [RelationshipSchemaName("user_dg_man")]
+        public SystemUser user_dg_man {
+            get {
+                return GetRelatedEntity<SystemUser>("user_dg_man", null);
+            }
+            set {
+                SetRelatedEntity("user_dg_man", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_dg_man_modifiedonbehalfby")]
+        public SystemUser lk_dg_man_modifiedonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_dg_man_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_dg_man_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_dg_man_modifiedby")]
+        public SystemUser lk_dg_man_modifiedby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_dg_man_modifiedby", null);
+            }
+            set {
+                SetRelatedEntity("lk_dg_man_modifiedby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_dg_man_createdonbehalfby")]
+        public SystemUser lk_dg_man_createdonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_dg_man_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_dg_man_createdonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_dg_man_createdby")]
+        public SystemUser lk_dg_man_createdby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_dg_man_createdby", null);
+            }
+            set {
+                SetRelatedEntity("lk_dg_man_createdby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("dg_dg_man_dg_bus_Driver")]
+        public IEnumerable<dg_bus> dg_dg_man_dg_bus_Driver {
+            get {
+                return GetRelatedEntities<dg_bus>("dg_dg_man_dg_bus_Driver", null);
+            }
+            set {
+                SetRelatedEntities("dg_dg_man_dg_bus_Driver", null, value);
+            }
+        }
+        
+        public static dg_man Retrieve(IOrganizationService service, Guid id, params Expression<Func<dg_man,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
     }
@@ -18366,6 +18787,56 @@ namespace DG.Some.Namespace {
             }
         }
         
+        [RelationshipSchemaName("user_dg_man")]
+        public IEnumerable<dg_man> user_dg_man {
+            get {
+                return GetRelatedEntities<dg_man>("user_dg_man", null);
+            }
+            set {
+                SetRelatedEntities("user_dg_man", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_dg_man_modifiedonbehalfby")]
+        public IEnumerable<dg_man> lk_dg_man_modifiedonbehalfby {
+            get {
+                return GetRelatedEntities<dg_man>("lk_dg_man_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_dg_man_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_dg_man_modifiedby")]
+        public IEnumerable<dg_man> lk_dg_man_modifiedby {
+            get {
+                return GetRelatedEntities<dg_man>("lk_dg_man_modifiedby", null);
+            }
+            set {
+                SetRelatedEntities("lk_dg_man_modifiedby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_dg_man_createdonbehalfby")]
+        public IEnumerable<dg_man> lk_dg_man_createdonbehalfby {
+            get {
+                return GetRelatedEntities<dg_man>("lk_dg_man_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_dg_man_createdonbehalfby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_dg_man_createdby")]
+        public IEnumerable<dg_man> lk_dg_man_createdby {
+            get {
+                return GetRelatedEntities<dg_man>("lk_dg_man_createdby", null);
+            }
+            set {
+                SetRelatedEntities("lk_dg_man_createdby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_businessunitbase_createdby")]
         public IEnumerable<BusinessUnit> lk_businessunitbase_createdby {
             get {
@@ -21402,6 +21873,12 @@ namespace DG.Some.Namespace {
             }
         }
         
+        public IQueryable<dg_man> dg_manSet {
+            get {
+                return CreateQuery<dg_man>();
+            }
+        }
+        
         public IQueryable<Email> EmailSet {
             get {
                 return CreateQuery<Email>();
@@ -22382,6 +22859,26 @@ namespace DG.Some.Namespace {
     
     [DataContract()]
     public enum dg_child_statuscode {
+        
+        [EnumMember()]
+        Active = 1,
+        
+        [EnumMember()]
+        Inactive = 2,
+    }
+    
+    [DataContract()]
+    public enum dg_manState {
+        
+        [EnumMember()]
+        Active = 0,
+        
+        [EnumMember()]
+        Inactive = 1,
+    }
+    
+    [DataContract()]
+    public enum dg_man_statuscode {
         
         [EnumMember()]
         Active = 1,
