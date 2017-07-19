@@ -12,6 +12,8 @@ using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using WorkflowExecuter;
 
 namespace DG.Tools {
@@ -575,7 +577,8 @@ namespace DG.Tools {
 
             var transactioncurrencyId = "transactioncurrencyid";
             var exchangerate = "exchangerate";
-            if (!dbEntity.Attributes.ContainsKey(transactioncurrencyId) && CanSetAttribute(transactioncurrencyId, Metadata[dbEntity.LogicalName]) &&
+            if (!dbEntity.Attributes.ContainsKey(transactioncurrencyId) && 
+                Utility.IsSettableAttribute(transactioncurrencyId, Metadata[dbEntity.LogicalName]) &&
                 Metadata[dbEntity.LogicalName].Attributes.Any(m => m is MoneyAttributeMetadata) &&
                 (serviceRole == MockupServiceSettings.Role.UI ||
                 (serviceRole == MockupServiceSettings.Role.SDK && dbEntity.Attributes.Any(
@@ -588,7 +591,8 @@ namespace DG.Tools {
                 }
             }
 
-            if (!dbEntity.Attributes.ContainsKey(exchangerate) && CanSetAttribute(exchangerate, Metadata[dbEntity.LogicalName]) &&
+            if (!dbEntity.Attributes.ContainsKey(exchangerate) && 
+                Utility.IsSettableAttribute(exchangerate, Metadata[dbEntity.LogicalName]) &&
                 dbEntity.Attributes.ContainsKey(transactioncurrencyId)) {
                 var currencyId = dbEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db[LogicalNames.TransactionCurrency][currencyId.Id];
@@ -596,26 +600,27 @@ namespace DG.Tools {
                 HandleCurrencies(dbEntity);
             }
 
-            if (CanSetAttribute("statecode", Metadata[dbEntity.LogicalName]) && CanSetAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
-                var attributes = GetMetadata(dbEntity.LogicalName).Attributes;
-                if (!dbEntity.Attributes.ContainsKey("statecode")) {
-                    var stateMeta = attributes.First(a => a.LogicalName == "statecode") as StateAttributeMetadata;
-                    dbEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
-                }
-                if (!dbEntity.Attributes.ContainsKey("statuscode")) {
-                    var statusMeta = attributes.First(a => a.LogicalName == "statuscode") as StatusAttributeMetadata;
-                    dbEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
-                }
+            var attributes = GetMetadata(dbEntity.LogicalName).Attributes;
+            if (!dbEntity.Attributes.ContainsKey("statecode") && 
+                Utility.IsSettableAttribute("statecode", Metadata[dbEntity.LogicalName])) {
+                var stateMeta = attributes.First(a => a.LogicalName == "statecode") as StateAttributeMetadata;
+                dbEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
+            }
+            if (!dbEntity.Attributes.ContainsKey("statuscode") &&
+                Utility.IsSettableAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
+                var statusMeta = attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata; 
+                dbEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
             }
 
-            if (CanSetAttribute("createdon", Metadata[dbEntity.LogicalName])) {
+            if (Utility.IsSettableAttribute("createdon", Metadata[dbEntity.LogicalName])) {
                 dbEntity.Attributes["createdon"] = DateTime.Now.Add(RequestHandler.GetCurrentOffset());
             }
-            if (CanSetAttribute("createdby", Metadata[dbEntity.LogicalName])) {
+            if (Utility.IsSettableAttribute("createdby", Metadata[dbEntity.LogicalName])) {
                 dbEntity.Attributes["createdby"] = userRef;
             }
 
-            if (CanSetAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && CanSetAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
+            if (Utility.IsSettableAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && 
+                Utility.IsSettableAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
                 dbEntity.Attributes["modifiedon"] = dbEntity.Attributes["createdon"];
                 dbEntity.Attributes["modifiedby"] = dbEntity.Attributes["createdby"];
             }
@@ -901,6 +906,39 @@ namespace DG.Tools {
             return parentClone;
         }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        private void CheckStatusTransitions(Entity newEntity, Entity prevEntity) {
+            if (newEntity == null || prevEntity == null) return;
+            if (!newEntity.Attributes.ContainsKey("statuscode") || !prevEntity.Attributes.ContainsKey("statuscode")) return;
+            if (newEntity.LogicalName != prevEntity.LogicalName || newEntity.Id != prevEntity.Id) return;
+
+            var newValue = newEntity["statuscode"] as OptionSetValue;
+            var prevValue = prevEntity["statuscode"] as OptionSetValue;
+            var optionsMeta = (GetMetadata(newEntity.LogicalName).Attributes
+                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
+                .OptionSet.Options;
+
+            if (!optionsMeta.Any(o => o.Value == newValue.Value)) return;
+
+            var prevValueOptionMeta = optionsMeta.FirstOrDefault(o => o.Value == prevValue.Value) as StatusOptionMetadata;
+            if (prevValueOptionMeta == null) return;
+
+            var transitions = prevValueOptionMeta.TransitionData;
+            if (transitions == null) return;
+            
+            if (transitions != "") {
+                var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
+                var doc = XDocument.Parse(transitions).Element(ns + "allowedtransitions");
+                if (doc.Descendants(ns + "allowedtransition")
+                    .Where(x => x.Attribute("tostatusid").Value == newValue.Value.ToString())
+                    .Any()) {
+                    return;
+                }
+            }
+            throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
+        }
+#endif
+
         public void Update(Entity entity, EntityReference userRef, MockupServiceSettings.Role serviceRole) {
             var entRef = entity.ToEntityReference();
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
@@ -937,6 +975,10 @@ namespace DG.Tools {
 #endif
 
             var updEntity = entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true));
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            CheckStatusTransitions(updEntity, dbEntity);
+#endif
+
 
             if (HasCircularReference(updEntity)) {
                 throw new FaultException($"Trying to create entity '{dbEntity.LogicalName}', but the attributes had a circular reference");
@@ -1034,9 +1076,14 @@ namespace DG.Tools {
         internal void SetState(EntityReference entityRef, OptionSetValue state, OptionSetValue status, EntityReference userRef) {
             var dbEntity = GetDbEntity(entityRef);
 
-            if (CanSetAttribute("statecode", Metadata[dbEntity.LogicalName]) && CanSetAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
+            if (Utility.IsSettableAttribute("statecode", Metadata[dbEntity.LogicalName]) && 
+                Utility.IsSettableAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
+                var prevEntity = dbEntity.CloneEntity();
                 dbEntity["statecode"] = state;
                 dbEntity["statuscode"] = status;
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+                CheckStatusTransitions(dbEntity, prevEntity);
+#endif
                 HandleCurrencies(dbEntity);
                 Touch(dbEntity, userRef);
             }
@@ -1369,15 +1416,15 @@ namespace DG.Tools {
 #endif
 
         private void Touch(Entity dbEntity, EntityReference user) {
-            if (CanSetAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && CanSetAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
+            if (Utility.IsSettableAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && Utility.IsSettableAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
                 dbEntity.Attributes["modifiedon"] = DateTime.Now.Add(RequestHandler.GetCurrentOffset());
                 dbEntity.Attributes["modifiedby"] = user;
             }
         }
 
-        private bool CanSetAttribute(string attributeName, EntityMetadata metadata) {
-            return metadata.Attributes.Any(a => a.LogicalName == attributeName);
-        }
+        //private bool CanSetAttribute(string attributeName, EntityMetadata metadata) {
+        //    return metadata.Attributes.Any(a => a.LogicalName == attributeName);
+        //}
 
         internal void RemoveUnsettableAttributes(string actionType, Entity entity) {
             if (entity == null) return;

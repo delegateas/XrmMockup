@@ -40,10 +40,13 @@ namespace DG.Tools {
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
 
-        private static bool IsSettableAttribute(string attrName, EntityMetadata metadata) {
-            if (metadata == null || attrName.Contains(".")) {
+        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata)
+        {
+            if (metadata == null || attrName.Contains("."))
+            {
                 return true;
             }
+
             return metadata.Attributes.Any(a => a.LogicalName == attrName);
         }
 
