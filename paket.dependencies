@@ -22,25 +22,25 @@ group base
 
 group crm2011
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies >= 5
-  nuget Microsoft.CrmSdk.Workflow >= 5  
+  nuget Microsoft.CrmSdk.CoreAssemblies ~> 5
+  nuget Microsoft.CrmSdk.Workflow ~> 5  
 
 group crm2013
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies >= 6
-  nuget Microsoft.CrmSdk.Workflow >= 6
+  nuget Microsoft.CrmSdk.CoreAssemblies ~> 6
+  nuget Microsoft.CrmSdk.Workflow ~> 6
 
 group crm2015
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies >= 7
-  nuget Microsoft.CrmSdk.Workflow >= 7
+  nuget Microsoft.CrmSdk.CoreAssemblies ~> 7
+  nuget Microsoft.CrmSdk.Workflow ~> 7
 
 group crm2016
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies >= 8
-  nuget Microsoft.CrmSdk.Workflow >= 8
+  nuget Microsoft.CrmSdk.CoreAssemblies ~> 8.0
+  nuget Microsoft.CrmSdk.Workflow ~> 8.0
 
 group crm365
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies >= 8.2
-  nuget Microsoft.CrmSdk.Workflow >= 8.2
+  nuget Microsoft.CrmSdk.CoreAssemblies ~> 8.2
+  nuget Microsoft.CrmSdk.Workflow ~> 8.2

@@ -1,3 +1,7 @@
+#### 0.3.4-beta - July 19 2017
+* Added support for status transitions
+* Fixed invalid cast exception when creating an activity with ActivityParty set
+
 #### 0.3.3-beta - July 11 2017
 * Fixed queries ignoring certain conditions like `NotEqual` if attribute was null
 * Fixed queries assuming that the linked entity-table already exists
