@@ -918,19 +918,20 @@ namespace DG.Tools {
 
             var newValue = newEntity["statuscode"] as OptionSetValue;
             var prevValue = prevEntity["statuscode"] as OptionSetValue;
-            var optionsMeta = (GetMetadata(newEntity.LogicalName).Attributes
+
+            var metadata = GetMetadata(newEntity.LogicalName);
+            if (metadata.EnforceStateTransitions != true) return;
+
+            var optionsMeta = (metadata.Attributes
                 .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
                 .OptionSet.Options;
-
             if (!optionsMeta.Any(o => o.Value == newValue.Value)) return;
 
             var prevValueOptionMeta = optionsMeta.FirstOrDefault(o => o.Value == prevValue.Value) as StatusOptionMetadata;
             if (prevValueOptionMeta == null) return;
 
             var transitions = prevValueOptionMeta.TransitionData;
-            if (transitions == null) return;
-            
-            if (transitions != "") {
+            if (transitions != null && transitions != "") {
                 var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
                 var doc = XDocument.Parse(transitions).Element(ns + "allowedtransitions");
                 if (doc.Descendants(ns + "allowedtransition")
