@@ -202,7 +202,7 @@ namespace DG.Tools {
         /// </summary>
         /// <param name="hours"></param>
         public void AddHours(int hours) {
-            AddTime(new TimeSpan(hours, 0, 0, 0));
+            AddTime(new TimeSpan(hours, 0, 0));
         }
 
         /// <summary>
