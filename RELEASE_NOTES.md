@@ -1,3 +1,6 @@
+#### 0.3.5-beta - July 19 2017
+* Fixed bug with status transitions when they were disabled
+
 #### 0.3.4-beta - July 19 2017
 * Added support for status transitions
 * Fixed invalid cast exception when creating an activity with ActivityParty set
