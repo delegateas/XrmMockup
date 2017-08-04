@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools.Domain {
+namespace DG.Tools.XrmMockup {
 
 
     internal enum ExecutionMode {

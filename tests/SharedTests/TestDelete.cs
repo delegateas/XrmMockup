@@ -10,6 +10,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmContext;
 using System.ServiceModel;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -20,7 +21,7 @@ namespace DG.XrmMockupTest {
         public void DeleteTest() {
             using (var context = new Xrm(orgAdminUIService)) {
                 
-                var guid = orgAdminUIService.Create(new Contact() { });
+                var guid = orgAdminUIService.Create(new Contact());
 
                 var firstRetrieve = orgAdminUIService.Retrieve<Contact>(guid, null);
                 Assert.IsNotNull(firstRetrieve);

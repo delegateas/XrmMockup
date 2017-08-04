@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -17,18 +18,18 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void When_ordering_by_money_fields_expected_result_is_returned() {
             using (var context = new Xrm(orgAdminService)) {
-                var contact1 = new Contact();
-                contact1.Id = Guid.NewGuid();
-                contact1.FirstName = "Fred";
-                contact1.LastName = "Bloggs";
-                contact1.AnnualIncome = 12345m;
-
-                var contact2 = new Contact();
-                contact2.Id = Guid.NewGuid();
-                contact2.FirstName = "Jo";
-                contact2.LastName = "Bloggs";
-                contact2.AnnualIncome = 678910m;
-
+                var contact1 = new Contact() {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Fred",
+                    LastName = "Bloggs",
+                    AnnualIncome = 12345m
+                };
+                var contact2 = new Contact() {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Jo",
+                    LastName = "Bloggs",
+                    AnnualIncome = 678910m
+                };
                 crm.PopulateWith(contact1, contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);

@@ -11,13 +11,12 @@ using Microsoft.Xrm.Sdk.Query;
 
 using System.Reflection;
 using Microsoft.Crm.Sdk.Messages;
-using DG.Tools.Domain;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
-using static DG.Tools.XrmMockupBase;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
+
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
@@ -86,11 +85,8 @@ namespace DG.Tools {
                 }
 
             }
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            var primaryRef = GetPrimaryEntityReferenceFromRequestWithKeyAttributes(request);
-#else
-            var primaryRef = GetPrimaryEntityReferenceFromRequest(request);
-#endif
+
+            var primaryRef = Mappings.GetPrimaryEntityReferenceFromRequest(request);
 
             // Create the plugin context
             var pluginContext = new PluginContext() {
@@ -113,8 +109,7 @@ namespace DG.Tools {
             }
             pluginContext.BusinessUnitId = GetBusinessUnit(userRef).Id;
 
-            EventOperation? eventOp = null;
-            eventDict.TryGetValue(request.GetType(), out eventOp);
+            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out EventOperation? eventOp);
 
             var entityInfo = GetEntityInfo(request);
             Entity preImage = null;
@@ -248,63 +243,11 @@ namespace DG.Tools {
 
             return resp;
         }
-        private EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request) {
-            if (request is RetrieveRequest) return ((RetrieveRequest)request).Target;
-            if (request is CreateRequest) return ((CreateRequest)request).Target.ToEntityReference();
-            if (request is UpdateRequest) return ((UpdateRequest)request).Target.ToEntityReference();
-            if (request is DeleteRequest) return ((DeleteRequest)request).Target;
-            if (request is SetStateRequest) return ((SetStateRequest)request).EntityMoniker;
-            if (request is AssignRequest) return ((AssignRequest)request).Target;
-            if (request is AssociateRequest) return ((AssociateRequest)request).Target;
-            if (request is DisassociateRequest) return ((DisassociateRequest)request).Target;
-            if (request is MergeRequest) return ((MergeRequest)request).Target;
-            if (request is WinOpportunityRequest) return ((WinOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
-            if (request is LoseOpportunityRequest) return ((LoseOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
-
-            return null;
-        }
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-        private EntityReference GetPrimaryEntityReferenceFromRequestWithKeyAttributes(OrganizationRequest request) {
-            if (request is RetrieveRequest) return ((RetrieveRequest)request).Target;
-            if (request is CreateRequest) return ((CreateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
-            if (request is UpdateRequest) return ((UpdateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
-            if (request is DeleteRequest) return ((DeleteRequest)request).Target;
-            if (request is SetStateRequest) return ((SetStateRequest)request).EntityMoniker;
-            if (request is AssignRequest) return ((AssignRequest)request).Target;
-            if (request is AssociateRequest) return ((AssociateRequest)request).Target;
-            if (request is DisassociateRequest) return ((DisassociateRequest)request).Target;
-            if (request is MergeRequest) return ((MergeRequest)request).Target;
-            if (request is WinOpportunityRequest) return ((WinOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
-            if (request is LoseOpportunityRequest) return ((LoseOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
-
-            return null;
-        }
-
-#endif
-
 
         #region EntityImage helpers
-        private Dictionary<Type, string> entityImageProperty = new Dictionary<Type, string>()
-        {
-            { typeof(AssignRequest), "Target" },
-            { typeof(CreateRequest), "Target" },
-            { typeof(DeleteRequest), "Target" },
-            { typeof(DeliverIncomingEmailRequest), "EmailId" },
-            { typeof(DeliverPromoteEmailRequest), "EmailId" },
-            { typeof(ExecuteWorkflowRequest), "Target" },
-            { typeof(MergeRequest), "Target" },
-            { typeof(SendEmailRequest), "EmailId" },
-            { typeof(SetStateRequest), "EntityMoniker" },
-            { typeof(UpdateRequest), "Target" },
-            { typeof(AssociateRequest), "Target" },
-            { typeof(DisassociateRequest), "Target" },
-        };
-
 
         private Tuple<object, string, Guid> GetEntityInfo(OrganizationRequest request) {
-            string key = null;
-            entityImageProperty.TryGetValue(request.GetType(), out key);
+            Mappings.EntityImageProperty.TryGetValue(request.GetType(), out string key);
             object obj = null;
             if (key != null) {
                 obj = request.Parameters[key];
@@ -339,29 +282,6 @@ namespace DG.Tools {
         }
         #endregion
 
-
-        private Dictionary<Type, EventOperation?> eventDict = new Dictionary<Type, EventOperation?>()
-        {
-            { typeof(AssignRequest), EventOperation.Assign },
-            { typeof(AssociateRequest), EventOperation.Associate },
-            { typeof(CreateRequest), EventOperation.Create },
-            { typeof(DeleteRequest), EventOperation.Delete },
-            { typeof(DisassociateRequest), EventOperation.Disassociate },
-            { typeof(GrantAccessRequest), EventOperation.GrantAccess },
-            { typeof(MergeRequest), EventOperation.Merge },
-            { typeof(ModifyAccessRequest), EventOperation.ModifyAccess },
-            { typeof(RetrieveRequest), EventOperation.Retrieve },
-            { typeof(RetrieveMultipleRequest), EventOperation.RetrieveMultiple },
-            { typeof(RetrievePrincipalAccessRequest), EventOperation.RetrievePrincipalAccess },
-            //{ typeof(RetrieveSharedPrincipalAccessRequest), EventOperation.RetrieveSharedPrincipalAccess }, // No such request
-            { typeof(RevokeAccessRequest), EventOperation.RevokeAccess },
-            { typeof(SetStateRequest), EventOperation.SetState },
-            //{ typeof(SetStateDynamicEntityRequest), EventOperation.SetStateDynamicEntity }, // No such request
-            { typeof(UpdateRequest), EventOperation.Update },
-            { typeof(WinOpportunityRequest), EventOperation.Win },
-            { typeof(LoseOpportunityRequest), EventOperation.Lose },
-
-        };
 
         internal void ResetEnvironment() {
             if (settings.IncludeAllWorkflows == false) {

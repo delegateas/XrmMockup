@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for mocking a crm 2016 instance
     /// </summary>

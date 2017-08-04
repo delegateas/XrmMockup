@@ -9,6 +9,8 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ServiceModel;
+using DG.Tools.XrmMockup;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -34,7 +36,7 @@ namespace DG.XrmMockupTest {
                     orgAdminUIService.Update(account);
                     Assert.Fail();
                 } catch (Exception e) {
-                    Assert.IsInstanceOfType(e, typeof(Tools.MockupException));
+                    Assert.IsInstanceOfType(e, typeof(MockupException));
                 }
             }
         }

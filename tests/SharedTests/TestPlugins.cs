@@ -9,6 +9,7 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
     [TestClass]

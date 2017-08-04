@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
 
     /// <summary>
     /// A factory used to generate MockupServices based on a given Mockup instance and pluginContext

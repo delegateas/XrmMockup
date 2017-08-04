@@ -1,16 +1,20 @@
 ﻿using DG.Tools;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
-namespace DG.Tools.XrmMockup.Metadata
-{
+namespace DG.Tools.XrmMockup.Metadata {
     class Program {
+
+        public static ArgumentParser ParsedArgs;
+
         static List<string> listOfAssemblies = new List<string>();
         static Program() {
             AppDomain.CurrentDomain.AssemblyResolve += ResolveXrmAssemblies;
@@ -23,20 +27,33 @@ namespace DG.Tools.XrmMockup.Metadata
             try {
                 listOfAssemblies.Add(args.Name);
                 return AssemblyGetter.GetAssemblyFromName(args.Name);
-            } finally {
+            }
+            finally {
                 listOfAssemblies.Remove(args.Name);
             }
         }
 
-    static void Main(string[] args) {
-            var generator = new DataHelper();
+        static void Main(string[] args) {
+            ParsedArgs = new ArgumentParser(Arguments.ArgList, args);
+
+            var auth = new AuthHelper(
+                ParsedArgs[Arguments.Url],
+                ParsedArgs[Arguments.Username],
+                ParsedArgs[Arguments.Password],
+                ParsedArgs[Arguments.AuthProvider],
+                ParsedArgs[Arguments.Domain]
+            );
+            var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions]);
+            var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
+
             var skeleton = generator.GetMetadata(AssemblyGetter.GetProjectPath());
+
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
             var workflowSerializer = new DataContractSerializer(typeof(Entity));
             var securitySerializer = new DataContractSerializer(typeof(SecurityRole));
-            var location = Directory.GetCurrentDirectory();
-            var workflowsLocation = Path.Combine(location, "Workflows");
-            var securityLocation = Path.Combine(location, "SecurityRoles");
+
+            var workflowsLocation = Path.Combine(outputLocation, "Workflows");
+            var securityLocation = Path.Combine(outputLocation, "SecurityRoles");
 
             Console.WriteLine("Deleting old files");
 
@@ -52,27 +69,27 @@ namespace DG.Tools.XrmMockup.Metadata
 
             Console.WriteLine("Writing files");
 
-            Directory.CreateDirectory(location);
-            using (var stream = new FileStream(location + "/Metadata.xml", FileMode.Create)) {
+            Directory.CreateDirectory(outputLocation);
+            using (var stream = new FileStream(outputLocation + "/Metadata.xml", FileMode.Create)) {
                 serializer.WriteObject(stream, skeleton);
             }
 
             foreach (var workflow in generator.GetWorkflows()) {
-                var safeName = ToSafeName(workflow.Attributes["name"] as string);
-                using (var stream = new FileStream(workflowsLocation + "/" + safeName + ".xml", FileMode.Create)) {
+                var safeName = ToSafeName(workflow.GetAttributeValue<string>("name"));
+                using (var stream = new FileStream($"{workflowsLocation}/{safeName}.xml", FileMode.Create)) {
                     workflowSerializer.WriteObject(stream, workflow);
                 }
             }
             var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id);
             foreach (var securityRole in securityRoles) {
                 var safeName = ToSafeName(securityRole.Value.Name);
-                using (var stream = new FileStream(securityLocation + "/" + safeName + ".xml", FileMode.Create)) {
+                using (var stream = new FileStream($"{securityLocation}/{safeName}.xml", FileMode.Create)) {
                     securitySerializer.WriteObject(stream, securityRole.Value);
                 }
             }
 
             // Write to TypeDeclarations file
-            var typedefFile = Path.Combine(location, "TypeDeclarations.cs");
+            var typedefFile = Path.Combine(outputLocation, "TypeDeclarations.cs");
 
             using (var file = new StreamWriter(typedefFile, false)) {
                 file.WriteLine("using System;");
@@ -80,7 +97,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 file.WriteLine("namespace DG.Tools.XrmMockup {");
                 file.WriteLine("\tpublic struct SecurityRoles {");
                 foreach (var securityRole in securityRoles.OrderBy(x => x.Value.Name)) {
-                    file.WriteLine($"\t\tpublic static Guid {ToSafeName(securityRole.Value.Name)} = new Guid(\"{securityRole.Key.ToString()}\");");
+                    file.WriteLine($"\t\tpublic static Guid {ToSafeName(securityRole.Value.Name)} = new Guid(\"{securityRole.Key}\");");
                 }
                 file.WriteLine("\t}");
                 file.WriteLine("}");
@@ -96,14 +113,10 @@ namespace DG.Tools.XrmMockup.Metadata
             if (StartsWithNumber(compressed)) {
                 return $"_{compressed}";
             }
-            if (compressed == "") {
+            if (String.IsNullOrWhiteSpace(compressed)) {
                 return "_EmptyString";
             }
             return compressed;
         }
-
-
-
-
     }
 }

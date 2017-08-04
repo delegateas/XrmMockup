@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     internal static class XmlHandling {
 
         public static QueryExpression FetchXmlToQueryExpression(string fetchXml) {
@@ -65,7 +65,7 @@ namespace DG.Tools {
 
             foreach (var condition in filter.Elements("condition")) {
                 var attr = condition.Attribute("attribute").Value;
-                var op = Utility.ConditionOperators[condition.Attribute("operator").Value];
+                var op = Mappings.ConditionalOperator[condition.Attribute("operator").Value];
                 if (condition.HasElements) {
                     var values = new List<object>();
                     foreach (var value in condition.Elements("value")) {

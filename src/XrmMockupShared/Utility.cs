@@ -19,7 +19,7 @@ using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     internal static class Utility {
 
         public static Entity CloneEntity(this Entity entity) {
@@ -30,13 +30,16 @@ namespace DG.Tools {
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols) {
             var clone = new Entity(entity.LogicalName);
             clone.Id = entity.Id;
+
             if (metadata?.PrimaryIdAttribute != null) {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
+
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             clone.KeyAttributes = entity.KeyAttributes;
 #endif
+
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
 
@@ -79,7 +82,7 @@ namespace DG.Tools {
 
         public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName) {
             if (!metadata.ContainsKey(logicalName)) {
-                throw new FaultException($"Couldn't find metadata for the logicalname '{logicalName}'. Run GenerateMetadata.cmd again, and check that the logicalname is specified in the config file.");
+                throw new FaultException($"Couldn't find metadata for the logicalname '{logicalName}'. Run the MetadataGenerator again, and check that the logicalname is specified in the config file.");
             }
             return metadata[logicalName];
         }
@@ -285,85 +288,13 @@ namespace DG.Tools {
             return securityRoles;
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity) {
             var reference = entity.ToEntityReference();
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             reference.KeyAttributes = entity.KeyAttributes;
+#endif
             return reference;
         }
-#endif
-
-
-        #region ConditionOperator Map
-
-        public static readonly Dictionary<string, ConditionOperator> ConditionOperators = new Dictionary<string, ConditionOperator>
-        {
-            { "between", ConditionOperator.Between },
-            { "eq", ConditionOperator.Equal },
-            { "eq-businessid", ConditionOperator.EqualBusinessId },
-            { "eq-userid", ConditionOperator.EqualUserId },
-            { "eq-userteams", ConditionOperator.EqualUserTeams },
-            { "ge", ConditionOperator.GreaterEqual },
-            { "gt", ConditionOperator.GreaterThan },
-            { "in", ConditionOperator.In },
-            { "in-fiscal-period", ConditionOperator.InFiscalPeriod },
-            { "in-fiscal-period-and-year", ConditionOperator.InFiscalPeriodAndYear },
-            { "in-fiscal-year", ConditionOperator.InFiscalYear },
-            { "in-or-after-fiscal-period-and-year", ConditionOperator.InOrAfterFiscalPeriodAndYear },
-            { "in-or-before-fiscal-period-and-year", ConditionOperator.InOrBeforeFiscalPeriodAndYear },
-            { "last-seven-days", ConditionOperator.Last7Days },
-            { "last-fiscal-period", ConditionOperator.LastFiscalPeriod },
-            { "last-fiscal-year", ConditionOperator.LastFiscalYear },
-            { "last-month", ConditionOperator.LastMonth },
-            { "last-week", ConditionOperator.LastWeek },
-            { "last-x-days", ConditionOperator.LastXDays },
-            { "last-x-fiscal-periods", ConditionOperator.LastXFiscalPeriods },
-            { "last-x-fiscal-years", ConditionOperator.LastXFiscalYears },
-            { "last-x-hours", ConditionOperator.LastXHours },
-            { "last-x-months", ConditionOperator.LastXMonths },
-            { "last-x-weeks", ConditionOperator.LastXWeeks },
-            { "last-x-years", ConditionOperator.LastXYears },
-            { "last-year", ConditionOperator.LastYear },
-            { "le", ConditionOperator.LessEqual },
-            { "lt", ConditionOperator.LessThan },
-            { "next-seven-days", ConditionOperator.Next7Days },
-            { "next-fiscal-period", ConditionOperator.NextFiscalPeriod },
-            { "next-fiscal-year", ConditionOperator.NextFiscalYear },
-            { "next-month", ConditionOperator.NextMonth },
-            { "next-week", ConditionOperator.NextWeek },
-            { "next-x-days", ConditionOperator.NextXDays },
-            { "next-x-fiscal-periods", ConditionOperator.NextXFiscalPeriods },
-            { "next-x-fiscal-years", ConditionOperator.NextXFiscalYears },
-            { "next-x-hours", ConditionOperator.NextXHours },
-            { "next-x-months", ConditionOperator.NextXMonths },
-            { "next-x-weeks", ConditionOperator.NextXWeeks },
-            { "next-x-years", ConditionOperator.NextXYears },
-            { "next-year", ConditionOperator.NextYear },
-            { "not-between", ConditionOperator.NotBetween },
-            //{ "ne", ConditionOperator.NotEqual },
-            { "ne-businessid", ConditionOperator.NotEqualBusinessId },
-            { "ne-userid", ConditionOperator.NotEqualUserId },
-            { "not-in", ConditionOperator.NotIn },
-            { "not-null", ConditionOperator.NotNull },
-            //{ "ne", ConditionOperator.NotOn },
-            { "null", ConditionOperator.Null },
-            { "olderthan-x-months", ConditionOperator.OlderThanXMonths },
-            { "on", ConditionOperator.On },
-            { "on-or-after", ConditionOperator.OnOrAfter },
-            { "on-or-before", ConditionOperator.OnOrBefore },
-            { "this-fiscal-period", ConditionOperator.ThisFiscalPeriod },
-            { "this-fiscal-year", ConditionOperator.ThisFiscalYear },
-            { "this-month", ConditionOperator.ThisMonth },
-            { "this-week", ConditionOperator.ThisWeek },
-            { "this-year", ConditionOperator.ThisYear },
-            { "today", ConditionOperator.Today },
-            { "tomorrow", ConditionOperator.Tomorrow },
-            { "yesterday", ConditionOperator.Yesterday }
-        };
-
-#endregion
-
-
 
 
 

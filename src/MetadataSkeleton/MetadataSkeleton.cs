@@ -4,7 +4,8 @@ using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
+
     public class MetadataSkeleton {
         public Dictionary<string, EntityMetadata> Metadata;
         public List<Entity> Currencies;

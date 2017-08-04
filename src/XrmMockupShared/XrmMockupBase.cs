@@ -7,12 +7,13 @@ using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
 
     /// <summary>
     /// A Mockup of a CRM instance
     /// </summary>
     public abstract class XrmMockupBase {
+
         /// <summary>
         /// AdminUser for the Mockup instance
         /// </summary>
@@ -27,6 +28,7 @@ namespace DG.Tools {
         /// Organization name for the Mockup instance
         /// </summary>
         public string OrganizationName { get; private set; }
+
         /// <summary>
         /// Root businessunit for the Mockup instance
         /// </summary>
@@ -40,7 +42,7 @@ namespace DG.Tools {
         internal TimeSpan TimeOffset;
 
         /// <summary>
-        /// Create a new XrmMockup
+        /// Create a new XrmMockup instance
         /// </summary>
         /// <param name="Settings"></param>
         /// <param name="Metadata"></param>
@@ -80,31 +82,6 @@ namespace DG.Tools {
                 .ToArray());
 
         }
-
-        /// <summary>
-        /// Settings for XrmMockup instance
-        /// </summary>
-        public struct XrmMockupSettings {
-            /// <summary>
-            /// List of base-types which all your plugins extend.
-            /// This is used to locate the assemblies required.
-            /// </summary>
-            public IEnumerable<Type> BasePluginTypes;
-            /// <summary>
-            /// List of at least one instance of a CodeActivity in each of your projects that contain CodeActivities. 
-            /// This is used to locate the assemblies required to find all CodeActivity.
-            /// </summary>
-            public IEnumerable<Type> CodeActivityInstanceTypes;
-            /// <summary>
-            /// Enable early-bound proxy types
-            /// </summary>
-            public bool? EnableProxyTypes;
-            /// <summary>
-            /// Sets whether all workflow definitions should be included on startup. Default is true.
-            /// </summary>
-            public bool? IncludeAllWorkflows;
-        }
-
 
 
         /// <summary>
@@ -194,7 +171,7 @@ namespace DG.Tools {
         /// </summary>
         /// <param name="days"></param>
         public void AddDays(int days) {
-            AddTime(new TimeSpan(days,0,0,0));
+            AddTime(new TimeSpan(days, 0, 0, 0));
         }
 
         /// <summary>
@@ -308,8 +285,8 @@ namespace DG.Tools {
         /// <param name="securityRoles"></param>
         /// <returns></returns>
         public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
-            var team = new Entity("team");
-            team.Attributes["businessunitid"] = businessUnit;
+            var team = new Entity(LogicalNames.Team);
+            team["businessunitid"] = businessUnit;
             return CreateTeam(service, team, securityRoles);
         }
 

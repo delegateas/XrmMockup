@@ -12,6 +12,7 @@ using System.ServiceModel;
 using System.IO;
 using DG.Tools;
 using DG.Tools.XrmMockup;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -22,8 +23,9 @@ namespace DG.XrmMockupTest {
         public void TestCreateWorkflow() {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "Activeworkflow.xml"));
-                var acc = new Account();
-                acc.Name = "Wap";
+                var acc = new Account() {
+                    Name = "Wap"
+                };
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = context.AccountSet.Where(x => x.AccountId == acc.Id).FirstOrDefault();
@@ -35,8 +37,9 @@ namespace DG.XrmMockupTest {
         public void TestStringAdd() {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "AddStringWorkflow.xml"));
-                var acc = new Account();
-                acc.Name = "WapAdd";
+                var acc = new Account() {
+                    Name = "WapAdd"
+                };
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -48,16 +51,18 @@ namespace DG.XrmMockupTest {
         public void TestOtherwiseBranchingWorkflow() {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "OtherwiseWorkflow.xml"));
-                var otherwise = new Account();
-                otherwise.Name = "Otherwise";
+                var otherwise = new Account() {
+                    Name = "Otherwise"
+                };
                 otherwise.Id = orgAdminUIService.Create(otherwise);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, otherwise.Id, new ColumnSet(true)) as Account;
                 Assert.AreEqual("SetFromOtherwise", retrieved.Name);
 
 
-                var thenThen = new Account();
-                thenThen.Name = "ThenThen";
+                var thenThen = new Account() {
+                    Name = "ThenThen"
+                };
                 thenThen.Id = orgAdminUIService.Create(thenThen);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, thenThen.Id, new ColumnSet(true)) as Account;
@@ -109,8 +114,9 @@ namespace DG.XrmMockupTest {
                 var user = crm.CreateUser(orgAdminUIService, 
                     new SystemUser() { LastName = null, BusinessUnitId = businessunit.ToEntityReference() }, SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
-                var con = new Contact();
-                con.LastName = "SomeLastname";
+                var con = new Contact() {
+                    LastName = "SomeLastname"
+                };
                 con.Id = service.Create(con);
 
                 var acc = new Account();
@@ -190,7 +196,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestMyConditionWorkflow() {
             using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "MyConditionWorkflow.xml"));
+                crm.AddWorkflow(Path.Combine("../..", "Metadata", "OtherWorkflows", "MyConditionWorkflow.xml"));
                 var businessunit = new BusinessUnit();
                 businessunit.Name = "deledevelopmentasd";
                 businessunit.Id = orgAdminUIService.Create(businessunit);

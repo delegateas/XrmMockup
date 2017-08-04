@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Runtime.Serialization;
 using System.Activities;
 using Microsoft.Xrm.Sdk.Workflow;
-using DG.Tools;
+using DG.Tools.XrmMockup;
 
 namespace WorkflowExecuter {
     [Serializable]

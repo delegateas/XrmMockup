@@ -2,6 +2,7 @@
 namespace DG.Some.Namespace {
     using System;
     using Microsoft.Xrm.Sdk;
+    using DG.XrmFramework.BusinessDomain.ServiceContext;
 
     public class AccountChainPostPlugin : Plugin {
 
@@ -25,8 +26,9 @@ namespace DG.Some.Namespace {
 
             var rand = new Random();
 
-            var newAcc = new Account(localContext.PluginExecutionContext.PrimaryEntityId);
-            newAcc.Fax = rand.Next().ToString();
+            var newAcc = new Account(localContext.PluginExecutionContext.PrimaryEntityId) {
+                Fax = rand.Next().ToString()
+            };
             service.Update(newAcc);
         }
     }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     internal class PluginContext : IPluginExecutionContext {
 
         private ParameterCollection _propertyBag = new ParameterCollection();

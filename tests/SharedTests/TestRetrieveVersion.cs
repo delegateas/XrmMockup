@@ -7,6 +7,7 @@ using Microsoft.Xrm.Sdk;
 using System.Diagnostics;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest
 {
@@ -30,7 +31,7 @@ namespace DG.XrmMockupTest
 #elif XRM_MOCKUP_TEST_2016
                 Assert.AreEqual("8", version.Version.Substring(0, 1));
 #elif XRM_MOCKUP_TEST_365
-                Assert.AreEqual("8", version.Version.Substring(0, 1));
+                Assert.IsTrue(8 <= Int32.Parse(version.Version.Substring(0, 1)));
 #endif
             }
         }

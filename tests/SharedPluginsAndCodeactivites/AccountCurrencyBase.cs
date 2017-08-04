@@ -1,4 +1,5 @@
 ﻿using DG.Some.Namespace;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 using System;
 using System.Collections.Generic;
 using System.Linq;

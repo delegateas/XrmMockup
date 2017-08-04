@@ -3,15 +3,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
     [TestClass]
     public class TestStates : UnitTestBase {
         [TestMethod]
         public void TestSetState() {
-            var acc = new Account();
-            acc.StateCode = AccountState.Active;
-            acc.StatusCode = Account_StatusCode.Active;
+            var acc = new Account() {
+                StateCode = AccountState.Active,
+                StatusCode = Account_StatusCode.Active
+            };
             acc.Id = orgAdminUIService.Create(acc);
             acc.SetState(orgAdminUIService, AccountState.Inactive, Account_StatusCode.Inactive);
 
@@ -22,9 +24,10 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestStatusTransitions()
         {
-            var man = new dg_man();
-            man.statecode = dg_manState.Active;
-            man.statuscode = dg_man_statuscode.Active;
+            var man = new dg_man() {
+                statecode = dg_manState.Active,
+                statuscode = dg_man_statuscode.Active
+            };
             man.Id = orgAdminUIService.Create(man);
             man.SetState(orgAdminUIService, dg_manState.Inactive, dg_man_statuscode.Inactive);
 

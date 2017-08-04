@@ -1,4 +1,6 @@
-* Fixed problem with AddTime(hours)
+* Most classes have been moved to the namespace `DG.Tools.XrmMockup`
+* MetadataGenerator can now also consume command-line arguments, instead of only those in the .config file
+* Fixed problem with `AddHours(...)`
 
 #### 0.3.5-beta - July 19 2017
 * Fixed bug with status transitions when they were disabled

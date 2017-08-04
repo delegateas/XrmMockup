@@ -7,6 +7,7 @@ using Microsoft.Xrm.Sdk;
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -16,9 +17,10 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestBasesGetUpdated() {
             using (var context = new Xrm(orgAdminUIService)) {
-                var currency = new TransactionCurrency();
-                currency.ExchangeRate = 0.5m;
-                currency.CurrencyPrecision = 2;
+                var currency = new TransactionCurrency() {
+                    ExchangeRate = 0.5m,
+                    CurrencyPrecision = 2
+                };
                 currency.Id = orgAdminUIService.Create(currency);
 
                 // test currency gets set
