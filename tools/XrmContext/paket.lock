@@ -1,7 +1,0 @@
-NUGET
-  remote: https://www.nuget.org/api/v2
-    Delegate.XrmContext (1.2.4)
-      Microsoft.CrmSdk.CoreAssemblies (8.0.2.1)
-    Microsoft.CrmSdk.CoreAssemblies (8.0.2.1)
-      Microsoft.IdentityModel (>= 6.1.7600.16394) - framework: >= net35
-    Microsoft.IdentityModel (6.1.7600.16394) - framework: >= net35

@@ -7,20 +7,43 @@ using System.Net;
 
 namespace DG.Tools.XrmMockup.Metadata
 {
-    internal static class AuthHelper {
-        private static string username = ConfigurationManager.AppSettings["username"];
-        private static string password = ConfigurationManager.AppSettings["password"];
-        private static string domain = ConfigurationManager.AppSettings["domain"];
-        private static AuthenticationProviderType provider = ToProviderType(ConfigurationManager.AppSettings["ap"]);
-        private static string url = ConfigurationManager.AppSettings["url"];
+    internal class AuthHelper {
+        private string username = ConfigurationManager.AppSettings["username"];
+        private string password = ConfigurationManager.AppSettings["password"];
+        private string domain = ConfigurationManager.AppSettings["domain"];
+        private AuthenticationProviderType provider = ToProviderType(ConfigurationManager.AppSettings["ap"]);
+        private string url = ConfigurationManager.AppSettings["url"];
+
+        public AuthHelper(
+            string url, 
+            string username, 
+            string password, 
+            AuthenticationProviderType provider = AuthenticationProviderType.OnlineFederation, 
+            string domain = null) 
+        {
+            this.url = url;
+            this.username = username;
+            this.password = password;
+            this.provider = provider;
+            this.domain = domain;
+        }
+
+        public AuthHelper(
+            string url,
+            string username,
+            string password,
+            string provider = "OnlineFederation",
+            string domain = null) 
+            : this(url, username, password, ToProviderType(provider), domain) {
+        }
 
         private static AuthenticationProviderType ToProviderType(string ap) {
             if (String.IsNullOrWhiteSpace(ap)) return AuthenticationProviderType.OnlineFederation;
-            if (Enum.TryParse<AuthenticationProviderType>(ap, out AuthenticationProviderType parsedAp)) return parsedAp;
+            if (Enum.TryParse(ap, out AuthenticationProviderType parsedAp)) return parsedAp;
             throw new Exception($"Could not interpret AuthenticationProviderType argument given: '{ap}'");
         }
 
-        internal static OrganizationServiceProxy GetOrganizationServiceProxy(IServiceManagement<IOrganizationService> serviceManagement,
+        internal OrganizationServiceProxy GetOrganizationServiceProxy(IServiceManagement<IOrganizationService> serviceManagement,
             AuthenticationCredentials authCredentials) {
             var osp = serviceManagement.AuthenticationType == AuthenticationProviderType.ActiveDirectory 
                 ? new OrganizationServiceProxy(serviceManagement, authCredentials.ClientCredentials)
@@ -29,7 +52,7 @@ namespace DG.Tools.XrmMockup.Metadata
             return osp;
         }
 
-        internal static AuthenticationCredentials GetCredentials() {
+        internal AuthenticationCredentials GetCredentials() {
             var ac = new AuthenticationCredentials();
             switch (provider) {
                 case AuthenticationProviderType.ActiveDirectory:
@@ -47,7 +70,7 @@ namespace DG.Tools.XrmMockup.Metadata
             return ac;
         }
 
-        internal static OrganizationServiceProxy Authenticate() {
+        internal OrganizationServiceProxy Authenticate() {
             var m = ServiceConfigurationFactory.CreateManagement<IOrganizationService>(new Uri(url));
             var ac = m.Authenticate(GetCredentials());
             var proxy = GetOrganizationServiceProxy(m, ac);

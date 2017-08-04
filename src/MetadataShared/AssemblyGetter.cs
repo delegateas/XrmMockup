@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -61,7 +62,7 @@ namespace DG.Tools.XrmMockup.Metadata
 
 
         internal static string GetProjectPath() {
-            var current = Directory.GetCurrentDirectory();
+            var startDirectory = Program.ParsedArgs[Arguments.UnitTestProjectPath] ?? Directory.GetCurrentDirectory();
 #if XRM_METADATA_2011
             var owncsproj = "MetadataGenerator11.csproj";
 #elif XRM_METADATA_2013
@@ -73,11 +74,18 @@ namespace DG.Tools.XrmMockup.Metadata
 #elif XRM_METADATA_365
             var owncsproj = "MetadataGenerator365.csproj";
 #endif
-            while (Directory.GetFiles(current, "*.csproj").Length == 0 || Directory.GetFiles(current, "*.csproj")[0].EndsWith(owncsproj)) {
-                current = Directory.GetParent(current).FullName;
-            }
-            return current;
-        }
+            var current = startDirectory;
+            try {
+                while (Directory.GetFiles(current, "*.csproj").Length == 0 || Directory.GetFiles(current, "*.csproj")[0].EndsWith(owncsproj)) {
+                    current = Directory.GetParent(current).FullName;
+                }
+               return current;
 
+            } catch (Exception e) {
+                throw new InvalidOperationException(
+                    $"Unable to find path to the unit test project in any parent folder of '{startDirectory}'. " +
+                    $"Provide a path to the folder which contains the .csproj file with the '{Arguments.UnitTestProjectPath.Name}'-argument.", e);
+            }
+        }
     }
 }

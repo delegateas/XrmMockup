@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     internal class TracingService : ITracingService {
         public void Trace(string format, params object[] args) {
             Console.WriteLine(format, args);

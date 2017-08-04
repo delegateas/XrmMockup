@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using Microsoft.Xrm.Sdk.Query;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.Some.Namespace {
     public sealed partial class AccountWorkflowActivity : CodeActivity {

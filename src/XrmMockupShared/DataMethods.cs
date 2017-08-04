@@ -16,7 +16,7 @@ using System.Xml;
 using System.Xml.Linq;
 using WorkflowExecuter;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     internal class DataMethods {
         private Dictionary<string, Dictionary<Guid, Entity>> db = new Dictionary<string, Dictionary<Guid, Entity>>();
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
@@ -25,7 +25,7 @@ namespace DG.Tools {
         private Guid defaultAdminUser;
         private EntityReference baseCurrency;
         private int baseCurrencyPrecision;
-        private Domain.FullNameConventionCode fullnameFormat;
+        private FullNameConventionCode fullnameFormat;
         private Dictionary<string, EntityMetadata> Metadata;
         private Dictionary<Guid, SecurityRole> SecurityRoles;
         private Dictionary<Guid, Guid> SecurityRoleMapping;
@@ -53,10 +53,10 @@ namespace DG.Tools {
 
             db.Add("transactioncurrency", currencies);
             RootBusinessUnit = metadata.RootBusinessUnit;
-            RootBusinessUnit.Attributes["name"] = "RootBusinessUnit";
+            RootBusinessUnit["name"] = "RootBusinessUnit";
             RootBusinessUnit.Attributes.Remove("organizationid");
             this.defaultBusinessUnit = RootBusinessUnit.Id;
-            this.fullnameFormat = (Domain.FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
+            this.fullnameFormat = (FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
 
             AddRolesForBusinessUnit(RootBusinessUnit.ToEntityReference());
             db[LogicalNames.BusinessUnit] = new Dictionary<Guid, Entity>();
@@ -69,9 +69,9 @@ namespace DG.Tools {
         private void AddRolesForBusinessUnit(EntityReference businessUnit) {
             foreach (var sr in SecurityRoles.Values) {
                 var role = new Entity("role");
-                role.Attributes["businessunitid"] = businessUnit;
-                role.Attributes["name"] = sr.Name;
-                role.Attributes["roletemplateid"] = sr.RoleTemplateId;
+                role["businessunitid"] = businessUnit;
+                role["name"] = sr.Name;
+                role["roletemplateid"] = sr.RoleTemplateId;
                 role.Id = Guid.NewGuid();
                 Create(role, new EntityReference(LogicalNames.SystemUser, defaultAdminUser));
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
@@ -210,7 +210,7 @@ namespace DG.Tools {
                 if (entity.Id == Guid.Empty) {
                     var id = Guid.NewGuid();
                     entity.Id = id;
-                    entity.Attributes[entity.LogicalName + "id"] = id;
+                    entity[entity.LogicalName + "id"] = id;
                 }
                 db[entity.LogicalName].Add(entity.Id, entity);
             }
@@ -691,37 +691,37 @@ namespace DG.Tools {
             var last = dbEntity.GetAttributeValue<string>("lastname");
             if (last == null) last = "";
             switch (fullnameFormat) {
-                case Domain.FullNameConventionCode.FirstLast:
+                case FullNameConventionCode.FirstLast:
                     dbEntity["fullname"] = first != "" ? first + " " + last : last;
                     break;
-                case Domain.FullNameConventionCode.LastFirst:
+                case FullNameConventionCode.LastFirst:
                     dbEntity["fullname"] = first != "" ? last + ", " + first : last;
                     break;
-                case Domain.FullNameConventionCode.LastNoSpaceFirst:
+                case FullNameConventionCode.LastNoSpaceFirst:
                     dbEntity["fullname"] = first != "" ? last + first : last;
                     break;
-                case Domain.FullNameConventionCode.LastSpaceFirst:
+                case FullNameConventionCode.LastSpaceFirst:
                     dbEntity["fullname"] = first != "" ? last + " " + first : last;
                     break;
-                case Domain.FullNameConventionCode.FirstMiddleLast:
+                case FullNameConventionCode.FirstMiddleLast:
                     dbEntity["fullname"] = first;
                     if (middle != "") dbEntity["fullname"] += " " + middle;
                     dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
                     if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
                     break;
-                case Domain.FullNameConventionCode.FirstMiddleInitialLast:
+                case FullNameConventionCode.FirstMiddleInitialLast:
                     dbEntity["fullname"] = first;
                     if (middle != "") dbEntity["fullname"] += " " + middle[0] + ".";
                     dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
                     if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
                     break;
-                case Domain.FullNameConventionCode.LastFirstMiddle:
+                case FullNameConventionCode.LastFirstMiddle:
                     dbEntity["fullname"] = last;
                     if (first != "") dbEntity["fullname"] += ", " + first;
                     if (middle != "") dbEntity["fullname"] += (string)dbEntity["fullname"] == last ? ", " + middle : " " + middle;
                     if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
                     break;
-                case Domain.FullNameConventionCode.LastFirstMiddleInitial:
+                case FullNameConventionCode.LastFirstMiddleInitial:
                     dbEntity["fullname"] = last;
                     if (first != "") dbEntity["fullname"] += ", " + first;
                     if (middle != "") dbEntity["fullname"] +=

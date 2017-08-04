@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class that encapsulates settings for MockupService
     /// </summary>

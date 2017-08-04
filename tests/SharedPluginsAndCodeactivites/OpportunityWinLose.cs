@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Crm.Sdk.Messages;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.Some.Namespace {
     public class OpportunityWinLose : Plugin {

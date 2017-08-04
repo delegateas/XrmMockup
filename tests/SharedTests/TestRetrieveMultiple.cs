@@ -10,6 +10,7 @@ using System.Globalization;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmContext;
 using DG.Tools.XrmMockup;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 

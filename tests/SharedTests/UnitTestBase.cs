@@ -3,7 +3,7 @@ using DG.Tools;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static DG.Tools.XrmMockupBase;
+using DG.Tools.XrmMockup;
 
 namespace DG.XrmMockupTest {
 

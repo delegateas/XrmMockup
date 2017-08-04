@@ -10,7 +10,7 @@ using System.Reflection;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Crm.Sdk.Messages;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
 
     /// <summary>
     /// A class for Mocking the IOrganizationService

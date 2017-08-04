@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for mocking a crm 2015 instance
     /// </summary>

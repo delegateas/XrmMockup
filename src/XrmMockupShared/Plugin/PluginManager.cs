@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using System.ServiceModel;
+using Microsoft.Xrm.Sdk.Metadata;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
@@ -16,9 +18,6 @@ namespace DG.Tools {
     using StepConfig = System.Tuple<string, int, string, string>;
     using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
     using ImageTuple = System.Tuple<string, string, int, string>;
-    using Domain;
-    using System.ServiceModel;
-    using Microsoft.Xrm.Sdk.Metadata;
 
     internal class PluginManager {
 

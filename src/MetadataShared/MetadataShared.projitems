@@ -9,8 +9,10 @@
     <Import_RootNamespace>MetadataShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Arguments.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyGetter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ArgumentParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Program.cs" />
   </ItemGroup>

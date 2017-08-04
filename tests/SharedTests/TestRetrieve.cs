@@ -10,6 +10,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.ServiceModel;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -22,8 +23,9 @@ namespace DG.XrmMockupTest {
                 var id1 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest" });
                 var id2 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest2" });
 
-                var acc1a = new Account(id1);
-                acc1a.ParentAccountId = new EntityReference(Account.EntityLogicalName, id2);
+                var acc1a = new Account(id1) {
+                    ParentAccountId = new EntityReference(Account.EntityLogicalName, id2)
+                };
                 this.orgAdminUIService.Update(acc1a);
 
                 var retrieved = this.orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,

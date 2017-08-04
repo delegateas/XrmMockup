@@ -7,7 +7,7 @@ using Microsoft.Xrm.Sdk;
 using System.Diagnostics;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 

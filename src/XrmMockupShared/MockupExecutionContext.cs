@@ -8,7 +8,8 @@ using System.Runtime.Serialization;
 using System.Reflection;
 using System.Collections;
 
-namespace DG.Tools {
+namespace DG.Tools.XrmMockup {
+
     internal static class MockupExecutionContext {
         private static string Key = "MockupServiceSettings";
         internal static MockupServiceSettings GetSettings(OrganizationRequest request) {

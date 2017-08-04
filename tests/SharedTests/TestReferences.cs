@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest {
 
@@ -18,9 +19,9 @@ namespace DG.XrmMockupTest {
         public void TestCreateCircularReferenceSelf() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var id = Guid.NewGuid();
-                var acc = new Account(id);
-                acc.ParentAccountId = new EntityReference(Account.EntityLogicalName, id);
-
+                var acc = new Account(id) {
+                    ParentAccountId = new EntityReference(Account.EntityLogicalName, id)
+                };
                 try {
                     orgAdminUIService.Create(acc);
                     Assert.Fail();
