@@ -1,3 +1,5 @@
+* Fixed problem with AddTime(hours)
+
 #### 0.3.5-beta - July 19 2017
 * Fixed bug with status transitions when they were disabled
 
