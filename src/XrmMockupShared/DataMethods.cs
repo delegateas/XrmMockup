@@ -543,6 +543,19 @@ namespace DG.Tools.XrmMockup {
             HandlePrecision(entity);
         }
 
+        internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef) {
+            if (request.RequestName == "Create") {
+                var entity = request["Target"] as Entity;
+                if (entity.Id == Guid.Empty) {
+                    entity.Id = Guid.NewGuid();
+                }
+                if (entity.GetAttributeValue<EntityReference>("ownerid") == null &&
+                    Utility.IsSettableAttribute("ownerid", Metadata.GetMetadata(entity.LogicalName))) {
+                    entity["ownerid"] = userRef;
+                }
+            }
+        }
+
         internal Guid Create<T>(T entity, EntityReference userRef) where T : Entity {
             return Create(entity, userRef, MockupServiceSettings.Role.SDK);
         }

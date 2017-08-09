@@ -15,9 +15,9 @@ namespace DG.Tools.XrmMockup {
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    using StepConfig = System.Tuple<string, int, string, string>;
-    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
-    using ImageTuple = System.Tuple<string, string, int, string>;
+    using StepConfig = Tuple<string, int, string, string>;
+    using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
+    using ImageTuple = Tuple<string, string, int, string>;
 
     internal class PluginManager {
 

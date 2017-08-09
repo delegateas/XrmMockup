@@ -39,6 +39,7 @@ namespace DG.Tools.XrmMockup {
         public RequestHandler(XrmMockupBase crm, XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
             this.crm = crm;
             this.settings = Settings;
+            this.InitRequestMap();
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.Metadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.Metadata);
             this.dataMethods = new DataMethods(this, metadata, SecurityRoles);
@@ -50,7 +51,7 @@ namespace DG.Tools.XrmMockup {
 
         internal void Initialize(params Entity[] entities) {
             foreach (var entity in entities) {
-                Execute(new CreateRequest { Target = entity }, null);
+                HandleCreate(new CreateRequest { Target = entity }, null);
             }
             var tracingService = new TracingService();
             var factory = new MockupServiceProviderAndFactory(crm, null, tracingService);
@@ -75,16 +76,7 @@ namespace DG.Tools.XrmMockup {
 
         internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext) {
             // Setup
-            if (request is CreateRequest) {
-                var entity = ((CreateRequest)request).Target;
-                if (entity.Id == Guid.Empty) {
-                    entity.Id = Guid.NewGuid();
-                }
-                if (entity.Attributes.ContainsKey("ownerid") && entity["ownerid"] == null) {
-                    entity["ownerid"] = userRef;
-                }
-
-            }
+            dataMethods.HandleInternalPreOperations(request, userRef);
 
             var primaryRef = Mappings.GetPrimaryEntityReferenceFromRequest(request);
 
@@ -253,10 +245,9 @@ namespace DG.Tools.XrmMockup {
                 obj = request.Parameters[key];
             }
             if (request is WinOpportunityRequest || request is LoseOpportunityRequest) {
-                var close = request is WinOpportunityRequest ?
-                    (request as WinOpportunityRequest).OpportunityClose
-                    :
-                    (request as LoseOpportunityRequest).OpportunityClose;
+                var close = request is WinOpportunityRequest 
+                    ? (request as WinOpportunityRequest).OpportunityClose
+                    : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
             }
 
@@ -287,69 +278,92 @@ namespace DG.Tools.XrmMockup {
             if (settings.IncludeAllWorkflows == false) {
                 workflowManager.ResetWorkflows();
             }
-
             dataMethods.ResetEnvironment();
         }
 
 
+
+
         #region Execute methods for the various requests
+
+        public Dictionary<string, Func<OrganizationRequest, EntityReference, OrganizationResponse>> RequestHandlerMap = new Dictionary<string, Func<OrganizationRequest, EntityReference, OrganizationResponse>>();
         
-        private OrganizationResponse ExecuteCore(OrganizationRequest request, EntityReference userRef) {
-            if (request is RetrieveMultipleRequest) return Execute((RetrieveMultipleRequest)request, userRef);
-            if (request is RetrieveRequest) return Execute((RetrieveRequest)request, userRef);
-            if (request is CreateRequest) return Execute((CreateRequest)request, userRef);
-            if (request is UpdateRequest) return Execute((UpdateRequest)request, userRef);
-            if (request is DeleteRequest) return Execute((DeleteRequest)request, userRef);
-            if (request is SetStateRequest) return Execute((SetStateRequest)request, userRef);
-            if (request is AssignRequest) return Execute((AssignRequest)request, userRef);
-            if (request is AssociateRequest) return Execute((AssociateRequest)request, userRef);
-            if (request is DisassociateRequest) return Execute((DisassociateRequest)request, userRef);
-            if (request is MergeRequest) return Execute((MergeRequest)request, userRef);
-            if (request is RetrieveVersionRequest) return Execute((RetrieveVersionRequest)request, userRef);
-            if (request is FetchXmlToQueryExpressionRequest) return Execute((FetchXmlToQueryExpressionRequest)request, userRef);
-            if (request is ExecuteMultipleRequest) return Execute((ExecuteMultipleRequest)request, userRef);
-            if (request is RetrieveEntityRequest) return Execute((RetrieveEntityRequest)request, userRef);
-            if (request is RetrieveRelationshipRequest) return Execute((RetrieveRelationshipRequest)request, userRef);
-            if (request is GrantAccessRequest) return Execute((GrantAccessRequest)request, userRef);
-            if (request is ModifyAccessRequest) return Execute((ModifyAccessRequest)request, userRef);
-            if (request is RevokeAccessRequest) return Execute((RevokeAccessRequest)request, userRef);
-            if (request is WinOpportunityRequest) return Execute((WinOpportunityRequest)request, userRef);
-            if (request is LoseOpportunityRequest) return Execute((LoseOpportunityRequest)request, userRef);
+        public void InitRequestMap() {
+            RequestHandlerMap.Add("RetrieveMultiple", HandleRetrieveMultiple);
+            RequestHandlerMap.Add("Retrieve", HandleRetrieve);
+            RequestHandlerMap.Add("Create", HandleCreate);
+            RequestHandlerMap.Add("Update", HandleUpdate);
+            RequestHandlerMap.Add("Delete", HandleDelete);
+            RequestHandlerMap.Add("SetState", HandleSetState);
+            RequestHandlerMap.Add("Assign", HandleAssign);
+            RequestHandlerMap.Add("Associate", HandleAssociate);
+            RequestHandlerMap.Add("Disassociate", HandleDisassociate);
+            RequestHandlerMap.Add("Merge", HandleMerge);
+            RequestHandlerMap.Add("RetrieveVersion", HandleRetrieveVersion);
+            RequestHandlerMap.Add("FetchXmlToQueryExpression", HandleFetchXmlToQueryExpression);
+            RequestHandlerMap.Add("ExecuteMultiple", HandleExecuteMultiple);
+            RequestHandlerMap.Add("RetrieveEntity", HandleRetrieveEntity);
+            RequestHandlerMap.Add("RetrieveRelationship", HandleRetrieveRelationship);
+            RequestHandlerMap.Add("GrantAccess", HandleGrantAccess);
+            RequestHandlerMap.Add("ModifyAccess", HandleModifyAccess);
+            RequestHandlerMap.Add("RevokeAccess", HandleRevokeAccess);
+            RequestHandlerMap.Add("WinOpportunity", HandleWinOpportunity);
+            RequestHandlerMap.Add("LoseOpportunity", HandleLoseOpportunity);
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            if (request is CalculateRollupFieldRequest) return Execute((CalculateRollupFieldRequest)request, userRef);
+            RequestHandlerMap.Add("CalculateRollupField", HandleCalculateRollupField);
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            if (request is UpsertRequest) return Execute((UpsertRequest)request, userRef);
+            RequestHandlerMap.Add("Upsert", HandleUpsert);
 #endif
+        }
+
+        private OrganizationResponse ExecuteCore(OrganizationRequest request, EntityReference userRef) {
+            if (RequestHandlerMap.TryGetValue(request.RequestName, out Func<OrganizationRequest, EntityReference, OrganizationResponse> executeFunc)) {
+                return executeFunc(request, userRef);
+            }
             throw new NotImplementedException("Execute for the given request has not been implemented yet.");
         }
 
-        private WinOpportunityResponse Execute(WinOpportunityRequest request, EntityReference userRef) {
+        public static T MakeRequest<T>(OrganizationRequest req) where T : OrganizationRequest {
+            var typedReq = Activator.CreateInstance<T>();
+            if (req.RequestName != typedReq.RequestName) {
+                throw new MockupException($"Incorrect request type made. The name '{req.RequestName}' does not match '{typedReq.RequestName}'.");
+            }
+            typedReq.Parameters = req.Parameters;
+            return typedReq;
+        }
+
+        private WinOpportunityResponse HandleWinOpportunity(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<WinOpportunityRequest>(orgRequest);
             var resp = new WinOpportunityResponse();
             dataMethods.CloseOpportunity(OpportunityState.Won, request.Status, request.OpportunityClose, userRef);
             return resp;
         }
 
-        private LoseOpportunityResponse Execute(LoseOpportunityRequest request, EntityReference userRef) {
+        private LoseOpportunityResponse HandleLoseOpportunity(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<LoseOpportunityRequest>(orgRequest);
             var resp = new LoseOpportunityResponse();
             dataMethods.CloseOpportunity(OpportunityState.Lost, request.Status, request.OpportunityClose, userRef);
             return resp;
         }
 
-        private RetrieveMultipleResponse Execute(RetrieveMultipleRequest request, EntityReference userRef) {
+        private RetrieveMultipleResponse HandleRetrieveMultiple(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
             var resp = new RetrieveMultipleResponse();
-            resp.Results.Add("EntityCollection", dataMethods.RetrieveMultiple(request.Query, userRef));
+            resp.Results["EntityCollection"] = dataMethods.RetrieveMultiple(request.Query, userRef);
             return resp;
         }
 
-        private RetrieveResponse Execute(RetrieveRequest request, EntityReference userRef) {
+        private RetrieveResponse HandleRetrieve(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveRequest>(orgRequest);
             var resp = new RetrieveResponse();
             var settings = MockupExecutionContext.GetSettings(request);
-            resp.Results.Add("Entity", dataMethods.Retrieve(request.Target, request.ColumnSet, request.RelatedEntitiesQuery, settings.SetUnsettableFields, userRef));
+            resp.Results["Entity"] = dataMethods.Retrieve(request.Target, request.ColumnSet, request.RelatedEntitiesQuery, settings.SetUnsettableFields, userRef);
             return resp;
         }
 
-        private CreateResponse Execute(CreateRequest request, EntityReference userRef) {
+        private CreateResponse HandleCreate(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<CreateRequest>(orgRequest);
             var resp = new CreateResponse();
             var settings = MockupExecutionContext.GetSettings(request);
             resp.Results.Add("id", dataMethods.Create(request.Target, userRef, settings.ServiceRole));
@@ -357,13 +371,15 @@ namespace DG.Tools.XrmMockup {
             return resp;
         }
 
-        private RetrieveVersionResponse Execute(RetrieveVersionRequest request, EntityReference userRef) {
+        private RetrieveVersionResponse HandleRetrieveVersion(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveVersionRequest>(orgRequest);
             var resp = new RetrieveVersionResponse();
             resp.Results["Version"] = dataMethods.RetrieveVersion();
             return resp;
         }
 
-        private UpdateResponse Execute(UpdateRequest request, EntityReference userRef) {
+        private UpdateResponse HandleUpdate(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<UpdateRequest>(orgRequest);
             var resp = new UpdateResponse();
             var settings = MockupExecutionContext.GetSettings(request);
             dataMethods.Update(request.Target, userRef, settings.ServiceRole);
@@ -371,80 +387,93 @@ namespace DG.Tools.XrmMockup {
             return resp;
         }
 
-        private FetchXmlToQueryExpressionResponse Execute(FetchXmlToQueryExpressionRequest request, EntityReference userRef) {
+        private FetchXmlToQueryExpressionResponse HandleFetchXmlToQueryExpression(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<FetchXmlToQueryExpressionRequest>(orgRequest);
             var resp = new FetchXmlToQueryExpressionResponse();
-            resp.Results.Add("Query", XmlHandling.FetchXmlToQueryExpression(request.FetchXml));
+            resp.Results["Query"] = XmlHandling.FetchXmlToQueryExpression(request.FetchXml);
             return resp;
         }
 
-        private DeleteResponse Execute(DeleteRequest request, EntityReference userRef) {
+        private DeleteResponse HandleDelete(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<DeleteRequest>(orgRequest);
             var resp = new DeleteResponse();
             dataMethods.Delete(request.Target.LogicalName, request.Target.Id, userRef);
             return resp;
         }
 
-        private SetStateResponse Execute(SetStateRequest request, EntityReference userRef) {
+        private SetStateResponse HandleSetState(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<SetStateRequest>(orgRequest);
             var resp = new SetStateResponse();
             dataMethods.SetState(request.EntityMoniker, request.State, request.Status, userRef);
             return resp;
         }
 
-        private AssignResponse Execute(AssignRequest request, EntityReference userRef) {
+        private AssignResponse HandleAssign(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<AssignRequest>(orgRequest);
             var resp = new AssignResponse();
             dataMethods.Assign(request.Target, request.Assignee, userRef);
             return resp;
         }
 
-        private AssociateResponse Execute(AssociateRequest request, EntityReference userRef) {
+        private AssociateResponse HandleAssociate(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<AssociateRequest>(orgRequest);
             var resp = new AssociateResponse();
             dataMethods.Associate(request.Target, request.Relationship, request.RelatedEntities, userRef);
             return resp;
         }
 
-        private DisassociateResponse Execute(DisassociateRequest request, EntityReference userRef) {
+        private DisassociateResponse HandleDisassociate(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<DisassociateRequest>(orgRequest);
             var resp = new DisassociateResponse();
             dataMethods.Disassociate(request.Target, request.Relationship, request.RelatedEntities, userRef);
             return resp;
         }
 
-        private MergeResponse Execute(MergeRequest request, EntityReference userRef) {
+        private MergeResponse HandleMerge(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<MergeRequest>(orgRequest);
             var resp = new MergeResponse();
             dataMethods.Merge(request.Target, request.SubordinateId, request.UpdateContent, request.PerformParentingChecks, userRef);
             return resp;
         }
 
-        private RetrieveRelationshipResponse Execute(RetrieveRelationshipRequest request, EntityReference userRef) {
+        private RetrieveRelationshipResponse HandleRetrieveRelationship(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveRelationshipRequest>(orgRequest);
             var resp = new RetrieveRelationshipResponse();
-            resp.Results.Add("RelationshipMetadata",
-                dataMethods.GetRelationshipMetadata(request.Name, request.MetadataId, userRef));
+            resp.Results["RelationshipMetadata"] =
+                dataMethods.GetRelationshipMetadata(request.Name, request.MetadataId, userRef);
             return resp;
         }
 
-        private RetrieveEntityResponse Execute(RetrieveEntityRequest request, EntityReference userRef) {
+        private RetrieveEntityResponse HandleRetrieveEntity(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveEntityRequest>(orgRequest);
             var resp = new RetrieveEntityResponse();
-            resp.Results.Add("EntityMetadata", dataMethods.GetEntityMetadata(request.LogicalName, request.MetadataId, userRef));
+            resp.Results["EntityMetadata"] = dataMethods.GetEntityMetadata(request.LogicalName, request.MetadataId, userRef);
             return resp;
         }
 
-        private GrantAccessResponse Execute(GrantAccessRequest request, EntityReference userRef) {
+        private GrantAccessResponse HandleGrantAccess(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<GrantAccessRequest>(orgRequest);
             var resp = new GrantAccessResponse();
             dataMethods.GrantAccess(request.Target, request.PrincipalAccess, userRef);
             return resp;
         }
 
-        private ModifyAccessResponse Execute(ModifyAccessRequest request, EntityReference userRef) {
+        private ModifyAccessResponse HandleModifyAccess(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<ModifyAccessRequest>(orgRequest);
             var resp = new ModifyAccessResponse();
             dataMethods.ModifyAccess(request.Target, request.PrincipalAccess, userRef);
             return resp;
         }
 
-        private RevokeAccessResponse Execute(RevokeAccessRequest request, EntityReference userRef) {
+        private RevokeAccessResponse HandleRevokeAccess(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RevokeAccessRequest>(orgRequest);
             var resp = new RevokeAccessResponse();
             dataMethods.RevokeAccess(request.Target, request.Revokee, userRef);
             return resp;
         }
 
-        private ExecuteMultipleResponse Execute(ExecuteMultipleRequest request, EntityReference userRef) {
+        private ExecuteMultipleResponse HandleExecuteMultiple(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<ExecuteMultipleRequest>(orgRequest);
             var toReturn = new ExecuteMultipleResponse();
             var responses = new ExecuteMultipleResponseItemCollection();
             for (var i = 0; i < request.Requests.Count; i++) {
@@ -465,24 +494,27 @@ namespace DG.Tools.XrmMockup {
                     };
                     responses.Add(resp);
                     if (!request.Settings.ContinueOnError) {
-                        toReturn.Results.Add("Responses", responses);
+                        toReturn.Results["Responses"] = responses;
                         return toReturn;
                     }
                 }
             }
-            toReturn.Results.Add("Responses", responses);
+            toReturn.Results["Responses"] = responses;
             return toReturn;
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-        private CalculateRollupFieldResponse Execute(CalculateRollupFieldRequest request, EntityReference userRef) {
+        private CalculateRollupFieldResponse HandleCalculateRollupField(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<CalculateRollupFieldRequest>(orgRequest);
             var resp = new CalculateRollupFieldResponse();
             resp.Results["Entity"] = dataMethods.CalculateRollUpField(request.Target, request.FieldName, userRef);
             return resp;
         }
 #endif
+
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-        private UpsertResponse Execute(UpsertRequest request, EntityReference userRef) {
+        private UpsertResponse HandleUpsert(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<UpsertRequest>(orgRequest);
             var resp = new UpsertResponse();
             var target = request.Target;
             var entityId = dataMethods.GetEntityId(target.ToEntityReference());
@@ -490,13 +522,13 @@ namespace DG.Tools.XrmMockup {
                 var req = new UpdateRequest();
                 target.Id = entityId.Value;
                 req.Target = target;
-                Execute((OrganizationRequest)req, userRef);
+                Execute(req, userRef);
                 resp.Results["RecordCreated"] = false;
                 resp.Results["Target"] = target.ToEntityReference();
             } else {
                 var req = new CreateRequest();
                 req.Target = target;
-                target.Id = (Execute((OrganizationRequest)req, userRef) as CreateResponse).id;
+                target.Id = (Execute(req, userRef) as CreateResponse).id;
                 resp.Results["RecordCreated"] = true;
                 resp.Results["Target"] = target.ToEntityReference();
             }
