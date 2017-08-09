@@ -19,11 +19,13 @@ namespace WorkflowParser {
         [XmlElement("Workflow")]
         public Workflow Workflow;
     }
+
     [XmlType("Members")]
     public class Members {
         [XmlElement("Property")]
         public Property[] Properties;
     }
+
     [XmlType("Property")]
     public class Property {
 
@@ -41,6 +43,7 @@ namespace WorkflowParser {
         XmlArrayItem("ArgumentEntityAttribute", Type = typeof(ArgumentEntityAttribute))]
         public PropertyAttribute[] Attributes;
     }
+
     [XmlInclude(typeof(ArgumentRequiredAttribute)),
     XmlInclude(typeof(ArgumentTargetAttribute)),
     XmlInclude(typeof(ArgumentDescriptionAttribute)),
@@ -50,14 +53,19 @@ namespace WorkflowParser {
         [XmlAttribute("Value")]
         public string Value;
     }
+
     [XmlType("ArgumentRequiredAttribute")]
     public class ArgumentRequiredAttribute : PropertyAttribute { }
+
     [XmlType("ArgumentTargetAttribute")]
     public class ArgumentTargetAttribute : PropertyAttribute { }
+
     [XmlType("ArgumentDescriptionAttribute")]
     public class ArgumentDescriptionAttribute : PropertyAttribute { }
+
     [XmlType("ArgumentDirectionAttribute")]
     public class ArgumentDirectionAttribute : PropertyAttribute { }
+
     [XmlType("ArgumentEntityAttribute")]
     public class ArgumentEntityAttribute : PropertyAttribute { }
 
@@ -170,7 +178,7 @@ namespace WorkflowParser {
         public string Type;
 
         [XmlAttribute("Key")]
-        public string Key;
+        public new string Key;
 
         [XmlElement("Variable")]
         public Variable[] Variables;

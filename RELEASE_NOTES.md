@@ -1,5 +1,8 @@
+
+#### 0.4.0-beta
 * Most classes have been moved to the namespace `DG.Tools.XrmMockup`
 * MetadataGenerator can now also consume command-line arguments, instead of only those in the .config file
+* Fixed handling of generic OrganizationRequests given a RequestName
 * Fixed problem with `AddHours(...)`
 
 #### 0.3.5-beta - July 19 2017

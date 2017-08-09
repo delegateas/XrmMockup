@@ -15,6 +15,48 @@ namespace DG.XrmMockupTest {
 
     [TestClass]
     public class TestCreate : UnitTestBase {
+
+
+        [TestMethod]
+        public void TestCreateSimple() {
+            var contact = new Contact() {
+                FirstName = "John"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
+        }
+
+        [TestMethod]
+        public void TestCreateWithRequest() {
+            var contact = new Contact() {
+                FirstName = "John"
+            };
+            var req = new CreateRequest() {
+                Target = contact
+            };
+            var resp = orgAdminService.Execute(req) as CreateResponse;
+
+            var dbContact = Contact.Retrieve(orgAdminService, resp.id);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
+        }
+
+        [TestMethod]
+        public void TestCreateWithNamedRequest() {
+            var contact = new Contact() {
+                FirstName = "John"
+            };
+            var req = new OrganizationRequest("Create");
+            req.Parameters["Target"] = contact;
+            
+            var resp = orgAdminService.Execute(req) as CreateResponse;
+
+            var dbContact = Contact.Retrieve(orgAdminService, resp.id);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
+        }
+
+
         [TestMethod]
         public void TestUserCreation() {
             using (var context = new Xrm(orgAdminUIService)) {

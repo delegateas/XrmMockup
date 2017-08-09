@@ -296,17 +296,16 @@ namespace DG.Tools.XrmMockup {
             return reference;
         }
 
-
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        internal static string ToPrettyString(this KeyAttributeCollection keys) {
+            return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
+        }
+#endif
 
 
     }
 
-    public class MockupException : Exception {
-        public MockupException(string message) : base(message) { }
-        public MockupException(string message, params object[] args) : base(String.Format(message, args)) { }
-    }
-
-    public class LogicalNames {
+    internal class LogicalNames {
         public const string TransactionCurrency = "transactioncurrency";
         public const string BusinessUnit = "businessunit";
         public const string SystemUser = "systemuser";
@@ -318,7 +317,7 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    public enum workflow_runas {
+    internal enum workflow_runas {
         
         [EnumMember()]
         Owner = 0,
@@ -328,7 +327,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum workflow_stage {
+    internal enum workflow_stage {
         
         [EnumMember()]
         Preoperation = 20,
@@ -338,7 +337,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_Type {
+    internal enum Workflow_Type {
         
         [EnumMember()]
         Definition = 1,
@@ -351,7 +350,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum componentstate {
+    internal enum componentstate {
         
         [EnumMember()]
         Published = 0,
@@ -367,7 +366,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_Scope {
+    internal enum Workflow_Scope {
         
         [EnumMember()]
         User = 1,
@@ -383,7 +382,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_Mode {
+    internal enum Workflow_Mode {
         
         [EnumMember()]
         Background = 0,
@@ -393,7 +392,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_BusinessProcessType {
+    internal enum Workflow_BusinessProcessType {
         
         [EnumMember()]
         BusinessFlow = 0,
@@ -403,7 +402,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_Category {
+    internal enum Workflow_Category {
         
         [EnumMember()]
         Workflow = 0,
@@ -422,7 +421,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum WorkflowState {
+    internal enum WorkflowState {
         
         [EnumMember()]
         Draft = 0,
@@ -432,7 +431,7 @@ namespace DG.Tools.XrmMockup {
     }
     
     [DataContract()]
-    public enum Workflow_StatusCode {
+    internal enum Workflow_StatusCode {
         
         [EnumMember()]
         Draft = 1,
@@ -442,7 +441,7 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    public enum OpportunityState {
+    internal enum OpportunityState {
 
         [EnumMember()]
         Open = 0,
@@ -455,7 +454,7 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    public enum Opportunity_StatusCode {
+    internal enum Opportunity_StatusCode {
 
         [EnumMember()]
         InProgress = 1,
