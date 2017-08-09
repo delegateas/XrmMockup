@@ -138,9 +138,9 @@ Target "CleanDocs" (fun _ ->
 Target "Build" (fun _ ->
     !! solutionFile
 #if MONO
-    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO") ] "Rebuild"
+    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO"); ("nowarn", "1591,0108") ] "Rebuild"
 #else
-    |> MSBuildRelease "" "Rebuild"
+    |> MSBuildReleaseExt "" [ ("nowarn", "1591,0108") ] "Rebuild"
 #endif
     |> ignore
 )
