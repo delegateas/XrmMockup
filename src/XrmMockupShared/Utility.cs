@@ -18,6 +18,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
+using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal static class Utility {
@@ -28,8 +29,9 @@ namespace DG.Tools.XrmMockup {
         }
 
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols) {
-            var clone = new Entity(entity.LogicalName);
-            clone.Id = entity.Id;
+            var clone = new Entity(entity.LogicalName) {
+                Id = entity.Id
+            };
 
             if (metadata?.PrimaryIdAttribute != null) {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
@@ -96,47 +98,43 @@ namespace DG.Tools.XrmMockup {
             return (Entity)method.Invoke(entity, null);
         }
 
-
-        public static bool MatchesCriteria(Entity entity, FilterExpression criteria) {
+        public static bool MatchesCriteria(DbRow row, FilterExpression criteria) {
             if (criteria.FilterOperator == LogicalOperator.And)
-                return criteria.Filters.All(f => MatchesCriteria(entity, f)) && criteria.Conditions.All(c => EvaluateCondition(entity, c));
+                return criteria.Filters.All(f => MatchesCriteria(row, f)) && criteria.Conditions.All(c => EvaluateCondition(row, c));
             else
-                return criteria.Filters.Any(f => MatchesCriteria(entity, f)) || criteria.Conditions.Any(c => EvaluateCondition(entity, c));
+                return criteria.Filters.Any(f => MatchesCriteria(row, f)) || criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
-        private static bool EvaluateCondition(Entity entity, ConditionExpression condition) {
+
+        private static bool EvaluateCondition(DbRow row, ConditionExpression condition) {
             if (condition.AttributeName == null) {
-                return Matches(entity.Id, condition.Operator, condition.Values);
+                return Matches(row.Id, condition.Operator, condition.Values);
             }
-            
-            var attr = entity.Attributes.ContainsKey(condition.AttributeName) 
-                ? ConvertToComparableObject(entity.Attributes[condition.AttributeName])
-                : null;
+
+            var attr = row.GetColumn(condition.AttributeName);
+            if (attr is DbRow related) attr = related.Id;
             var values = condition.Values.Select(v => ConvertToComparableObject(v));
             return Matches(attr, condition.Operator, values);
         }
 
         public static object ConvertToComparableObject(object obj) {
-            object res = null;
-            var entityReference = obj as EntityReference;
-            var optionSetValue = obj as OptionSetValue;
-            var money = obj as Money;
-            var aliasedValue = obj as AliasedValue;
-            if (obj is DateTime)
-                res = (object)((DateTime)obj).ToString("u", (IFormatProvider)CultureInfo.InvariantCulture);
-            else if (entityReference != null)
-                res = (object)entityReference.Id;
-            else if (money != null)
-                res = (object)money.Value;
-            else if (aliasedValue != null)
-                res = (object)aliasedValue.Value;
-            else if (optionSetValue != null)
-                res = (object)optionSetValue.Value;
+            if (obj is EntityReference entityReference)
+                return entityReference.Id;
+
+            else if (obj is Money money)
+                return money.Value;
+
+            else if (obj is AliasedValue aliasedValue)
+                return aliasedValue.Value;
+
+            else if (obj is OptionSetValue optionSetValue)
+                return optionSetValue.Value;
+
             else if (obj != null && obj.GetType().IsEnum)
-                res = (object)(int)obj;
+                return (int)obj;
+
             else
-                res = obj;
-            return res;
+                return obj;
         }
 
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values) {

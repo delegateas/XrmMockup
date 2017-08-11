@@ -1,4 +1,5 @@
-﻿using Microsoft.Crm.Sdk.Messages;
+﻿using DG.Tools.XrmMockup.Database;
+using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
@@ -18,52 +19,100 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class DataMethods {
-        private Dictionary<string, Dictionary<Guid, Entity>> db = new Dictionary<string, Dictionary<Guid, Entity>>();
+        private XrmDb db;
+
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
-        private Dictionary<string, Money> CalcAndRollupTrees = new Dictionary<string, Money>();
-        private Guid defaultBusinessUnit;
-        private Guid defaultAdminUser;
+        private Dictionary<string, Money> CalcAndRollupTrees;
         private EntityReference baseCurrency;
         private int baseCurrencyPrecision;
         private FullNameConventionCode fullnameFormat;
-        private Dictionary<string, EntityMetadata> Metadata;
+        private Dictionary<string, EntityMetadata> EntityMetadata;
         private Dictionary<Guid, SecurityRole> SecurityRoles;
         private Dictionary<Guid, Guid> SecurityRoleMapping;
-        private Entity RootBusinessUnit;
+
+        public EntityReference AdminUserRef;
+        public EntityReference RootBusinessUnitRef;
+
+
+
         private ITracingService trace;
         private IOrganizationServiceFactory serviceFactory;
         private IOrganizationService service;
         private Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>> Shares;
-        private RequestHandler RequestHandler;
+        private Core Core;
+        private MetadataSkeleton Metadata;
 
 
-        internal DataMethods(RequestHandler requestHandler, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
-            this.RequestHandler = requestHandler;
-            this.db = new Dictionary<string, Dictionary<Guid, Entity>>();
-            this.Metadata = metadata.Metadata;
+        /// <summary>
+        /// Organization id for the Mockup instance
+        /// </summary>
+        public Guid OrganizationId { get; private set; }
+
+        /// <summary>
+        /// Organization name for the Mockup instance
+        /// </summary>
+        public string OrganizationName { get; private set; }
+
+        
+        public TimeSpan TimeOffset { get; private set; }
+        
+
+        internal DataMethods(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
+            this.Core = core;
+            this.EntityMetadata = metadata.EntityMetadata;
+            this.Metadata = metadata;
             this.SecurityRoles = SecurityRoles.ToDictionary(s => s.RoleId, s => s);
+            
+            baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
+            baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
+
+            Initialize();
+        }
+
+        private void Initialize() {
+            this.OrganizationId = Guid.NewGuid();
+            this.OrganizationName = "MockupOrganization";
+            this.TimeOffset = new TimeSpan();
             this.SecurityRoleMapping = new Dictionary<Guid, Guid>();
             this.Shares = new Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>>();
+            this.CalcAndRollupTrees = new Dictionary<string, Money>();
 
-            var currencies = new Dictionary<Guid, Entity>();
-            foreach (var entity in metadata.Currencies) {
+            this.db = new XrmDb(EntityMetadata);
+
+            // Setup currencies
+            var currencies = new List<Entity>();
+            foreach (var entity in Metadata.Currencies) {
                 RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby", "createdonbehalfby");
-                currencies.Add(entity.Id, entity);
+                currencies.Add(entity);
             }
+            db.AddRange(currencies);
 
-            db.Add("transactioncurrency", currencies);
-            RootBusinessUnit = metadata.RootBusinessUnit;
-            RootBusinessUnit["name"] = "RootBusinessUnit";
-            RootBusinessUnit.Attributes.Remove("organizationid");
-            this.defaultBusinessUnit = RootBusinessUnit.Id;
-            this.fullnameFormat = (FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
+            // Setup root business unit
+            var rootBu = Metadata.RootBusinessUnit;
+            rootBu["name"] = "RootBusinessUnit";
+            rootBu.Attributes.Remove("organizationid");
+            db.Add(rootBu, false);
+            this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
-            AddRolesForBusinessUnit(RootBusinessUnit.ToEntityReference());
-            db[LogicalNames.BusinessUnit] = new Dictionary<Guid, Entity>();
-            db[LogicalNames.BusinessUnit].Add(RootBusinessUnit.Id, RootBusinessUnit);
+            // Setup admin user
+            var admin = new Entity(LogicalNames.SystemUser) {
+                Id = Guid.NewGuid()
+            };
+            this.AdminUserRef = admin.ToEntityReference();
 
-            baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
-            baseCurrencyPrecision = (int)metadata.BaseOrganization.Attributes["pricingdecimalprecision"];
+            admin["firstname"] = "";
+            admin["lastname"] = "SYSTEM";
+            admin["businessunitid"] = RootBusinessUnitRef;
+            db.Add(admin);
+
+            this.fullnameFormat = (FullNameConventionCode)Metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
+            AddRolesForBusinessUnit(RootBusinessUnitRef);
+
+            SetSecurityRole(AdminUserRef,
+                SecurityRoles
+                .Where(s => s.Value.RoleTemplateId == new Guid("627090ff-40a3-4053-8790-584edc5be201")) // System administrator role template ID
+                .Select(s => s.Value.RoleId)
+                .ToArray());
         }
 
         private void AddRolesForBusinessUnit(EntityReference businessUnit) {
@@ -73,25 +122,29 @@ namespace DG.Tools.XrmMockup {
                 role["name"] = sr.Name;
                 role["roletemplateid"] = sr.RoleTemplateId;
                 role.Id = Guid.NewGuid();
-                Create(role, new EntityReference(LogicalNames.SystemUser, defaultAdminUser));
+                Create(role, AdminUserRef);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
             }
         }
 
-        internal void SetAdminUser(EntityReference adminUser) {
-            this.defaultAdminUser = adminUser.Id;
+        internal void AddTime(TimeSpan offset) {
+            this.TimeOffset = TimeOffset.Add(offset);
         }
 
         internal EntityMetadata GetMetadata(string logicalName) {
-            return Metadata.GetMetadata(logicalName);
+            return EntityMetadata.GetMetadata(logicalName);
         }
 
         internal EntityReference GetBusinessUnit(EntityReference owner) {
-            var user = GetDbEntityDefaultNull(owner);
-            if (user == null) return null;
+            var user = db.GetEntityOrNull(owner);
+            if (user == null) {
+                return null;
+            }
             var buRef = user.GetAttributeValue<EntityReference>("businessunitid");
-            var bu = GetDbEntityDefaultNull(buRef);
-            if (bu == null) return null;
+            var bu = db.GetEntityOrNull(buRef);
+            if (bu == null) {
+                return null;
+            }
             buRef.Name = bu.GetAttributeValue<string>("name");
             return buRef;
         }
@@ -110,14 +163,14 @@ namespace DG.Tools.XrmMockup {
         private Entity GetEntityWithAttributes(Entity entity, ColumnSet colsToKeep) {
             if (HasType(entity.LogicalName)) {
                 var typedEntity = GetEntity(entity.LogicalName);
-                typedEntity.SetAttributes(entity.Attributes, Metadata.GetMetadata(entity.LogicalName), colsToKeep);
+                typedEntity.SetAttributes(entity.Attributes, EntityMetadata.GetMetadata(entity.LogicalName), colsToKeep);
 
                 PopulateEntityReferenceNames(typedEntity);
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;
             } else {
-                return entity.CloneEntity(Metadata.GetMetadata(entity.LogicalName), colsToKeep);
+                return entity.CloneEntity(EntityMetadata.GetMetadata(entity.LogicalName), colsToKeep);
             }
         }
 
@@ -130,14 +183,14 @@ namespace DG.Tools.XrmMockup {
         private void PopulateEntityReferenceNames(Entity entity) {
             foreach (var attr in entity.Attributes) {
                 if (attr.Value is EntityReference eRef) {
-                    var nameAttr = Metadata.GetMetadata(eRef.LogicalName).PrimaryNameAttribute;
-                    eRef.Name = GetDbEntityDefaultNull(eRef)?.GetAttributeValue<string>(nameAttr);
+                    var nameAttr = EntityMetadata.GetMetadata(eRef.LogicalName).PrimaryNameAttribute;
+                    eRef.Name = db.GetEntityOrNull(eRef)?.GetAttributeValue<string>(nameAttr);
                 }
             }
         }
 
         private RelationshipMetadataBase GetRelatedEntityMetadata(string entityType, string relationshipName) {
-            if (!Metadata.ContainsKey(entityType)) {
+            if (!EntityMetadata.ContainsKey(entityType)) {
                 return null;
             }
             var oneToMany = GetMetadata(entityType).OneToManyRelationships
@@ -174,13 +227,13 @@ namespace DG.Tools.XrmMockup {
 
             if (entity != null) {
                 foreach (var relatedEntities in entity.RelatedEntities) {
-                    var relationshipMeta = Metadata[entity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
+                    var relationshipMeta = EntityMetadata[entity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
                     switch (relationshipMeta.CascadeConfiguration.Assign) {
                         case CascadeType.Cascade:
                             foreach (var relatedEntity in relatedEntities.Value.Entities) {
                                 var req = new DeleteRequest();
                                 req.Target = new EntityReference(relatedEntity.LogicalName, relatedEntity.Id);
-                                RequestHandler.Execute(req, userRef, null);
+                                Core.Execute(req, userRef, null);
                             }
                             break;
                         case CascadeType.RemoveLink:
@@ -197,27 +250,24 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal bool ContainsEntity(Entity entity) {
-            var dbentity = GetDbEntityDefaultNull(entity.ToEntityReference());
+            var dbentity = db.GetEntityOrNull(entity.ToEntityReference());
             if (dbentity == null) return false;
             return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
         }
 
         internal void PopulateWith(Entity[] entities) {
             foreach (var entity in entities) {
-                if (!db.ContainsKey(entity.LogicalName)) {
-                    db[entity.LogicalName] = new Dictionary<Guid, Entity>();
-                }
                 if (entity.Id == Guid.Empty) {
                     var id = Guid.NewGuid();
                     entity.Id = id;
                     entity[entity.LogicalName + "id"] = id;
                 }
-                db[entity.LogicalName].Add(entity.Id, entity);
+                db.Add(entity);
             }
         }
 
         private Entity RetrieveDefaultNull(EntityReference entRef, ColumnSet columnSet) {
-            var dbEntity = GetDbEntityDefaultNull(entRef);
+            var dbEntity = db.GetEntityOrNull(entRef);
             if (dbEntity == null) return null;
             return GetEntityWithAttributes(dbEntity, columnSet);
         }
@@ -239,12 +289,8 @@ namespace DG.Tools.XrmMockup {
             }
 #endif
 
-            entity = GetDbEntityDefaultNull(entRef);
-
-            if (entity == null)
-                throw new FaultException($"The record of type '{entRef.LogicalName}' with id '{entRef.Id}' and name '{entRef.Name}' " +
-                    "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
-
+            entity = db.GetEntity(entRef);
+            
             if (!HasPermission(entity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{entity.LogicalName}'");
             }
@@ -267,9 +313,10 @@ namespace DG.Tools.XrmMockup {
                     throw new NotImplementedException("Unknown type when parsing calculated attr");
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
-                tree.Execute(entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true)), RequestHandler.GetCurrentOffset(), service, serviceFactory, trace);
+                tree.Execute(entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true)), TimeOffset, service, serviceFactory, trace);
             }
 #endif
+            entity = db.GetEntity(entRef);
             entity = GetEntityWithAttributes(entity, columnSet);
 
             if (!setUnsettableFields) {
@@ -287,8 +334,9 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal Guid? GetEntityId(EntityReference reference) {
-            var dbEntity = GetDbEntityDefaultNull(reference);
-            return dbEntity == null ? (Guid?)null : dbEntity.Id;
+            if (reference?.Id != Guid.Empty) return reference.Id;
+            var dbEntity = db.GetEntityOrNull(reference);
+            return dbEntity?.Id;
         }
 
         private void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef) {
@@ -307,7 +355,7 @@ namespace DG.Tools.XrmMockup {
 
                 if (oneToMany != null) {
                     if (relationship.PrimaryEntityRole == EntityRole.Referenced) {
-                        var entityAttributes = GetDbEntityDefaultNull(entity.ToEntityReference()).Attributes;
+                        var entityAttributes = db.GetEntityOrNull(entity.ToEntityReference()).Attributes;
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
                             var referencingGuid = GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
                             queryExpr.Criteria.AddCondition(
@@ -320,13 +368,14 @@ namespace DG.Tools.XrmMockup {
                 }
 
                 if (manyToMany != null) {
-                    if (db.ContainsKey(manyToMany.IntersectEntityName)) {
-                        var conditions = new FilterExpression(Microsoft.Xrm.Sdk.Query.LogicalOperator.Or);
+                    if (db[manyToMany.IntersectEntityName].Count() > 0) {
+                        var conditions = new FilterExpression(LogicalOperator.Or);
                         if (entity.LogicalName == manyToMany.Entity1LogicalName) {
                             queryExpr.EntityName = manyToMany.Entity2LogicalName;
                             var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(e => (Guid)e.Value.Attributes[manyToMany.Entity1IntersectAttribute] == entity.Id)
-                                .Select(e => (Guid)e.Value.Attributes[manyToMany.Entity2IntersectAttribute]);
+                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute));
+
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
                                     new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
@@ -334,8 +383,9 @@ namespace DG.Tools.XrmMockup {
                         } else {
                             queryExpr.EntityName = manyToMany.Entity1LogicalName;
                             var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(e => (Guid)e.Value.Attributes[manyToMany.Entity2IntersectAttribute] == entity.Id)
-                                .Select(e => (Guid)e.Value.Attributes[manyToMany.Entity1IntersectAttribute]);
+                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute));
+
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
                                     new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
@@ -357,25 +407,25 @@ namespace DG.Tools.XrmMockup {
         }
 
         private Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef) {
-            var entity = GetDbEntityDefaultNull(reference);
+            var entity = db.GetEntityOrNull(reference);
             if (entity == null) {
                 return null;
             }
             if (entity.RelatedEntities.Count() > 0) {
                 var clone = entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true));
-                SetDBEntity(clone, reference);
+                db.Update(clone);
                 entity = clone;
             }
             var relationQuery = new RelationshipQueryCollection();
             var metadata =
-                primaryEntityRole == EntityRole.Referenced ? Metadata[entity.LogicalName].OneToManyRelationships : Metadata[entity.LogicalName].ManyToOneRelationships;
+                primaryEntityRole == EntityRole.Referenced ? EntityMetadata[entity.LogicalName].OneToManyRelationships : EntityMetadata[entity.LogicalName].ManyToOneRelationships;
             foreach (var relationshipMeta in metadata) {
                 var query = new QueryExpression(relationshipMeta.ReferencingEntity);
                 query.ColumnSet = new ColumnSet(true);
                 relationQuery.Add(new Relationship() { SchemaName = relationshipMeta.SchemaName, PrimaryEntityRole = primaryEntityRole }, query);
             }
 
-            foreach (var relationshipMeta in Metadata[entity.LogicalName].ManyToManyRelationships) {
+            foreach (var relationshipMeta in EntityMetadata[entity.LogicalName].ManyToManyRelationships) {
                 var query = new QueryExpression(relationshipMeta.IntersectEntityName);
                 query.ColumnSet = new ColumnSet(true);
                 relationQuery.Add(new Relationship() { SchemaName = relationshipMeta.SchemaName }, query);
@@ -385,39 +435,10 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal void CloseOpportunity(OpportunityState state, OptionSetValue status, Entity opportunityClose, EntityReference userRef) {
-            SetState(opportunityClose["opportunityid"] as EntityReference, new OptionSetValue((int)state), status, userRef);
+            SetState(opportunityClose.GetAttributeValue<EntityReference>("opportunityid"), new OptionSetValue((int)state), status, userRef);
             var create = new CreateRequest();
             create.Target = opportunityClose;
-            RequestHandler.Execute(create as OrganizationRequest, userRef);
-        }
-
-        internal Entity GetDbEntityDefaultNull(EntityReference reference) {
-            if (!db.ContainsKey(reference.LogicalName) || !db[reference.LogicalName].ContainsKey(reference.Id)) {
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                if (db.ContainsKey(reference.LogicalName) && reference.KeyAttributes.Count > 0) {
-
-                    var records = db[reference.LogicalName].Where(x => reference.KeyAttributes.All(y => x.Value.Attributes[y.Key] == y.Value));
-
-                    if (records.AsEnumerable().Count() == 0) {
-                        return null;
-                    }
-                    return records.First().Value;
-                }
-#endif
-                return null;
-            }
-            return db[reference.LogicalName][reference.Id];
-        }
-
-        private Entity GetDbEntity(EntityReference reference) {
-            var entity = GetDbEntityDefaultNull(reference);
-            if (entity == null)
-                throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' does not exist");
-            return entity;
-        }
-
-        private void SetDBEntity(Entity entity, EntityReference reference) {
-            db[reference.LogicalName][reference.Id] = entity;
+            Core.Execute(create as OrganizationRequest, userRef);
         }
 
 
@@ -477,18 +498,20 @@ namespace DG.Tools.XrmMockup {
             if (!entity.Attributes.ContainsKey(transAttr)) {
                 return;
             }
-            var currency = db[LogicalNames.TransactionCurrency].First(c => c.Key.Equals(entity.GetAttributeValue<EntityReference>(transAttr).Id)).Value;
-            var attributesMetadata = Metadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
+            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
+            var attributesMetadata = EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
             if (!currency.GetAttributeValue<decimal?>("exchangerate").HasValue) {
                 throw new FaultException($"No exchangerate specified for transactioncurrency '{entity.GetAttributeValue<EntityReference>(transAttr)}'");
             }
             foreach (var attr in entity.Attributes.ToList()) {
                 if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && !attr.Key.EndsWith("_base")) {
                     if (entity.GetAttributeValue<EntityReference>(transAttr) == baseCurrency) {
-                        entity.Attributes[attr.Key + "_base"] = attr.Value;
+                        entity[attr.Key + "_base"] = attr.Value;
                     } else {
-                        var value = ((Money)attr.Value).Value / currency.GetAttributeValue<decimal?>("exchangerate").Value;
-                        entity.Attributes[attr.Key + "_base"] = new Money(value);
+                        if (attr.Value is Money money) {
+                            var value = money.Value / currency.GetAttributeValue<decimal?>("exchangerate").Value;
+                            entity[attr.Key + "_base"] = new Money(value);
+                        }
                     }
                 }
             }
@@ -500,8 +523,8 @@ namespace DG.Tools.XrmMockup {
             if (!entity.Attributes.ContainsKey(transAttr)) {
                 return;
             }
-            var currency = db[LogicalNames.TransactionCurrency].First(c => c.Key.Equals(entity.GetAttributeValue<EntityReference>(transAttr).Id)).Value;
-            var attributesMetadata = Metadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
+            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
+            var attributesMetadata = EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
             foreach (var attr in entity.Attributes.ToList()) {
                 if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && attr.Value != null) {
                     var metadata = attributesMetadata.First(m => m.LogicalName == attr.Key) as MoneyAttributeMetadata;
@@ -533,7 +556,7 @@ namespace DG.Tools.XrmMockup {
                     if (rounded < (decimal)metadata.MinValue.Value || rounded > (decimal)metadata.MaxValue.Value) {
                         throw new FaultException($"'{attr.Key}' was outside the ranges '{metadata.MinValue}','{metadata.MaxValue}' with value '{rounded}' ");
                     }
-                    entity.Attributes[attr.Key] = new Money(rounded);
+                    entity[attr.Key] = new Money(rounded);
                 }
             }
         }
@@ -550,7 +573,7 @@ namespace DG.Tools.XrmMockup {
                     entity.Id = Guid.NewGuid();
                 }
                 if (entity.GetAttributeValue<EntityReference>("ownerid") == null &&
-                    Utility.IsSettableAttribute("ownerid", Metadata.GetMetadata(entity.LogicalName))) {
+                    Utility.IsSettableAttribute("ownerid", EntityMetadata.GetMetadata(entity.LogicalName))) {
                     entity["ownerid"] = userRef;
                 }
             }
@@ -562,121 +585,110 @@ namespace DG.Tools.XrmMockup {
 
         internal Guid Create<T>(T entity, EntityReference userRef, MockupServiceSettings.Role serviceRole) where T : Entity {
             if (entity.LogicalName == null) throw new MockupException("Entity needs a logical name");
-            if (!db.ContainsKey(entity.LogicalName)) {
-                db.Add(entity.LogicalName, new Dictionary<Guid, Entity>());
-            }
-            if (db[entity.LogicalName].ContainsKey(entity.Id)) {
-                throw new FaultException($"Trying to create entity '{entity.LogicalName}' and id '{entity.Id}',"
-                    + " but entity already exists with those values");
-            }
-            if (entity.Id == Guid.Empty) {
-                throw new MockupException($"Trying to create entity '{entity.LogicalName}', but id is empty guid, please make sure id is initialized");
-            }
 
-            var dbEntity = entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true));
-            var validAttributes = dbEntity.Attributes.Where(x => x.Value != null);
-            dbEntity.Attributes = new AttributeCollection();
-            dbEntity.Attributes.AddRange(validAttributes);
+            var clonedEntity = entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true));
+            var validAttributes = clonedEntity.Attributes.Where(x => x.Value != null);
+            clonedEntity.Attributes = new AttributeCollection();
+            clonedEntity.Attributes.AddRange(validAttributes);
 
 
-            if (userRef != null && userRef.Id != Guid.Empty && !HasPermission(dbEntity, AccessRights.CreateAccess, userRef)) {
+            if (userRef != null && userRef.Id != Guid.Empty && !HasPermission(clonedEntity, AccessRights.CreateAccess, userRef)) {
                 throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
                     $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
             }
 
-            if (HasCircularReference(dbEntity)) {
-                throw new FaultException($"Trying to create entity '{dbEntity.LogicalName}', but the attributes had a circular reference");
+            if (HasCircularReference(clonedEntity)) {
+                throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
             }
 
             var transactioncurrencyId = "transactioncurrencyid";
             var exchangerate = "exchangerate";
-            if (!dbEntity.Attributes.ContainsKey(transactioncurrencyId) && 
-                Utility.IsSettableAttribute(transactioncurrencyId, Metadata[dbEntity.LogicalName]) &&
-                Metadata[dbEntity.LogicalName].Attributes.Any(m => m is MoneyAttributeMetadata) &&
+            if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) && 
+                Utility.IsSettableAttribute(transactioncurrencyId, EntityMetadata[clonedEntity.LogicalName]) &&
+                EntityMetadata[clonedEntity.LogicalName].Attributes.Any(m => m is MoneyAttributeMetadata) &&
                 (serviceRole == MockupServiceSettings.Role.UI ||
-                (serviceRole == MockupServiceSettings.Role.SDK && dbEntity.Attributes.Any(
-                    attr => Metadata[dbEntity.LogicalName].Attributes.Where(a => a is MoneyAttributeMetadata).Any(m => m.LogicalName == attr.Key))))) {
-                var user = GetDbEntity(userRef);
+                (serviceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
+                    attr => EntityMetadata[clonedEntity.LogicalName].Attributes.Where(a => a is MoneyAttributeMetadata).Any(m => m.LogicalName == attr.Key))))) {
+                var user = db.GetEntity(userRef);
                 if (user.Attributes.ContainsKey(transactioncurrencyId)) {
-                    dbEntity.Attributes[transactioncurrencyId] = user.Attributes[transactioncurrencyId];
+                    clonedEntity.Attributes[transactioncurrencyId] = user[transactioncurrencyId];
                 } else {
-                    dbEntity.Attributes[transactioncurrencyId] = baseCurrency;
+                    clonedEntity.Attributes[transactioncurrencyId] = baseCurrency;
                 }
             }
 
-            if (!dbEntity.Attributes.ContainsKey(exchangerate) && 
-                Utility.IsSettableAttribute(exchangerate, Metadata[dbEntity.LogicalName]) &&
-                dbEntity.Attributes.ContainsKey(transactioncurrencyId)) {
-                var currencyId = dbEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
+            if (!clonedEntity.Attributes.ContainsKey(exchangerate) && 
+                Utility.IsSettableAttribute(exchangerate, EntityMetadata[clonedEntity.LogicalName]) &&
+                clonedEntity.Attributes.ContainsKey(transactioncurrencyId)) {
+                var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db[LogicalNames.TransactionCurrency][currencyId.Id];
-                dbEntity.Attributes[exchangerate] = currency["exchangerate"];
-                HandleCurrencies(dbEntity);
+                clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
+                HandleCurrencies(clonedEntity);
             }
 
-            var attributes = GetMetadata(dbEntity.LogicalName).Attributes;
-            if (!dbEntity.Attributes.ContainsKey("statecode") && 
-                Utility.IsSettableAttribute("statecode", Metadata[dbEntity.LogicalName])) {
+            var attributes = GetMetadata(clonedEntity.LogicalName).Attributes;
+            if (!clonedEntity.Attributes.ContainsKey("statecode") && 
+                Utility.IsSettableAttribute("statecode", EntityMetadata[clonedEntity.LogicalName])) {
                 var stateMeta = attributes.First(a => a.LogicalName == "statecode") as StateAttributeMetadata;
-                dbEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
+                clonedEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
             }
-            if (!dbEntity.Attributes.ContainsKey("statuscode") &&
-                Utility.IsSettableAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
+            if (!clonedEntity.Attributes.ContainsKey("statuscode") &&
+                Utility.IsSettableAttribute("statuscode", EntityMetadata[clonedEntity.LogicalName])) {
                 var statusMeta = attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata; 
-                dbEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
+                clonedEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
             }
 
-            if (Utility.IsSettableAttribute("createdon", Metadata[dbEntity.LogicalName])) {
-                dbEntity.Attributes["createdon"] = DateTime.Now.Add(RequestHandler.GetCurrentOffset());
+            if (Utility.IsSettableAttribute("createdon", EntityMetadata[clonedEntity.LogicalName])) {
+                clonedEntity["createdon"] = DateTime.Now.Add(TimeOffset);
             }
-            if (Utility.IsSettableAttribute("createdby", Metadata[dbEntity.LogicalName])) {
-                dbEntity.Attributes["createdby"] = userRef;
+            if (Utility.IsSettableAttribute("createdby", EntityMetadata[clonedEntity.LogicalName])) {
+                clonedEntity["createdby"] = userRef;
             }
 
-            if (Utility.IsSettableAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && 
-                Utility.IsSettableAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
-                dbEntity.Attributes["modifiedon"] = dbEntity.Attributes["createdon"];
-                dbEntity.Attributes["modifiedby"] = dbEntity.Attributes["createdby"];
+            if (Utility.IsSettableAttribute("modifiedon", EntityMetadata[clonedEntity.LogicalName]) && 
+                Utility.IsSettableAttribute("modifiedby", EntityMetadata[clonedEntity.LogicalName])) {
+                clonedEntity["modifiedon"] = clonedEntity["createdon"];
+                clonedEntity["modifiedby"] = clonedEntity["createdby"];
             }
 
             var owner = userRef;
-            if (dbEntity.Attributes.ContainsKey("ownerid")) {
-                owner = dbEntity.GetAttributeValue<EntityReference>("ownerid");
+            if (clonedEntity.Attributes.ContainsKey("ownerid")) {
+                owner = clonedEntity.GetAttributeValue<EntityReference>("ownerid");
             }
-            SetOwner(dbEntity, owner);
+            SetOwner(clonedEntity, owner);
 
-            if (!dbEntity.Attributes.ContainsKey("businessunitid") &&
-                dbEntity.LogicalName == "systemuser" || dbEntity.LogicalName == "team") {
-                dbEntity.Attributes["businessunitid"] =
-                    new EntityReference { Id = defaultBusinessUnit, LogicalName = "businessunit" };
+            if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
+                clonedEntity.LogicalName == LogicalNames.SystemUser || clonedEntity.LogicalName == LogicalNames.Team) {
+                clonedEntity["businessunitid"] = RootBusinessUnitRef;
             }
 
-            if (dbEntity.LogicalName == LogicalNames.BusinessUnit && !dbEntity.Attributes.ContainsKey("parentbusinessunitid")) {
-                dbEntity.Attributes["parentbusinessunitid"] = new EntityReference(LogicalNames.BusinessUnit, defaultBusinessUnit);
+            if (clonedEntity.LogicalName == LogicalNames.BusinessUnit && !clonedEntity.Attributes.ContainsKey("parentbusinessunitid")) {
+                clonedEntity["parentbusinessunitid"] = RootBusinessUnitRef;
             }
             if (serviceRole == MockupServiceSettings.Role.UI) {
-                foreach (var attr in Metadata[dbEntity.LogicalName].Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList()) {
-                    if (!dbEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
-                        dbEntity[attr.LogicalName] = (attr as BooleanAttributeMetadata).DefaultValue;
+                foreach (var attr in EntityMetadata[clonedEntity.LogicalName].Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList()) {
+                    if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
+                        clonedEntity[attr.LogicalName] = (attr as BooleanAttributeMetadata).DefaultValue;
                     }
                 }
 
-                foreach (var attr in Metadata[dbEntity.LogicalName].Attributes.Where(a =>
+                foreach (var attr in EntityMetadata[clonedEntity.LogicalName].Attributes.Where(a =>
                     (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList()) {
-                    if (!dbEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
-                        dbEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
+                    if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
+                        clonedEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
                     }
                 }
             }
 
-            if (dbEntity.LogicalName == LogicalNames.Contact || dbEntity.LogicalName == LogicalNames.Lead || dbEntity.LogicalName == LogicalNames.SystemUser) {
-                SetFullName(dbEntity);
+            if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser) {
+                SetFullName(clonedEntity);
             }
+            
+            db.Add(clonedEntity);
 
-            if (dbEntity.LogicalName == LogicalNames.BusinessUnit) {
-                AddRolesForBusinessUnit(dbEntity.ToEntityReference());
+            if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {
+                AddRolesForBusinessUnit(clonedEntity.ToEntityReference());
             }
-
-            db[entity.LogicalName].Add(dbEntity.Id, dbEntity);
 
             if (entity.RelatedEntities.Count > 0) {
                 foreach (var relatedEntities in entity.RelatedEntities) {
@@ -684,16 +696,17 @@ namespace DG.Tools.XrmMockup {
                         throw new FaultException($"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
                     foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                        var req = new CreateRequest();
-                        req.Target = relatedEntity;
-                        RequestHandler.Execute(req, userRef);
+                        var req = new CreateRequest() {
+                            Target = relatedEntity
+                        };
+                        Core.Execute(req, userRef);
                     }
                     Associate(entity.ToEntityReference(), relatedEntities.Key,
                         new EntityReferenceCollection(relatedEntities.Value.Entities.Select(e => e.ToEntityReference()).ToList()), userRef);
                 }
             }
 
-            return dbEntity.Id;
+            return clonedEntity.Id;
         }
 
         private void SetFullName(Entity dbEntity) {
@@ -749,7 +762,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         private bool HasCircularReference(Entity entity) {
-            if (!Metadata.ContainsKey(entity.LogicalName)) return false;
+            if (!EntityMetadata.ContainsKey(entity.LogicalName)) return false;
             var metadata = GetMetadata(entity.LogicalName).Attributes;
             var references = entity.Attributes.Where(a => metadata.FirstOrDefault(m => m.LogicalName == a.Key) is LookupAttributeMetadata).Select(a => a.Value);
             foreach (var r in references) {
@@ -779,9 +792,10 @@ namespace DG.Tools.XrmMockup {
             }
 
             var collection = new EntityCollection();
-            if (db.ContainsKey(queryExpr.EntityName)) {
-                foreach (var entity in db[queryExpr.EntityName].Values) {
-                    if (!Utility.MatchesCriteria(entity, queryExpr.Criteria)) continue;
+            if (db[queryExpr.EntityName].Count() > 0) {
+                foreach (var row in db[queryExpr.EntityName]) {
+                    if (!Utility.MatchesCriteria(row, queryExpr.Criteria)) continue;
+                    var entity = row.ToEntity();
                     var toAdd = GetEntityWithAttributes(entity, null);
 
                     if (queryExpr.LinkEntities.Count > 0) {
@@ -856,41 +870,37 @@ namespace DG.Tools.XrmMockup {
 
 
         private object GetComparableAttribute(object attribute) {
-            if (attribute is Money) {
-                return (attribute as Money).Value;
+            if (attribute is Money money) {
+                return money.Value;
             }
-            if (attribute is EntityReference) {
-                return (attribute as EntityReference).Name;
+            if (attribute is EntityReference eRef) {
+                return eRef.Name;
             }
-            if (attribute is OptionSetValue) {
-                return (attribute as OptionSetValue).Value;
+            if (attribute is OptionSetValue osv) {
+                return osv.Value;
             }
             return attribute;
         }
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd,
-                Dictionary<string, Dictionary<Guid, Entity>> db) {
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
             var collection = new List<Entity>();
+            
+            foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
 
-            if (!db.TryGetValue(linkEntity.LinkToEntityName, out Dictionary<Guid, Entity> linkedRecords)) {
-                linkedRecords = new Dictionary<Guid, Entity>();
-            }
+                if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria)) continue;
+                var linkedEntity = linkedRow.ToEntity();
 
-            foreach (var linkedRecord in linkedRecords.Values) {
-
-                if (!Utility.MatchesCriteria(linkedRecord, linkEntity.LinkCriteria)) continue;
-
-                if (linkedRecord.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
+                if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
                     parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) {
                     var linkedAttr = Utility.ConvertToComparableObject(
-                        linkedRecord.Attributes[linkEntity.LinkToAttributeName]);
+                        linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
                     var entAttr = Utility.ConvertToComparableObject(
                             parent.Attributes[linkEntity.LinkFromAttributeName]);
 
                     if (linkedAttr.Equals(entAttr)) {
 
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                linkedRecord.Attributes, linkEntity.Columns);
+                                linkedEntity.Attributes, linkEntity.Columns);
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
@@ -898,7 +908,7 @@ namespace DG.Tools.XrmMockup {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
                                 subEntities.AddRange(
                                     GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedRecord, aliasedEntity, db));
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db));
                             }
                             collection.AddRange(subEntities);
                         } else {
@@ -958,87 +968,86 @@ namespace DG.Tools.XrmMockup {
 #endif
 
         public void Update(Entity entity, EntityReference userRef, MockupServiceSettings.Role serviceRole) {
-            var entRef = entity.ToEntityReference();
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            entRef.KeyAttributes = entity.KeyAttributes;
-#endif
-            var dbEntity = GetDbEntity(entRef);
+            var entRef = entity.ToEntityReferenceWithKeyAttributes();
+            var row = db.GetDbRow(entRef);
 
             if (serviceRole == MockupServiceSettings.Role.UI &&
-                dbEntity.LogicalName != LogicalNames.Opportunity &&
-                dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) {
-                throw new MockupException($"Trying to update inactive '{dbEntity.LogicalName}', which is impossible in UI");
+                row.Table.TableName != LogicalNames.Opportunity &&
+                row.GetColumn<int?>("statecode") == 1) {
+                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
             }
 
             if (serviceRole == MockupServiceSettings.Role.UI &&
-                dbEntity.LogicalName == LogicalNames.Opportunity &&
-                dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != 0) {
-                throw new MockupException($"Trying to update closed opportunity '{dbEntity.Id}', which is impossible in UI");
+                row.Table.TableName == LogicalNames.Opportunity &&
+                row.GetColumn<int?>("statecode") == 1) {
+                throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
             }
 
             // modify for all activites
             //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
+            var xrmEntity = row.ToEntity();
 
-
-            if (!HasPermission(dbEntity, AccessRights.WriteAccess, userRef)) {
-                throw new FaultException($"Trying to update entity '{dbEntity.LogicalName}'" +
+            if (!HasPermission(row.ToEntity(), AccessRights.WriteAccess, userRef)) {
+                throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity");
             }
 
             var ownerRef = entity.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null) {
-                CheckAssignPermission(dbEntity, ownerRef, userRef);
+                CheckAssignPermission(xrmEntity, ownerRef, userRef);
             }
 #endif
 
             var updEntity = entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true));
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            CheckStatusTransitions(updEntity, dbEntity);
+            CheckStatusTransitions(updEntity, xrmEntity);
 #endif
 
 
             if (HasCircularReference(updEntity)) {
-                throw new FaultException($"Trying to create entity '{dbEntity.LogicalName}', but the attributes had a circular reference");
+                throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
             }
 
             if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead || updEntity.LogicalName == LogicalNames.SystemUser) {
                 SetFullName(updEntity);
             }
 
-            dbEntity.SetAttributes(updEntity.Attributes, Metadata[updEntity.LogicalName]);
+            xrmEntity.SetAttributes(updEntity.Attributes, EntityMetadata[updEntity.LogicalName]);
 
             var transactioncurrencyId = "transactioncurrencyid";
             if (updEntity.LogicalName != LogicalNames.TransactionCurrency &&
                 (updEntity.Attributes.ContainsKey(transactioncurrencyId) ||
-                updEntity.Attributes.Any(a => Metadata[dbEntity.LogicalName].Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata)))) {
-                if (!dbEntity.Attributes.ContainsKey(transactioncurrencyId)) {
-                    var user = GetDbEntity(userRef);
+                updEntity.Attributes.Any(a => EntityMetadata[xrmEntity.LogicalName].Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata)))) {
+                if (!xrmEntity.Attributes.ContainsKey(transactioncurrencyId)) {
+                    var user = db.GetEntity(userRef);
                     if (user.Attributes.ContainsKey(transactioncurrencyId)) {
-                        dbEntity.Attributes[transactioncurrencyId] = user.Attributes[transactioncurrencyId];
+                        xrmEntity[transactioncurrencyId] = user[transactioncurrencyId];
                     } else {
-                        dbEntity.Attributes[transactioncurrencyId] = baseCurrency;
+                        xrmEntity[transactioncurrencyId] = baseCurrency;
                     }
                 }
-                var currencyId = dbEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
-                var currency = db[LogicalNames.TransactionCurrency][currencyId.Id];
-                dbEntity.Attributes["exchangerate"] = currency.GetAttributeValue<decimal?>("exchangerate");
-                HandleCurrencies(dbEntity);
+                var currencyId = xrmEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
+                var currency = db.GetEntity(LogicalNames.TransactionCurrency, currencyId.Id);
+                xrmEntity["exchangerate"] = currency.GetAttributeValue<decimal?>("exchangerate");
+                HandleCurrencies(xrmEntity);
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (updEntity.Attributes.ContainsKey("statecode") || updEntity.Attributes.ContainsKey("statuscode")) {
-                HandleCurrencies(dbEntity);
+                HandleCurrencies(xrmEntity);
             }
 #endif
 
             if (ownerRef != null) {
-                SetOwner(dbEntity, ownerRef);
+                SetOwner(xrmEntity, ownerRef);
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                CascadeOwnerUpdate(dbEntity, userRef, ownerRef);
+                CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
-            Touch(dbEntity, userRef);
+            Touch(xrmEntity, userRef);
+
+            db.Update(xrmEntity);
         }
 
 
@@ -1046,7 +1055,7 @@ namespace DG.Tools.XrmMockup {
         internal void CascadeOwnerUpdate(Entity dbEntity, EntityReference userRef, EntityReference ownerRef) {
             // Cascade like Assign, but with UpdateRequests
             foreach (var relatedEntities in GetDbEntityWithRelatedEntities(dbEntity.ToEntityReference(), EntityRole.Referenced, userRef).RelatedEntities) {
-                var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.FirstOrDefault(r => r.SchemaName == relatedEntities.Key.SchemaName);
+                var relationshipMeta = EntityMetadata[dbEntity.LogicalName].OneToManyRelationships.FirstOrDefault(r => r.SchemaName == relatedEntities.Key.SchemaName);
                 if (relationshipMeta == null) continue;
 
                 var req = new UpdateRequest();
@@ -1055,16 +1064,16 @@ namespace DG.Tools.XrmMockup {
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
                             req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
                             req.Target.Attributes["ownerid"] = ownerRef;
-                            RequestHandler.Execute(req, userRef, null);
+                            Core.Execute(req, userRef, null);
                         }
                         break;
 
                     case CascadeType.Active:
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["statecode"] as OptionSetValue)?.Value == 0) {
+                            if (db.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<OptionSetValue>("statecode")?.Value == 0) {
                                 req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
                                 req.Target.Attributes["ownerid"] = ownerRef;
-                                RequestHandler.Execute(req, userRef, null);
+                                Core.Execute(req, userRef, null);
                             }
                         }
                         break;
@@ -1072,10 +1081,10 @@ namespace DG.Tools.XrmMockup {
                     case CascadeType.UserOwned:
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
                             var currentOwner = dbEntity.Attributes["ownerid"] as EntityReference;
-                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["ownerid"] as EntityReference)?.Id == currentOwner.Id) {
+                            if (db.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<EntityReference>("ownerid")?.Id == currentOwner.Id) {
                                 req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
                                 req.Target.Attributes["ownerid"] = ownerRef;
-                                RequestHandler.Execute(req, userRef, null);
+                                Core.Execute(req, userRef, null);
                             }
                         }
                         break;
@@ -1092,18 +1101,20 @@ namespace DG.Tools.XrmMockup {
 
 
         internal void SetState(EntityReference entityRef, OptionSetValue state, OptionSetValue status, EntityReference userRef) {
-            var dbEntity = GetDbEntity(entityRef);
+            var record = db.GetEntity(entityRef);
 
-            if (Utility.IsSettableAttribute("statecode", Metadata[dbEntity.LogicalName]) && 
-                Utility.IsSettableAttribute("statuscode", Metadata[dbEntity.LogicalName])) {
-                var prevEntity = dbEntity.CloneEntity();
-                dbEntity["statecode"] = state;
-                dbEntity["statuscode"] = status;
+            if (Utility.IsSettableAttribute("statecode", EntityMetadata[record.LogicalName]) && 
+                Utility.IsSettableAttribute("statuscode", EntityMetadata[record.LogicalName])) {
+                var prevEntity = record.CloneEntity();
+                record["statecode"] = state;
+                record["statuscode"] = status;
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-                CheckStatusTransitions(dbEntity, prevEntity);
+                CheckStatusTransitions(record, prevEntity);
 #endif
-                HandleCurrencies(dbEntity);
-                Touch(dbEntity, userRef);
+                HandleCurrencies(record);
+                Touch(record, userRef);
+
+                db.Update(record);
             }
         }
 
@@ -1125,32 +1136,32 @@ namespace DG.Tools.XrmMockup {
 
             // Cascade
             foreach (var relatedEntities in dbEntity.RelatedEntities) {
-                var relationshipMeta = Metadata[dbEntity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
+                var relationshipMeta = EntityMetadata[dbEntity.LogicalName].OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
                 var req = new AssignRequest();
                 switch (relationshipMeta.CascadeConfiguration.Assign) {
                     case CascadeType.Cascade:
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
                             req.Target = relatedEntity.ToEntityReference();
                             req.Assignee = assignee;
-                            RequestHandler.Execute(req, userRef, null);
+                            Core.Execute(req, userRef, null);
                         }
                         break;
                     case CascadeType.Active:
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
-                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["statecode"] as OptionSetValue)?.Value == 0) {
+                            if (db.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<OptionSetValue>("statecode")?.Value == 0) {
                                 req.Target = relatedEntity.ToEntityReference();
                                 req.Assignee = assignee;
-                                RequestHandler.Execute(req, userRef, null);
+                                Core.Execute(req, userRef, null);
                             }
                         }
                         break;
                     case CascadeType.UserOwned:
                         foreach (var relatedEntity in relatedEntities.Value.Entities) {
                             var currentOwner = dbEntity.Attributes["ownerid"] as EntityReference;
-                            if ((GetDbEntity(relatedEntity.ToEntityReference()).Attributes["ownerid"] as EntityReference)?.Id == currentOwner.Id) {
+                            if (db.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<EntityReference>("ownerid")?.Id == currentOwner.Id) {
                                 req.Target = relatedEntity.ToEntityReference();
                                 req.Assignee = assignee;
-                                RequestHandler.Execute(req, userRef, null);
+                                Core.Execute(req, userRef, null);
                             }
                         }
                         break;
@@ -1165,7 +1176,7 @@ namespace DG.Tools.XrmMockup {
                 return null;
             }
             RelationshipMetadataBase relationshipBase;
-            foreach (var meta in Metadata) {
+            foreach (var meta in EntityMetadata) {
                 relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
                 if (relationshipBase != null) {
                     return relationshipBase;
@@ -1204,8 +1215,8 @@ namespace DG.Tools.XrmMockup {
             if (name == null && metadataId == Guid.Empty) {
                 throw new FaultException("Entity logical name is required when MetadataId is not specified");
             }
-            if (name != null && Metadata.ContainsKey(name)) return Metadata[name];
-            if (metadataId != Guid.Empty) return Metadata.FirstOrDefault(x => x.Value.MetadataId == metadataId).Value;
+            if (name != null && EntityMetadata.ContainsKey(name)) return EntityMetadata[name];
+            if (metadataId != Guid.Empty) return EntityMetadata.FirstOrDefault(x => x.Value.MetadataId == metadataId).Value;
             throw new FaultException("Could not find matching entity");
         }
 
@@ -1214,24 +1225,26 @@ namespace DG.Tools.XrmMockup {
             var relatedLogicalName = relatedEntities.FirstOrDefault()?.LogicalName;
             var oneToMany = GetRelatedEntityMetadata(relatedLogicalName, relationship.SchemaName) as OneToManyRelationshipMetadata;
             var manyToMany = GetRelatedEntityMetadata(relatedLogicalName, relationship.SchemaName) as ManyToManyRelationshipMetadata;
-            if (!HasPermission(GetDbEntity(target), AccessRights.ReadAccess, userRef)) {
+
+            var targetEntity = db.GetEntity(target);
+            if (!HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Trying to append to entity '{target.LogicalName}'" +
                     ", but the calling user does not have read access for that entity");
             }
 
-            if (!HasPermission(GetDbEntity(target), AccessRights.AppendToAccess, userRef)) {
+            if (!HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
                 throw new FaultException($"Trying to append to entity '{target.LogicalName}'" +
                     ", but the calling user does not have append to access for that entity");
             }
 
-            if (relatedEntities.Any(r => !HasPermission(GetDbEntity(r), AccessRights.ReadAccess, userRef))) {
-                var firstError = relatedEntities.First(r => !HasPermission(GetDbEntity(r), AccessRights.ReadAccess, userRef));
+            if (relatedEntities.Any(r => !HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
+                var firstError = relatedEntities.First(r => !HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
                 throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
                     $" to '{target.LogicalName}', but the calling user does not have read access for that entity");
             }
 
-            if (relatedEntities.Any(r => !HasPermission(GetDbEntity(r), AccessRights.AppendAccess, userRef))) {
-                var firstError = relatedEntities.First(r => !HasPermission(GetDbEntity(r), AccessRights.AppendAccess, userRef));
+            if (relatedEntities.Any(r => !HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
+                var firstError = relatedEntities.First(r => !HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
                 throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
                     $" to '{target.LogicalName}', but the calling user does not have append access for that entity");
             }
@@ -1252,9 +1265,10 @@ namespace DG.Tools.XrmMockup {
             } else {
                 if (oneToMany.ReferencedEntity == target.LogicalName) {
                     foreach (var relatedEntity in relatedEntities) {
-                        var dbEntity = GetDbEntity(relatedEntity);
+                        var dbEntity = db.GetEntity(relatedEntity);
                         dbEntity[oneToMany.ReferencingAttribute] = target;
                         Touch(dbEntity, userRef);
+                        db.Update(dbEntity);
                     }
                 } else {
                     if (relatedEntities.Count > 1) {
@@ -1262,9 +1276,10 @@ namespace DG.Tools.XrmMockup {
                     }
                     if (relatedEntities.Count == 1) {
                         var related = relatedEntities.First();
-                        var targetEntity = GetDbEntity(target);
-                        targetEntity[oneToMany.ReferencingAttribute] = related;
-                        Touch(targetEntity, userRef);
+                        var dbEntity = db.GetEntity(target);
+                        dbEntity[oneToMany.ReferencingAttribute] = related;
+                        Touch(dbEntity, userRef);
+                        db.Update(dbEntity);
                     }
 
                 }
@@ -1276,24 +1291,25 @@ namespace DG.Tools.XrmMockup {
             var oneToMany = GetRelatedEntityMetadata(relatedLogicalName, relationship.SchemaName) as OneToManyRelationshipMetadata;
             var manyToMany = GetRelatedEntityMetadata(relatedLogicalName, relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
-            if (!HasPermission(GetDbEntity(target), AccessRights.ReadAccess, userRef)) {
+            var targetEntity = db.GetEntity(target);
+            if (!HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Trying to unappend to entity '{target.LogicalName}'" +
                     ", but the calling user does not have read access for that entity");
             }
 
-            if (!HasPermission(GetDbEntity(target), AccessRights.AppendToAccess, userRef)) {
+            if (!HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
                 throw new FaultException($"Trying to unappend to entity '{target.LogicalName}'" +
                     ", but the calling user does not have append to access for that entity");
             }
 
-            if (relatedEntities.Any(r => !HasPermission(GetDbEntity(r), AccessRights.ReadAccess, userRef))) {
-                var firstError = relatedEntities.First(r => !HasPermission(GetDbEntity(r), AccessRights.ReadAccess, userRef));
+            if (relatedEntities.Any(r => !HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
+                var firstError = relatedEntities.First(r => !HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{target.LogicalName}', but the calling user does not have read access for that entity");
             }
 
-            if (relatedEntities.Any(r => !HasPermission(GetDbEntity(r), AccessRights.AppendAccess, userRef))) {
-                var firstError = relatedEntities.First(r => !HasPermission(GetDbEntity(r), AccessRights.AppendAccess, userRef));
+            if (relatedEntities.Any(r => !HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
+                var firstError = relatedEntities.First(r => !HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{target.LogicalName}', but the calling user does not have append access for that entity");
             }
@@ -1301,23 +1317,29 @@ namespace DG.Tools.XrmMockup {
             if (manyToMany != null) {
                 foreach (var relatedEntity in relatedEntities) {
                     if (target.LogicalName == manyToMany.Entity1LogicalName) {
-                        var link = db[manyToMany.IntersectEntityName].First(e =>
-                            (Guid)e.Value.Attributes[manyToMany.Entity1IntersectAttribute] == target.Id &&
-                            (Guid)e.Value.Attributes[manyToMany.Entity2IntersectAttribute] == relatedEntity.Id);
-                        db[manyToMany.IntersectEntityName].Remove(link.Key);
+                        var link = db[manyToMany.IntersectEntityName]
+                            .First(row =>
+                                row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == target.Id &&
+                                row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == relatedEntity.Id
+                            );
+
+                        db[manyToMany.IntersectEntityName].Remove(link.Id);
                     } else {
-                        var link = db[manyToMany.IntersectEntityName].First(e =>
-                            (Guid)e.Value.Attributes[manyToMany.Entity1IntersectAttribute] == relatedEntity.Id &&
-                            (Guid)e.Value.Attributes[manyToMany.Entity2IntersectAttribute] == target.Id);
-                        db[manyToMany.IntersectEntityName].Remove(link.Key);
+                        var link = db[manyToMany.IntersectEntityName]
+                            .First(row =>
+                                row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == relatedEntity.Id &&
+                                row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == target.Id
+                            );
+                        db[manyToMany.IntersectEntityName].Remove(link.Id);
                     }
                 }
             } else {
                 if (oneToMany.ReferencedEntity == target.LogicalName) {
                     foreach (var relatedEntity in relatedEntities) {
-                        var dbEntity = GetDbEntity(relatedEntity);
+                        var dbEntity = db.GetEntity(relatedEntity);
                         RemoveAttribute(dbEntity, oneToMany.ReferencingAttribute);
                         Touch(dbEntity, userRef);
+                        db.Update(dbEntity);
                     }
                 } else {
                     if (relatedEntities.Count > 1) {
@@ -1325,9 +1347,10 @@ namespace DG.Tools.XrmMockup {
                     }
                     if (relatedEntities.Count == 1) {
                         var related = relatedEntities.First();
-                        var targetEntity = GetDbEntity(target);
-                        RemoveAttribute(targetEntity, oneToMany.ReferencingAttribute);
-                        Touch(targetEntity, userRef);
+                        var dbEntity = db.GetEntity(target);
+                        RemoveAttribute(dbEntity, oneToMany.ReferencingAttribute);
+                        Touch(dbEntity, userRef);
+                        db.Update(dbEntity);
                     }
                 }
             }
@@ -1335,18 +1358,18 @@ namespace DG.Tools.XrmMockup {
 
         internal void Merge(EntityReference target, Guid subordinateId, Entity updateContent,
             bool performParentingChecks, EntityReference userRef) {
-            var mainEntity = GetDbEntity(target);
+            var mainEntity = db.GetEntity(target);
             var subordinateReference = new EntityReference { LogicalName = target.LogicalName, Id = subordinateId };
             var subordinateEntity = GetDbEntityWithRelatedEntities(subordinateReference, EntityRole.Referencing, userRef);
 
             foreach (var attr in updateContent.Attributes) {
                 if (attr.Value != null) {
-                    mainEntity.Attributes[attr.Key] = attr.Value;
+                    mainEntity[attr.Key] = attr.Value;
                 }
             }
 
             foreach (var relatedEntities in subordinateEntity.RelatedEntities) {
-                var relationshipMeta = Metadata[subordinateEntity.LogicalName].ManyToOneRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
+                var relationshipMeta = EntityMetadata[subordinateEntity.LogicalName].ManyToOneRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
                 if (relationshipMeta.CascadeConfiguration.Merge == CascadeType.Cascade) {
                     var entitiesToSwap = relatedEntities.Value.Entities.Select(e => e.ToEntityReference()).ToList();
                     Disassociate(subordinateEntity.ToEntityReference(), relatedEntities.Key,
@@ -1356,24 +1379,26 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-            subordinateEntity.Attributes["merged"] = true;
+            subordinateEntity["merged"] = true;
+            db.Update(subordinateEntity);
+            db.Update(mainEntity);
             SetState(subordinateReference, new OptionSetValue(1), new OptionSetValue(2), userRef);
         }
 
         private void SetOwner(Entity entity, EntityReference owner) {
-            var ownershipType = Metadata.GetMetadata(entity.LogicalName).OwnershipType;
+            var ownershipType = EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
             if (!ownershipType.HasValue) {
                 throw new MockupException($"No ownership type set for '{entity.LogicalName}'");
             }
 
             if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned)) {
-                if (GetDbEntityDefaultNull(owner) == null) {
+                if (db.GetDbRowOrNull(owner) == null) {
                     throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
                 }
 
                 var prevOwner = entity.Attributes.ContainsKey("ownerid") ? entity["ownerid"] : null;
-                entity.Attributes["ownerid"] = owner;
+                entity["ownerid"] = owner;
 
                 if (!HasPermission(entity, AccessRights.ReadAccess, owner)) {
                     entity["ownerid"] = prevOwner;
@@ -1381,27 +1406,27 @@ namespace DG.Tools.XrmMockup {
                         $" to '{owner.LogicalName}' with id '{owner.Id}', but owner does not have read access for that entity");
                 }
 
-                entity.Attributes["owningbusinessunit"] = null;
-                entity.Attributes["owninguser"] = null;
-                entity.Attributes["owningteam"] = null;
+                entity["owningbusinessunit"] = null;
+                entity["owninguser"] = null;
+                entity["owningteam"] = null;
 
 
-                if (entity.LogicalName != "systemuser" && entity.LogicalName != "team") {
-                    if (owner.LogicalName == "systemuser" && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned)) {
-                        entity.Attributes["owninguser"] = owner;
+                if (entity.LogicalName != LogicalNames.SystemUser && entity.LogicalName != LogicalNames.Team) {
+                    if (owner.LogicalName == LogicalNames.SystemUser && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned)) {
+                        entity["owninguser"] = owner;
                     } else if (owner.LogicalName == "team") {
-                        entity.Attributes["owningteam"] = owner;
+                        entity["owningteam"] = owner;
                     } else {
                         throw new MockupException($"Trying to give owner to {owner.LogicalName} but ownershiptype is {ownershipType.ToString()}");
                     }
-                    entity.Attributes["owningbusinessunit"] = GetBusinessUnit(owner);
+                    entity["owningbusinessunit"] = GetBusinessUnit(owner);
                 }
             }
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal Entity CalculateRollUpField(EntityReference entRef, string fieldName, EntityReference userRef) {
-            var dbEntity = GetDbEntity(entRef);
+            var dbEntity = db.GetEntity(entRef);
             var metadata = GetMetadata(entRef.LogicalName);
             var field = metadata.Attributes.FirstOrDefault(a => a.LogicalName == fieldName);
             if (field == null) {
@@ -1420,23 +1445,24 @@ namespace DG.Tools.XrmMockup {
                     throw new FaultException($"Field '{fieldName}' on entity '{entRef.LogicalName}' is not a rollup field");
                 } else {
                     var tree = WorkflowConstructor.ParseRollUp(definition);
-                    var resultTree = tree.Execute(dbEntity, RequestHandler.GetCurrentOffset(), service, serviceFactory, trace);
+                    var resultTree = tree.Execute(dbEntity, TimeOffset, service, serviceFactory, trace);
                     var resultLocaltion = ((resultTree.StartActivity as RollUp).Aggregation[1] as Aggregate).VariableName;
                     var result = resultTree.Variables[resultLocaltion];
                     if (result != null) {
-                        dbEntity.Attributes[fieldName] = result;
+                        dbEntity[fieldName] = result;
                     }
                 }
             }
             HandleCurrencies(dbEntity);
-            return dbEntity;
+            db.Update(dbEntity);
+            return db.GetEntity(entRef);
         }
 #endif
 
         private void Touch(Entity dbEntity, EntityReference user) {
-            if (Utility.IsSettableAttribute("modifiedon", Metadata[dbEntity.LogicalName]) && Utility.IsSettableAttribute("modifiedby", Metadata[dbEntity.LogicalName])) {
-                dbEntity.Attributes["modifiedon"] = DateTime.Now.Add(RequestHandler.GetCurrentOffset());
-                dbEntity.Attributes["modifiedby"] = user;
+            if (Utility.IsSettableAttribute("modifiedon", EntityMetadata[dbEntity.LogicalName]) && Utility.IsSettableAttribute("modifiedby", EntityMetadata[dbEntity.LogicalName])) {
+                dbEntity["modifiedon"] = DateTime.Now.Add(TimeOffset);
+                dbEntity["modifiedby"] = user;
             }
         }
 
@@ -1478,17 +1504,11 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal void ResetEnvironment() {
-            var toKeep = new Dictionary<string, Dictionary<Guid, Entity>>();
-            toKeep[LogicalNames.TransactionCurrency] = db[LogicalNames.TransactionCurrency];
-            var adminUser = db[LogicalNames.SystemUser][defaultAdminUser];
-            adminUser.Attributes["transactioncurrencyid"] = baseCurrency;
-            toKeep[LogicalNames.SystemUser] = new Dictionary<Guid, Entity>();
-            toKeep[LogicalNames.SystemUser].Add(defaultAdminUser, adminUser);
+            Initialize();
+        }
 
-            this.db = toKeep;
-            db.Add(LogicalNames.BusinessUnit, new Dictionary<Guid, Entity>());
-            db[LogicalNames.BusinessUnit].Add(RootBusinessUnit.Id, RootBusinessUnit);
-            AddRolesForBusinessUnit(RootBusinessUnit.ToEntityReference());
+        public Entity GetEntityOrNull(EntityReference reference) {
+            return db.GetEntityOrNull(reference);
         }
 
 
@@ -1511,24 +1531,25 @@ namespace DG.Tools.XrmMockup {
             if (securityRoles.Any(s => !SecurityRoles.ContainsKey(s))) {
                 throw new MockupException($"Unknown security role");
             }
-            var user = GetDbEntityDefaultNull(entRef);
-            if (user == null) {
-                throw new MockupException($"{entRef.LogicalName} with id '{entRef.Id}' does not exist");
-            }
+            var user = db.GetEntity(entRef);
             var relationship = entRef.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
             var roles = securityRoles
                 .Select(sr => SecurityRoleMapping.Where(srm => srm.Value == sr).Select(srm => srm.Key))
-                .Select(roleGuids => db["role"].Where(r => roleGuids.Contains(r.Key)).Select(r => r.Value))
+                .Select(roleGuids => 
+                    db["role"]
+                    .Select(x => x.ToEntity())
+                    .Where(r => roleGuids.Contains(r.Id))
+                )
                 .Select(roleEntities =>
-                    roleEntities.First(e => (e.Attributes["businessunitid"] as EntityReference).Id == (user.Attributes["businessunitid"] as EntityReference).Id))
+                    roleEntities.First(e => e.GetAttributeValue<EntityReference>("businessunitid").Id == user.GetAttributeValue<EntityReference>("businessunitid").Id))
                 .Select(r => r.ToEntityReference());
-            Associate(entRef, relationship, new EntityReferenceCollection(roles.ToList()), new EntityReference(LogicalNames.SystemUser, defaultAdminUser));
+            Associate(entRef, relationship, new EntityReferenceCollection(roles.ToList()), AdminUserRef);
         }
 
 
         internal HashSet<SecurityRole> GetSecurityRoles(EntityReference caller) {
             var securityRoles = new HashSet<SecurityRole>();
-            var callerEntity = GetDbEntityWithRelatedEntities(caller, EntityRole.Referenced, new EntityReference(LogicalNames.SystemUser, defaultAdminUser));
+            var callerEntity = GetDbEntityWithRelatedEntities(caller, EntityRole.Referenced, AdminUserRef);
             if (callerEntity == null) return securityRoles;
             var relationship = caller.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
             var roles = callerEntity.RelatedEntities.ContainsKey(relationship) ? callerEntity.RelatedEntities[relationship] : new EntityCollection();
@@ -1539,15 +1560,15 @@ namespace DG.Tools.XrmMockup {
         }
 
         private bool IsInBusinessUnit(Guid ownerId, Guid businessunitId) {
-            var usersInBusinessUnit = db[LogicalNames.SystemUser].Where(u => u.Value.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
-            return usersInBusinessUnit.Any(u => ownerId == u.Key);
+            var usersInBusinessUnit = db[LogicalNames.SystemUser].Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+            return usersInBusinessUnit.Any(u => ownerId == u.Id);
         }
 
         private bool IsInBusinessUnitTree(Guid ownerId, Guid businessunitId) {
             if (IsInBusinessUnit(ownerId, businessunitId)) return true;
 
-            var childBusinessUnits = db[LogicalNames.BusinessUnit].Where(b => b.Value.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
-            return childBusinessUnits.Any(b => IsInBusinessUnitTree(ownerId, b.Key));
+            var childBusinessUnits = db[LogicalNames.BusinessUnit].Select(x => x.ToEntity()).Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
+            return childBusinessUnits.Any(b => IsInBusinessUnitTree(ownerId, b.Id));
 
         }
 
@@ -1561,7 +1582,7 @@ namespace DG.Tools.XrmMockup {
                 // system has no security roles for this entity. Is a case with linkentities which have no security roles
                 return true;
             }
-            if (caller.Id == defaultAdminUser) return true;
+            if (caller.Id == AdminUserRef.Id) return true;
 
             var userRoles = GetSecurityRoles(caller)?.Where(r =>
                 r.Privileges.ContainsKey(entity.LogicalName) &&
@@ -1574,46 +1595,46 @@ namespace DG.Tools.XrmMockup {
 
             if (access == AccessRights.CreateAccess) {
                 if (!entity.Attributes.ContainsKey("ownerid")) {
-                    entity.Attributes["ownerid"] = caller;
+                    entity["ownerid"] = caller;
                 }
             }
 
             if (entity.Attributes.ContainsKey("ownerid")) {
-                var owner = entity.Attributes["ownerid"] as EntityReference;
+                var owner = entity.GetAttributeValue<EntityReference>("ownerid");
                 if (owner.Id == caller.Id) {
                     return true;
                 }
 
-                var callerEntity = GetDbEntity(caller);
+                var callerRow = db.GetDbRow(caller);
                 if (maxRole == PrivilegeDepth.Local) {
-                    return IsInBusinessUnit(owner.Id, callerEntity.GetAttributeValue<EntityReference>("businessunitid").Id);
+                    return IsInBusinessUnit(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
                 }
                 if (maxRole == PrivilegeDepth.Deep) {
-                    if (callerEntity.GetAttributeValue<EntityReference>("parentbusinessunitid") != null) {
-                        return IsInBusinessUnitTree(owner.Id, callerEntity.GetAttributeValue<EntityReference>("parentbusinessunitid").Id);
+                    if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null) {
+                        return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id);
                     }
-                    return IsInBusinessUnitTree(owner.Id, callerEntity.GetAttributeValue<EntityReference>("businessunitid").Id);
+                    return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
                 }
             }
 
-            if (Shares.ContainsKey(entity.ToEntityReference()) &&
-                Shares[entity.ToEntityReference()].ContainsKey(caller) &&
-                Shares[entity.ToEntityReference()][caller].HasFlag(access)) {
+            var entityRef = entity.ToEntityReference();
+            if (Shares.ContainsKey(entityRef) &&
+                Shares[entityRef].ContainsKey(caller) &&
+                Shares[entityRef][caller].HasFlag(access)) {
                 return true;
             }
 
             var parentChangeRelationships = GetMetadata(entity.LogicalName).ManyToOneRelationships
                 .Where(r => r.CascadeConfiguration.Reparent == CascadeType.Cascade || r.CascadeConfiguration.Reparent == CascadeType.Active)
                 .Where(r => entity.Attributes.ContainsKey(r.ReferencingAttribute));
-            if (parentChangeRelationships.Any(r =>
-                db.ContainsKey(r.ReferencedEntity) &&
-                db[r.ReferencedEntity].ContainsKey(GetGuidFromReference(entity.Attributes[r.ReferencingAttribute])) &&
-                db[r.ReferencedEntity][GetGuidFromReference(entity.Attributes[r.ReferencingAttribute])].GetAttributeValue<EntityReference>("ownerid").Id == caller.Id)) {
+
+            
+            if (parentChangeRelationships.Any(r => 
+                db.GetDbRowOrNull(r.ReferencedEntity, GetGuidFromReference(entity[r.ReferencingAttribute]))
+                    ?.GetColumn<DbRow>("ownerid").Id == caller.Id)) {
                 return true;
             }
-
-
-
+            
             return false;
         }
     }

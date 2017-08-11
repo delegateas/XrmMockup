@@ -1,9 +1,11 @@
 
 #### 0.4.0-beta
-* Most classes have been moved to the namespace `DG.Tools.XrmMockup`
-* MetadataGenerator can now also consume command-line arguments, instead of only those in the .config file
-* Fixed handling of generic OrganizationRequests given a RequestName
-* Fixed problem with `AddHours(...)`
+* Most classes have been moved to the namespace `DG.Tools.XrmMockup`.
+* Changed the internal database implementation to act more like it's real counter-part.
+* MetadataGenerator can now also consume command-line arguments, instead of only those in the .config file.
+* Fixed handling of generic OrganizationRequests given a RequestName.
+* Fixed a problem with `AddHours(...)` on XrmMockupBase.
+* Fixed a problem with the stack trace being cut-off when an error occurred inside a plugin.
 
 #### 0.3.5-beta - July 19 2017
 * Fixed bug with status transitions when they were disabled

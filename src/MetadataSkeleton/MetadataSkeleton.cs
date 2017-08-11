@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace DG.Tools.XrmMockup {
 
     public class MetadataSkeleton {
-        public Dictionary<string, EntityMetadata> Metadata;
+        public Dictionary<string, EntityMetadata> EntityMetadata;
         public List<Entity> Currencies;
         public Entity BaseOrganization;
         public Entity RootBusinessUnit;

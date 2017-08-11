@@ -27,8 +27,8 @@ namespace DG.XrmMockupTest {
 #endif
 
         public UnitTestBase() {
-            this.orgAdminUIService = crm.GetConfigurableAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
-            this.orgGodService = crm.GetConfigurableAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
+            this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
+            this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             this.orgAdminService = crm.GetAdminService(); 
         }
 

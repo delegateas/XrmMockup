@@ -48,7 +48,7 @@ namespace DG.Tools.XrmMockup.Metadata
             var skeleton = new MetadataSkeleton();
             
             Console.WriteLine($"Getting metadata for: {String.Join(", ", this.EntityLogicalNames.ToArray())}");
-            skeleton.Metadata = GetEntityMetadataBulk(this.EntityLogicalNames).ToDictionary(m => m.LogicalName, m => m);
+            skeleton.EntityMetadata = GetEntityMetadataBulk(this.EntityLogicalNames).ToDictionary(m => m.LogicalName, m => m);
 
             Console.WriteLine("Getting currencies");
             skeleton.Currencies = GetCurrencies();

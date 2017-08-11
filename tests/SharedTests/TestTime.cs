@@ -26,7 +26,7 @@ namespace DG.XrmMockupTest {
                 acc.Id = orgAdminUIService.Create(acc);
                 
                 var afterCreate = DateTime.Now.Add(offset.Add(new TimeSpan(1)));
-                var service = crm.GetConfigurableAdminService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+                var service = crm.GetAdminService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
                 var retrieved = service.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.IsTrue(DateTime.Compare(beforeCreate, retrieved.CreatedOn.Value) < 0);
                 Assert.IsTrue(DateTime.Compare(afterCreate, retrieved.CreatedOn.Value) > 0);

@@ -118,20 +118,6 @@ namespace DG.XrmMockupTest {
                         }
                     });
 
-                var _contact3Id = orgAdminUIService.Create(
-                   new Contact() {
-                       FirstName = "Colin",
-                       LastName = "Wilcox",
-                       EMailAddress1 = "sample@example.com",
-                       Address1_City = "Bellevue",
-                       Address1_StateOrProvince = "WA",
-                       Address1_Telephone1 = "(425)555-5555",
-                       ParentCustomerId = new EntityReference {
-                           Id = new Guid(),
-                           LogicalName = Account.EntityLogicalName
-                       }
-                   });
-
 
                 //create the query expression object
                 QueryExpression query = new QueryExpression();
