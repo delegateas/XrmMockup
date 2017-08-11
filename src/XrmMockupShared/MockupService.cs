@@ -15,35 +15,33 @@ namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for Mocking the IOrganizationService
     /// </summary>
-    public partial class MockupService : IOrganizationService {
+    internal partial class MockupService : IOrganizationService {
 
-        private XrmMockupBase crm;
+        private Core core;
         private Guid userId;
-        private EntityReference UserRef;
+        private EntityReference userRef;
         private PluginContext pluginContext;
         private MockupServiceSettings settings;
 
-        internal MockupService(XrmMockupBase crm, Guid? userId, PluginContext pluginContext, MockupServiceSettings settings) {
-            this.crm = crm;
+        internal MockupService(Core core, Guid? userId, PluginContext pluginContext, MockupServiceSettings settings) {
+            this.core = core;
             this.pluginContext = pluginContext;
             this.userId = userId.GetValueOrDefault();
             if (userId.HasValue && userId.Value != Guid.Empty) {
-                UserRef = new EntityReference("systemuser", userId.Value);
-            } else {
-                UserRef = crm.AdminUser;
+                userRef = new EntityReference("systemuser", userId.Value);
             }
             this.settings = settings;
         }
 
-        internal MockupService(XrmMockupBase crm, Guid? userId, PluginContext pluginContext) : this(crm, userId, pluginContext, null) { }
+        internal MockupService(Core core, Guid? userId, PluginContext pluginContext) : this(core, userId, pluginContext, null) { }
 
         /// <summary>
         /// Create a new MockupService for the given Mockup of CRM 
         /// </summary>
-        /// <param name="crm"></param>
-        public MockupService(XrmMockupBase crm) : this(crm, null, null, null) { }
+        /// <param name="core"></param>
+        public MockupService(Core core) : this(core, null, null, null) { }
 
-        public MockupService(XrmMockupBase crm, MockupServiceSettings settings) : this(crm, null, null, settings) { }
+        public MockupService(Core core, MockupServiceSettings settings) : this(core, null, null, settings) { }
 
         /// <summary>
         /// Associate the described entity with the relatedEntities
@@ -146,7 +144,7 @@ namespace DG.Tools.XrmMockup {
 
         private T SendRequest<T>(OrganizationRequest request) where T : OrganizationResponse {
             MockupExecutionContext.SetSettings(request, settings);
-            return (T)crm.Execute(request, UserRef, pluginContext);
+            return (T)core.Execute(request, userRef ?? core.AdminUserRef, pluginContext);
         }
 
     }

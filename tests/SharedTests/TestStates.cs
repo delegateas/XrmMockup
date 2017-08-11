@@ -20,6 +20,7 @@ namespace DG.XrmMockupTest {
             var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
             Assert.AreEqual(AccountState.Inactive, retrieved.StateCode);
         }
+
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
         [TestMethod]
         public void TestStatusTransitions()

@@ -114,10 +114,10 @@ namespace WorkflowExecuter {
             Variables["ExecutionTime"] = DateTime.Now.Add(timeOffset);
             var transactioncurrencyid = "transactioncurrencyid";
             if (primaryEntity.Attributes.ContainsKey(transactioncurrencyid)) {
-                var currencyRef = primaryEntity.Attributes[transactioncurrencyid] as EntityReference;
+                var currencyRef = primaryEntity.GetAttributeValue<EntityReference>(transactioncurrencyid);
                 var exchangerate = "exchangerate";
                 var currency = orgService.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(exchangerate));
-                Variables["ExchangeRate"] = currency.Attributes[exchangerate];
+                Variables["ExchangeRate"] = currency[exchangerate];
             }
             StartActivity.Execute(ref Variables, timeOffset, orgService, factory, trace);
             return this;

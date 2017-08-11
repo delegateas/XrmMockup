@@ -17,70 +17,41 @@ namespace DG.Tools.XrmMockup {
         /// <summary>
         /// AdminUser for the Mockup instance
         /// </summary>
-        public EntityReference AdminUser { get; private set; }
+        public EntityReference AdminUser {
+            get {
+                return Core.AdminUserRef;
+            }
+        }
 
         /// <summary>
-        /// Organization id for the Mockup instance
+        /// AdminUser for the Mockup instance
         /// </summary>
-        public Guid OrganizationId { get; private set; }
+        public EntityReference RootBusinessUnit {
+            get {
+                return Core.RootBusinessUnitRef;
+            }
+        }
 
-        /// <summary>
-        /// Organization name for the Mockup instance
-        /// </summary>
-        public string OrganizationName { get; private set; }
-
-        /// <summary>
-        /// Root businessunit for the Mockup instance
-        /// </summary>
-        public EntityReference RootBusinessUnit { get; private set; }
-        
+       
         private static bool HasProxyTypes = false;
-        private RequestHandler RequestHandler;
-        private Guid AdminuserId;
+        private Core Core;
         private MockupServiceProviderAndFactory ServiceFactory;
-
-        internal TimeSpan TimeOffset;
+        
 
         /// <summary>
         /// Create a new XrmMockup instance
         /// </summary>
-        /// <param name="Settings"></param>
-        /// <param name="Metadata"></param>
-        /// <param name="Workflows"></param>
-        /// <param name="SecurityRoles"></param>
-        protected XrmMockupBase(XrmMockupSettings Settings, MetadataSkeleton Metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
+        /// <param name="settings"></param>
+        /// <param name="metadata"></param>
+        /// <param name="workflows"></param>
+        /// <param name="securityRoles"></param>
+        protected XrmMockupBase(XrmMockupSettings settings, MetadataSkeleton metadata, List<Entity> workflows, List<SecurityRole> securityRoles) {
 
-            this.OrganizationId = Guid.NewGuid();
-            this.OrganizationName = "MockupOrganization";
-            this.TimeOffset = new TimeSpan();
-            this.RequestHandler = new RequestHandler(this, Settings, Metadata, Workflows, SecurityRoles);
-            this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-            if (Settings.EnableProxyTypes == true) {
+            this.Core = new Core(settings, metadata, workflows, securityRoles);
+            this.ServiceFactory = new MockupServiceProviderAndFactory(this.Core);
+            if (settings.EnableProxyTypes == true) {
                 EnableProxyTypes();
             }
-
-
-            // Create default business unit
-            var rootBu = Metadata.RootBusinessUnit;
-            RootBusinessUnit = Metadata.RootBusinessUnit.ToEntityReference();
-
-            // Create admin user
-            AdminuserId = Guid.NewGuid();
-            var admin = new Entity(LogicalNames.SystemUser) {
-                Id = AdminuserId
-            };
-            this.AdminUser = admin.ToEntityReference();
-
-            admin["firstname"] = "CRM";
-            admin["lastname"] = "System";
-            admin["businessunitid"] = rootBu.ToEntityReference();
-            RequestHandler.Initialize(admin);
-            RequestHandler.SetSecurityRoles(new EntityReference(LogicalNames.SystemUser, AdminUser.Id),
-                SecurityRoles
-                .Where(s => s.RoleTemplateId == new Guid("627090ff-40a3-4053-8790-584edc5be201")) // System administrator role template ID
-                .Select(s => s.RoleId)
-                .ToArray());
-
         }
 
 
@@ -101,7 +72,7 @@ namespace DG.Tools.XrmMockup {
 
             var assembly = assemblies.FirstOrDefault();
             if (assembly != null) {
-                RequestHandler.EnableProxyTypes(assembly);
+                Core.EnableProxyTypes(assembly);
                 HasProxyTypes = true;
             }
         }
@@ -110,13 +81,12 @@ namespace DG.Tools.XrmMockup {
         /// Resets the local test data
         /// </summary>
         public void ResetEnvironment() {
-            this.TimeOffset = new TimeSpan();
-            RequestHandler.ResetEnvironment();
+            Core.ResetEnvironment();
         }
 
 
         internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext pluginContext) {
-            return RequestHandler.Execute(request, userRef, pluginContext);
+            return Core.Execute(request, userRef, pluginContext);
         }
 
         /// <summary>
@@ -124,8 +94,8 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="offset"></param>
         public void AddTime(TimeSpan offset) {
-            this.TimeOffset = this.TimeOffset.Add(offset);
-            RequestHandler.TriggerWaitingWorkflows();
+            Core.AddTime(offset);
+            
         }
 
         /// <summary>
@@ -188,7 +158,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="path"></param>
         public void AddWorkflow(string path) {
             var workflow = Utility.GetWorkflow(path);
-            RequestHandler.AddWorkflow(workflow);
+            Core.AddWorkflow(workflow);
         }
 
         /// <summary>
@@ -197,7 +167,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="entity"></param>
         /// <returns></returns>
         public bool ContainsEntity(Entity entity) {
-            return RequestHandler.ContainsEntity(entity);
+            return Core.ContainsEntity(entity);
         }
 
         /// <summary>
@@ -205,7 +175,7 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="entities"></param>
         public void PopulateWith(params Entity[] entities) {
-            RequestHandler.PopulateWith(entities);
+            Core.PopulateWith(entities);
         }
 
         /// <summary>
@@ -213,7 +183,7 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <returns></returns>
         public IOrganizationService GetAdminService() {
-            return ServiceFactory.CreateOrganizationService(AdminUser.Id);
+            return ServiceFactory.CreateAdminOrganizationService();
         }
 
         /// <summary>
@@ -221,27 +191,27 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="Settings"></param>
         /// <returns></returns>
-        public IOrganizationService GetConfigurableAdminService(MockupServiceSettings Settings) {
-            return ServiceFactory.CreateConfigurableOrganizationService(AdminUser.Id, Settings);
+        public IOrganizationService GetAdminService(MockupServiceSettings Settings) {
+            return ServiceFactory.CreateAdminOrganizationService(Settings);
         }
 
         /// <summary>
         /// Create an organization service for the systemuser with the given id
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public IOrganizationService CreateOrganizationService(Guid id) {
-            return ServiceFactory.CreateOrganizationService(id);
+        public IOrganizationService CreateOrganizationService(Guid userId) {
+            return ServiceFactory.CreateOrganizationService(userId);
         }
 
         /// <summary>
         /// Create an organization service, with the given settings, for the systemuser with the given id
         /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="Settings"></param>
+        /// <param name="userId"></param>
+        /// <param name="settings"></param>
         /// <returns></returns>
-        public IOrganizationService CreateOrganizationService(Guid Id, MockupServiceSettings Settings) {
-            return ServiceFactory.CreateConfigurableOrganizationService(Id, Settings);
+        public IOrganizationService CreateOrganizationService(Guid userId, MockupServiceSettings settings) {
+            return ServiceFactory.CreateOrganizationService(userId, settings);
         }
 
         /// <summary>
@@ -253,7 +223,7 @@ namespace DG.Tools.XrmMockup {
         /// <returns></returns>
         public Entity CreateUser(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
             var user = new Entity("systemuser");
-            user.Attributes["businessunitid"] = businessUnit;
+            user["businessunitid"] = businessUnit;
             return CreateUser(service, user, securityRoles);
         }
 
@@ -273,7 +243,7 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("You tried to create a user with security roles, but did not specify a businessunit in the user's attributes");
             }
             user.Id = service.Create(user);
-            RequestHandler.SetSecurityRoles(new EntityReference(LogicalNames.SystemUser, user.Id), securityRoles);
+            Core.SetSecurityRoles(new EntityReference(LogicalNames.SystemUser, user.Id), securityRoles);
             return service.Retrieve(LogicalNames.SystemUser, user.Id, new ColumnSet(true));
         }
 
@@ -305,7 +275,7 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
             team.Id = service.Create(team);
-            RequestHandler.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+            Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
 

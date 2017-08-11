@@ -48,19 +48,19 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestRollUp() {
             using (var context = new Xrm(orgAdminUIService)) {
-                var childlessBus = new dg_bus();
-                childlessBus.dg_name = "Buu";
+                var childlessBus = new dg_bus() { dg_name = "Buu" };
                 childlessBus.Id = orgAdminUIService.Create(childlessBus);
+
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, childlessBus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.IsNull(retrieved.dg_Totalallowance);
 
                 childlessBus.dg_name = "Woop";
                 orgAdminUIService.Update(childlessBus);
+
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, childlessBus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.IsNull(retrieved.dg_Totalallowance);
 
-                var busName = "Woop";
-                var bus = new dg_bus { dg_name = busName };
+                var bus = new dg_bus { dg_name = "Woop" };
                 bus.Id = orgAdminUIService.Create(bus);
 
                 var child1 = orgAdminUIService.Create(
@@ -83,9 +83,10 @@ namespace DG.XrmMockupTest {
                         }
                     });
 
-                var anotherCurrency = new TransactionCurrency();
-                anotherCurrency.ExchangeRate = 0.5m;
-                anotherCurrency.CurrencyPrecision = 2;
+                var anotherCurrency = new TransactionCurrency() {
+                    ExchangeRate = 0.5m,
+                    CurrencyPrecision = 2
+                };
                 anotherCurrency.Id = orgAdminUIService.Create(anotherCurrency);
 
                 var child3 = orgAdminUIService.Create(
@@ -105,9 +106,10 @@ namespace DG.XrmMockupTest {
                 Assert.IsNull(retrieved.dg_MinAllowance);
                 Assert.IsNull(retrieved.dg_AvgAllowance);
 
-                var req = new CalculateRollupFieldRequest();
-                req.FieldName = "dg_totalallowance";
-                req.Target = bus.ToEntityReference();
+                var req = new CalculateRollupFieldRequest() {
+                    FieldName = "dg_totalallowance",
+                    Target = bus.ToEntityReference()
+                };
                 orgAdminUIService.Execute(req);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
@@ -148,15 +150,17 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestPrecisionSource() {
             using (var context = new Xrm(orgAdminUIService)) {
-                var currency = new TransactionCurrency();
-                currency.ExchangeRate = 1m;
-                currency.CurrencyPrecision = 3;
+                var currency = new TransactionCurrency() {
+                    ExchangeRate = 1m,
+                    CurrencyPrecision = 3
+                };
                 currency.Id = orgAdminUIService.Create(currency);
 
-                var bus = new dg_bus();
-                bus.dg_name = "Woop";
-                bus.dg_Ticketprice = 10.1234m;
-                bus.TransactionCurrencyId = currency.ToEntityReference();
+                var bus = new dg_bus() {
+                    dg_name = "Woop",
+                    dg_Ticketprice = 10.1234m,
+                    TransactionCurrencyId = currency.ToEntityReference()
+                };
                 bus.Id = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;

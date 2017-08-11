@@ -402,9 +402,9 @@ namespace DG.XrmMockupTest {
 
 
                 var isTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail == true).ToList();
-                var isNotTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail != true).ToList();
-
                 Assert.AreEqual(1, isTrue.Count);
+
+                var isNotTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail != true).ToList();
                 Assert.AreEqual(1, isNotTrue.Count);
             }
         }

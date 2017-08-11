@@ -9,6 +9,7 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
+using System.Runtime.ExceptionServices;
 
 namespace DG.Tools.XrmMockup {
 
@@ -108,13 +109,13 @@ namespace DG.Tools.XrmMockup {
         /// <param name="preImage"></param>
         /// <param name="postImage"></param>
         /// <param name="pluginContext"></param>
-        /// <param name="crm"></param>
+        /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, XrmMockupBase crm) {
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
             if (!this.registeredPlugins.ContainsKey(operation)) return;
             if (!this.registeredPlugins[operation].ContainsKey(stage)) return;
 
-            registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, crm));
+            registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
 
@@ -147,7 +148,7 @@ namespace DG.Tools.XrmMockup {
                 this.attributes = String.IsNullOrWhiteSpace(attrs) ? new HashSet<string>() : new HashSet<string>(attrs.Split(','));
             }
 
-            public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, XrmMockupBase crm) {
+            public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
                 // Check if it is supposed to execute. Returns preemptively, if it should not.
                 var entity = entityObject as Entity;
                 var entityRef = entityObject as EntityReference;
@@ -180,15 +181,17 @@ namespace DG.Tools.XrmMockup {
                 }
 
                 if (entityName != "" && (operation == EventOperation.Associate || operation == EventOperation.Disassociate)) {
-                    throw new MockupException($"An {operation.ToString()} plugin was registered for a specific entity, can only" +
-                        " be registered on AnyEntity");
+                    throw new MockupException(
+                        $"An {operation} plugin step was registered for a specific entity, which can only be registered on AnyEntity");
                 }
 
                 // Create the plugin context
                 var thisPluginContext = pluginContext.Clone();
                 thisPluginContext.Mode = (int)this.mode;
                 thisPluginContext.Stage = (int)this.stage;
-                thisPluginContext.PrimaryEntityId = guid;
+                if (thisPluginContext.PrimaryEntityId == Guid.Empty) { 
+                    thisPluginContext.PrimaryEntityId = guid;
+                }
                 thisPluginContext.PrimaryEntityName = logicalName;
 
                 foreach (var image in this.images) {
@@ -203,13 +206,13 @@ namespace DG.Tools.XrmMockup {
                 }
 
                 // Create service provider and execute the plugin
-                MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(crm, thisPluginContext, new TracingService());
+                MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService());
                 try {
                     pluginExecute(provider);
                 } catch (TargetInvocationException e) {
-                    throw e.InnerException;
+                    ExceptionDispatchInfo.Capture(e.InnerException).Throw();
                 }
-            }
+    }
 
             public int CompareTo(PluginTrigger other) {
                 return this.order.CompareTo(other.order);

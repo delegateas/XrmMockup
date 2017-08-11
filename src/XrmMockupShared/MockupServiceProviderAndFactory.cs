@@ -13,18 +13,18 @@ namespace DG.Tools.XrmMockup {
     /// </summary>
     internal class MockupServiceProviderAndFactory : IServiceProvider, IOrganizationServiceFactory {
 
-        private XrmMockupBase crm;
+        private Core core;
         private ITracingService tracingService;
-        private PluginContext pluginContext { get; set; }
+        private PluginContext pluginContext;
 
         /// <summary>
         /// Creates new MockupServiceProviderAndFactory object
         /// </summary>
-        /// <param name="crm"></param>
-        public MockupServiceProviderAndFactory(XrmMockupBase crm) : this(crm, null, new TracingService()) { }
+        /// <param name="core"></param>
+        public MockupServiceProviderAndFactory(Core core) : this(core, null, new TracingService()) { }
 
-        internal MockupServiceProviderAndFactory(XrmMockupBase crm, PluginContext pluginContext, ITracingService tracingService) {
-            this.crm = crm;
+        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, ITracingService tracingService) {
+            this.core = core;
             this.pluginContext = pluginContext;
             this.tracingService = tracingService;
         }
@@ -47,11 +47,19 @@ namespace DG.Tools.XrmMockup {
         /// <param name="userId"></param>
         /// <returns></returns>
         public IOrganizationService CreateOrganizationService(Guid? userId) {
-            return new MockupService(crm, userId, this.pluginContext);
+            return new MockupService(core, userId, this.pluginContext);
         }
 
-        public IOrganizationService CreateConfigurableOrganizationService(Guid? userId, MockupServiceSettings settings) {
-            return new MockupService(crm, userId, this.pluginContext, settings);
-        }        
+        public IOrganizationService CreateOrganizationService(Guid? userId, MockupServiceSettings settings) {
+            return new MockupService(core, userId, this.pluginContext, settings);
+        }
+
+        public IOrganizationService CreateAdminOrganizationService() {
+            return new MockupService(core, null, this.pluginContext);
+        }
+
+        public IOrganizationService CreateAdminOrganizationService(MockupServiceSettings settings) {
+            return new MockupService(core, null, this.pluginContext, settings);
+        }
     }
 }

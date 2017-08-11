@@ -22,22 +22,21 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                
-                var attributes = new AttributeCollection();
-                attributes.Add("name", "Burgers");
-                attributes.Add("address1_city", "Virum");
-
+                var attributes = new AttributeCollection {
+                    { "name", "Burgers" },
+                    { "address1_city", "Virum" }
+                };
                 orgAdminUIService.Create(new Account { Attributes = attributes });
 
-                var keyAttributes = new KeyAttributeCollection();
-                keyAttributes.Add("name", "Burgers");
-                keyAttributes.Add("address1_city", "Virum");
-
+                var keyAttributes = new KeyAttributeCollection {
+                    { "name", "Burgers" },
+                    { "address1_city", "Virum" }
+                };
                 var req = new RetrieveRequest {
                     Target = new EntityReference {
-                            LogicalName = Account.EntityLogicalName,
-                            KeyAttributes = keyAttributes
-                        }
+                        LogicalName = Account.EntityLogicalName,
+                        KeyAttributes = keyAttributes
+                    }
                 };
                 
                 var resp = orgAdminUIService.Execute(req) as RetrieveResponse;
@@ -45,9 +44,9 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual("Burgers", entity.Name);
                 Assert.AreEqual("Virum", entity.Address1_City);
 
-                var newAttributes = new AttributeCollection();
-                newAttributes.Add("name", "Toast");
-
+                var newAttributes = new AttributeCollection {
+                    { "name", "Toast" }
+                };
                 orgAdminUIService.Update(new Account { KeyAttributes = keyAttributes, Attributes = newAttributes });
 
                 keyAttributes["name"] = "Toast";

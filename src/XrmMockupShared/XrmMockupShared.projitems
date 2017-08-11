@@ -9,6 +9,7 @@
     <Import_RootNamespace>XrmMockupShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Database\DbAttributeTypeMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\XrmDb.cs" />
@@ -22,7 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />

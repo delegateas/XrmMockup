@@ -16,15 +16,20 @@ namespace DG.Tools.XrmMockup.Database {
             this.EntityMetadata = entityMetadata;
         }
 
-        public DbTable this[string TableName] {
+        public DbTable this[string tableName] {
             get {
-                if (!TableDict.ContainsKey(TableName) && EntityMetadata.ContainsKey(TableName)) TableDict[TableName] = new DbTable(EntityMetadata[TableName]);
-                return TableDict[TableName];
+                if (!TableDict.ContainsKey(tableName)) {
+                    if (!EntityMetadata.TryGetValue(tableName, out EntityMetadata entityMetadata)) {
+                        throw new MockupException($"No EntityMetadata found for entity with logical name '{tableName}'.");
+                    }
+                    TableDict[tableName] = new DbTable(entityMetadata);
+                }
+                return TableDict[tableName];
             }
         }
 
         public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
-            var dbEntity = DbRow.FromEntity(xrmEntity, withReferenceChecks ? this : null);
+            var dbEntity = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
             if (dbEntity.Id != Guid.Empty) {
                 if (this[dbEntity.Table.TableName][dbEntity.Id] != null) {
                     throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' and id '{xrmEntity.Id}', but a record already exists with that Id.");
@@ -48,13 +53,16 @@ namespace DG.Tools.XrmMockup.Database {
             this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
         }
 
+        public void Delete(Entity xrmEntity) {
+            this[xrmEntity.LogicalName].Remove(xrmEntity.Id);
+        }
 
 
         internal DbRow GetDbRow(EntityReference reference) {
             DbRow currentDbRow = null;
 
             if (reference.Id != Guid.Empty) {
-                currentDbRow = TableDict[reference.LogicalName][reference.Id];
+                currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null) {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
@@ -64,7 +72,7 @@ namespace DG.Tools.XrmMockup.Database {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference.KeyAttributes?.Count > 0) {
-                currentDbRow = TableDict[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
+                currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
 
                 if (currentDbRow == null) {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with key attributes '{reference.KeyAttributes.ToPrettyString()}' " +
