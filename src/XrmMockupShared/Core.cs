@@ -14,6 +14,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
+using DG.Tools.XrmMockup.Plugin;
 
 namespace DG.Tools.XrmMockup {
 
@@ -89,14 +90,14 @@ namespace DG.Tools.XrmMockup {
             return Execute(request, userRef, null);
         }
 
-        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext) {
+        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, MockupPluginContext parentPluginContext) {
             // Setup
             dataMethods.HandleInternalPreOperations(request, userRef);
 
             var primaryRef = Mappings.GetPrimaryEntityReferenceFromRequest(request);
 
             // Create the plugin context
-            var pluginContext = new PluginContext() {
+            var pluginContext = new MockupPluginContext() {
                 UserId = userRef.Id,
                 InitiatingUserId = userRef.Id,
                 MessageName = RequestNameToMessageName(request.RequestName),
@@ -168,7 +169,7 @@ namespace DG.Tools.XrmMockup {
             TriggerWaitingWorkflows();
         }
 
-        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext) {
+        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef, MockupPluginContext parentPluginContext) {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (request is AssignRequest assignRequest) {
                 var targetEntity = dataMethods.GetEntityOrNull(assignRequest.Target);

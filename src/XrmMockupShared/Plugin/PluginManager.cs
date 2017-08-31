@@ -11,7 +11,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Runtime.ExceptionServices;
 
-namespace DG.Tools.XrmMockup {
+namespace DG.Tools.XrmMockup.Plugin {
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
@@ -111,112 +111,12 @@ namespace DG.Tools.XrmMockup {
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
+                object entity, Entity preImage, Entity postImage, MockupPluginContext pluginContext, Core core) {
             if (!this.registeredPlugins.ContainsKey(operation)) return;
             if (!this.registeredPlugins[operation].ContainsKey(stage)) return;
 
             registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
-
-
-        class PluginTrigger : IComparable<PluginTrigger> {
-            public Action<MockupServiceProviderAndFactory> pluginExecute;
-
-            string entityName;
-            EventOperation operation;
-            ExecutionStage stage;
-            ExecutionMode mode;
-            int order = 0;
-            Dictionary<string, EntityMetadata> metadata;
-
-            HashSet<string> attributes;
-            IEnumerable<ImageTuple> images;
-
-            public PluginTrigger(EventOperation operation, ExecutionStage stage,
-                    Action<MockupServiceProviderAndFactory> pluginExecute, Tuple<StepConfig, ExtendedStepConfig,
-                        IEnumerable<ImageTuple>> stepConfig, Dictionary<string, EntityMetadata> metadata) {
-                this.pluginExecute = pluginExecute;
-                this.entityName = stepConfig.Item1.Item4;
-                this.operation = operation;
-                this.stage = stage;
-                this.mode = (ExecutionMode)stepConfig.Item2.Item2;
-                this.order = stepConfig.Item2.Item4;
-                this.images = stepConfig.Item3;
-                this.metadata = metadata;
-
-                var attrs = stepConfig.Item2.Item5 ?? "";
-                this.attributes = String.IsNullOrWhiteSpace(attrs) ? new HashSet<string>() : new HashSet<string>(attrs.Split(','));
-            }
-
-            public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-                // Check if it is supposed to execute. Returns preemptively, if it should not.
-                var entity = entityObject as Entity;
-                var entityRef = entityObject as EntityReference;
-
-                var guid = (entity != null) ? entity.Id : entityRef.Id;
-                var logicalName = (entity != null) ? entity.LogicalName : entityRef.LogicalName;
-                if (entityName != "" && entityName != logicalName) return;
-
-                if (pluginContext.Depth > 8) {
-                    throw new FaultException(
-                        "This workflow job was canceled because the workflow that started it included an infinite loop." +
-                        " Correct the workflow logic and try again.");
-                }
-
-                if (operation == EventOperation.Update && stage == ExecutionStage.PostOperation) {
-                    var shadowAddedAttributes = postImage.Attributes.Where(a => !preImage.Attributes.ContainsKey(a.Key) && !entity.Attributes.ContainsKey(a.Key));
-                    entity = entity.CloneEntity();
-                    entity.Attributes.AddRange(shadowAddedAttributes);
-                }
-
-                if (operation == EventOperation.Update && attributes.Count > 0) {
-                    var foundAttr = false;
-                    foreach (var attr in entity.Attributes) {
-                        if (attributes.Contains(attr.Key)) {
-                            foundAttr = true;
-                            break;
-                        }
-                    }
-                    if (!foundAttr) return;
-                }
-
-                if (entityName != "" && (operation == EventOperation.Associate || operation == EventOperation.Disassociate)) {
-                    throw new MockupException(
-                        $"An {operation} plugin step was registered for a specific entity, which can only be registered on AnyEntity");
-                }
-
-                // Create the plugin context
-                var thisPluginContext = pluginContext.Clone();
-                thisPluginContext.Mode = (int)this.mode;
-                thisPluginContext.Stage = (int)this.stage;
-                if (thisPluginContext.PrimaryEntityId == Guid.Empty) { 
-                    thisPluginContext.PrimaryEntityId = guid;
-                }
-                thisPluginContext.PrimaryEntityName = logicalName;
-
-                foreach (var image in this.images) {
-                    var type = (ImageType)image.Item3;
-                    var cols = image.Item4 != null ? new ColumnSet(image.Item4.Split(',')) : new ColumnSet(true);
-                    if (postImage != null && stage == ExecutionStage.PostOperation && (type == ImageType.PostImage || type == ImageType.Both)) {
-                        thisPluginContext.PostEntityImages.Add(image.Item1, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
-                    }
-                    if (preImage != null && type == ImageType.PreImage || type == ImageType.Both) {
-                        thisPluginContext.PreEntityImages.Add(image.Item1, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
-                    }
-                }
-
-                // Create service provider and execute the plugin
-                MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService());
-                try {
-                    pluginExecute(provider);
-                } catch (TargetInvocationException e) {
-                    ExceptionDispatchInfo.Capture(e.InnerException).Throw();
-                }
-    }
-
-            public int CompareTo(PluginTrigger other) {
-                return this.order.CompareTo(other.order);
-            }
-        }
+        
     }
 }

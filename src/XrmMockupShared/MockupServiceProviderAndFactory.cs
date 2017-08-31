@@ -1,4 +1,5 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using DG.Tools.XrmMockup.Plugin;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace DG.Tools.XrmMockup {
 
         private Core core;
         private ITracingService tracingService;
-        private PluginContext pluginContext;
+        private MockupPluginContext pluginContext;
 
         /// <summary>
         /// Creates new MockupServiceProviderAndFactory object
@@ -23,7 +24,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="core"></param>
         public MockupServiceProviderAndFactory(Core core) : this(core, null, new TracingService()) { }
 
-        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, ITracingService tracingService) {
+        internal MockupServiceProviderAndFactory(Core core, MockupPluginContext pluginContext, ITracingService tracingService) {
             this.core = core;
             this.pluginContext = pluginContext;
             this.tracingService = tracingService;

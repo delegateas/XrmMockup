@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools.XrmMockup {
-    internal class PluginContext : IPluginExecutionContext {
+namespace DG.Tools.XrmMockup.Plugin {
+
+    internal class MockupPluginContext : IPluginExecutionContext {
 
         private ParameterCollection _propertyBag = new ParameterCollection();
 
@@ -17,7 +18,7 @@ namespace DG.Tools.XrmMockup {
         private EntityImageCollection _preEntityImages = new EntityImageCollection();
         private EntityImageCollection _postEntityImages = new EntityImageCollection();
 
-        public PluginContext() {
+        public MockupPluginContext() {
             this.CorrelationId = Guid.NewGuid();
         }
 
@@ -249,8 +250,8 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        public PluginContext Clone() {
-            var clone = new PluginContext();
+        public MockupPluginContext Clone() {
+            var clone = new MockupPluginContext();
             CloneDataCollection(this._propertyBag, clone._propertyBag, CloneFunc);
             CloneDataCollection(this._inputParameters, clone._inputParameters, CloneFunc);
             CloneDataCollection(this._outputParameters, clone._outputParameters, CloneFunc);
@@ -268,8 +269,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         private object CloneFunc(object obj) {
-            var entityRef = obj as EntityReference;
-            if (entityRef != null) {
+            if (obj is EntityReference entityRef) {
                 return new EntityReference(entityRef.LogicalName, entityRef.Id);
             }
             return obj;

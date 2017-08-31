@@ -11,7 +11,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using System.Activities;
-
+using DG.Tools.XrmMockup.Plugin;
 
 namespace DG.Tools.XrmMockup {
 
@@ -76,7 +76,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
+                object entity, Entity preImage, Entity postImage, MockupPluginContext pluginContext, Core core) {
             //Parallel.ForEach(asynchronousWorkflows, (x => ExecuteIfMatch(x, operation, stage, entity,
             //        preImage, postImage, pluginContext, crm)));
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
@@ -85,7 +85,7 @@ namespace DG.Tools.XrmMockup {
                     preImage, postImage, pluginContext, core));
         }
 
-        internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
+        internal void ExecuteWaitingWorkflows(MockupPluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
             var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
             foreach (var waitInfo in waitingWorkflows.ToList()) {
@@ -103,7 +103,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
-            object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
+            object entityObject, Entity preImage, Entity postImage, MockupPluginContext pluginContext, Core core) {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             if (workflow.LogicalName != "workflow") return;
             var entity = entityObject as Entity;
@@ -169,7 +169,7 @@ namespace DG.Tools.XrmMockup {
 
         }
 
-        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
+        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, MockupPluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
             return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService(typeof(ITracingService)) as ITracingService);

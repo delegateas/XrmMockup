@@ -9,6 +9,7 @@ using Microsoft.Xrm.Sdk.Client;
 using System.Reflection;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Crm.Sdk.Messages;
+using DG.Tools.XrmMockup.Plugin;
 
 namespace DG.Tools.XrmMockup {
 
@@ -20,10 +21,10 @@ namespace DG.Tools.XrmMockup {
         private Core core;
         private Guid userId;
         private EntityReference userRef;
-        private PluginContext pluginContext;
+        private MockupPluginContext pluginContext;
         private MockupServiceSettings settings;
 
-        internal MockupService(Core core, Guid? userId, PluginContext pluginContext, MockupServiceSettings settings) {
+        internal MockupService(Core core, Guid? userId, MockupPluginContext pluginContext, MockupServiceSettings settings) {
             this.core = core;
             this.pluginContext = pluginContext;
             this.userId = userId.GetValueOrDefault();
@@ -33,7 +34,7 @@ namespace DG.Tools.XrmMockup {
             this.settings = settings;
         }
 
-        internal MockupService(Core core, Guid? userId, PluginContext pluginContext) : this(core, userId, pluginContext, null) { }
+        internal MockupService(Core core, Guid? userId, MockupPluginContext pluginContext) : this(core, userId, pluginContext, null) { }
 
         /// <summary>
         /// Create a new MockupService for the given Mockup of CRM 

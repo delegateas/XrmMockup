@@ -22,8 +22,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceProviderAndFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginImageRegistration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginStepRegistration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />

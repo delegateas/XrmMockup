@@ -7,36 +7,25 @@ using System.Threading.Tasks;
 namespace DG.Tools.XrmMockup {
 
 
-    internal enum ExecutionMode {
+    public enum ExecutionMode {
         Synchronous = 0,
         Asynchronous = 1,
     }
 
-    internal enum ExecutionStage {
+    public enum ExecutionStage {
         PreValidation = 10,
         PreOperation = 20,
         PostOperation = 40,
     }
 
-    internal enum Deployment {
+    public enum Deployment {
         ServerOnly = 0,
         MicrosoftDynamicsCRMClientforOutlookOnly = 1,
         Both = 2,
     }
 
-    internal enum FullNameConventionCode {
-        LastFirst = 0,
-        FirstLast = 1,
-        LastFirstMiddleInitial = 2,
-        FirstMiddleInitialLast = 3,
-        LastFirstMiddle = 4,
-        FirstMiddleLast = 5,
-        LastSpaceFirst = 6,
-        LastNoSpaceFirst = 7
-    }
-
     // EventOperation based on CRM 2016
-    internal enum EventOperation {
+    public enum EventOperation {
         AddItem,
         AddListMembers,
         AddMember,
@@ -139,9 +128,20 @@ namespace DG.Tools.XrmMockup {
         Win
     }
 
-    internal enum ImageType {
+    public enum ImageType {
         PreImage = 0,
         PostImage = 1,
         Both = 2,
+    }
+
+    internal enum FullNameConventionCode {
+        LastFirst = 0,
+        FirstLast = 1,
+        LastFirstMiddleInitial = 2,
+        FirstMiddleInitialLast = 3,
+        LastFirstMiddle = 4,
+        FirstMiddleLast = 5,
+        LastSpaceFirst = 6,
+        LastNoSpaceFirst = 7
     }
 }

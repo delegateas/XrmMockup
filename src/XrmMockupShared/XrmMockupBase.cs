@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
+using DG.Tools.XrmMockup.Plugin;
 
 namespace DG.Tools.XrmMockup {
 
@@ -85,7 +86,7 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext pluginContext) {
+        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, MockupPluginContext pluginContext) {
             return Core.Execute(request, userRef, pluginContext);
         }
 

@@ -29,16 +29,16 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
-            var dbEntity = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
-            if (dbEntity.Id != Guid.Empty) {
-                if (this[dbEntity.Table.TableName][dbEntity.Id] != null) {
+            var dbRow = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
+            if (dbRow.Id != Guid.Empty) {
+                if (this[dbRow.Table.TableName][dbRow.Id] != null) {
                     throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' and id '{xrmEntity.Id}', but a record already exists with that Id.");
                 }
             } else {
-                dbEntity.Id = Guid.NewGuid();
+                dbRow.Id = Guid.NewGuid();
             }
 
-            this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
+            this[dbRow.Table.TableName][dbRow.Id] = dbRow;
         }
 
         public void AddRange(IEnumerable<Entity> xrmEntities, bool withReferenceChecks = true) {
