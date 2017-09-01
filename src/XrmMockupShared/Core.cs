@@ -202,6 +202,11 @@ namespace DG.Tools.XrmMockup {
             if (RequestHandlerMap.TryGetValue(request.RequestName, out Func<OrganizationRequest, EntityReference, OrganizationResponse> executeFunc)) {
                 return executeFunc(request, userRef);
             }
+
+            if (settings.ExceptionFreeRequests.Contains(request.RequestName)) {
+                return new OrganizationResponse();
+            }
+
             throw new NotImplementedException("Execute for the given request has not been implemented yet.");
         }
 

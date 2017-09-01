@@ -48,7 +48,8 @@ namespace DG.XrmMockupTest {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
-                IncludeAllWorkflows = false
+                IncludeAllWorkflows = false,
+                ExceptionFreeRequests = new string[] { "TestWrongRequest" }
             };
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);

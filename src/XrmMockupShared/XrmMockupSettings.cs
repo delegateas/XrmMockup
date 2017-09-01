@@ -26,5 +26,7 @@ namespace DG.Tools.XrmMockup
         /// Sets whether all workflow definitions should be included on startup. Default is true.
         /// </summary>
         public bool? IncludeAllWorkflows { get; set; }
+
+        public IEnumerable<string> ExceptionFreeRequests { get; set; }
     }
 }
