@@ -20,8 +20,6 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.State, typeof(int) },
             { AttributeTypeCode.Status, typeof(int) },
 
-#if !(XRM_MOCKUP_2011)
-#endif
             { AttributeTypeCode.Integer, typeof(int) },
             { AttributeTypeCode.Lookup,  typeof(DbRow) },
             // TODO: Figure out type
@@ -32,9 +30,7 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.Customer, typeof(DbRow) },
             { AttributeTypeCode.PartyList, typeof(DbRow[]) },
             { AttributeTypeCode.String, typeof(string) },
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             { AttributeTypeCode.Uniqueidentifier, typeof(Guid) },
-#endif
         };
 
         public static bool IsValidType(AttributeMetadata attrMetadata, object value) {
