@@ -1,4 +1,3 @@
-
 #### 0.4.0-beta
 * Most classes have been moved to the namespace `DG.Tools.XrmMockup`.
 * Changed the internal database implementation to act more like it's real counter-part.
@@ -6,6 +5,7 @@
 * Fixed handling of generic OrganizationRequests given a RequestName.
 * Fixed a problem with `AddHours(...)` on XrmMockupBase.
 * Fixed a problem with the stack trace being cut-off when an error occurred inside a plugin.
+* Added a setting, which enables developers to choose to ignore requests, in case they aren't implemented, instead of throwing an exception.
 
 #### 0.3.5-beta - July 19 2017
 * Fixed bug with status transitions when they were disabled
