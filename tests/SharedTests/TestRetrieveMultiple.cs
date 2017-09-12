@@ -487,6 +487,18 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(0, result.Count);
             }
         }
+
+        [TestMethod]
+        public void TestContextWhere()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var userId = context.SystemUserSet.First().Id;
+                //Currently returns null. Should return the same record.
+                var reFetched = context.SystemUserSet.Single(a => a.Id == userId);
+                Assert.IsNotNull(reFetched);
+            }
+        }
     }
 
 }
