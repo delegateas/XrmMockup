@@ -16,9 +16,6 @@ namespace DG.Tools.XrmMockup.Metadata {
         public static ArgumentParser ParsedArgs;
 
         static List<string> listOfAssemblies = new List<string>();
-        static Program() {
-            AppDomain.CurrentDomain.AssemblyResolve += ResolveXrmAssemblies;
-        }
 
         private static Assembly ResolveXrmAssemblies(object sender, ResolveEventArgs args) {
             if (listOfAssemblies.Contains(args.Name)) {
@@ -33,9 +30,14 @@ namespace DG.Tools.XrmMockup.Metadata {
             }
         }
 
-        static void Main(string[] args) {
+        static void Main(string[] args)
+        {
             ParsedArgs = new ArgumentParser(Arguments.ArgList, args);
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveXrmAssemblies;
+            GenerateMetadata();
+        }
 
+        static void GenerateMetadata() {
             var auth = new AuthHelper(
                 ParsedArgs[Arguments.Url],
                 ParsedArgs[Arguments.Username],
