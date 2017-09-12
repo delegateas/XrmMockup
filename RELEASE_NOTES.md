@@ -1,4 +1,7 @@
-#### 0.4.0-beta
+#### 0.4.1-beta
+* Fixed [issue](https://github.com/delegateas/XrmMockup/issues/17) with loading assemblies
+
+#### 0.4.0-beta - September 01 2017
 * Most classes have been moved to the namespace `DG.Tools.XrmMockup`.
 * Changed the internal database implementation to act more like it's real counter-part.
 * MetadataGenerator can now also consume command-line arguments, instead of only those in the .config file.
