@@ -29,6 +29,11 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
+            var primaryIdKey = this[xrmEntity.LogicalName].Metadata.PrimaryIdAttribute;
+            if (!xrmEntity.Attributes.ContainsKey(primaryIdKey)) {
+                xrmEntity[primaryIdKey] = xrmEntity.Id;
+            }
+
             var dbEntity = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
             if (dbEntity.Id != Guid.Empty) {
                 if (this[dbEntity.Table.TableName][dbEntity.Id] != null) {
