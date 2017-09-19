@@ -12,7 +12,7 @@ namespace DG.Tools.XrmMockup {
         public Entity BaseOrganization;
         public Entity RootBusinessUnit;
         public List<MetaPlugin> Plugins;
-        
+        public OptionSetMetadataBase[] OptionSets;
     }
 
     public class MetaPlugin {

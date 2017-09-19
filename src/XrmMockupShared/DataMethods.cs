@@ -53,16 +53,19 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         public string OrganizationName { get; private set; }
 
-        
+
+
         public TimeSpan TimeOffset { get; private set; }
-        
+
+
 
         internal DataMethods(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
             this.Core = core;
             this.EntityMetadata = metadata.EntityMetadata;
             this.Metadata = metadata;
             this.SecurityRoles = SecurityRoles.ToDictionary(s => s.RoleId, s => s);
-            
+
+
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
@@ -266,6 +269,62 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
+        private void AddFormattedValues(Entity entity) {
+
+        }
+
+        private Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata) {
+            var isValid =
+                attributeMetadata is PicklistAttributeMetadata ||
+                attributeMetadata is BooleanAttributeMetadata ||
+                attributeMetadata is MoneyAttributeMetadata ||
+                attributeMetadata is LookupAttributeMetadata ||
+                attributeMetadata is IntegerAttributeMetadata ||
+                attributeMetadata is DateTimeAttributeMetadata ||
+                attributeMetadata is MemoAttributeMetadata ||
+                attributeMetadata is DoubleAttributeMetadata ||
+                attributeMetadata is DecimalAttributeMetadata;
+            return isValid;
+        }
+
+        private string GetFormattedValues(AttributeMetadata metadataAtt, object value, Entity entity) {
+            if (metadataAtt is PicklistAttributeMetadata) {
+                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
+                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
+                return optionset.Label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is BooleanAttributeMetadata) {
+                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
+                return label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is MoneyAttributeMetadata) {
+                var currency = db.GetEntity(entity.GetAttributeValue<EntityReference>("transactioncurrencyid"));
+                var currencysymbol = currency.GetAttributeValue<string>("currencysymbol");
+                return currencysymbol + (value as Money).Value.ToString();
+            }
+
+            if (metadataAtt is LookupAttributeMetadata) {
+                try {
+                    return (value as EntityReference).Name;
+                } catch (NullReferenceException e) {
+                    Console.WriteLine("No lookup entity exists: " + e.Message);
+                }
+            }
+
+            if (metadataAtt is IntegerAttributeMetadata ||
+                metadataAtt is DateTimeAttributeMetadata ||
+                metadataAtt is MemoAttributeMetadata ||
+                metadataAtt is DoubleAttributeMetadata ||
+                metadataAtt is DecimalAttributeMetadata) {
+                return value.ToString();
+            }
+
+            return null;
+        }
+
         private Entity RetrieveDefaultNull(EntityReference entRef, ColumnSet columnSet) {
             var dbEntity = db.GetEntityOrNull(entRef);
             if (dbEntity == null) return null;
@@ -274,10 +333,11 @@ namespace DG.Tools.XrmMockup {
 
         public Entity Retrieve(EntityReference entRef, ColumnSet columnSet,
             RelationshipQueryCollection relatedEntityQuery, bool setUnsettableFields, EntityReference userRef) {
-            Entity entity;
+
             if (entRef.LogicalName == null) {
                 throw new FaultException("You must provide a LogicalName");
             }
+
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (columnSet == null && entRef.KeyAttributes.Count == 0) {
@@ -289,8 +349,9 @@ namespace DG.Tools.XrmMockup {
             }
 #endif
 
-            entity = db.GetEntity(entRef);
-            
+            var entity = db.GetEntity(entRef);
+
+
             if (!HasPermission(entity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{entity.LogicalName}'");
             }
@@ -319,6 +380,22 @@ namespace DG.Tools.XrmMockup {
             entity = db.GetEntity(entRef);
             entity = GetEntityWithAttributes(entity, columnSet);
 
+            var metadata = GetMetadata(entity.LogicalName).Attributes
+                .Where(a => IsValidForFormattedValues(a));
+
+            var formattedValues = new List<KeyValuePair<string, string>>();
+            foreach (var a in entity.Attributes) {
+                var metadataAtt = metadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
+                var formattedValuePair = new KeyValuePair<string, string>(a.Key, GetFormattedValues(metadataAtt, a.Value, entity));
+                if (formattedValuePair.Value != null) {
+                    formattedValues.Add(formattedValuePair);
+                }
+            }
+
+            if (formattedValues.Count > 0) {
+                entity.FormattedValues.AddRange(formattedValues);
+            }
+
             if (!setUnsettableFields) {
                 RemoveUnsettableAttributes("Retrieve", entity);
             }
@@ -333,10 +410,20 @@ namespace DG.Tools.XrmMockup {
             return entity;
         }
 
+
+
         internal Guid? GetEntityId(EntityReference reference) {
             if (reference?.Id != Guid.Empty) return reference.Id;
             var dbEntity = db.GetEntityOrNull(reference);
             return dbEntity?.Id;
+        }
+
+        internal OptionSetMetadataBase[] RetrieveAllOptionSets() {
+            return Metadata.OptionSets;
+        }
+
+        internal OptionSetMetadataBase RetrieveOptionSet(string name) {
+            return Metadata.OptionSets.Where(x => x.Name == name).FirstOrDefault();
         }
 
         private void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef) {
@@ -603,7 +690,7 @@ namespace DG.Tools.XrmMockup {
 
             var transactioncurrencyId = "transactioncurrencyid";
             var exchangerate = "exchangerate";
-            if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) && 
+            if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) &&
                 Utility.IsSettableAttribute(transactioncurrencyId, EntityMetadata[clonedEntity.LogicalName]) &&
                 EntityMetadata[clonedEntity.LogicalName].Attributes.Any(m => m is MoneyAttributeMetadata) &&
                 (serviceRole == MockupServiceSettings.Role.UI ||
@@ -617,7 +704,7 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-            if (!clonedEntity.Attributes.ContainsKey(exchangerate) && 
+            if (!clonedEntity.Attributes.ContainsKey(exchangerate) &&
                 Utility.IsSettableAttribute(exchangerate, EntityMetadata[clonedEntity.LogicalName]) &&
                 clonedEntity.Attributes.ContainsKey(transactioncurrencyId)) {
                 var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
@@ -627,14 +714,14 @@ namespace DG.Tools.XrmMockup {
             }
 
             var attributes = GetMetadata(clonedEntity.LogicalName).Attributes;
-            if (!clonedEntity.Attributes.ContainsKey("statecode") && 
+            if (!clonedEntity.Attributes.ContainsKey("statecode") &&
                 Utility.IsSettableAttribute("statecode", EntityMetadata[clonedEntity.LogicalName])) {
                 var stateMeta = attributes.First(a => a.LogicalName == "statecode") as StateAttributeMetadata;
                 clonedEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
             }
             if (!clonedEntity.Attributes.ContainsKey("statuscode") &&
                 Utility.IsSettableAttribute("statuscode", EntityMetadata[clonedEntity.LogicalName])) {
-                var statusMeta = attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata; 
+                var statusMeta = attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata;
                 clonedEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
             }
 
@@ -645,7 +732,7 @@ namespace DG.Tools.XrmMockup {
                 clonedEntity["createdby"] = userRef;
             }
 
-            if (Utility.IsSettableAttribute("modifiedon", EntityMetadata[clonedEntity.LogicalName]) && 
+            if (Utility.IsSettableAttribute("modifiedon", EntityMetadata[clonedEntity.LogicalName]) &&
                 Utility.IsSettableAttribute("modifiedby", EntityMetadata[clonedEntity.LogicalName])) {
                 clonedEntity["modifiedon"] = clonedEntity["createdon"];
                 clonedEntity["modifiedby"] = clonedEntity["createdby"];
@@ -683,7 +770,8 @@ namespace DG.Tools.XrmMockup {
             if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser) {
                 SetFullName(clonedEntity);
             }
-            
+
+
             db.Add(clonedEntity);
 
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {
@@ -862,7 +950,7 @@ namespace DG.Tools.XrmMockup {
 
         private void KeepAttributesAndAliasAttributes(Entity entity, ColumnSet toKeep) {
             var clone = entity.CloneEntity(GetMetadata(entity.LogicalName), toKeep);
-            if(toKeep != null && !toKeep.AllColumns)
+            if (toKeep != null && !toKeep.AllColumns)
                 clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains(".")));
             entity.Attributes.Clear();
             entity.Attributes.AddRange(clone.Attributes);
@@ -884,7 +972,8 @@ namespace DG.Tools.XrmMockup {
 
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
             var collection = new List<Entity>();
-            
+
+
             foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
 
                 if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria)) continue;
@@ -1103,7 +1192,7 @@ namespace DG.Tools.XrmMockup {
         internal void SetState(EntityReference entityRef, OptionSetValue state, OptionSetValue status, EntityReference userRef) {
             var record = db.GetEntity(entityRef);
 
-            if (Utility.IsSettableAttribute("statecode", EntityMetadata[record.LogicalName]) && 
+            if (Utility.IsSettableAttribute("statecode", EntityMetadata[record.LogicalName]) &&
                 Utility.IsSettableAttribute("statuscode", EntityMetadata[record.LogicalName])) {
                 var prevEntity = record.CloneEntity();
                 record["statecode"] = state;
@@ -1535,7 +1624,7 @@ namespace DG.Tools.XrmMockup {
             var relationship = entRef.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
             var roles = securityRoles
                 .Select(sr => SecurityRoleMapping.Where(srm => srm.Value == sr).Select(srm => srm.Key))
-                .Select(roleGuids => 
+                .Select(roleGuids =>
                     db["role"]
                     .Select(x => x.ToEntity())
                     .Where(r => roleGuids.Contains(r.Id))
@@ -1628,13 +1717,15 @@ namespace DG.Tools.XrmMockup {
                 .Where(r => r.CascadeConfiguration.Reparent == CascadeType.Cascade || r.CascadeConfiguration.Reparent == CascadeType.Active)
                 .Where(r => entity.Attributes.ContainsKey(r.ReferencingAttribute));
 
-            
-            if (parentChangeRelationships.Any(r => 
+
+
+            if (parentChangeRelationships.Any(r =>
                 db.GetDbRowOrNull(r.ReferencedEntity, GetGuidFromReference(entity[r.ReferencingAttribute]))
                     ?.GetColumn<DbRow>("ownerid").Id == caller.Id)) {
                 return true;
             }
-            
+
+
             return false;
         }
     }
