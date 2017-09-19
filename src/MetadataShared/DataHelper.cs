@@ -63,7 +63,17 @@ namespace DG.Tools.XrmMockup.Metadata
             var rootBU = GetBusinessUnits().First(bu => !bu.Attributes.ContainsKey("parentbusinessunitid"));
             skeleton.RootBusinessUnit = rootBU.ToEntity<Entity>();
 
+            Console.WriteLine("Getting All Optionsets");
+            skeleton.OptionSets = RetrieveAllOptionSets();
+
             return skeleton;
+        }
+
+        public OptionSetMetadataBase[] RetrieveAllOptionSets() {
+            var optionSetRequest = new RetrieveAllOptionSetsRequest();
+            optionSetRequest.RetrieveAsIfPublished = true;
+            var results = service.Execute(optionSetRequest) as RetrieveAllOptionSetsResponse;
+            return results.OptionSetMetadata;
         }
 
         private List<MetaPlugin> GetPlugins(string[] solutions) {

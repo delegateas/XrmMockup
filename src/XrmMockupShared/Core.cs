@@ -55,7 +55,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="SecurityRoles"></param>
         /// <param name="Workflows"></param>
         public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
-            
+
             this.dataMethods = new DataMethods(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.settings = Settings;
@@ -78,7 +78,7 @@ namespace DG.Tools.XrmMockup {
                 HandleCreate(new CreateRequest { Target = entity }, null);
             }
         }
-        
+
         /// <summary>
         /// Execute the request and trigger plugins if needed
         /// </summary>
@@ -211,7 +211,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         private string RequestNameToMessageName(string requestName) {
-            switch(requestName) {
+            switch (requestName) {
                 case "LoseOpportunity": return "Lose";
                 case "WinOpportunity": return "Win";
                 default: return requestName;
@@ -279,7 +279,7 @@ namespace DG.Tools.XrmMockup {
                 obj = request.Parameters[key];
             }
             if (request is WinOpportunityRequest || request is LoseOpportunityRequest) {
-                var close = request is WinOpportunityRequest 
+                var close = request is WinOpportunityRequest
                     ? (request as WinOpportunityRequest).OpportunityClose
                     : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
@@ -321,7 +321,7 @@ namespace DG.Tools.XrmMockup {
         #region Execute methods for the various requests
 
         public Dictionary<string, Func<OrganizationRequest, EntityReference, OrganizationResponse>> RequestHandlerMap = new Dictionary<string, Func<OrganizationRequest, EntityReference, OrganizationResponse>>();
-        
+
         public void InitRequestMap() {
             RequestHandlerMap.Add("RetrieveMultiple", HandleRetrieveMultiple);
             RequestHandlerMap.Add("Retrieve", HandleRetrieve);
@@ -343,6 +343,9 @@ namespace DG.Tools.XrmMockup {
             RequestHandlerMap.Add("RevokeAccess", HandleRevokeAccess);
             RequestHandlerMap.Add("WinOpportunity", HandleWinOpportunity);
             RequestHandlerMap.Add("LoseOpportunity", HandleLoseOpportunity);
+            RequestHandlerMap.Add("RetrieveAllOptionSets", HandleRetrieveAllOptionSets);
+            RequestHandlerMap.Add("RetrieveOptionSet", HandleRetrieveOptionSet);
+
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             RequestHandlerMap.Add("CalculateRollupField", HandleCalculateRollupField);
 #endif
@@ -350,7 +353,9 @@ namespace DG.Tools.XrmMockup {
             RequestHandlerMap.Add("Upsert", HandleUpsert);
 #endif
         }
-        
+
+
+
 
         public static T MakeRequest<T>(OrganizationRequest req) where T : OrganizationRequest {
             var typedReq = Activator.CreateInstance<T>();
@@ -359,6 +364,20 @@ namespace DG.Tools.XrmMockup {
             }
             typedReq.Parameters = req.Parameters;
             return typedReq;
+        }
+
+        private RetrieveOptionSetResponse HandleRetrieveOptionSet(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveOptionSetRequest>(orgRequest);
+            var resp = new RetrieveOptionSetResponse();
+            resp.Results["OptionSetMetadata"] = dataMethods.RetrieveOptionSet(request.Name);
+            return resp;
+        }
+
+        private RetrieveAllOptionSetsResponse HandleRetrieveAllOptionSets(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<RetrieveAllOptionSetsRequest>(orgRequest);
+            var resp = new RetrieveAllOptionSetsResponse();
+            resp.Results["OptionSetMetadata"] = dataMethods.RetrieveAllOptionSets();
+            return resp;
         }
 
         private WinOpportunityResponse HandleWinOpportunity(OrganizationRequest orgRequest, EntityReference userRef) {
