@@ -1,5 +1,6 @@
-#### 0.4.1-beta
-* Fixed [issue](https://github.com/delegateas/XrmMockup/issues/17) with loading assemblies
+#### 0.4.1-beta - September 15 2017
+* Fixed https://github.com/delegateas/XrmMockup/issues/17 with loading assemblies
+* Fixed https://github.com/delegateas/XrmMockup/issues/16 with id being invalid in LINQ for context
 
 #### 0.4.0-beta - September 01 2017
 * Most classes have been moved to the namespace `DG.Tools.XrmMockup`.

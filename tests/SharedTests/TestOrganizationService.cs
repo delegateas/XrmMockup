@@ -11,7 +11,7 @@ namespace SharedTests
     [TestClass]
     public class TestOrganizationService : UnitTestBase
     {
-        [TestMethod]
+        [TestMethod, Ignore]
         public void TestOrgSvcWithNonExistentUser()
         {
             var origAdminUser = crm.AdminUser.Id;
