@@ -1,3 +1,7 @@
+#### 0.4.2-beta - September 21 2017
+* Fixed https://github.com/delegateas/XrmMockup/issues/15 concerning implementing RetrieveOptionSetRequest
+* Fixed https://github.com/delegateas/XrmMockup/issues/14 concerning adding formatted values to retrieved records
+
 #### 0.4.1-beta - September 15 2017
 * Fixed https://github.com/delegateas/XrmMockup/issues/17 with loading assemblies
 * Fixed https://github.com/delegateas/XrmMockup/issues/16 with id being invalid in LINQ for context
