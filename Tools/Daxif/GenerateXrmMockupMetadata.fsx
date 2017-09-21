@@ -17,7 +17,7 @@ let targetPath vName = Path.solutionRoot ++ (sprintf @"tests\XrmMockup%sTest\Met
 
 crmNamesWithVersions
 |> Seq.iter (fun (vName, _) ->
-
+  printfn "Executing for %s" vName
   Env.lab4.executeProcess(
     metadataGenPath vName,
 

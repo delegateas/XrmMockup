@@ -10,11 +10,21 @@ using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace DG.XrmMockupTest {
 
     [TestClass]
     public class TestMetadata : UnitTestBase {
+
+        [TestMethod]
+        public void TestRetrieveAllOptionSets() {
+            using (var context = new Xrm(orgAdminUIService)) {
+                var optionsRetrieved = orgAdminUIService.Execute(new RetrieveAllOptionSetsRequest()) as RetrieveAllOptionSetsResponse;
+                Assert.IsTrue(optionsRetrieved.OptionSetMetadata.Any(x => x.Name == "workflow_stage"));
+
+            }
+        }
 
         [TestMethod]
         public void TestSetttingAttributes() {
