@@ -18,6 +18,15 @@ namespace DG.XrmMockupTest {
     public class TestMetadata : UnitTestBase {
 
         [TestMethod]
+        public void TestRetrieveOptionSet() {
+            using (var context = new Xrm(orgAdminUIService)) {
+                var optionRetrieved = orgAdminUIService.Execute(new RetrieveOptionSetRequest() { Name = "workflow_stage" }) as RetrieveOptionSetResponse;
+                Assert.IsTrue(optionRetrieved.OptionSetMetadata.Name == "workflow_stage");
+
+            }
+        }
+
+        [TestMethod]
         public void TestRetrieveAllOptionSets() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var optionsRetrieved = orgAdminUIService.Execute(new RetrieveAllOptionSetsRequest()) as RetrieveAllOptionSetsResponse;
