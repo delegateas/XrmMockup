@@ -19,11 +19,11 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class DataMethods {
-        private XrmDb db;
+        internal XrmDb db;
 
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private Dictionary<string, Money> CalcAndRollupTrees;
-        private EntityReference baseCurrency;
+        internal EntityReference baseCurrency;
         private int baseCurrencyPrecision;
         private FullNameConventionCode fullnameFormat;
         private Dictionary<string, EntityMetadata> EntityMetadata;
@@ -118,7 +118,7 @@ namespace DG.Tools.XrmMockup {
                 .ToArray());
         }
 
-        private void AddRolesForBusinessUnit(EntityReference businessUnit) {
+        internal void AddRolesForBusinessUnit(EntityReference businessUnit) {
             foreach (var sr in SecurityRoles.Values) {
                 var role = new Entity("role");
                 role["businessunitid"] = businessUnit;
@@ -416,7 +416,9 @@ namespace DG.Tools.XrmMockup {
             return entity;
         }
 
-
+        internal Entity GetEntityOrNull(EntityReference reference) {
+            return db.GetEntityOrNull(reference);
+        }
 
         internal Guid? GetEntityId(EntityReference reference) {
             if (reference?.Id != Guid.Empty) return reference.Id;
@@ -450,7 +452,7 @@ namespace DG.Tools.XrmMockup {
                     if (relationship.PrimaryEntityRole == EntityRole.Referenced) {
                         var entityAttributes = db.GetEntityOrNull(entity.ToEntityReference()).Attributes;
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
-                            var referencingGuid = GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
+                            var referencingGuid = Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
                             queryExpr.Criteria.AddCondition(
                                 new Microsoft.Xrm.Sdk.Query.ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
                         }
@@ -654,7 +656,7 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        private void HandleCurrencies(Entity entity) {
+        internal void HandleCurrencies(Entity entity) {
             HandleBaseCurrencies(entity);
             HandlePrecision(entity);
         }
@@ -803,7 +805,7 @@ namespace DG.Tools.XrmMockup {
             return clonedEntity.Id;
         }
 
-        private void SetFullName(Entity dbEntity) {
+        internal void SetFullName(Entity dbEntity) {
             var first = dbEntity.GetAttributeValue<string>("firstname");
             if (first == null) first = "";
             var middle = dbEntity.GetAttributeValue<string>("middlename");
@@ -855,7 +857,7 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        private bool HasCircularReference(Entity entity) {
+        internal bool HasCircularReference(Entity entity) {
             if (!EntityMetadata.ContainsKey(entity.LogicalName)) return false;
             var metadata = GetMetadata(entity.LogicalName).Attributes;
             var references = entity.Attributes.Where(a => metadata.FirstOrDefault(m => m.LogicalName == a.Key) is LookupAttributeMetadata).Select(a => a.Value);
@@ -1480,7 +1482,7 @@ namespace DG.Tools.XrmMockup {
             SetState(subordinateReference, new OptionSetValue(1), new OptionSetValue(2), userRef);
         }
 
-        private void SetOwner(Entity entity, EntityReference owner) {
+        internal void SetOwner(Entity entity, EntityReference owner) {
             var ownershipType = EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
             if (!ownershipType.HasValue) {
@@ -1602,10 +1604,6 @@ namespace DG.Tools.XrmMockup {
             Initialize();
         }
 
-        public Entity GetEntityOrNull(EntityReference reference) {
-            return db.GetEntityOrNull(reference);
-        }
-
 
         internal void EnableProxyTypes(Assembly proxyTypeAssembly) {
             foreach (var type in proxyTypeAssembly.GetLoadableTypes()) {
@@ -1667,12 +1665,8 @@ namespace DG.Tools.XrmMockup {
 
         }
 
-        private Guid GetGuidFromReference(object reference) {
-            return reference is EntityReference ? (reference as EntityReference).Id : (Guid)reference;
-        }
 
-
-        private bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
+        internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
             if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == entity.LogicalName))) {
                 // system has no security roles for this entity. Is a case with linkentities which have no security roles
                 return true;
@@ -1726,7 +1720,7 @@ namespace DG.Tools.XrmMockup {
 
 
             if (parentChangeRelationships.Any(r =>
-                db.GetDbRowOrNull(r.ReferencedEntity, GetGuidFromReference(entity[r.ReferencingAttribute]))
+                db.GetDbRowOrNull(r.ReferencedEntity, Utility.GetGuidFromReference(entity[r.ReferencingAttribute]))
                     ?.GetColumn<DbRow>("ownerid").Id == caller.Id)) {
                 return true;
             }

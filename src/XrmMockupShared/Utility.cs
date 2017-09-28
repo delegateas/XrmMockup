@@ -286,6 +286,10 @@ namespace DG.Tools.XrmMockup {
             return securityRoles;
         }
 
+        internal static Guid GetGuidFromReference(object reference) {
+            return reference is EntityReference ? (reference as EntityReference).Id : (Guid)reference;
+        }
+
         internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity) {
             var reference = entity.ToEntityReference();
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
