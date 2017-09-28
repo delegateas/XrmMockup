@@ -524,8 +524,9 @@ namespace DG.Tools.XrmMockup {
             var toReturn = new ExecuteMultipleResponse();
             var responses = new ExecuteMultipleResponseItemCollection();
             for (var i = 0; i < request.Requests.Count; i++) {
-                var resp = new ExecuteMultipleResponseItem();
-                resp.RequestIndex = i;
+                var resp = new ExecuteMultipleResponseItem {
+                    RequestIndex = i
+                };
                 var r = request.Requests[i];
                 try {
                     var orgResp = Execute(r, userRef);
