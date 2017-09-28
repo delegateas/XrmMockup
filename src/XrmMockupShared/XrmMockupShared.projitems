@@ -24,6 +24,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />

@@ -14,6 +14,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
+using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
 
@@ -26,6 +27,8 @@ namespace DG.Tools.XrmMockup {
         private WorkflowManager workflowManager;
         private DataMethods dataMethods;
         private XrmMockupSettings settings;
+        private MetadataSkeleton metadata;
+        private Dictionary<Guid, SecurityRole> securityRoles;
         public MockupServiceProviderAndFactory ServiceFactory { get; }
 
         public EntityReference AdminUserRef {
@@ -45,6 +48,7 @@ namespace DG.Tools.XrmMockup {
                 return dataMethods.TimeOffset;
             }
         }
+        public List<RequestHandler> RequestHandlers;
 
 
         /// <summary>
@@ -59,9 +63,15 @@ namespace DG.Tools.XrmMockup {
             this.dataMethods = new DataMethods(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.settings = Settings;
+            this.metadata = metadata;
+            this.securityRoles = SecurityRoles.ToDictionary(x => x.RoleId, x => x);
             this.InitRequestMap();
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
+
+            RequestHandlers = new List<RequestHandler> {
+                new CreateRequestHandler(this, ref dataMethods)
+            };
 
             var tracingService = new TracingService();
             var factory = new MockupServiceProviderAndFactory(this, null, tracingService);
@@ -197,11 +207,16 @@ namespace DG.Tools.XrmMockup {
             if (workflowManager.GetActionDefaultNull(request.RequestName) != null) {
                 return ExecuteAction(request);
             }
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if (handler != null) {
+                return handler.Execute(request, userRef);
+            }
 
             // Execute matching handler function
             if (RequestHandlerMap.TryGetValue(request.RequestName, out Func<OrganizationRequest, EntityReference, OrganizationResponse> executeFunc)) {
                 return executeFunc(request, userRef);
             }
+
 
             if (settings.ExceptionFreeRequests.Contains(request.RequestName)) {
                 return new OrganizationResponse();
@@ -325,7 +340,7 @@ namespace DG.Tools.XrmMockup {
         public void InitRequestMap() {
             RequestHandlerMap.Add("RetrieveMultiple", HandleRetrieveMultiple);
             RequestHandlerMap.Add("Retrieve", HandleRetrieve);
-            RequestHandlerMap.Add("Create", HandleCreate);
+            //RequestHandlerMap.Add("Create", HandleCreate);
             RequestHandlerMap.Add("Update", HandleUpdate);
             RequestHandlerMap.Add("Delete", HandleDelete);
             RequestHandlerMap.Add("SetState", HandleSetState);
