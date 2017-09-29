@@ -1,4 +1,5 @@
-﻿using Microsoft.Crm.Sdk.Messages;
+﻿using DG.Tools.XrmMockup.Database;
+using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
@@ -9,11 +10,15 @@ namespace DG.Tools.XrmMockup {
     internal abstract class RequestHandler {
         protected DataMethods dataMethods;
         protected Core core;
+        protected XrmDb db;
+        protected MetadataSkeleton metadata;
         internal string RequestName;
 
-        internal RequestHandler(Core core, ref DataMethods dataMethods, string RequestName) {
+        internal RequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods dataMethods, string RequestName) {
             this.dataMethods = dataMethods;
             this.core = core;
+            this.db = db;
+            this.metadata = metadata;
             this.RequestName = RequestName;
         }
 
