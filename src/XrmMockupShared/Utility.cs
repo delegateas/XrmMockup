@@ -89,6 +89,246 @@ namespace DG.Tools.XrmMockup {
             return metadata[logicalName];
         }
 
+        internal static void SetFullName(MetadataSkeleton metadata, Entity dbEntity) {
+            var fullnameFormat = 
+                (FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
+            var first = dbEntity.GetAttributeValue<string>("firstname");
+            if (first == null) first = "";
+            var middle = dbEntity.GetAttributeValue<string>("middlename");
+            if (middle == null) middle = "";
+            var last = dbEntity.GetAttributeValue<string>("lastname");
+            if (last == null) last = "";
+            switch (fullnameFormat) {
+                case FullNameConventionCode.FirstLast:
+                    dbEntity["fullname"] = first != "" ? first + " " + last : last;
+                    break;
+                case FullNameConventionCode.LastFirst:
+                    dbEntity["fullname"] = first != "" ? last + ", " + first : last;
+                    break;
+                case FullNameConventionCode.LastNoSpaceFirst:
+                    dbEntity["fullname"] = first != "" ? last + first : last;
+                    break;
+                case FullNameConventionCode.LastSpaceFirst:
+                    dbEntity["fullname"] = first != "" ? last + " " + first : last;
+                    break;
+                case FullNameConventionCode.FirstMiddleLast:
+                    dbEntity["fullname"] = first;
+                    if (middle != "") dbEntity["fullname"] += " " + middle;
+                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
+                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    break;
+                case FullNameConventionCode.FirstMiddleInitialLast:
+                    dbEntity["fullname"] = first;
+                    if (middle != "") dbEntity["fullname"] += " " + middle[0] + ".";
+                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
+                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    break;
+                case FullNameConventionCode.LastFirstMiddle:
+                    dbEntity["fullname"] = last;
+                    if (first != "") dbEntity["fullname"] += ", " + first;
+                    if (middle != "") dbEntity["fullname"] += (string)dbEntity["fullname"] == last ? ", " + middle : " " + middle;
+                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    break;
+                case FullNameConventionCode.LastFirstMiddleInitial:
+                    dbEntity["fullname"] = last;
+                    if (first != "") dbEntity["fullname"] += ", " + first;
+                    if (middle != "") dbEntity["fullname"] +=
+                            (string)dbEntity["fullname"] == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
+                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    break;
+
+            }
+            if (dbEntity["fullname"] != null) {
+                (dbEntity["fullname"] as string).TrimStart().TrimEnd();
+            }
+        }
+
+        internal static RelationshipMetadataBase GetRelationshipMetadataDefaultNull(Dictionary<string, EntityMetadata> entityMetadata, string name, Guid metadataId, EntityReference userRef) {
+            if (name == null && metadataId == Guid.Empty) {
+                return null;
+            }
+            RelationshipMetadataBase relationshipBase;
+            foreach (var meta in entityMetadata) {
+                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
+                if (relationshipBase != null) {
+                    return relationshipBase;
+                }
+                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.SchemaName == name);
+                if (relationshipBase != null) {
+                    return relationshipBase;
+                }
+                var oneToManyBases = meta.Value.ManyToOneRelationships.Concat(meta.Value.OneToManyRelationships);
+                relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.MetadataId == metadataId);
+                if (relationshipBase != null) {
+                    return relationshipBase;
+                }
+                relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.SchemaName == name);
+                if (relationshipBase != null) {
+                    return relationshipBase;
+                }
+            }
+            return null;
+        }
+
+        internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata) {
+            return metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
+        }
+
+        private static int GetBaseCurrencyPrecision(MetadataSkeleton metadata) {
+            return metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
+        }
+
+        private static void HandleBaseCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+            if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
+            var transAttr = "transactioncurrencyid";
+            if (!entity.Attributes.ContainsKey(transAttr)) {
+                return;
+            }
+            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
+            var attributesMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
+            if (!currency.GetAttributeValue<decimal?>("exchangerate").HasValue) {
+                throw new FaultException($"No exchangerate specified for transactioncurrency '{entity.GetAttributeValue<EntityReference>(transAttr)}'");
+            }
+
+            var baseCurrency = GetBaseCurrency(metadata);
+            foreach (var attr in entity.Attributes.ToList()) {
+                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && !attr.Key.EndsWith("_base")) {
+                    if (entity.GetAttributeValue<EntityReference>(transAttr) == baseCurrency) {
+                        entity[attr.Key + "_base"] = attr.Value;
+                    } else {
+                        if (attr.Value is Money money) {
+                            var value = money.Value / currency.GetAttributeValue<decimal?>("exchangerate").Value;
+                            entity[attr.Key + "_base"] = new Money(value);
+                        }
+                    }
+                }
+            }
+        }
+
+        internal static void HandlePrecision(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+            if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
+            var transAttr = "transactioncurrencyid";
+            if (!entity.Attributes.ContainsKey(transAttr)) {
+                return;
+            }
+            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
+            var attributesMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
+            var baseCurrencyPrecision = GetBaseCurrencyPrecision(metadata);
+            foreach (var attr in entity.Attributes.ToList()) {
+                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && attr.Value != null) {
+                    var attributeMetadata = attributesMetadata.First(m => m.LogicalName == attr.Key) as MoneyAttributeMetadata;
+                    int? precision = null;
+                    switch (attributeMetadata.PrecisionSource) {
+                        case 0:
+                            precision = attributeMetadata.Precision;
+                            break;
+                        case 1:
+                            precision = baseCurrencyPrecision;
+                            break;
+                        case 2:
+                            precision = currency.GetAttributeValue<int?>("currencyprecision");
+                            break;
+                    }
+
+                    if (!precision.HasValue) {
+                        switch (attributeMetadata.PrecisionSource) {
+                            case 0:
+                                throw new MockupException($"No precision set for field '{attr.Key}' on entity '{entity.LogicalName}'");
+                            case 1:
+                                throw new MockupException($"No precision set for organization. Please check you have the correct metadata");
+                            case 2:
+                                throw new MockupException($"No precision set for currency. Make sure you set the precision for your own currencies");
+                        }
+                    }
+
+                    var rounded = Math.Round(((Money)attr.Value).Value, precision.Value);
+                    if (rounded < (decimal)attributeMetadata.MinValue.Value || rounded > (decimal)attributeMetadata.MaxValue.Value) {
+                        throw new FaultException($"'{attr.Key}' was outside the ranges '{attributeMetadata.MinValue}','{attributeMetadata.MaxValue}' with value '{rounded}' ");
+                    }
+                    entity[attr.Key] = new Money(rounded);
+                }
+            }
+        }
+
+        internal static void HandleCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+            HandleBaseCurrencies(metadata, db, entity);
+            HandlePrecision(metadata, db, entity);
+        }
+
+        internal static bool HasCircularReference(Dictionary<string, EntityMetadata> metadata, Entity entity) {
+            if (!metadata.ContainsKey(entity.LogicalName)) return false;
+            var attributeMetadata = metadata.GetMetadata(entity.LogicalName).Attributes;
+            var references = entity.Attributes.Where(a => attributeMetadata.FirstOrDefault(m => m.LogicalName == a.Key) is LookupAttributeMetadata).Select(a => a.Value);
+            foreach (var r in references) {
+                if (r == null) continue;
+                Guid guid;
+                if (r is EntityReference) {
+                    guid = (r as EntityReference).Id;
+                } else if (r is Guid) {
+                    guid = (Guid)r;
+                } else if (r is EntityCollection) {
+                    continue;
+                } else {
+                    throw new NotImplementedException($"{r.GetType()} not implemented in HasCircularReference");
+                }
+                if (guid == entity.Id) return true;
+            }
+            return false;
+        }
+
+        internal static void SetOwner(XrmDb db, DataMethods dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner) {
+            var ownershipType = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
+
+            if (!ownershipType.HasValue) {
+                throw new MockupException($"No ownership type set for '{entity.LogicalName}'");
+            }
+
+            if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned)) {
+                if (db.GetDbRowOrNull(owner) == null) {
+                    throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
+                }
+
+                var prevOwner = entity.Attributes.ContainsKey("ownerid") ? entity["ownerid"] : null;
+                entity["ownerid"] = owner;
+
+                if (!dataMethods.HasPermission(entity, AccessRights.ReadAccess, owner)) {
+                    entity["ownerid"] = prevOwner;
+                    throw new FaultException($"Trying to assign '{entity.LogicalName}' with id '{entity.Id}'" +
+                        $" to '{owner.LogicalName}' with id '{owner.Id}', but owner does not have read access for that entity");
+                }
+
+                entity["owningbusinessunit"] = null;
+                entity["owninguser"] = null;
+                entity["owningteam"] = null;
+
+
+                if (entity.LogicalName != LogicalNames.SystemUser && entity.LogicalName != LogicalNames.Team) {
+                    if (owner.LogicalName == LogicalNames.SystemUser && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned)) {
+                        entity["owninguser"] = owner;
+                    } else if (owner.LogicalName == "team") {
+                        entity["owningteam"] = owner;
+                    } else {
+                        throw new MockupException($"Trying to give owner to {owner.LogicalName} but ownershiptype is {ownershipType.ToString()}");
+                    }
+                    entity["owningbusinessunit"] = GetBusinessUnit(db, owner);
+                }
+            }
+        }
+
+        internal static EntityReference GetBusinessUnit(XrmDb db, EntityReference owner) {
+            var user = db.GetEntityOrNull(owner);
+            if (user == null) {
+                return null;
+            }
+            var buRef = user.GetAttributeValue<EntityReference>("businessunitid");
+            var bu = db.GetEntityOrNull(buRef);
+            if (bu == null) {
+                return null;
+            }
+            buRef.Name = bu.GetAttributeValue<string>("name");
+            return buRef;
+        }
+
         /*
          * Possible error with cast to Entity here, was (T) before
          * 

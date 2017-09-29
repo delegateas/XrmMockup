@@ -19,13 +19,12 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class DataMethods {
-        internal XrmDb db;
+        private XrmDb db;
 
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private Dictionary<string, Money> CalcAndRollupTrees;
         internal EntityReference baseCurrency;
         private int baseCurrencyPrecision;
-        private FullNameConventionCode fullnameFormat;
         private Dictionary<string, EntityMetadata> EntityMetadata;
         private Dictionary<Guid, SecurityRole> SecurityRoles;
         private Dictionary<Guid, Guid> SecurityRoleMapping;
@@ -53,13 +52,7 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         public string OrganizationName { get; private set; }
 
-
-
-        public TimeSpan TimeOffset { get; private set; }
-
-
-
-        internal DataMethods(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
+        internal DataMethods(Core core, XrmDb db, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
             this.Core = core;
             this.EntityMetadata = metadata.EntityMetadata;
             this.Metadata = metadata;
@@ -69,18 +62,17 @@ namespace DG.Tools.XrmMockup {
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            Initialize();
+            Initialize(db);
         }
 
-        private void Initialize() {
+        private void Initialize(XrmDb db) {
             this.OrganizationId = Guid.NewGuid();
             this.OrganizationName = "MockupOrganization";
-            this.TimeOffset = new TimeSpan();
             this.SecurityRoleMapping = new Dictionary<Guid, Guid>();
             this.Shares = new Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>>();
             this.CalcAndRollupTrees = new Dictionary<string, Money>();
 
-            this.db = new XrmDb(EntityMetadata);
+            this.db = db;
 
             // Setup currencies
             var currencies = new List<Entity>();
@@ -88,13 +80,13 @@ namespace DG.Tools.XrmMockup {
                 RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby", "createdonbehalfby");
                 currencies.Add(entity);
             }
-            db.AddRange(currencies);
+            this.db.AddRange(currencies);
 
             // Setup root business unit
             var rootBu = Metadata.RootBusinessUnit;
             rootBu["name"] = "RootBusinessUnit";
             rootBu.Attributes.Remove("organizationid");
-            db.Add(rootBu, false);
+            this.db.Add(rootBu, false);
             this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
             // Setup admin user
@@ -106,9 +98,8 @@ namespace DG.Tools.XrmMockup {
             admin["firstname"] = "";
             admin["lastname"] = "SYSTEM";
             admin["businessunitid"] = RootBusinessUnitRef;
-            db.Add(admin);
-
-            this.fullnameFormat = (FullNameConventionCode)Metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
+            this.db.Add(admin);
+            
             AddRolesForBusinessUnit(RootBusinessUnitRef);
 
             SetSecurityRole(AdminUserRef,
@@ -120,36 +111,24 @@ namespace DG.Tools.XrmMockup {
 
         internal void AddRolesForBusinessUnit(EntityReference businessUnit) {
             foreach (var sr in SecurityRoles.Values) {
+                var roleMeta = EntityMetadata.GetMetadata("role");
                 var role = new Entity("role");
+                role.Id = Guid.NewGuid();
+                role[roleMeta.PrimaryIdAttribute] = role.Id;
                 role["businessunitid"] = businessUnit;
                 role["name"] = sr.Name;
                 role["roletemplateid"] = sr.RoleTemplateId;
-                role.Id = Guid.NewGuid();
-                Create(role, AdminUserRef);
+                role["createdby"] = AdminUserRef;
+                role["createdon"] = DateTime.Now.Add(Core.TimeOffset);
+                role["modifiedby"] = AdminUserRef;
+                role["modifiedon"] = DateTime.Now.Add(Core.TimeOffset);
+                db.Add(role);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
             }
         }
 
-        internal void AddTime(TimeSpan offset) {
-            this.TimeOffset = TimeOffset.Add(offset);
-        }
-
         internal EntityMetadata GetMetadata(string logicalName) {
             return EntityMetadata.GetMetadata(logicalName);
-        }
-
-        internal EntityReference GetBusinessUnit(EntityReference owner) {
-            var user = db.GetEntityOrNull(owner);
-            if (user == null) {
-                return null;
-            }
-            var buRef = user.GetAttributeValue<EntityReference>("businessunitid");
-            var bu = db.GetEntityOrNull(buRef);
-            if (bu == null) {
-                return null;
-            }
-            buRef.Name = bu.GetAttributeValue<string>("name");
-            return buRef;
         }
 
         private bool HasType(string entityType) {
@@ -361,7 +340,7 @@ namespace DG.Tools.XrmMockup {
                     throw new NotImplementedException("Unknown type when parsing calculated attr");
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
-                tree.Execute(entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true)), TimeOffset, service, serviceFactory, trace);
+                tree.Execute(entity.CloneEntity(GetMetadata(entity.LogicalName), new ColumnSet(true)), Core.TimeOffset, service, serviceFactory, trace);
             }
         }
 #endif
@@ -407,7 +386,7 @@ namespace DG.Tools.XrmMockup {
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            HandlePrecision(entity);
+            Utility.HandlePrecision(Metadata, db, entity);
 #endif
             if (relatedEntityQuery != null) {
                 AddRelatedEntities(entity, relatedEntityQuery, userRef);
@@ -586,81 +565,6 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-
-        private void HandleBaseCurrencies(Entity entity) {
-            if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
-            var transAttr = "transactioncurrencyid";
-            if (!entity.Attributes.ContainsKey(transAttr)) {
-                return;
-            }
-            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
-            var attributesMetadata = EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
-            if (!currency.GetAttributeValue<decimal?>("exchangerate").HasValue) {
-                throw new FaultException($"No exchangerate specified for transactioncurrency '{entity.GetAttributeValue<EntityReference>(transAttr)}'");
-            }
-            foreach (var attr in entity.Attributes.ToList()) {
-                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && !attr.Key.EndsWith("_base")) {
-                    if (entity.GetAttributeValue<EntityReference>(transAttr) == baseCurrency) {
-                        entity[attr.Key + "_base"] = attr.Value;
-                    } else {
-                        if (attr.Value is Money money) {
-                            var value = money.Value / currency.GetAttributeValue<decimal?>("exchangerate").Value;
-                            entity[attr.Key + "_base"] = new Money(value);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void HandlePrecision(Entity entity) {
-            if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
-            var transAttr = "transactioncurrencyid";
-            if (!entity.Attributes.ContainsKey(transAttr)) {
-                return;
-            }
-            var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
-            var attributesMetadata = EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
-            foreach (var attr in entity.Attributes.ToList()) {
-                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && attr.Value != null) {
-                    var metadata = attributesMetadata.First(m => m.LogicalName == attr.Key) as MoneyAttributeMetadata;
-                    int? precision = null;
-                    switch (metadata.PrecisionSource) {
-                        case 0:
-                            precision = metadata.Precision;
-                            break;
-                        case 1:
-                            precision = baseCurrencyPrecision;
-                            break;
-                        case 2:
-                            precision = currency.GetAttributeValue<int?>("currencyprecision");
-                            break;
-                    }
-
-                    if (!precision.HasValue) {
-                        switch (metadata.PrecisionSource) {
-                            case 0:
-                                throw new MockupException($"No precision set for field '{attr.Key}' on entity '{entity.LogicalName}'");
-                            case 1:
-                                throw new MockupException($"No precision set for organization. Please check you have the correct metadata");
-                            case 2:
-                                throw new MockupException($"No precision set for currency. Make sure you set the precision for your own currencies");
-                        }
-                    }
-
-                    var rounded = Math.Round(((Money)attr.Value).Value, precision.Value);
-                    if (rounded < (decimal)metadata.MinValue.Value || rounded > (decimal)metadata.MaxValue.Value) {
-                        throw new FaultException($"'{attr.Key}' was outside the ranges '{metadata.MinValue}','{metadata.MaxValue}' with value '{rounded}' ");
-                    }
-                    entity[attr.Key] = new Money(rounded);
-                }
-            }
-        }
-
-        internal void HandleCurrencies(Entity entity) {
-            HandleBaseCurrencies(entity);
-            HandlePrecision(entity);
-        }
-
         internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef) {
             if (request.RequestName == "Create") {
                 var entity = request["Target"] as Entity;
@@ -692,7 +596,7 @@ namespace DG.Tools.XrmMockup {
                     $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
             }
 
-            if (HasCircularReference(clonedEntity)) {
+            if (Utility.HasCircularReference(Metadata.EntityMetadata, clonedEntity)) {
                 throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
             }
 
@@ -718,7 +622,7 @@ namespace DG.Tools.XrmMockup {
                 var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db[LogicalNames.TransactionCurrency][currencyId.Id];
                 clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
-                HandleCurrencies(clonedEntity);
+                Utility.HandleCurrencies(Metadata, db, clonedEntity);
             }
 
             var attributes = GetMetadata(clonedEntity.LogicalName).Attributes;
@@ -734,7 +638,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (Utility.IsSettableAttribute("createdon", EntityMetadata[clonedEntity.LogicalName])) {
-                clonedEntity["createdon"] = DateTime.Now.Add(TimeOffset);
+                clonedEntity["createdon"] = DateTime.Now.Add(Core.TimeOffset);
             }
             if (Utility.IsSettableAttribute("createdby", EntityMetadata[clonedEntity.LogicalName])) {
                 clonedEntity["createdby"] = userRef;
@@ -750,7 +654,7 @@ namespace DG.Tools.XrmMockup {
             if (clonedEntity.Attributes.ContainsKey("ownerid")) {
                 owner = clonedEntity.GetAttributeValue<EntityReference>("ownerid");
             }
-            SetOwner(clonedEntity, owner);
+            Utility.SetOwner(db, this, Metadata, clonedEntity, owner);
 
             if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
                 clonedEntity.LogicalName == LogicalNames.SystemUser || clonedEntity.LogicalName == LogicalNames.Team) {
@@ -776,7 +680,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser) {
-                SetFullName(clonedEntity);
+                Utility.SetFullName(Metadata, clonedEntity);
             }
 
 
@@ -788,7 +692,7 @@ namespace DG.Tools.XrmMockup {
 
             if (entity.RelatedEntities.Count > 0) {
                 foreach (var relatedEntities in entity.RelatedEntities) {
-                    if (GetRelationshipMetadataDefaultNull(relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null) {
+                    if (Utility.GetRelationshipMetadataDefaultNull(Metadata.EntityMetadata, relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null) {
                         throw new FaultException($"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
                     foreach (var relatedEntity in relatedEntities.Value.Entities) {
@@ -804,81 +708,6 @@ namespace DG.Tools.XrmMockup {
 
             return clonedEntity.Id;
         }
-
-        internal void SetFullName(Entity dbEntity) {
-            var first = dbEntity.GetAttributeValue<string>("firstname");
-            if (first == null) first = "";
-            var middle = dbEntity.GetAttributeValue<string>("middlename");
-            if (middle == null) middle = "";
-            var last = dbEntity.GetAttributeValue<string>("lastname");
-            if (last == null) last = "";
-            switch (fullnameFormat) {
-                case FullNameConventionCode.FirstLast:
-                    dbEntity["fullname"] = first != "" ? first + " " + last : last;
-                    break;
-                case FullNameConventionCode.LastFirst:
-                    dbEntity["fullname"] = first != "" ? last + ", " + first : last;
-                    break;
-                case FullNameConventionCode.LastNoSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + first : last;
-                    break;
-                case FullNameConventionCode.LastSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + " " + first : last;
-                    break;
-                case FullNameConventionCode.FirstMiddleLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle;
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
-                    break;
-                case FullNameConventionCode.FirstMiddleInitialLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle[0] + ".";
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
-                    break;
-                case FullNameConventionCode.LastFirstMiddle:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] += (string)dbEntity["fullname"] == last ? ", " + middle : " " + middle;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
-                    break;
-                case FullNameConventionCode.LastFirstMiddleInitial:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] +=
-                            (string)dbEntity["fullname"] == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
-                    break;
-
-            }
-            if (dbEntity["fullname"] != null) {
-                (dbEntity["fullname"] as string).TrimStart().TrimEnd();
-            }
-        }
-
-        internal bool HasCircularReference(Entity entity) {
-            if (!EntityMetadata.ContainsKey(entity.LogicalName)) return false;
-            var metadata = GetMetadata(entity.LogicalName).Attributes;
-            var references = entity.Attributes.Where(a => metadata.FirstOrDefault(m => m.LogicalName == a.Key) is LookupAttributeMetadata).Select(a => a.Value);
-            foreach (var r in references) {
-                if (r == null) continue;
-                Guid guid;
-                if (r is EntityReference) {
-                    guid = (r as EntityReference).Id;
-                } else if (r is Guid) {
-                    guid = (Guid)r;
-                } else if (r is EntityCollection) {
-                    continue;
-                } else {
-                    throw new NotImplementedException($"{r.GetType()} not implemented in HasCircularReference");
-                }
-                if (guid == entity.Id) return true;
-            }
-            return false;
-        }
-
-
 
         internal EntityCollection RetrieveMultiple(QueryBase query, EntityReference userRef) {
             var queryExpr = query as QueryExpression;
@@ -1102,12 +931,12 @@ namespace DG.Tools.XrmMockup {
 #endif
 
 
-            if (HasCircularReference(updEntity)) {
+            if (Utility.HasCircularReference(Metadata.EntityMetadata, updEntity)) {
                 throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
             }
 
             if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead || updEntity.LogicalName == LogicalNames.SystemUser) {
-                SetFullName(updEntity);
+                Utility.SetFullName(Metadata, updEntity);
             }
 
             xrmEntity.SetAttributes(updEntity.Attributes, EntityMetadata[updEntity.LogicalName]);
@@ -1127,17 +956,17 @@ namespace DG.Tools.XrmMockup {
                 var currencyId = xrmEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db.GetEntity(LogicalNames.TransactionCurrency, currencyId.Id);
                 xrmEntity["exchangerate"] = currency.GetAttributeValue<decimal?>("exchangerate");
-                HandleCurrencies(xrmEntity);
+                Utility.HandleCurrencies(Metadata, db, xrmEntity);
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (updEntity.Attributes.ContainsKey("statecode") || updEntity.Attributes.ContainsKey("statuscode")) {
-                HandleCurrencies(xrmEntity);
+                Utility.HandleCurrencies(Metadata, db, xrmEntity);
             }
 #endif
 
             if (ownerRef != null) {
-                SetOwner(xrmEntity, ownerRef);
+                Utility.SetOwner(db, this, Metadata, xrmEntity, ownerRef);
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
@@ -1208,7 +1037,7 @@ namespace DG.Tools.XrmMockup {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
                 CheckStatusTransitions(record, prevEntity);
 #endif
-                HandleCurrencies(record);
+                Utility.HandleCurrencies(Metadata, db, record);
                 Touch(record, userRef);
 
                 db.Update(record);
@@ -1264,43 +1093,17 @@ namespace DG.Tools.XrmMockup {
                         break;
                 }
             }
-            SetOwner(dbEntity, assignee);
+            Utility.SetOwner(db, this, Metadata, dbEntity, assignee);
             Touch(dbEntity, userRef);
         }
 
-        internal RelationshipMetadataBase GetRelationshipMetadataDefaultNull(string name, Guid metadataId, EntityReference userRef) {
-            if (name == null && metadataId == Guid.Empty) {
-                return null;
-            }
-            RelationshipMetadataBase relationshipBase;
-            foreach (var meta in EntityMetadata) {
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
-                if (relationshipBase != null) {
-                    return relationshipBase;
-                }
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.SchemaName == name);
-                if (relationshipBase != null) {
-                    return relationshipBase;
-                }
-                var oneToManyBases = meta.Value.ManyToOneRelationships.Concat(meta.Value.OneToManyRelationships);
-                relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.MetadataId == metadataId);
-                if (relationshipBase != null) {
-                    return relationshipBase;
-                }
-                relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.SchemaName == name);
-                if (relationshipBase != null) {
-                    return relationshipBase;
-                }
-            }
-            return null;
-        }
 
 
         internal RelationshipMetadataBase GetRelationshipMetadata(string name, Guid metadataId, EntityReference userRef) {
             if (name == null && metadataId == Guid.Empty) {
                 throw new FaultException("Relationship name is required when MetadataId is not specified");
             }
-            var metadata = GetRelationshipMetadataDefaultNull(name, metadataId, userRef);
+            var metadata = Utility.GetRelationshipMetadataDefaultNull(Metadata.EntityMetadata, name, metadataId, userRef);
             if (metadata == null) {
                 throw new FaultException("Could not find relationship");
             }
@@ -1482,45 +1285,6 @@ namespace DG.Tools.XrmMockup {
             SetState(subordinateReference, new OptionSetValue(1), new OptionSetValue(2), userRef);
         }
 
-        internal void SetOwner(Entity entity, EntityReference owner) {
-            var ownershipType = EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
-
-            if (!ownershipType.HasValue) {
-                throw new MockupException($"No ownership type set for '{entity.LogicalName}'");
-            }
-
-            if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned)) {
-                if (db.GetDbRowOrNull(owner) == null) {
-                    throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
-                }
-
-                var prevOwner = entity.Attributes.ContainsKey("ownerid") ? entity["ownerid"] : null;
-                entity["ownerid"] = owner;
-
-                if (!HasPermission(entity, AccessRights.ReadAccess, owner)) {
-                    entity["ownerid"] = prevOwner;
-                    throw new FaultException($"Trying to assign '{entity.LogicalName}' with id '{entity.Id}'" +
-                        $" to '{owner.LogicalName}' with id '{owner.Id}', but owner does not have read access for that entity");
-                }
-
-                entity["owningbusinessunit"] = null;
-                entity["owninguser"] = null;
-                entity["owningteam"] = null;
-
-
-                if (entity.LogicalName != LogicalNames.SystemUser && entity.LogicalName != LogicalNames.Team) {
-                    if (owner.LogicalName == LogicalNames.SystemUser && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned)) {
-                        entity["owninguser"] = owner;
-                    } else if (owner.LogicalName == "team") {
-                        entity["owningteam"] = owner;
-                    } else {
-                        throw new MockupException($"Trying to give owner to {owner.LogicalName} but ownershiptype is {ownershipType.ToString()}");
-                    }
-                    entity["owningbusinessunit"] = GetBusinessUnit(owner);
-                }
-            }
-        }
-
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal Entity CalculateRollUpField(EntityReference entRef, string fieldName, EntityReference userRef) {
             var dbEntity = db.GetEntity(entRef);
@@ -1542,7 +1306,7 @@ namespace DG.Tools.XrmMockup {
                     throw new FaultException($"Field '{fieldName}' on entity '{entRef.LogicalName}' is not a rollup field");
                 } else {
                     var tree = WorkflowConstructor.ParseRollUp(definition);
-                    var resultTree = tree.Execute(dbEntity, TimeOffset, service, serviceFactory, trace);
+                    var resultTree = tree.Execute(dbEntity, Core.TimeOffset, service, serviceFactory, trace);
                     var resultLocaltion = ((resultTree.StartActivity as RollUp).Aggregation[1] as Aggregate).VariableName;
                     var result = resultTree.Variables[resultLocaltion];
                     if (result != null) {
@@ -1550,7 +1314,7 @@ namespace DG.Tools.XrmMockup {
                     }
                 }
             }
-            HandleCurrencies(dbEntity);
+            Utility.HandleCurrencies(Metadata, db, dbEntity);
             db.Update(dbEntity);
             return db.GetEntity(entRef);
         }
@@ -1558,7 +1322,7 @@ namespace DG.Tools.XrmMockup {
 
         private void Touch(Entity dbEntity, EntityReference user) {
             if (Utility.IsSettableAttribute("modifiedon", EntityMetadata[dbEntity.LogicalName]) && Utility.IsSettableAttribute("modifiedby", EntityMetadata[dbEntity.LogicalName])) {
-                dbEntity["modifiedon"] = DateTime.Now.Add(TimeOffset);
+                dbEntity["modifiedon"] = DateTime.Now.Add(Core.TimeOffset);
                 dbEntity["modifiedby"] = user;
             }
         }
@@ -1600,8 +1364,8 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal void ResetEnvironment() {
-            Initialize();
+        internal void ResetEnvironment(XrmDb db) {
+            Initialize(db);
         }
 
 

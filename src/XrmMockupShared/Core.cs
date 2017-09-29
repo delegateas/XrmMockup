@@ -29,6 +29,8 @@ namespace DG.Tools.XrmMockup {
         private XrmMockupSettings settings;
         private MetadataSkeleton metadata;
         private Dictionary<Guid, SecurityRole> securityRoles;
+        private XrmDb db;
+        public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
 
         public EntityReference AdminUserRef {
@@ -42,12 +44,7 @@ namespace DG.Tools.XrmMockup {
                 return dataMethods.RootBusinessUnitRef;
             }
         }
-
-        public TimeSpan TimeOffset {
-            get {
-                return dataMethods.TimeOffset;
-            }
-        }
+        
         public List<RequestHandler> RequestHandlers;
 
 
@@ -59,8 +56,9 @@ namespace DG.Tools.XrmMockup {
         /// <param name="SecurityRoles"></param>
         /// <param name="Workflows"></param>
         public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
-
-            this.dataMethods = new DataMethods(this, metadata, SecurityRoles);
+            this.TimeOffset = new TimeSpan();
+            this.db = new XrmDb(metadata.EntityMetadata);
+            this.dataMethods = new DataMethods(this, db, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.settings = Settings;
             this.metadata = metadata;
@@ -69,14 +67,18 @@ namespace DG.Tools.XrmMockup {
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
 
-            RequestHandlers = new List<RequestHandler> {
-                new CreateRequestHandler(this, ref dataMethods)
-            };
+            RequestHandlers = GetRequestHandlers(db);
 
             var tracingService = new TracingService();
             var factory = new MockupServiceProviderAndFactory(this, null, tracingService);
             var service = factory.CreateOrganizationService(null, new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             dataMethods.SetWorkflowServices(tracingService, factory, service);
+        }
+
+        private List<RequestHandler> GetRequestHandlers(XrmDb db) {
+            return new List<RequestHandler> {
+                new CreateRequestHandler(this, db, metadata, dataMethods)
+            };
         }
 
         internal void EnableProxyTypes(Assembly assembly) {
@@ -174,7 +176,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal void AddTime(TimeSpan offset) {
-            dataMethods.AddTime(offset);
+            this.TimeOffset = this.TimeOffset.Add(offset);
             TriggerWaitingWorkflows();
         }
 
@@ -318,16 +320,19 @@ namespace DG.Tools.XrmMockup {
         }
 
         private EntityReference GetBusinessUnit(EntityReference owner) {
-            return dataMethods.GetBusinessUnit(owner);
+            return Utility.GetBusinessUnit(db, owner);
         }
         #endregion
 
 
         internal void ResetEnvironment() {
+            this.TimeOffset = new TimeSpan();
             if (settings.IncludeAllWorkflows == false) {
                 workflowManager.ResetWorkflows();
             }
-            dataMethods.ResetEnvironment();
+            this.db = new XrmDb(metadata.EntityMetadata);
+            dataMethods.ResetEnvironment(db);
+            RequestHandlers = GetRequestHandlers(db);
         }
 
 
