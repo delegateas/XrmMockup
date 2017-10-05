@@ -22,7 +22,7 @@ namespace DG.XrmMockupTest {
 
                 orgAdminUIService.Delete(Account.EntityLogicalName, guid);
 
-               
+
             }
         }
 
@@ -31,8 +31,6 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 var acc = new Account();
                 orgAdminUIService.Create(acc);
-
-
 
                 var leads = context.LeadSet.ToList();
                 Assert.IsTrue(leads.Count > 0);
@@ -57,8 +55,9 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestUpdateBase() {
             using (var context = new Xrm(orgAdminUIService)) {
-                var acc = new Account();
-                acc.Name = "Some";
+                var acc = new Account {
+                    Name = "Some"
+                };
                 acc.Id = orgAdminUIService.Create(acc);
 
                 acc.MarketCap = 20m;

@@ -47,11 +47,13 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 var account = new Account();
                 account.Id = orgAdminService.Create(account);
+
                 var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, account.Id, new ColumnSet(true)) as Account;
                 Assert.IsNull(retrieved.DoNotPhone);
 
                 var anotherAccount = new Account();
                 anotherAccount.Id = orgAdminUIService.Create(anotherAccount);
+
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, anotherAccount.Id, new ColumnSet(true)) as Account;
                 Assert.IsTrue(retrieved.DoNotPhone.HasValue);
                 Assert.IsFalse(retrieved.DoNotPhone.Value);
