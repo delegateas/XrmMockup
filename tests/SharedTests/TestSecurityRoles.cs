@@ -26,24 +26,25 @@ namespace DG.XrmMockupTest {
                 var businessunit = new BusinessUnit();
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
-                var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Scheduler);
-                var service = crm.CreateOrganizationService(user.Id);
+                var scheduler = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Scheduler);
+                var schedulerService = crm.CreateOrganizationService(scheduler.Id);
+
                 try {
-                    service.Create(new Lead());
+                    schedulerService.Create(new Lead());
                     Assert.Fail();
                 } catch (Exception e) {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
-                service.Create(new Contact());
-                
+                schedulerService.Create(new Contact());
+
                 try {
-                    var otherAccount = new Contact();
-                    otherAccount.OwnerId = orgUser.ToEntityReference();
-                    service.Create(otherAccount);
+                    var otherAccount = new Contact {
+                        OwnerId = orgUser.ToEntityReference()
+                    };
+                    schedulerService.Create(otherAccount);
                     Assert.Fail();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
             }
@@ -80,10 +81,8 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestAssignSecurityTeam()
-        {
-            using (var context = new Xrm(orgAdminUIService))
-            {
+        public void TestAssignSecurityTeam() {
+            using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var orgUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
@@ -94,15 +93,12 @@ namespace DG.XrmMockupTest {
                 var team = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Cannotreadcontact);
                 FaultException faultException = null;
                 var req = new AssignRequest();
-                try
-                {
+                try {
                     req.Assignee = team.ToEntityReference();
                     req.Target = contact.ToEntityReference();
                     service.Execute(req);
                     Assert.Fail();
-                }
-                catch (FaultException e)
-                {
+                } catch (FaultException e) {
                     faultException = e;
                 }
                 var teamAdmin = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
@@ -126,7 +122,7 @@ namespace DG.XrmMockupTest {
 
                 var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Scheduler);
                 service = crm.CreateOrganizationService(user.Id);
-                
+
                 FaultException faultException = null;
                 try {
                     bus.dg_name = "new sadas";
