@@ -32,6 +32,29 @@ namespace DG.XrmMockupTest {
                 orgAdminUIService.Execute(req);
             }
         }
-    }
 
+        [TestMethod]
+        public void TestRealDataRetrieve() {
+            var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68")) {
+                Name = "babuasd"
+            };
+            orgRealDataService.Update(acc);
+            var retrieved = orgRealDataService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
+            Assert.AreEqual(acc.Name, retrieved.Name);
+            Assert.AreEqual("12321123312", retrieved.AccountNumber);
+        }
+
+        [TestMethod]
+        public void TestRealDataRetrieveMultiple() {
+            var query = new QueryExpression(Account.EntityLogicalName) {
+                ColumnSet = new ColumnSet(true),
+                PageInfo = new PagingInfo() {
+                    Count = 1000,
+                    PageNumber = 1
+                }
+            };
+            var res = orgRealDataService.RetrieveMultiple(query);
+            Assert.IsTrue(res.Entities.Count > 0);
+        }
+    }
 }

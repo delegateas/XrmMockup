@@ -5,15 +5,19 @@ using System.Text;
 using System.Linq;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk.Query;
 
 namespace DG.Tools.XrmMockup.Database {
 
     internal class XrmDb {
         private Dictionary<string, DbTable> TableDict = new Dictionary<string, DbTable>();
         private Dictionary<string, EntityMetadata> EntityMetadata;
+        private OrganizationServiceProxy OnlineProxy;
 
-        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata) {
+        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, OrganizationServiceProxy onlineProxy) {
             this.EntityMetadata = entityMetadata;
+            this.OnlineProxy = onlineProxy;
         }
 
         public DbTable this[string tableName] {
@@ -62,12 +66,20 @@ namespace DG.Tools.XrmMockup.Database {
             this[xrmEntity.LogicalName].Remove(xrmEntity.Id);
         }
 
+        internal bool HasRow(EntityReference reference) {
+            return this[reference.LogicalName][reference.Id] != null;
+        }
 
         internal DbRow GetDbRow(EntityReference reference) {
             DbRow currentDbRow = null;
 
             if (reference.Id != Guid.Empty) {
                 currentDbRow = this[reference.LogicalName][reference.Id];
+                if (currentDbRow == null && OnlineProxy != null) {
+                    var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
+                    Add(onlineEntity, false);
+                    currentDbRow = this[reference.LogicalName][reference.Id];
+                }
                 if (currentDbRow == null) {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
