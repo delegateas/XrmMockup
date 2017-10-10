@@ -1,3 +1,6 @@
+#### 0.4.3-beta - October 10 2017
+* Added support for testing with data from CRM
+
 #### 0.4.2-beta - September 21 2017
 * Fixed https://github.com/delegateas/XrmMockup/issues/15 concerning implementing RetrieveOptionSetRequest
 * Fixed https://github.com/delegateas/XrmMockup/issues/14 concerning adding formatted values to retrieved records
