@@ -297,12 +297,12 @@ namespace WorkflowExecuter {
                             throw new WorkflowException("Found no out argument, please check your workflow has the correct format");
                         }
                         if (args.Length == 4) {
-                            return new ConditionExpression(args[0].Value,
+                            return new ConditionExp(args[0].Value,
                                 CompressParameters(args[1].Value).ToArray(),
                                 args[2].Value.TrimEdge(),
                                 outArg.Value.TrimEdge());
                         } else {
-                            return new ConditionExpression(args[0].Value,
+                            return new ConditionExp(args[0].Value,
                                 null,
                                 args[1].Value.TrimEdge(),
                                 outArg.Value.TrimEdge());

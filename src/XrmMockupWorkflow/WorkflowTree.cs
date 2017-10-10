@@ -27,7 +27,7 @@ namespace WorkflowExecuter {
     [KnownType(typeof(Trim))]
     [KnownType(typeof(Skip))]
     [KnownType(typeof(GetEntityProperty))]
-    [KnownType(typeof(ConditionExpression))]
+    [KnownType(typeof(ConditionExp))]
     [KnownType(typeof(Condition))]
     [KnownType(typeof(LogicalComparison))]
     [KnownType(typeof(SetEntityProperty))]
@@ -825,7 +825,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ConditionExpression : WorkflowNode {
+    internal class ConditionExp : WorkflowNode {
         [DataMember]
         public ConditionOperator Operator { get; private set; }
         [DataMember]
@@ -837,7 +837,7 @@ namespace WorkflowExecuter {
 
         
 
-        public ConditionExpression(string Operator, string[] Parameters, string Operand, string ReturnName) {
+        public ConditionExp(string Operator, string[] Parameters, string Operand, string ReturnName) {
             this.Operator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), Operator);
             this.Parameters = Parameters;
             this.Operand = Operand;

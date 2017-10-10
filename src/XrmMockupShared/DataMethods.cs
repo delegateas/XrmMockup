@@ -41,6 +41,8 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>> Shares;
         private Core Core;
         private MetadataSkeleton Metadata;
+        private Env? OnlineEnv;
+        private OrganizationServiceProxy OnlineProxy;
 
 
         /// <summary>
@@ -57,14 +59,14 @@ namespace DG.Tools.XrmMockup {
 
         public TimeSpan TimeOffset { get; private set; }
 
-
-
-        internal DataMethods(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles) {
+        internal DataMethods(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles,
+            Env? onlineEnv) {
             this.Core = core;
             this.EntityMetadata = metadata.EntityMetadata;
             this.Metadata = metadata;
             this.SecurityRoles = SecurityRoles.ToDictionary(s => s.RoleId, s => s);
-
+            this.OnlineEnv = onlineEnv;
+            
 
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
@@ -80,7 +82,7 @@ namespace DG.Tools.XrmMockup {
             this.Shares = new Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>>();
             this.CalcAndRollupTrees = new Dictionary<string, Money>();
 
-            this.db = new XrmDb(EntityMetadata);
+            this.db = new XrmDb(EntityMetadata, GetOnlineProxy());
 
             // Setup currencies
             var currencies = new List<Entity>();
@@ -128,6 +130,20 @@ namespace DG.Tools.XrmMockup {
                 Create(role, AdminUserRef);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
             }
+        }
+
+        private OrganizationServiceProxy GetOnlineProxy() {
+            if (OnlineProxy == null && OnlineEnv.HasValue) {
+                var env = OnlineEnv.Value;
+                var orgHelper = new OrganizationHelper(
+                    new Uri(env.uri),
+                    env.providerType,
+                    env.username,
+                    env.password,
+                    env.domain);
+                this.OnlineProxy = orgHelper.GetServiceProxy();
+            }
+            return OnlineProxy;
         }
 
         internal void AddTime(TimeSpan offset) {
@@ -452,11 +468,11 @@ namespace DG.Tools.XrmMockup {
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
                             var referencingGuid = GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
                             queryExpr.Criteria.AddCondition(
-                                new Microsoft.Xrm.Sdk.Query.ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
+                                new ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
                         }
                     } else {
                         queryExpr.Criteria.AddCondition(
-                            new Microsoft.Xrm.Sdk.Query.ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
+                            new ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
                     }
                 }
 
@@ -471,7 +487,7 @@ namespace DG.Tools.XrmMockup {
 
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
-                                    new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
+                                    new ConditionExpression(null, ConditionOperator.Equal, id));
                             }
                         } else {
                             queryExpr.EntityName = manyToMany.Entity1LogicalName;
@@ -481,7 +497,7 @@ namespace DG.Tools.XrmMockup {
 
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
-                                    new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
+                                    new ConditionExpression(null, ConditionOperator.Equal, id));
                             }
                         }
                         queryExpr.Criteria = conditions;
@@ -876,9 +892,25 @@ namespace DG.Tools.XrmMockup {
             return false;
         }
 
-
+        private void AddRetrieveMultipleFromOnline(QueryBase query) {
+            var proxy = GetOnlineProxy();
+            var resp = proxy.RetrieveMultiple(query).Entities;
+            foreach (var e in resp) {
+                var reference = e.ToEntityReference();
+                if (db.HasRow(reference)) {
+                    var row = db.GetDbRow(reference);
+                    var attrsToAdd = e.Attributes.Where(a => !row.ColumnIsSet(a.Key));
+                    row.ApplyUpdates(attrsToAdd);
+                } else {
+                    db.Add(e, false);
+                }
+            }
+        }
 
         internal EntityCollection RetrieveMultiple(QueryBase query, EntityReference userRef) {
+            if (OnlineEnv.HasValue) {
+                AddRetrieveMultipleFromOnline(query);
+            }
             var queryExpr = query as QueryExpression;
             var fetchExpr = query as FetchExpression;
             if (queryExpr == null) {

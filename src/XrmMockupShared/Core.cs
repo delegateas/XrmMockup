@@ -55,8 +55,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="SecurityRoles"></param>
         /// <param name="Workflows"></param>
         public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
-
-            this.dataMethods = new DataMethods(this, metadata, SecurityRoles);
+            this.dataMethods = new DataMethods(this, metadata, SecurityRoles, Settings.OnlineEnvironment);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.settings = Settings;
             this.InitRequestMap();

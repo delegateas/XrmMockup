@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xrm.Sdk.Client;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -28,5 +29,15 @@ namespace DG.Tools.XrmMockup
         public bool? IncludeAllWorkflows { get; set; }
 
         public IEnumerable<string> ExceptionFreeRequests { get; set; }
+
+        public Env? OnlineEnvironment { get; set; }
+    }
+
+    public struct Env {
+        public string uri;
+        public AuthenticationProviderType providerType;
+        public string username;
+        public string password;
+        public string domain;
     }
 }
