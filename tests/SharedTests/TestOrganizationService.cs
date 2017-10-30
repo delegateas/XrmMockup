@@ -4,27 +4,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 
-namespace SharedTests
-{
+namespace SharedTests {
     [TestClass]
-    public class TestOrganizationService : UnitTestBase
-    {
-        [TestMethod, Ignore]
-        public void TestOrgSvcWithNonExistentUser()
-        {
-            var origAdminUser = crm.AdminUser.Id;
-            crm.ResetEnvironment();
-            var newAdminUser = crm.AdminUser.Id;
-
-            //Should it be possible to create an OrganizationService for a non-existent user?
-            var origService = crm.CreateOrganizationService(origAdminUser);
-            using (var context = new Xrm(origService))
-            {
-                //Currently throws an exception
-                var acc = context.AccountSet.FirstOrDefault(); 
-                Assert.IsNull(acc);
+    public class TestOrganizationService : UnitTestBase {
+        [TestMethod]
+        public void TestOrgSvcWithNonExistentUser() {
+            try {
+                crm.CreateOrganizationService(Guid.NewGuid());
+                Assert.Fail();
+            } catch (Exception e) {
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
     }
