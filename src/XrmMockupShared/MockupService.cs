@@ -9,6 +9,7 @@ using Microsoft.Xrm.Sdk.Client;
 using System.Reflection;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Crm.Sdk.Messages;
+using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup {
 
@@ -18,7 +19,6 @@ namespace DG.Tools.XrmMockup {
     internal partial class MockupService : IOrganizationService {
 
         private Core core;
-        private Guid userId;
         private EntityReference userRef;
         private PluginContext pluginContext;
         private MockupServiceSettings settings;
@@ -26,22 +26,18 @@ namespace DG.Tools.XrmMockup {
         internal MockupService(Core core, Guid? userId, PluginContext pluginContext, MockupServiceSettings settings) {
             this.core = core;
             this.pluginContext = pluginContext;
-            this.userId = userId.GetValueOrDefault();
             if (userId.HasValue && userId.Value != Guid.Empty) {
+
+                if (!core.ContainsEntity(new Entity(LogicalNames.SystemUser) { Id = userId.Value })) {
+                    throw new FaultException($"The userId '{userId.Value}' does not match a valid user");
+                }
+
                 userRef = new EntityReference("systemuser", userId.Value);
             }
             this.settings = settings;
         }
 
         internal MockupService(Core core, Guid? userId, PluginContext pluginContext) : this(core, userId, pluginContext, null) { }
-
-        /// <summary>
-        /// Create a new MockupService for the given Mockup of CRM 
-        /// </summary>
-        /// <param name="core"></param>
-        public MockupService(Core core) : this(core, null, null, null) { }
-
-        public MockupService(Core core, MockupServiceSettings settings) : this(core, null, null, settings) { }
 
         /// <summary>
         /// Associate the described entity with the relatedEntities
