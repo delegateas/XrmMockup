@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class UpdateRequestHandler : RequestHandler {
-        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Update") { }
+        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<UpdateRequest>(orgRequest);
@@ -39,7 +39,7 @@ namespace DG.Tools.XrmMockup {
             //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
             var xrmEntity = row.ToEntity();
 
-            if (!dataMethods.HasPermission(row.ToEntity(), AccessRights.WriteAccess, userRef)) {
+            if (!security.HasPermission(row.ToEntity(), AccessRights.WriteAccess, userRef)) {
                 throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity");
             }
@@ -47,7 +47,7 @@ namespace DG.Tools.XrmMockup {
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null) {
-                dataMethods.CheckAssignPermission(xrmEntity, ownerRef, userRef);
+                security.CheckAssignPermission(xrmEntity, ownerRef, userRef);
             }
 #endif
 
@@ -76,7 +76,7 @@ namespace DG.Tools.XrmMockup {
                     if (user.Attributes.ContainsKey(transactioncurrencyId)) {
                         xrmEntity[transactioncurrencyId] = user[transactioncurrencyId];
                     } else {
-                        xrmEntity[transactioncurrencyId] = dataMethods.baseCurrency;
+                        xrmEntity[transactioncurrencyId] = core.baseCurrency;
                     }
                 }
                 var currencyId = xrmEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
@@ -92,9 +92,9 @@ namespace DG.Tools.XrmMockup {
 #endif
 
             if (ownerRef != null) {
-                Utility.SetOwner(db, dataMethods, metadata, xrmEntity, ownerRef);
+                Utility.SetOwner(db, security, metadata, xrmEntity, ownerRef);
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                dataMethods.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
+                security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
             Utility.Touch(xrmEntity, row.Metadata, core.TimeOffset, userRef);

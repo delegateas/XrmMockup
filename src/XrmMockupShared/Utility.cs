@@ -112,6 +112,21 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
+        internal static void CloseOpportunity(Core core, OpportunityState state, OptionSetValue status, Entity opportunityClose, EntityReference userRef) {
+            var setStateHandler = core.RequestHandlers.Find(x => x is SetStateRequestHandler);
+            var req = new SetStateRequest() {
+                EntityMoniker = opportunityClose.GetAttributeValue<EntityReference>("opportunityid"),
+                State = new OptionSetValue((int)state),
+                Status = status
+            };
+            setStateHandler.Execute(req, userRef);
+
+            var create = new CreateRequest {
+                Target = opportunityClose
+            };
+            core.Execute(create as OrganizationRequest, userRef);
+        }
+
 
         public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName) {
             if (!metadata.ContainsKey(logicalName)) {
@@ -340,7 +355,7 @@ namespace DG.Tools.XrmMockup {
             return false;
         }
 
-        internal static void SetOwner(XrmDb db, DataMethods dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner) {
+        internal static void SetOwner(XrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner) {
             var ownershipType = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
             if (!ownershipType.HasValue) {
