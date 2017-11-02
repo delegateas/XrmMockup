@@ -19,6 +19,7 @@ using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
 using DG.Tools.XrmMockup.Database;
+using System.Xml.Linq;
 
 namespace DG.Tools.XrmMockup {
     internal static class Utility {
@@ -45,10 +46,8 @@ namespace DG.Tools.XrmMockup {
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
 
-        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata)
-        {
-            if (metadata == null || attrName.Contains("."))
-            {
+        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata) {
+            if (metadata == null || attrName.Contains(".")) {
                 return true;
             }
 
@@ -81,6 +80,38 @@ namespace DG.Tools.XrmMockup {
             return entity;
         }
 
+        internal static void RemoveUnsettableAttributes(string actionType, EntityMetadata metadata, Entity entity) {
+            if (entity == null) return;
+
+            RemoveAttribute(entity,
+                "modifiedon",
+                "modifiedby",
+                "createdby",
+                "createdon");
+            
+            switch (actionType) {
+                case "Create":
+                    RemoveAttribute(entity,
+                        entity.Attributes.Where(a => metadata.Attributes.Any(m => m.LogicalName == a.Key && m.IsValidForCreate == false)).Select(a => a.Key).ToArray());
+                    break;
+                case "Retrieve":
+                    RemoveAttribute(entity,
+                        entity.Attributes.Where(a => metadata.Attributes.Any(m => m.LogicalName == a.Key && m.IsValidForRead == false)).Select(a => a.Key).ToArray());
+                    break;
+                case "Update":
+                    RemoveAttribute(entity,
+                        entity.Attributes.Where(a => metadata.Attributes.Any(m => m.LogicalName == a.Key && m.IsValidForUpdate == false)).Select(a => a.Key).ToArray());
+                    break;
+            }
+            entity[metadata.PrimaryIdAttribute] = entity.Id;
+        }
+
+        internal static void RemoveAttribute(Entity entity, params string[] attrNames) {
+            foreach (var attrName in attrNames) {
+                if (entity.Attributes.ContainsKey(attrName)) entity.Attributes.Remove(attrName);
+            }
+        }
+
 
         public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName) {
             if (!metadata.ContainsKey(logicalName)) {
@@ -90,7 +121,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal static void SetFullName(MetadataSkeleton metadata, Entity dbEntity) {
-            var fullnameFormat = 
+            var fullnameFormat =
                 (FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
             var first = dbEntity.GetAttributeValue<string>("firstname");
             if (first == null) first = "";
@@ -169,6 +200,39 @@ namespace DG.Tools.XrmMockup {
             }
             return null;
         }
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        internal static void CheckStatusTransitions(EntityMetadata metadata, Entity newEntity, Entity prevEntity) {
+            if (newEntity == null || prevEntity == null) return;
+            if (!newEntity.Attributes.ContainsKey("statuscode") || !prevEntity.Attributes.ContainsKey("statuscode")) return;
+            if (newEntity.LogicalName != prevEntity.LogicalName || newEntity.Id != prevEntity.Id) return;
+
+            var newValue = newEntity["statuscode"] as OptionSetValue;
+            var prevValue = prevEntity["statuscode"] as OptionSetValue;
+
+            if (metadata.EnforceStateTransitions != true) return;
+
+            var optionsMeta = (metadata.Attributes
+                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
+                .OptionSet.Options;
+            if (!optionsMeta.Any(o => o.Value == newValue.Value)) return;
+
+            var prevValueOptionMeta = optionsMeta.FirstOrDefault(o => o.Value == prevValue.Value) as StatusOptionMetadata;
+            if (prevValueOptionMeta == null) return;
+
+            var transitions = prevValueOptionMeta.TransitionData;
+            if (transitions != null && transitions != "") {
+                var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
+                var doc = XDocument.Parse(transitions).Element(ns + "allowedtransitions");
+                if (doc.Descendants(ns + "allowedtransition")
+                    .Where(x => x.Attribute("tostatusid").Value == newValue.Value.ToString())
+                    .Any()) {
+                    return;
+                }
+            }
+            throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
+        }
+#endif
 
         internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata) {
             return metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
@@ -386,10 +450,10 @@ namespace DG.Tools.XrmMockup {
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(values.First(),attr);
+                    return Equals(values.First(), attr);
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(values.First(),attr);
+                    return !Equals(values.First(), attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -470,7 +534,7 @@ namespace DG.Tools.XrmMockup {
                 return null;
             }
         }
-        
+
         public static List<AccessRights> GetAccessRights(this AccessRights mask) {
             var rights = new List<AccessRights>();
             foreach (AccessRights right in Enum.GetValues(typeof(AccessRights))) {
@@ -482,11 +546,65 @@ namespace DG.Tools.XrmMockup {
             return rights;
         }
 
+        internal static void Touch(Entity dbEntity, EntityMetadata metadata, TimeSpan timeOffset, EntityReference user) {
+            if (IsSettableAttribute("modifiedon", metadata) && IsSettableAttribute("modifiedby", metadata)) {
+                dbEntity["modifiedon"] = DateTime.Now.Add(timeOffset);
+                dbEntity["modifiedby"] = user;
+            }
+        }
+
+        internal static void PopulateEntityReferenceNames(Entity entity, EntityMetadata metadata, XrmDb db) {
+            foreach (var attr in entity.Attributes) {
+                if (attr.Value is EntityReference eRef) {
+                    var nameAttr = metadata.PrimaryNameAttribute;
+                    eRef.Name = db.GetEntityOrNull(eRef)?.GetAttributeValue<string>(nameAttr);
+                }
+            }
+        }
+
+        internal static object GetComparableAttribute(object attribute) {
+            if (attribute is Money money) {
+                return money.Value;
+            }
+            if (attribute is EntityReference eRef) {
+                return eRef.Name;
+            }
+            if (attribute is OptionSetValue osv) {
+                return osv.Value;
+            }
+            return attribute;
+        }
+
+        internal static RelationshipMetadataBase GetRelatedEntityMetadata(Dictionary<string, EntityMetadata> metadata, string entityType, string relationshipName) {
+            if (!metadata.ContainsKey(entityType)) {
+                return null;
+            }
+            var oneToMany = metadata.GetMetadata(entityType).OneToManyRelationships
+                .FirstOrDefault(r => r.SchemaName == relationshipName);
+            if (oneToMany != null) {
+                return oneToMany;
+            }
+
+            var manyToOne = metadata.GetMetadata(entityType).ManyToOneRelationships
+                .FirstOrDefault(r => r.SchemaName == relationshipName);
+            if (manyToOne != null) {
+                return manyToOne;
+            }
+
+            var manyToMany = metadata.GetMetadata(entityType).ManyToManyRelationships
+                .FirstOrDefault(r => r.SchemaName == relationshipName);
+            if (manyToMany != null) {
+                return manyToMany;
+            }
+
+            return null;
+        }
+
 
         internal static MetadataSkeleton GetMetadata(string prefix) {
             var pathToMetadata = Path.Combine(prefix, "Metadata.xml");
             if (!File.Exists(pathToMetadata)) {
-                throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'."+
+                throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'." +
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
@@ -560,124 +678,124 @@ namespace DG.Tools.XrmMockup {
 
     [DataContract()]
     internal enum workflow_runas {
-        
+
         [EnumMember()]
         Owner = 0,
-        
+
         [EnumMember()]
         CallingUser = 1,
     }
-    
+
     [DataContract()]
     internal enum workflow_stage {
-        
+
         [EnumMember()]
         Preoperation = 20,
-        
+
         [EnumMember()]
         Postoperation = 40,
     }
-    
+
     [DataContract()]
     internal enum Workflow_Type {
-        
+
         [EnumMember()]
         Definition = 1,
-        
+
         [EnumMember()]
         Activation = 2,
-        
+
         [EnumMember()]
         Template = 3,
     }
-    
+
     [DataContract()]
     internal enum componentstate {
-        
+
         [EnumMember()]
         Published = 0,
-        
+
         [EnumMember()]
         Unpublished = 1,
-        
+
         [EnumMember()]
         Deleted = 2,
-        
+
         [EnumMember()]
         DeletedUnpublished = 3,
     }
-    
+
     [DataContract()]
     internal enum Workflow_Scope {
-        
+
         [EnumMember()]
         User = 1,
-        
+
         [EnumMember()]
         BusinessUnit = 2,
-        
+
         [EnumMember()]
         ParentChildBusinessUnits = 3,
-        
+
         [EnumMember()]
         Organization = 4,
     }
-    
+
     [DataContract()]
     internal enum Workflow_Mode {
-        
+
         [EnumMember()]
         Background = 0,
-        
+
         [EnumMember()]
         Realtime = 1,
     }
-    
+
     [DataContract()]
     internal enum Workflow_BusinessProcessType {
-        
+
         [EnumMember()]
         BusinessFlow = 0,
-        
+
         [EnumMember()]
         TaskFlow = 1,
     }
-    
+
     [DataContract()]
     internal enum Workflow_Category {
-        
+
         [EnumMember()]
         Workflow = 0,
-        
+
         [EnumMember()]
         Dialog = 1,
-        
+
         [EnumMember()]
         BusinessRule = 2,
-        
+
         [EnumMember()]
         Action = 3,
-        
+
         [EnumMember()]
         BusinessProcessFlow = 4,
     }
-    
+
     [DataContract()]
     internal enum WorkflowState {
-        
+
         [EnumMember()]
         Draft = 0,
-        
+
         [EnumMember()]
         Activated = 1,
     }
-    
+
     [DataContract()]
     internal enum Workflow_StatusCode {
-        
+
         [EnumMember()]
         Draft = 1,
-        
+
         [EnumMember()]
         Activated = 2,
     }
