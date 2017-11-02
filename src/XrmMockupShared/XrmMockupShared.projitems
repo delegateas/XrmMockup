@@ -24,6 +24,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\DisassociateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\AssociateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\AssignRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\SetStateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\DeleteRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveMultipleRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
