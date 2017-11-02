@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveMultipleRequestHandler : RequestHandler {
-        internal RetrieveMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "RetrieveMultiple") { }
+        internal RetrieveMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
@@ -41,8 +41,8 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-            if (!collection.Entities.All(e => dataMethods.HasPermission(e, AccessRights.ReadAccess, userRef))) {
-                var entitiesWithoutAccess = collection.Entities.Where(e => !dataMethods.HasPermission(e, AccessRights.ReadAccess, userRef)).Select(e => e.LogicalName).ToList();
+            if (!collection.Entities.All(e => security.HasPermission(e, AccessRights.ReadAccess, userRef))) {
+                var entitiesWithoutAccess = collection.Entities.Where(e => !security.HasPermission(e, AccessRights.ReadAccess, userRef)).Select(e => e.LogicalName).ToList();
                 throw new FaultException($"You do not have permission to access the entities " +
                     $"'{string.Join(",", entitiesWithoutAccess)}' for read");
             }

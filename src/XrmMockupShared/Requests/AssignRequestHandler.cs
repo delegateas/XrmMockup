@@ -12,12 +12,12 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class AssignRequestHandler : RequestHandler {
-        internal AssignRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Assign") {}
+        internal AssignRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Assign") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<AssignRequest>(orgRequest);
             var dbEntity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef);
-            dataMethods.CheckAssignPermission(dbEntity, request.Assignee, userRef);
+            security.CheckAssignPermission(dbEntity, request.Assignee, userRef);
 
             // Cascade
             foreach (var relatedEntities in dbEntity.RelatedEntities) {
@@ -52,7 +52,7 @@ namespace DG.Tools.XrmMockup {
                         break;
                 }
             }
-            Utility.SetOwner(db, dataMethods, metadata, dbEntity, request.Assignee);
+            Utility.SetOwner(db, security, metadata, dbEntity, request.Assignee);
             Utility.Touch(dbEntity, metadata.EntityMetadata.GetMetadata(dbEntity.LogicalName), core.TimeOffset, userRef);
             return new AssignResponse();
         }

@@ -13,7 +13,7 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveRequestHandler : RequestHandler {
-        internal RetrieveRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Retrieve") { }
+        internal RetrieveRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Retrieve") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveRequest>(orgRequest);
@@ -36,7 +36,7 @@ namespace DG.Tools.XrmMockup {
 #endif
             var row = db.GetDbRow(request.Target);
 
-            if (!dataMethods.HasPermission(row.ToEntity(), AccessRights.ReadAccess, userRef)) {
+            if (!security.HasPermission(row.ToEntity(), AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
             }
 

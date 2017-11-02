@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class CreateRequestHandler : RequestHandler {
-        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Create") {}
+        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<CreateRequest>(orgRequest);
@@ -28,7 +28,7 @@ namespace DG.Tools.XrmMockup {
             clonedEntity.Attributes.AddRange(validAttributes);
 
 
-            if (userRef != null && userRef.Id != Guid.Empty && !dataMethods.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef)) {
+            if (userRef != null && userRef.Id != Guid.Empty && !security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef)) {
                 throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
                     $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
             }
@@ -91,7 +91,7 @@ namespace DG.Tools.XrmMockup {
             if (clonedEntity.Attributes.ContainsKey("ownerid")) {
                 owner = clonedEntity.GetAttributeValue<EntityReference>("ownerid");
             }
-            Utility.SetOwner(db, dataMethods, metadata, clonedEntity, owner);
+            Utility.SetOwner(db, security, metadata, clonedEntity, owner);
 
             if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
                 clonedEntity.LogicalName == LogicalNames.SystemUser || clonedEntity.LogicalName == LogicalNames.Team) {
@@ -120,11 +120,10 @@ namespace DG.Tools.XrmMockup {
                 Utility.SetFullName(metadata, clonedEntity);
             }
 
-
             db.Add(clonedEntity);
 
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {
-                dataMethods.AddRolesForBusinessUnit(clonedEntity.ToEntityReference());
+                security.AddRolesForBusinessUnit(db, clonedEntity.ToEntityReference());
             }
 
             if (entity.RelatedEntities.Count > 0) {

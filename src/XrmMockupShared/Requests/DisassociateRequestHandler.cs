@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class DisassociateRequestHandler : RequestHandler {
-        internal DisassociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Disassociate") {}
+        internal DisassociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Disassociate") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<DisassociateRequest>(orgRequest);
@@ -21,24 +21,24 @@ namespace DG.Tools.XrmMockup {
             var manyToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
             var targetEntity = db.GetEntity(request.Target);
-            if (!dataMethods.HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
+            if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Trying to unappend to entity '{request.Target.LogicalName}'" +
                     ", but the calling user does not have read access for that entity");
             }
 
-            if (!dataMethods.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
+            if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
                 throw new FaultException($"Trying to unappend to entity '{request.Target.LogicalName}'" +
                     ", but the calling user does not have append to access for that entity");
             }
 
-            if (request.RelatedEntities.Any(r => !dataMethods.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
-                var firstError = request.RelatedEntities.First(r => !dataMethods.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
+                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity");
             }
 
-            if (request.RelatedEntities.Any(r => !dataMethods.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
-                var firstError = request.RelatedEntities.First(r => !dataMethods.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
+                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity");
             }

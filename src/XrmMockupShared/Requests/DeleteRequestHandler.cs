@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class DeleteRequestHandler : RequestHandler {
-        internal DeleteRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, DataMethods datamethods) : base(core, db, metadata, datamethods, "Delete") {}
+        internal DeleteRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Delete") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<DeleteRequest>(orgRequest);
@@ -21,7 +21,7 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException($"{request.Target.LogicalName} with Id '{request.Target.Id}' does not exist");
             }
 
-            if (!dataMethods.HasPermission(entity, AccessRights.DeleteAccess, userRef)) {
+            if (!security.HasPermission(entity, AccessRights.DeleteAccess, userRef)) {
                 throw new FaultException($"You do not have permission to access entity '{request.Target.LogicalName}' for delete");
             }
 
@@ -52,7 +52,7 @@ namespace DG.Tools.XrmMockup {
                     }
                 }
 
-                db[entity.LogicalName].Remove(entity.Id);
+                db.Delete(entity);
             }
             return new DeleteResponse();
         }
