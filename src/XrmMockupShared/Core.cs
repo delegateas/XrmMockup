@@ -15,6 +15,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using DG.Tools.XrmMockup.Database;
+using Microsoft.Xrm.Sdk.Client;
 
 namespace DG.Tools.XrmMockup {
 
@@ -31,7 +32,6 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<Guid, SecurityRole> securityRoles;
         private XrmDb db;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
-        private Env? OnlineEnv;
         private OrganizationServiceProxy OnlineProxy;
         internal EntityReference baseCurrency;
         private int baseCurrencyPrecision;
@@ -63,18 +63,17 @@ namespace DG.Tools.XrmMockup {
         /// <param name="Workflows"></param>
         public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) {
             this.TimeOffset = new TimeSpan();
+            this.settings = Settings;
+            this.metadata = metadata;
+            this.securityRoles = SecurityRoles.ToDictionary(x => x.RoleId, x => x);
+            baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
+            baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
+
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.dataMethods = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-            this.settings = Settings;
-            this.OnlineEnv = Settings.OnlineEnvironment;
-            this.metadata = metadata;
-            this.securityRoles = SecurityRoles.ToDictionary(x => x.RoleId, x => x);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
-
-            baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
-            baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -156,8 +155,8 @@ namespace DG.Tools.XrmMockup {
         }
 
         private OrganizationServiceProxy GetOnlineProxy() {
-            if (OnlineProxy == null && OnlineEnv.HasValue) {
-                var env = OnlineEnv.Value;
+            if (OnlineProxy == null && settings.OnlineEnvironment.HasValue) {
+                var env = settings.OnlineEnvironment.Value;
                 var orgHelper = new OrganizationHelper(
                     new Uri(env.uri),
                     env.providerType,
@@ -229,11 +228,11 @@ namespace DG.Tools.XrmMockup {
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
                             var referencingGuid = Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
                             queryExpr.Criteria.AddCondition(
-                                new Microsoft.Xrm.Sdk.Query.ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
+                                new ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
                         }
                     } else {
                         queryExpr.Criteria.AddCondition(
-                            new Microsoft.Xrm.Sdk.Query.ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
+                            new ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
                     }
                 }
 
@@ -248,7 +247,7 @@ namespace DG.Tools.XrmMockup {
 
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
-                                    new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
+                                    new ConditionExpression(null, ConditionOperator.Equal, id));
                             }
                         } else {
                             queryExpr.EntityName = manyToMany.Entity1LogicalName;
@@ -258,7 +257,7 @@ namespace DG.Tools.XrmMockup {
 
                             foreach (var id in relatedIds) {
                                 conditions.AddCondition(
-                                    new Microsoft.Xrm.Sdk.Query.ConditionExpression(null, ConditionOperator.Equal, id));
+                                    new ConditionExpression(null, ConditionOperator.Equal, id));
                             }
                         }
                         queryExpr.Criteria = conditions;

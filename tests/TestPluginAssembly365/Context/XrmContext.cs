@@ -1686,6 +1686,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: DateOnly</para>
+        /// </summary>
+        [AttributeLogicalName("new_dateonly")]
+        public DateTime? new_DateOnly {
+            get {
+                return GetAttributeValue<DateTime?>("new_dateonly");
+            }
+            set {
+                SetAttributeValue("new_dateonly", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Type the annual revenue for the account, used as an indicator in financial performance analysis.</para>
         /// <para>Display Name: Annual Revenue</para>
         /// </summary>
@@ -1766,6 +1779,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public string OriginatingLeadIdName {
             get {
                 return GetAttributeValue<string>("originatingleadidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: DateTime</para>
+        /// </summary>
+        [AttributeLogicalName("new_datetime")]
+        public DateTime? new_DateTime {
+            get {
+                return GetAttributeValue<DateTime?>("new_datetime");
+            }
+            set {
+                SetAttributeValue("new_datetime", value);
             }
         }
         
@@ -52313,6 +52339,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Enable or disable auditing of user access.</para>
+        /// <para>Display Name: Is User Access Auditing Enabled</para>
+        /// </summary>
+        [AttributeLogicalName("isuseraccessauditenabled")]
+        public bool? IsUserAccessAuditEnabled {
+            get {
+                return GetAttributeValue<bool?>("isuseraccessauditenabled");
+            }
+            set {
+                SetAttributeValue("isuseraccessauditenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Indicates default protocol selected for organization.</para>
         /// <para>Display Name: User Skype Protocol</para>
         /// </summary>
@@ -52516,6 +52556,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Restrict the maximum number of product properties for a product family/bundle</para>
+        /// <para>Display Name: Product Properties Item Limit</para>
+        /// </summary>
+        [AttributeLogicalName("maximumdynamicpropertiesallowed")]
+        public int? MaximumDynamicPropertiesAllowed {
+            get {
+                return GetAttributeValue<int?>("maximumdynamicpropertiesallowed");
+            }
+            set {
+                SetAttributeValue("maximumdynamicpropertiesallowed", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Name of the template to be used for unsubscription acknowledgement.</para>
         /// </summary>
         [AttributeLogicalName("acknowledgementtemplateidname")]
@@ -52554,16 +52608,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Restrict the maximum number of product properties for a product family/bundle</para>
-        /// <para>Display Name: Product Properties Item Limit</para>
+        /// <para>Information that specifies whether session timeout is enabled</para>
+        /// <para>Display Name: Session timeout enabled</para>
         /// </summary>
-        [AttributeLogicalName("maximumdynamicpropertiesallowed")]
-        public int? MaximumDynamicPropertiesAllowed {
+        [AttributeLogicalName("sessiontimeoutenabled")]
+        public bool? SessionTimeoutEnabled {
             get {
-                return GetAttributeValue<int?>("maximumdynamicpropertiesallowed");
+                return GetAttributeValue<bool?>("sessiontimeoutenabled");
             }
             set {
-                SetAttributeValue("maximumdynamicpropertiesallowed", value);
+                SetAttributeValue("sessiontimeoutenabled", value);
             }
         }
         
@@ -52779,16 +52833,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Indicates whether background address book synchronization in Microsoft Office Outlook is allowed.</para>
-        /// <para>Display Name: Allow Address Book Synchronization</para>
+        /// <para>Information that specifies whether Inactivity timeout is enabled</para>
+        /// <para>Display Name: Inactivity timeout enabled</para>
         /// </summary>
-        [AttributeLogicalName("allowaddressbooksyncs")]
-        public bool? AllowAddressBookSyncs {
+        [AttributeLogicalName("inactivitytimeoutenabled")]
+        public bool? InactivityTimeoutEnabled {
             get {
-                return GetAttributeValue<bool?>("allowaddressbooksyncs");
+                return GetAttributeValue<bool?>("inactivitytimeoutenabled");
             }
             set {
-                SetAttributeValue("allowaddressbooksyncs", value);
+                SetAttributeValue("inactivitytimeoutenabled", value);
             }
         }
         
@@ -53236,16 +53290,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Enable or disable auditing of user access.</para>
-        /// <para>Display Name: Is User Access Auditing Enabled</para>
+        /// <para>Indicates whether background address book synchronization in Microsoft Office Outlook is allowed.</para>
+        /// <para>Display Name: Allow Address Book Synchronization</para>
         /// </summary>
-        [AttributeLogicalName("isuseraccessauditenabled")]
-        public bool? IsUserAccessAuditEnabled {
+        [AttributeLogicalName("allowaddressbooksyncs")]
+        public bool? AllowAddressBookSyncs {
             get {
-                return GetAttributeValue<bool?>("isuseraccessauditenabled");
+                return GetAttributeValue<bool?>("allowaddressbooksyncs");
             }
             set {
-                SetAttributeValue("isuseraccessauditenabled", value);
+                SetAttributeValue("allowaddressbooksyncs", value);
             }
         }
         
@@ -53260,6 +53314,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("currentkanumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Inactivity timeout in minutes</para>
+        /// <para>Display Name: Inactivity timeout in minutes</para>
+        /// </summary>
+        [AttributeLogicalName("inactivitytimeoutinmins")]
+        public int? InactivityTimeoutInMins {
+            get {
+                return GetAttributeValue<int?>("inactivitytimeoutinmins");
+            }
+            set {
+                SetAttributeValue("inactivitytimeoutinmins", value);
             }
         }
         
@@ -53835,6 +53903,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Session timeout reminder in minutes</para>
+        /// <para>Display Name: Session timeout reminder in minutes</para>
+        /// </summary>
+        [AttributeLogicalName("sessiontimeoutreminderinmins")]
+        public int? SessionTimeoutReminderInMins {
+            get {
+                return GetAttributeValue<int?>("sessiontimeoutreminderinmins");
+            }
+            set {
+                SetAttributeValue("sessiontimeoutreminderinmins", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Information that specifies whether to display the week number in calendar displays throughout Microsoft CRM.</para>
         /// <para>Display Name: Show Week Number</para>
         /// </summary>
@@ -54312,6 +54394,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetOptionSetValue("reportscripterrors", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Inactivity timeout reminder in minutes</para>
+        /// <para>Display Name: Inactivity timeout reminder in minutes</para>
+        /// </summary>
+        [AttributeLogicalName("inactivitytimeoutreminderinmins")]
+        public int? InactivityTimeoutReminderInMins {
+            get {
+                return GetAttributeValue<int?>("inactivitytimeoutreminderinmins");
+            }
+            set {
+                SetAttributeValue("inactivitytimeoutreminderinmins", value);
             }
         }
         
@@ -55653,6 +55749,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("expiresubscriptionsindays", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Session timeout in minutes</para>
+        /// <para>Display Name: Session timeout in minutes</para>
+        /// </summary>
+        [AttributeLogicalName("sessiontimeoutinmins")]
+        public int? SessionTimeoutInMins {
+            get {
+                return GetAttributeValue<int?>("sessiontimeoutinmins");
+            }
+            set {
+                SetAttributeValue("sessiontimeoutinmins", value);
             }
         }
         
