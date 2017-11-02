@@ -73,7 +73,7 @@ namespace DG.Tools.XrmMockup.Database {
         internal DbRow GetDbRow(EntityReference reference) {
             DbRow currentDbRow = null;
 
-            if (reference.Id != Guid.Empty) {
+            if (reference?.Id != Guid.Empty) {
                 currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null && OnlineProxy != null) {
                     var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
@@ -88,7 +88,7 @@ namespace DG.Tools.XrmMockup.Database {
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
-            else if (reference.KeyAttributes?.Count > 0) {
+            else if (reference?.KeyAttributes?.Count > 0) {
                 currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
 
                 if (currentDbRow == null) {
@@ -133,33 +133,9 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        internal DbRow GetDbRowOrNull(Entity xrmEntity) {
-            try {
-                return GetDbRow(xrmEntity);
-            } catch (Exception) {
-                return null;
-            }
-        }
-
-        internal DbRow GetDbRowOrNull(string logicalName, Guid id) {
-            try {
-                return GetDbRow(logicalName, id);
-            } catch (Exception) {
-                return null;
-            }
-        }
-
         internal Entity GetEntityOrNull(EntityReference reference) {
             try {
                 return GetEntity(reference);
-            } catch (Exception) {
-                return null;
-            }
-        }
-
-        internal Entity GetEntityOrNull(string logicalName, Guid id) {
-            try {
-                return GetEntity(logicalName, id);
             } catch (Exception) {
                 return null;
             }
