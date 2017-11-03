@@ -26,10 +26,9 @@ namespace DG.Tools.XrmMockup {
 
         private PluginManager pluginManager;
         private WorkflowManager workflowManager;
-        private Security dataMethods;
+        private Security security;
         private XrmMockupSettings settings;
         private MetadataSkeleton metadata;
-        private Dictionary<Guid, SecurityRole> securityRoles;
         private XrmDb db;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private OrganizationServiceProxy OnlineProxy;
@@ -65,19 +64,18 @@ namespace DG.Tools.XrmMockup {
             this.TimeOffset = new TimeSpan();
             this.settings = Settings;
             this.metadata = metadata;
-            this.securityRoles = SecurityRoles.ToDictionary(x => x.RoleId, x => x);
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
-            this.dataMethods = new Security(this, metadata, SecurityRoles);
+            this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
-            this.dataMethods.InitializeSecurityRoles(db);
+            this.security.InitializeSecurityRoles(db);
         }
 
         private void InitializeDB() {
@@ -112,33 +110,33 @@ namespace DG.Tools.XrmMockup {
         }
 
         private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
-                new CreateRequestHandler(this, db, metadata, dataMethods),
-                new UpdateRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveMultipleRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveRequestHandler(this, db, metadata, dataMethods),
-                new DeleteRequestHandler(this, db, metadata, dataMethods),
-                new SetStateRequestHandler(this, db, metadata, dataMethods),
-                new AssignRequestHandler(this, db, metadata, dataMethods),
-                new AssociateRequestHandler(this, db, metadata, dataMethods),
-                new DisassociateRequestHandler(this, db, metadata, dataMethods),
-                new MergeRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveVersionRequestHandler(this, db, metadata, dataMethods),
-                new FetchXmlToQueryExpressionRequestHandler(this, db, metadata, dataMethods),
-                new ExecuteMultipleRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveEntityRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveRelationshipRequestHandler(this, db, metadata, dataMethods),
-                new GrantAccessRequestHandler(this, db, metadata, dataMethods),
-                new ModifyAccessRequestHandler(this, db, metadata, dataMethods),
-                new RevokeAccessRequestHandler(this, db, metadata, dataMethods),
-                new WinOpportunityRequestHandler(this, db, metadata, dataMethods),
-                new LoseOpportunityRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveAllOptionSetsRequestHandler(this, db, metadata, dataMethods),
-                new RetrieveOptionSetRequestHandler(this, db, metadata, dataMethods),
+                new CreateRequestHandler(this, db, metadata, security),
+                new UpdateRequestHandler(this, db, metadata, security),
+                new RetrieveMultipleRequestHandler(this, db, metadata, security),
+                new RetrieveRequestHandler(this, db, metadata, security),
+                new DeleteRequestHandler(this, db, metadata, security),
+                new SetStateRequestHandler(this, db, metadata, security),
+                new AssignRequestHandler(this, db, metadata, security),
+                new AssociateRequestHandler(this, db, metadata, security),
+                new DisassociateRequestHandler(this, db, metadata, security),
+                new MergeRequestHandler(this, db, metadata, security),
+                new RetrieveVersionRequestHandler(this, db, metadata, security),
+                new FetchXmlToQueryExpressionRequestHandler(this, db, metadata, security),
+                new ExecuteMultipleRequestHandler(this, db, metadata, security),
+                new RetrieveEntityRequestHandler(this, db, metadata, security),
+                new RetrieveRelationshipRequestHandler(this, db, metadata, security),
+                new GrantAccessRequestHandler(this, db, metadata, security),
+                new ModifyAccessRequestHandler(this, db, metadata, security),
+                new RevokeAccessRequestHandler(this, db, metadata, security),
+                new WinOpportunityRequestHandler(this, db, metadata, security),
+                new LoseOpportunityRequestHandler(this, db, metadata, security),
+                new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
+                new RetrieveOptionSetRequestHandler(this, db, metadata, security),
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-                new CalculateRollupFieldRequestHandler(this, db, metadata, dataMethods),
+                new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                new UpsertRequestHandler(this, db, metadata, dataMethods),
+                new UpsertRequestHandler(this, db, metadata, security),
 #endif
         };
 
@@ -501,7 +499,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal void SetSecurityRoles(EntityReference entRef, Guid[] securityRoles) {
-            dataMethods.SetSecurityRole(entRef, securityRoles);
+            security.SetSecurityRole(entRef, securityRoles);
         }
 
         private OrganizationResponse ExecuteAction(OrganizationRequest request) {
@@ -582,7 +580,7 @@ namespace DG.Tools.XrmMockup {
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
-            dataMethods.ResetEnvironment(db);
+            security.ResetEnvironment(db);
         }
     }
 
