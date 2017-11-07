@@ -67,5 +67,22 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(acc.Name + "UpdateBase", retrieved.Name);
             }
         }
+
+        [TestMethod]
+        public void TestSystemBase()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var contact = new Contact
+                {
+                    FirstName = "Some"
+                };
+                contact.Id = orgAdminUIService.Create(contact);
+                
+                var retrieved = orgAdminUIService.Retrieve(Contact.EntityLogicalName, contact.Id, new ColumnSet(true)) as Contact;
+                Assert.AreEqual("Test Name", retrieved.FirstName);
+                Assert.AreEqual("Test Last Name", retrieved.LastName);
+            }
+        }
     }
 }

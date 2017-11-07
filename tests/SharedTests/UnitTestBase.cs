@@ -53,7 +53,7 @@ namespace DG.XrmMockupTest {
 
         public static void InitializeMockup(TestContext context) {
             var settings = new XrmMockupSettings {
-                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
+                BasePluginTypes = new Type[] { typeof(DG.Some.Namespace.Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
