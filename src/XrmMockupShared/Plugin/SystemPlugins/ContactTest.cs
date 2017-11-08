@@ -9,6 +9,9 @@ using Microsoft.Xrm.Sdk;
 {
     public class ContactDefaultValues : Plugin
     {
+        IOrganizationService orgAdminService;
+        IOrganizationService orgService;
+
         // Register when/how to execute
         public ContactDefaultValues() : base(typeof(ContactDefaultValues))
         {
@@ -33,9 +36,12 @@ using Microsoft.Xrm.Sdk;
                 throw new ArgumentNullException("localContext");
             }
 
+            orgService = localContext.OrganizationService;
+            orgAdminService = localContext.OrganizationAdminService;
+
             var contact =
                 (localContext.PluginExecutionContext.InputParameters["Target"] as Entity);
-
+            
             if(localContext.PluginExecutionContext.Stage == (int)ExecutionStage.PreOperation)
                 SetDefaultValues(contact);
             else if (localContext.PluginExecutionContext.Stage == (int)ExecutionStage.PostOperation)
@@ -55,7 +61,10 @@ using Microsoft.Xrm.Sdk;
         {
             if (contactid != Guid.Empty)
             {
-                
+                var contactUpd = new Entity("contact");
+                contactUpd.Id = contactid;
+                contactUpd["lastname"] = "Test Last Name";
+                orgService.Update(contactUpd);
             }
         }
     }

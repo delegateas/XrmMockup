@@ -25,17 +25,19 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins;
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins;
 
+        // List of SystemPlugins to execute
         private List<Plugin> systemPlugins = new List<Plugin>
         {
-            new SystemPlugins.ContactDefaultValues()
+            //new SystemPlugins.ContactDefaultValues()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
             registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+            registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
-            RegisterSystemPlugins(registeredPlugins);
+            RegisterSystemPlugins(registeredSystemPlugins);
         }
 
         private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
