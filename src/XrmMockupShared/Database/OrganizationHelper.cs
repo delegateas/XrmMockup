@@ -79,11 +79,20 @@ namespace DG.Tools.XrmMockup {
                     // account credentials. If so, the supporting credentials must contain the device credentials.
                     if (endpointType == AuthenticationProviderType.OnlineFederation) {
                         IdentityProvider provider = service.GetIdentityProvider(authCredentials.ClientCredentials.UserName.UserName);
+#if XRM_MOCKUP_2011
+                        if (provider != null && provider.IdentityProviderType() == IdentityProviderType.LiveId) {
+                            authCredentials.SupportingCredentials = new AuthenticationCredentials();
+                            authCredentials.SupportingCredentials.ClientCredentials =
+                                Microsoft.Crm.Services.Utility.DeviceIdManager.LoadOrRegisterDevice();
+                        }
+#elif (XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016 || XRM_MOCKUP_365)
+
                         if (provider != null && provider.IdentityProviderType == IdentityProviderType.LiveId) {
                             authCredentials.SupportingCredentials = new AuthenticationCredentials();
                             authCredentials.SupportingCredentials.ClientCredentials =
                                 Microsoft.Crm.Services.Utility.DeviceIdManager.LoadOrRegisterDevice();
                         }
+#endif
                     }
 
                     break;
