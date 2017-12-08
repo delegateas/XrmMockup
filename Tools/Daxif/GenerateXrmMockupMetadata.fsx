@@ -25,27 +25,7 @@ crmNamesWithVersions
       "out", targetPath vName
       "projectPath", targetPath vName
       "solutions", SolutionInfo.name
-      "entities", 
-        [
-          "businessunit"
-          "systemuser"
-          "team"
-          "transactioncurrency"
-          "workflow"
-          "account"
-          "contact"
-          "dg_bus"
-          "dg_child"
-          "dg_hasridden"
-          "lead"
-          "opportunity"
-          "email"
-          "activitypointer"
-          "task"
-          "opportunityclose"
-          "dg_man"
-          "calendar"
-        ] |> String.concat ","
+      "entities", entitiesToGenerate |> String.concat ","
     ],
 
     // Argument names for login details for the environment

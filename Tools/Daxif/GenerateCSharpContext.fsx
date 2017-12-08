@@ -19,24 +19,7 @@ crmNamesWithVersions
     solutions = [
       SolutionInfo.name
       ],
-    entities = [
-        "businessunit"
-        "systemuser"
-        "transactioncurrency"
-        "workflow"
-        "account"
-        "contact"
-        "dg_bus"
-        "dg_child"
-        "dg_hasridden"
-        "lead"
-        "opportunity"
-        "email"
-        "activitypointer"
-        "task"
-        "opportunityclose"
-        "dg_man"
-      ],
+    entities = entitiesToGenerate,
     extraArguments = [
       "deprecatedprefix", "ZZ_"
       "sdkVersion", sdkVersion
