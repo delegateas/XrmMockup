@@ -1,5 +1,8 @@
 #### 0.5.0-beta - unreleased
 * Added support for activity pointers
+* Fixed an issue in SetEntityProperty where ExchangeRate could be null
+* Updated live-debugging feature to work again that was previous lost in refactoring
+* Fixed an issue where making two XrmMockup Instance resulted in EnableProxyType not working on second instance
 
 #### 0.4.4-beta - December 08 2017
 * It's now illegal to create an organization service for a non-existing user
