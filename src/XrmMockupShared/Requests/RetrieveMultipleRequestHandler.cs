@@ -16,7 +16,6 @@ namespace DG.Tools.XrmMockup {
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
-
             var queryExpr = request.Query as QueryExpression;
             var fetchExpr = request.Query as FetchExpression;
             if (queryExpr == null) {
@@ -24,8 +23,12 @@ namespace DG.Tools.XrmMockup {
             }
 
             var collection = new EntityCollection();
-            if (db[queryExpr.EntityName].Count() > 0) {
-                foreach (var row in db[queryExpr.EntityName]) {
+            db.PrefillDBWithOnlineData(queryExpr);
+            var rows = db.GetDBRowMultiple(queryExpr.EntityName);
+            if (db[queryExpr.EntityName].Count() > 0)
+            {
+                foreach (var row in rows)
+                {
                     if (!Utility.MatchesCriteria(row, queryExpr.Criteria)) continue;
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
