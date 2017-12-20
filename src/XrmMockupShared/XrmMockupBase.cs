@@ -33,7 +33,7 @@ namespace DG.Tools.XrmMockup {
         }
 
        
-        private static bool HasProxyTypes = false;
+        private bool HasProxyTypes = false;
         private Core Core;
         private MockupServiceProviderAndFactory ServiceFactory;
         

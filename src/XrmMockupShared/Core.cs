@@ -162,6 +162,8 @@ namespace DG.Tools.XrmMockup {
                     env.password,
                     env.domain);
                 this.OnlineProxy = orgHelper.GetServiceProxy();
+                if (settings.EnableProxyTypes == true)
+                    OnlineProxy.EnableProxyTypes();
             }
             return OnlineProxy;
         }

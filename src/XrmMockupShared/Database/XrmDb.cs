@@ -33,27 +33,42 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
+            var dbEntity = ToDbRow(xrmEntity, withReferenceChecks);
+            this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
+        }
+
+        public DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true)
+        {
             var primaryIdKey = this[xrmEntity.LogicalName].Metadata.PrimaryIdAttribute;
-            if (!xrmEntity.Attributes.ContainsKey(primaryIdKey)) {
+            if (!xrmEntity.Attributes.ContainsKey(primaryIdKey))
+            {
                 xrmEntity[primaryIdKey] = xrmEntity.Id;
             }
 
             var dbEntity = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
-            if (dbEntity.Id != Guid.Empty) {
-                if (this[dbEntity.Table.TableName][dbEntity.Id] != null) {
+            if (dbEntity.Id != Guid.Empty)
+            {
+                if (this[dbEntity.Table.TableName][dbEntity.Id] != null)
+                {
                     throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' and id '{xrmEntity.Id}', but a record already exists with that Id.");
                 }
-            } else {
+            }
+            else
+            {
                 dbEntity.Id = Guid.NewGuid();
             }
 
-            this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
+            return dbEntity;
         }
 
         public void AddRange(IEnumerable<Entity> xrmEntities, bool withReferenceChecks = true) {
             foreach (var xrmEntity in xrmEntities) Add(xrmEntity, withReferenceChecks);
         }
 
+        internal IEnumerable<DbRow> GetDBRowMultiple(string EntityLogicalName)
+        {
+            return this[EntityLogicalName];
+        }
 
         public void Update(Entity xrmEntity, bool withReferenceChecks = true) {
             var currentDbRow = GetDbRow(xrmEntity);
@@ -70,15 +85,45 @@ namespace DG.Tools.XrmMockup.Database {
             return this[reference.LogicalName][reference.Id] != null;
         }
 
-        internal DbRow GetDbRow(EntityReference reference) {
+        internal bool HasTable(string tableName)
+        {
+            return TableDict.ContainsKey(tableName);
+        }
+
+        internal bool IsValidEntity(string entityLogicalName)
+        {
+            return EntityMetadata.TryGetValue(entityLogicalName, out EntityMetadata entityMetadata);
+        }
+
+        internal void PrefillDBWithOnlineData(QueryExpression queryExpr)
+        {
+            if (OnlineProxy != null)
+            {
+                var onlineEntities = OnlineProxy.RetrieveMultiple(queryExpr).Entities;
+                foreach (var onlineEntity in onlineEntities)
+                {
+                    if (this[onlineEntity.LogicalName][onlineEntity.Id] == null)
+                    {
+                        Add(onlineEntity, true);
+                    }
+                }
+            }
+        }
+
+        internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true) {
             DbRow currentDbRow = null;
 
-            if (reference?.Id != Guid.Empty) {
+            if (reference?.Id != Guid.Empty) {                
                 currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null && OnlineProxy != null) {
                     var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
-                    Add(onlineEntity, false);
-                    currentDbRow = this[reference.LogicalName][reference.Id];
+                    if (!withReferenceCheck)
+                        currentDbRow = ToDbRow(onlineEntity, withReferenceCheck);
+                    else
+                    {
+                        Add(onlineEntity, withReferenceCheck);
+                        currentDbRow = this[reference.LogicalName][reference.Id];
+                    }
                 }
                 if (currentDbRow == null) {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
