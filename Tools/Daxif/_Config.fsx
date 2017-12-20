@@ -41,6 +41,31 @@ let crmNamesWithVersions =
     "365", "8.2"
   ]
 
+
+let entitiesToGenerate = 
+  [
+    "businessunit"
+    "systemuser"
+    "team"
+    "transactioncurrency"
+    "workflow"
+    "account"
+    "contact"
+    "dg_bus"
+    "dg_child"
+    "dg_hasridden"
+    "lead"
+    "opportunity"
+    "email"
+    "activitypointer"
+    "task"
+    "opportunityclose"
+    "dg_man"
+    "calendar"
+    "invoice"
+    "queueitem"
+  ]
+
 (** 
 CRM Solution Setup 
 ------------------

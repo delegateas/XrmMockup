@@ -13,9 +13,8 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.DateTime, typeof(DateTime) },
             { AttributeTypeCode.Decimal, typeof(decimal) },
             { AttributeTypeCode.Double, typeof(double) },
-
-            // TODO: Figure out type
-            //{ AttributeTypeCode.EntityName, typeof(int) },
+            
+            { AttributeTypeCode.EntityName, typeof(int) },
             { AttributeTypeCode.Picklist, typeof(int) },
             { AttributeTypeCode.State, typeof(int) },
             { AttributeTypeCode.Status, typeof(int) },

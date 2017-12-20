@@ -29,7 +29,7 @@ namespace DG.XrmMockupTest {
         }
 
         //Ignored until ActivityPointer-functionality has been implemented
-        [TestMethod, Ignore]
+        [TestMethod]
         public void TestActivityPointer() {
             var senderList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
             var receivingList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
@@ -39,15 +39,26 @@ namespace DG.XrmMockupTest {
                 From = senderList,
                 To = receivingList
             };
-            Guid emailId = orgAdminService.Create(email);
+            email.Id = orgAdminService.Create(email);
+
+            var retrieved = orgAdminService.Retrieve(email.LogicalName, email.Id, new ColumnSet(true)).ToEntity<Email>();
 
             using (var context = new Xrm(orgAdminService)) {
-                var ap = context.ActivityPointerSet.FirstOrDefault(a => a.Id == emailId);
+                var ap = context.ActivityPointerSet.FirstOrDefault(a => a.Id == email.Id);
                 Assert.IsNotNull(ap);
-                Assert.AreEqual(email.Subject, ap.Subject);
-                Assert.AreEqual(email.Description, ap.Description);
-                Assert.AreEqual(email.OwnerId, ap.OwnerId);
-                Assert.AreEqual(email.CreatedOn, ap.CreatedOn);
+                Assert.AreEqual(retrieved.Subject, ap.Subject);
+                Assert.AreEqual(retrieved.Description, ap.Description);
+                Assert.AreEqual(retrieved.OwnerId, ap.OwnerId);
+                Assert.AreEqual(retrieved.CreatedOn.Value.Date, ap.CreatedOn.Value.Date);
+            }
+
+            email.Subject = "updated subject";
+            orgAdminService.Update(email);
+            retrieved = orgAdminService.Retrieve(email.LogicalName, email.Id, new ColumnSet(true)).ToEntity<Email>();
+            using (var context = new Xrm(orgAdminService)) {
+                var ap = context.ActivityPointerSet.FirstOrDefault(a => a.Id == email.Id);
+                Assert.IsNotNull(ap);
+                Assert.AreEqual(retrieved.Subject, ap.Subject);
             }
         }
     }

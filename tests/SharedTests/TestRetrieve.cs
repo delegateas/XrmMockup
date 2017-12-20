@@ -46,7 +46,7 @@ namespace DG.XrmMockupTest {
                     Address1_StateOrProvince = "Colorado"
                 });
 
-                var entity = (Account) orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet(true));
+                var entity = (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet(true));
                 Assert.AreEqual(_accountId, entity.Id);
                 entity = (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet("name"));
                 Assert.AreEqual(_accountId, entity.Id);
@@ -72,7 +72,7 @@ namespace DG.XrmMockupTest {
                 } catch (Exception e) {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
-              
+
 
             }
         }
@@ -164,7 +164,26 @@ namespace DG.XrmMockupTest {
                 Assert.IsTrue(entity.Attributes.ContainsKey("firstname"));
                 Assert.AreEqual("Alan", entity.Attributes["firstname"]);
 
+            }
         }
+
+        [TestMethod]
+        public void TestFetchMoneyAttribute() {
+            using (var context = new Xrm(orgAdminUIService)) {
+                var invoice = new Invoice() {
+                    Name = "test",
+                    TotalAmount = 10m,
+                };
+                invoice.Id = orgGodService.Create(invoice);
+
+                var retrievedSucceeds = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount", "transactioncurrencyid")) as Invoice;
+                Assert.IsNotNull(retrievedSucceeds.TotalAmount);
+                Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
+                
+                var retrievedFails = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount")) as Invoice;
+                Assert.IsNotNull(retrievedSucceeds.TotalAmount);
+                Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
+            }
         }
     }
 

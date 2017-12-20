@@ -118,8 +118,12 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (metadataAtt is MoneyAttributeMetadata) {
-                var currency = db.GetEntity(entity.GetAttributeValue<EntityReference>("transactioncurrencyid"));
-                var currencysymbol = currency.GetAttributeValue<string>("currencysymbol");
+                var currencysymbol = 
+                    db.GetEntity(
+                        db.GetEntity(entity.ToEntityReference())
+                        .GetAttributeValue<EntityReference>("transactioncurrencyid"))
+                    .GetAttributeValue<string>("currencysymbol");
+                
                 return currencysymbol + (value as Money).Value.ToString();
             }
 
