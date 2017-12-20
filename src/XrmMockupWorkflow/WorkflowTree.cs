@@ -1190,7 +1190,8 @@ namespace WorkflowExecuter {
             }
             var attr = variables[VariableId];
             if (attr is Money) {
-                attr = new Money((attr as Money).Value * (decimal)variables["ExchangeRate"]);
+                var exchangeRate = variables["ExchangeRate"] as decimal?;
+                attr = new Money((attr as Money).Value * exchangeRate == null ? 1 : exchangeRate.Value);
             }
             (variables[EntityId] as Entity).Attributes[Attribute] = attr;
         }
