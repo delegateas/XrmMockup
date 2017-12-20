@@ -6677,6 +6677,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("calendarid")]
+        [RelationshipSchemaName("calendar_bookableresources")]
+        public Calendar calendar_bookableresources {
+            get {
+                return GetRelatedEntity<Calendar>("calendar_bookableresources", null);
+            }
+            set {
+                SetRelatedEntity("calendar_bookableresources", null, value);
+            }
+        }
+        
         [AttributeLogicalName("userid")]
         [RelationshipSchemaName("systemuser_bookableresource_UserId")]
         public SystemUser systemuser_bookableresource_UserId {
@@ -11970,6 +11981,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("calendarid")]
+        [RelationshipSchemaName("BusinessUnit_Calendar")]
+        public Calendar BusinessUnit_Calendar {
+            get {
+                return GetRelatedEntity<Calendar>("BusinessUnit_Calendar", null);
+            }
+            set {
+                SetRelatedEntity("BusinessUnit_Calendar", null, value);
+            }
+        }
+        
         [AttributeLogicalName("modifiedby")]
         [RelationshipSchemaName("lk_businessunitbase_modifiedby")]
         public SystemUser lk_businessunitbase_modifiedby {
@@ -12274,6 +12296,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("business_unit_dynamicproperyinstance", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("business_unit_calendars")]
+        public IEnumerable<Calendar> business_unit_calendars {
+            get {
+                return GetRelatedEntities<Calendar>("business_unit_calendars", null);
+            }
+            set {
+                SetRelatedEntities("business_unit_calendars", null, value);
             }
         }
         
@@ -12698,6 +12730,430 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         public static BusinessUnit Retrieve(IOrganizationService service, Guid id, params Expression<Func<BusinessUnit,object>>[] attrs) {
+            return service.Retrieve(id, attrs);
+        }
+    }
+    
+    /// <summary>
+    /// <para>Calendar used by the scheduling system to define when an appointment or activity is to occur.</para>
+    /// <para>Display Name: Calendar</para>
+    /// </summary>
+    [EntityLogicalName("calendar")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class Calendar : ExtendedEntity<EmptyEnum, EmptyEnum> {
+        
+        public const string EntityLogicalName = "calendar";
+        
+        public const int EntityTypeCode = 4003;
+        
+        public Calendar() : 
+                base(EntityLogicalName) {
+        }
+        
+        public Calendar(Guid Id) : 
+                base(EntityLogicalName, Id) {
+        }
+        
+        private string DebuggerDisplay {
+            get {
+                return GetDebuggerDisplay("name");
+            }
+        }
+        
+        [AttributeLogicalName("calendarid")]
+        public override Guid Id {
+            get {
+                return base.Id;
+            }
+            set {
+                SetId("calendarid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the calendar.</para>
+        /// <para>Display Name: Calendar</para>
+        /// </summary>
+        [AttributeLogicalName("calendarid")]
+        public Guid? CalendarId {
+            get {
+                return GetAttributeValue<Guid?>("calendarid");
+            }
+            set {
+                SetId("calendarid", value);
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfbyname")]
+        public string CreatedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("createdonbehalfbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Calendar type, such as User work hour calendar, or Customer service hour calendar.</para>
+        /// <para>Display Name: Calendar type</para>
+        /// </summary>
+        [AttributeLogicalName("type")]
+        public Calendar_Type? Type {
+            get {
+                return GetOptionSetValue<Calendar_Type>("type");
+            }
+            set {
+                SetOptionSetValue("type", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the primary user of this calendar.</para>
+        /// <para>Display Name: Primary User</para>
+        /// </summary>
+        [AttributeLogicalName("primaryuserid")]
+        public Guid? PrimaryUserId {
+            get {
+                return GetAttributeValue<Guid?>("primaryuserid");
+            }
+            set {
+                SetAttributeValue("primaryuserid", value);
+            }
+        }
+        
+        [AttributeLogicalName("holidayschedulecalendaridname")]
+        public string HolidayScheduleCalendarIdName {
+            get {
+                return GetAttributeValue<string>("holidayschedulecalendaridname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the calendar was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+        
+        [AttributeLogicalName("createdbyname")]
+        public string CreatedByName {
+            get {
+                return GetAttributeValue<string>("createdbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Calendar is shared by other calendars, such as the organization calendar.</para>
+        /// <para>Display Name: Is Shared</para>
+        /// </summary>
+        [AttributeLogicalName("isshared")]
+        public bool? IsShared {
+            get {
+                return GetAttributeValue<bool?>("isshared");
+            }
+            set {
+                SetAttributeValue("isshared", value);
+            }
+        }
+        
+        [AttributeLogicalName("businessunitidname")]
+        public string BusinessUnitIdName {
+            get {
+                return GetAttributeValue<string>("businessunitidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the calendar was last modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn {
+            get {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who created the calendar.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who last modified the calendar.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+        
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber {
+            get {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyname")]
+        public string ModifiedByName {
+            get {
+                return GetAttributeValue<string>("modifiedbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the business unit with which the calendar is associated.</para>
+        /// <para>Display Name: Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("businessunitid")]
+        public EntityReference BusinessUnitId {
+            get {
+                return GetAttributeValue<EntityReference>("businessunitid");
+            }
+            set {
+                SetAttributeValue("businessunitid", value);
+            }
+        }
+        
+        [AttributeLogicalName("organizationidname")]
+        public string OrganizationIdName {
+            get {
+                return GetAttributeValue<string>("organizationidname");
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfbyname")]
+        public string ModifiedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("modifiedonbehalfbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the organization with which the calendar is associated.</para>
+        /// <para>Display Name: Organization</para>
+        /// </summary>
+        [AttributeLogicalName("organizationid")]
+        public EntityReference OrganizationId {
+            get {
+                return GetAttributeValue<EntityReference>("organizationid");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Name of the calendar.</para>
+        /// <para>Display Name: Name</para>
+        /// </summary>
+        [AttributeLogicalName("name")]
+        public string Name {
+            get {
+                return GetAttributeValue<string>("name");
+            }
+            set {
+                SetAttributeValue("name", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the calendar.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Calendar used by the scheduling system to define when an appointment or activity is to occur.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description {
+            get {
+                return GetAttributeValue<string>("description");
+            }
+            set {
+                SetAttributeValue("description", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Holiday Schedule CalendarId</para>
+        /// <para>Display Name: Holiday Schedule CalendarId</para>
+        /// </summary>
+        [AttributeLogicalName("holidayschedulecalendarid")]
+        public EntityReference HolidayScheduleCalendarId {
+            get {
+                return GetAttributeValue<EntityReference>("holidayschedulecalendarid");
+            }
+            set {
+                SetAttributeValue("holidayschedulecalendarid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who last modified the calendar.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+        
+        [AttributeLogicalName("businessunitid")]
+        [RelationshipSchemaName("business_unit_calendars")]
+        public BusinessUnit business_unit_calendars {
+            get {
+                return GetRelatedEntity<BusinessUnit>("business_unit_calendars", null);
+            }
+            set {
+                SetRelatedEntity("business_unit_calendars", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_calendar_modifiedonbehalfby")]
+        public SystemUser lk_calendar_modifiedonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_calendar_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_calendar_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("holidayschedulecalendarid")]
+        [RelationshipSchemaName("calendar_customercalendar_holidaycalendar", EntityRole.Referencing)]
+        public Calendar Referencingcalendar_customercalendar_holidaycalendar {
+            get {
+                return GetRelatedEntity<Calendar>("calendar_customercalendar_holidaycalendar", EntityRole.Referencing);
+            }
+            set {
+                SetRelatedEntity("calendar_customercalendar_holidaycalendar", EntityRole.Referencing, value);
+            }
+        }
+        
+        [AttributeLogicalName("organizationid")]
+        [RelationshipSchemaName("organization_calendars")]
+        public Organization organization_calendars {
+            get {
+                return GetRelatedEntity<Organization>("organization_calendars", null);
+            }
+            set {
+                SetRelatedEntity("organization_calendars", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_calendar_modifiedby")]
+        public SystemUser lk_calendar_modifiedby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_calendar_modifiedby", null);
+            }
+            set {
+                SetRelatedEntity("lk_calendar_modifiedby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_calendar_createdonbehalfby")]
+        public SystemUser lk_calendar_createdonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_calendar_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_calendar_createdonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_calendar_createdby")]
+        public SystemUser lk_calendar_createdby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_calendar_createdby", null);
+            }
+            set {
+                SetRelatedEntity("lk_calendar_createdby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("calendar_organization")]
+        public IEnumerable<Organization> calendar_organization {
+            get {
+                return GetRelatedEntities<Organization>("calendar_organization", null);
+            }
+            set {
+                SetRelatedEntities("calendar_organization", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("slabase_businesshoursid")]
+        public IEnumerable<SLA> slabase_businesshoursid {
+            get {
+                return GetRelatedEntities<SLA>("slabase_businesshoursid", null);
+            }
+            set {
+                SetRelatedEntities("slabase_businesshoursid", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("calendar_bookableresources")]
+        public IEnumerable<BookableResource> calendar_bookableresources {
+            get {
+                return GetRelatedEntities<BookableResource>("calendar_bookableresources", null);
+            }
+            set {
+                SetRelatedEntities("calendar_bookableresources", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("BusinessUnit_Calendar")]
+        public IEnumerable<BusinessUnit> BusinessUnit_Calendar {
+            get {
+                return GetRelatedEntities<BusinessUnit>("BusinessUnit_Calendar", null);
+            }
+            set {
+                SetRelatedEntities("BusinessUnit_Calendar", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("calendar_customercalendar_holidaycalendar", EntityRole.Referenced)]
+        public IEnumerable<Calendar> Referencedcalendar_customercalendar_holidaycalendar {
+            get {
+                return GetRelatedEntities<Calendar>("calendar_customercalendar_holidaycalendar", EntityRole.Referenced);
+            }
+            set {
+                SetRelatedEntities("calendar_customercalendar_holidaycalendar", EntityRole.Referenced, value);
+            }
+        }
+        
+        [RelationshipSchemaName("calendar_system_users")]
+        public IEnumerable<SystemUser> calendar_system_users {
+            get {
+                return GetRelatedEntities<SystemUser>("calendar_system_users", null);
+            }
+            set {
+                SetRelatedEntities("calendar_system_users", null, value);
+            }
+        }
+        
+        public static Calendar Retrieve(IOrganizationService service, Guid id, params Expression<Func<Calendar,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
     }
@@ -55847,6 +56303,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("businessclosurecalendarid")]
+        [RelationshipSchemaName("calendar_organization")]
+        public Calendar calendar_organization {
+            get {
+                return GetRelatedEntity<Calendar>("calendar_organization", null);
+            }
+            set {
+                SetRelatedEntity("calendar_organization", null, value);
+            }
+        }
+        
         [AttributeLogicalName("modifiedonbehalfby")]
         [RelationshipSchemaName("lk_organization_modifiedonbehalfby")]
         public SystemUser lk_organization_modifiedonbehalfby {
@@ -55990,6 +56457,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("organization_queueitems", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("organization_calendars")]
+        public IEnumerable<Calendar> organization_calendars {
+            get {
+                return GetRelatedEntities<Calendar>("organization_calendars", null);
+            }
+            set {
+                SetRelatedEntities("organization_calendars", null, value);
             }
         }
         
@@ -66963,6 +67440,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("businesshoursid")]
+        [RelationshipSchemaName("slabase_businesshoursid")]
+        public Calendar slabase_businesshoursid {
+            get {
+                return GetRelatedEntity<Calendar>("slabase_businesshoursid", null);
+            }
+            set {
+                SetRelatedEntity("slabase_businesshoursid", null, value);
+            }
+        }
+        
         [AttributeLogicalName("owningbusinessunit")]
         [RelationshipSchemaName("business_unit_slabase")]
         public BusinessUnit business_unit_slabase {
@@ -71894,6 +72382,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("calendarid")]
+        [RelationshipSchemaName("calendar_system_users")]
+        public Calendar calendar_system_users {
+            get {
+                return GetRelatedEntity<Calendar>("calendar_system_users", null);
+            }
+            set {
+                SetRelatedEntity("calendar_system_users", null, value);
+            }
+        }
+        
         [AttributeLogicalName("defaultmailbox")]
         [RelationshipSchemaName("systemuser_defaultmailbox_mailbox")]
         public Mailbox systemuser_defaultmailbox_mailbox {
@@ -73215,6 +73714,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_calendar_createdby")]
+        public IEnumerable<Calendar> lk_calendar_createdby {
+            get {
+                return GetRelatedEntities<Calendar>("lk_calendar_createdby", null);
+            }
+            set {
+                SetRelatedEntities("lk_calendar_createdby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_incidentbase_modifiedby")]
         public IEnumerable<Incident> lk_incidentbase_modifiedby {
             get {
@@ -73642,6 +74151,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("lk_serviceappointment_createdonbehalfby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_calendar_modifiedonbehalfby")]
+        public IEnumerable<Calendar> lk_calendar_modifiedonbehalfby {
+            get {
+                return GetRelatedEntities<Calendar>("lk_calendar_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_calendar_modifiedonbehalfby", null, value);
             }
         }
         
@@ -74135,6 +74654,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_calendar_createdonbehalfby")]
+        public IEnumerable<Calendar> lk_calendar_createdonbehalfby {
+            get {
+                return GetRelatedEntities<Calendar>("lk_calendar_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_calendar_createdonbehalfby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_opportunity_modifiedonbehalfby")]
         public IEnumerable<Opportunity> lk_opportunity_modifiedonbehalfby {
             get {
@@ -74312,6 +74841,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("user_opportunityclose", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_calendar_modifiedby")]
+        public IEnumerable<Calendar> lk_calendar_modifiedby {
+            get {
+                return GetRelatedEntities<Calendar>("lk_calendar_modifiedby", null);
+            }
+            set {
+                SetRelatedEntities("lk_calendar_modifiedby", null, value);
             }
         }
         
@@ -79872,6 +80411,12 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        public IQueryable<Calendar> CalendarSet {
+            get {
+                return CreateQuery<Calendar>();
+            }
+        }
+        
         public IQueryable<Campaign> CampaignSet {
             get {
                 return CreateQuery<Campaign>();
@@ -81169,6 +81714,22 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         DefaultValue = 1,
+    }
+    
+    [DataContract()]
+    public enum Calendar_Type {
+        
+        [EnumMember()]
+        InnerCalendartype = -1,
+        
+        [EnumMember()]
+        Default = 0,
+        
+        [EnumMember()]
+        CustomerService = 1,
+        
+        [EnumMember()]
+        HolidaySchedule = 2,
     }
     
     [DataContract()]

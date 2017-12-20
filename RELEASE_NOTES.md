@@ -1,3 +1,10 @@
+#### 0.5.0-beta - unreleased
+* Added support for activity pointers
+
+#### 0.4.4-beta - December 08 2017
+* It's now illegal to create an organization service for a non-existing user
+* Removed excessive console output
+
 #### 0.4.3-beta - October 10 2017
 * Added support for testing with data from CRM
 

@@ -24,6 +24,40 @@ using System.Xml.Linq;
 namespace DG.Tools.XrmMockup {
     internal static class Utility {
 
+        internal static HashSet<string> Activities = new HashSet<string>() {
+            "appointment",
+            "email",
+            "fax",
+            "incidentresolution",
+            "letter",
+            "opportunityclose",
+            "salesorderclose",
+            "phonecall",
+            "quoteclose",
+            "task",
+            "serviceappointment",
+            "campaignresponse",
+            "campaignactivity",
+            "bulkoperation"
+        };
+
+        internal static Dictionary<string, OptionSetValue> ActivityTypeCode = new Dictionary<string, OptionSetValue>() {
+            { "appointment", new OptionSetValue(4201) },
+            { "email", new OptionSetValue(4204) },
+            { "fax", new OptionSetValue(4206) },
+            { "incidentresolution", new OptionSetValue(4207) },
+            { "letter", new OptionSetValue(4208) },
+            { "opportunityclose", new OptionSetValue(4209) },
+            { "salesorderclose", new OptionSetValue(4210) },
+            { "phonecall", new OptionSetValue(4211) },
+            { "quoteclose", new OptionSetValue(4212) },
+            { "task", new OptionSetValue(4214) },
+            { "serviceappointment", new OptionSetValue(4251) },
+            { "campaignresponse", new OptionSetValue(4401) },
+            { "campaignactivity", new OptionSetValue(4402) },
+            { "bulkoperation", new OptionSetValue(4406) },
+        };
+
         public static Entity CloneEntity(this Entity entity) {
             if (entity == null) return null;
             return CloneEntity(entity, null, null);
@@ -83,12 +117,6 @@ namespace DG.Tools.XrmMockup {
         internal static void RemoveUnsettableAttributes(string actionType, EntityMetadata metadata, Entity entity) {
             if (entity == null) return;
 
-            RemoveAttribute(entity,
-                "modifiedon",
-                "modifiedby",
-                "createdby",
-                "createdon");
-            
             switch (actionType) {
                 case "Create":
                     RemoveAttribute(entity,
@@ -103,7 +131,6 @@ namespace DG.Tools.XrmMockup {
                         entity.Attributes.Where(a => metadata.Attributes.Any(m => m.LogicalName == a.Key && m.IsValidForUpdate == false)).Select(a => a.Key).ToArray());
                     break;
             }
-            entity[metadata.PrimaryIdAttribute] = entity.Id;
         }
 
         internal static void RemoveAttribute(Entity entity, params string[] attrNames) {
@@ -677,7 +704,53 @@ namespace DG.Tools.XrmMockup {
         }
 #endif
 
+        internal static Entity ToActivityPointer(this Entity entity) {
+            if (!Activities.Contains(entity.LogicalName)) return null;
 
+            var pointer = new Entity("activitypointer") {
+                Id = entity.Id
+            };
+            pointer["activityid"] = entity.Id;
+            pointer["ownerid"] = entity.GetAttributeValue<EntityReference>("ownerid");
+            pointer["activitytypecode"] = entity.GetAttributeValue<OptionSetValue>("activitytypecode");
+            pointer["actualdurationminutes"] = entity.GetAttributeValue<int>("actualdurationminutes");
+            pointer["actualend"] = entity.GetAttributeValue<DateTime>("actualend");
+            pointer["actualstart"] = entity.GetAttributeValue<DateTime>("actualstart");
+            pointer["description"] = entity.GetAttributeValue<string>("description");
+            pointer["deliveryprioritycode"] = entity.GetAttributeValue<int>("deliveryprioritycode");
+            pointer["isbilled"] = entity.GetAttributeValue<bool>("isbilled");
+            pointer["isregularactivity"] = entity.GetAttributeValue<bool>("isregularactivity");
+            pointer["isworkflowcreated"] = entity.GetAttributeValue<bool>("isworkflowcreated");
+            pointer["prioritycode"] = entity.GetAttributeValue<OptionSetValue>("prioritycode");
+            pointer["scheduleddurationminutes"] = entity.GetAttributeValue<int>("scheduleddurationminutes");
+            pointer["scheduledend"] = entity.GetAttributeValue<DateTime>("scheduledend");
+            pointer["scheduledstart"] = entity.GetAttributeValue<DateTime>("scheduledstart");
+            pointer["senton"] = entity.GetAttributeValue<DateTime>("senton");
+            pointer["subject"] = entity.GetAttributeValue<string>("subject");
+
+            switch (entity.GetAttributeValue<OptionSetValue>("statecode").Value) {
+                case 1:
+                    pointer["statecode"] = new OptionSetValue(1);
+                    pointer["statuscode"] = new OptionSetValue(2);
+                    break;
+
+                case 2:
+                    pointer["statecode"] = new OptionSetValue(2);
+                    pointer["statuscode"] = new OptionSetValue(3);
+                    break;
+
+                case 3:
+                    pointer["statecode"] = new OptionSetValue(3);
+                    pointer["statuscode"] = new OptionSetValue(4);
+                    break;
+
+                default:
+                    pointer["statecode"] = new OptionSetValue(0);
+                    pointer["statuscode"] = new OptionSetValue(1);
+                    break;
+            }
+            return pointer;
+        }
     }
 
     internal class LogicalNames {

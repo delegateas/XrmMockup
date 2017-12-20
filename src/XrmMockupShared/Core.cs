@@ -360,8 +360,6 @@ namespace DG.Tools.XrmMockup {
                 pluginContext.Depth = parentPluginContext.Depth + 1;
             }
             var buRef = GetBusinessUnit(userRef);
-            Console.WriteLine($"User GUID: {userRef.Id}");
-            Console.WriteLine($"BU GUID: {buRef.Id}");
             pluginContext.BusinessUnitId = buRef.Id;
 
             Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out EventOperation? eventOp);
