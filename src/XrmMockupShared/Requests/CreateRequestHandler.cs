@@ -120,6 +120,15 @@ namespace DG.Tools.XrmMockup {
                 Utility.SetFullName(metadata, clonedEntity);
             }
 
+            if (Utility.Activities.Contains(clonedEntity.LogicalName)) {
+                clonedEntity["activitytypecode"] = Utility.ActivityTypeCode[clonedEntity.LogicalName];
+
+                var req = new CreateRequest {
+                    Target = clonedEntity.ToActivityPointer()
+                };
+                core.Execute(req, userRef);
+            }
+            
             db.Add(clonedEntity);
 
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {

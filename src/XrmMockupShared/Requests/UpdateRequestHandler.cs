@@ -97,6 +97,16 @@ namespace DG.Tools.XrmMockup {
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
+
+            if (Utility.Activities.Contains(xrmEntity.LogicalName)) {
+                xrmEntity["activitytypecode"] = Utility.ActivityTypeCode[xrmEntity.LogicalName];
+
+                var req = new UpdateRequest {
+                    Target = xrmEntity.ToActivityPointer()
+                };
+                core.Execute(req, userRef);
+            }
+
             Utility.Touch(xrmEntity, row.Metadata, core.TimeOffset, userRef);
 
             db.Update(xrmEntity);
