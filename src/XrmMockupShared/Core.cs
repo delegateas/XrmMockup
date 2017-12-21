@@ -200,7 +200,7 @@ namespace DG.Tools.XrmMockup {
                 var typedEntity = GetEntity(entity.LogicalName);
                 typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, metadata, db);
+                Utility.PopulateEntityReferenceNames(typedEntity, db);
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;

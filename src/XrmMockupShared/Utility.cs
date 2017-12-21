@@ -595,11 +595,14 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, EntityMetadata metadata, XrmDb db) {
+        internal static void PopulateEntityReferenceNames(Entity entity, XrmDb db) {
             foreach (var attr in entity.Attributes) {
                 if (attr.Value is EntityReference eRef) {
-                    var nameAttr = metadata.PrimaryNameAttribute;
-                    eRef.Name = db.GetEntityOrNull(eRef)?.GetAttributeValue<string>(nameAttr);
+                    var row = db.GetDbRowOrNull(eRef);
+                    if (row != null) {
+                        var nameAttr = row.Metadata.PrimaryNameAttribute;
+                        eRef.Name = row.GetColumn<string>(nameAttr);
+                    }
                 }
             }
         }
