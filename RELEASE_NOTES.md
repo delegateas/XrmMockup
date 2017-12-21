@@ -1,3 +1,8 @@
+### unreleased
+* Fixed an issue in SetEntityProperty where ExchangeRate could be null
+* Updated live-debugging feature to work again that was previous lost in refactoring
+* Fixed an issue where making two XrmMockup Instance resulted in EnableProxyType not working on second instance
+
 ### 0.5.1-beta - December 21 2017
 * Added a public getter for the base currency.
 * Fixed error with Name property not being set on entityReferences.
