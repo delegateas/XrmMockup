@@ -24,7 +24,7 @@ namespace DG.Tools.XrmMockup {
 
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetDBRowMultiple(queryExpr.EntityName);
+            var rows = db.GetDBEntityRows(queryExpr.EntityName);
             if (db[queryExpr.EntityName].Count() > 0)
             {
                 foreach (var row in rows)

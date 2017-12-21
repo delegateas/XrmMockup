@@ -65,7 +65,7 @@ namespace DG.Tools.XrmMockup.Database {
             foreach (var xrmEntity in xrmEntities) Add(xrmEntity, withReferenceChecks);
         }
 
-        internal IEnumerable<DbRow> GetDBRowMultiple(string EntityLogicalName)
+        internal IEnumerable<DbRow> GetDBEntityRows(string EntityLogicalName)
         {
             return this[EntityLogicalName];
         }
@@ -116,11 +116,11 @@ namespace DG.Tools.XrmMockup.Database {
             if (reference?.Id != Guid.Empty) {                
                 currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null && OnlineProxy != null) {
-                    var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
                     if (!withReferenceCheck)
-                        currentDbRow = ToDbRow(onlineEntity, withReferenceCheck);
+                        currentDbRow = DbRow.MakeDBRowRef(reference, this);
                     else
                     {
+                        var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
                         Add(onlineEntity, withReferenceCheck);
                         currentDbRow = this[reference.LogicalName][reference.Id];
                     }
