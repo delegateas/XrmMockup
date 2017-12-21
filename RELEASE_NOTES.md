@@ -1,5 +1,7 @@
 ### 0.5.1-beta - unreleased
 * Added a public getter for the base currency.
+* Fixed error with Name property not being set on entityReferences.
+* Fixed https://github.com/delegateas/XrmMockup/issues/26 concerning duplicate detection of N:N relations.
 
 #### 0.5.0-beta - December 21 2017
 * Added support for activity pointers
