@@ -61,17 +61,33 @@ namespace DG.Tools.XrmMockup {
                 clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
                 Utility.HandleCurrencies(metadata, db, clonedEntity);
             }
-
-            var attributes = entityMetadata.Attributes;
-            if (!clonedEntity.Attributes.ContainsKey("statecode") &&
-                Utility.IsSettableAttribute("statecode", entityMetadata)) {
-                var stateMeta = attributes.First(a => a.LogicalName == "statecode") as StateAttributeMetadata;
-                clonedEntity["statecode"] = stateMeta.DefaultFormValue.HasValue ? new OptionSetValue(stateMeta.DefaultFormValue.Value) : new OptionSetValue(0);
-            }
-            if (!clonedEntity.Attributes.ContainsKey("statuscode") &&
+            
+            if (Utility.IsSettableAttribute("statecode", entityMetadata) &&
                 Utility.IsSettableAttribute("statuscode", entityMetadata)) {
-                var statusMeta = attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata;
-                clonedEntity["statuscode"] = statusMeta.DefaultFormValue.HasValue ? new OptionSetValue(statusMeta.DefaultFormValue.Value) : new OptionSetValue(1);
+                var defaultState = 0;
+                var defaultStateStatus = metadata.DefaultStateStatus[clonedEntity.LogicalName];
+                if (!clonedEntity.Attributes.ContainsKey("statecode") &&
+                    !clonedEntity.Attributes.ContainsKey("statuscode")) {
+                    clonedEntity["statecode"] = new OptionSetValue(defaultState);
+                    clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                } else {
+                    var statusmeta =
+                        (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata)
+                        ?.OptionSet.Options
+                        .Cast<StatusOptionMetadata>()
+                        .FirstOrDefault(o => o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
+                    if (clonedEntity.LogicalName != "opportunityclose" && // is allowed to be created inactive 
+                        ((clonedEntity.Attributes.ContainsKey("statecode") && 
+                        clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
+                        (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState))) {
+                        clonedEntity["statecode"] = new OptionSetValue(defaultState);
+                        clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                    } else if (!clonedEntity.Contains("statecode") || clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null) {
+                        clonedEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
+                    } else if (!clonedEntity.Contains("statuscode") || clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null) {
+                        clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                    }   
+                }
             }
 
             if (Utility.IsSettableAttribute("createdon", entityMetadata)) {
