@@ -1,5 +1,6 @@
-#### 0.5.0-beta - unreleased
+#### 0.5.0-beta - December 21 2017
 * Added support for activity pointers
+* Fixed bugs related to statecode and statuscode attributes
 
 #### 0.4.4-beta - December 08 2017
 * It's now illegal to create an organization service for a non-existing user
