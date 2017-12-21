@@ -1,3 +1,6 @@
+### 0.5.1-beta - unreleased
+* Added a public getter for the base currency.
+
 #### 0.5.0-beta - December 21 2017
 * Added support for activity pointers
 * Fixed bugs related to statecode and statuscode attributes

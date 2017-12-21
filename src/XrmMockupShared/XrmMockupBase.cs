@@ -32,7 +32,16 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-       
+        /// <summary>
+        /// Base currency for the Mockup instance
+        /// </summary>
+        public EntityReference BaseCurrency {
+            get {
+                return Core.baseCurrency;
+            }
+        }
+
+
         private static bool HasProxyTypes = false;
         private Core Core;
         private MockupServiceProviderAndFactory ServiceFactory;
