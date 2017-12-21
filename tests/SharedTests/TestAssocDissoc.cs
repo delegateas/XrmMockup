@@ -11,10 +11,12 @@ using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
 
     [TestClass]
-    public class TestAssocDissoc : UnitTestBase {
+    public class TestAssocDissoc : UnitTestBase
+    {
         Account account1;
         Account account2;
         Account account3;
@@ -22,7 +24,8 @@ namespace DG.XrmMockupTest {
         Contact contact1;
         Contact contact2;
         [TestInitialize]
-        public void TestInitialize() {
+        public void TestInitialize()
+        {
             contact1 = new Contact { FirstName = "Hans" };
             contact2 = new Contact { FirstName = "John" };
             account1 = new Account { Name = "Account 1" };
@@ -36,8 +39,10 @@ namespace DG.XrmMockupTest {
             account3.Id = orgAdminUIService.Create(account3);
         }
         [TestMethod]
-        public void TestAssocDissoc1N() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestAssocDissoc1N()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
@@ -48,7 +53,8 @@ namespace DG.XrmMockupTest {
                 orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship,
                     relatedEntities);
 
-                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account"))) {
+                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
+                {
                     Assert.AreEqual(contact1.Id, acc.PrimaryContactId.Id);
                     Assert.AreEqual(Contact.EntityLogicalName, acc.PrimaryContactId.LogicalName);
                 }
@@ -58,15 +64,18 @@ namespace DG.XrmMockupTest {
                 orgAdminUIService.Disassociate(Contact.EntityLogicalName, contact1.Id, relationship,
                     relatedEntities);
 
-                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account"))) {
+                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
+                {
                     Assert.IsNull(acc.PrimaryContactId);
                 }
             }
         }
 
         [TestMethod]
-        public void TestAssocDissocN1() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestAssocDissocN1()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
                 relatedEntities.Add(new EntityReference(Contact.EntityLogicalName, contact1.Id));
 
@@ -88,10 +97,13 @@ namespace DG.XrmMockupTest {
                 Assert.IsNull(retrieved.PrimaryContactId);
 
                 relatedEntities.Add(new EntityReference(Contact.EntityLogicalName, contact2.Id));
-                try {
+                try
+                {
                     orgAdminUIService.Associate(Account.EntityLogicalName, account1.Id, relationship, relatedEntities);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
@@ -99,8 +111,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestAssocDissocNN() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestAssocDissocNN()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var relatedAccounts = new EntityReferenceCollection();
                 relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
                 relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
@@ -164,8 +178,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestAssocNNTwoWay() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestAssocNNTwoWay()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var relatedAccounts = new EntityReferenceCollection();
                 relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
                 relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
@@ -196,42 +212,83 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void When_execute_is_called_with_a_non_existing_target_exception_is_thrown() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void When_execute_is_called_with_a_non_existing_target_exception_is_thrown()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
 
                 Relationship relationship = new Relationship("account_primary_contact");
-                try {
+                try
+                {
                     orgAdminUIService.Associate(Contact.EntityLogicalName, Guid.NewGuid(), relationship,
                         relatedEntities);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
             }
         }
 
         [TestMethod]
-        public void When_execute_is_called_with_a_non_existing_reference_exception_is_thrown() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void When_execute_is_called_with_a_non_existing_reference_exception_is_thrown()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, Guid.NewGuid()));
                 relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
 
                 Relationship relationship = new Relationship("account_primary_contact");
-                try {
+                try
+                {
                     orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship,
                         relatedEntities);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                }
+            }
+        }
+
+        [TestMethod]
+        /*[ExpectedException(typeof(FaultException),
+        "An existing relation contains the same link. N:N relation cannot be made.")]*/
+        public void TestAssocNNTwice()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var relatedAccounts = new EntityReferenceCollection {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, account2.Id),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
+
+
+                Relationship relationship1 = new Relationship(dg_account_contact.EntityLogicalName);
+
+                orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship1, relatedAccounts); //contact 1 associated to all accounts
+
+                Relationship relationship2 = new Relationship(dg_account_contact.EntityLogicalName);
+
+                try
+                {
+                    orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship2, relatedAccounts);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
             }
         }
     }
-
 }

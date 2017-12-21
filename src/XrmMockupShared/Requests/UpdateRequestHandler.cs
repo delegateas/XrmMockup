@@ -18,8 +18,6 @@ namespace DG.Tools.XrmMockup {
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
 
-
-
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
             var row = db.GetDbRow(entRef);
 
@@ -52,6 +50,26 @@ namespace DG.Tools.XrmMockup {
 #endif
 
             var updEntity = request.Target.CloneEntity(row.Metadata, new ColumnSet(true));
+
+            if (updEntity.Contains("statecode") || updEntity.Contains("statuscode")) {
+                var defaultStateStatus = metadata.DefaultStateStatus[updEntity.LogicalName];
+                var statusmeta =
+                    (metadata.EntityMetadata.GetMetadata(updEntity.LogicalName)
+                        .Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata)
+                    ?.OptionSet.Options
+                    .Cast<StatusOptionMetadata>()
+                    .FirstOrDefault(o => o.Value == updEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
+
+                if ((!updEntity.Contains("statecode") || updEntity.GetAttributeValue<OptionSetValue>("statecode") == null) 
+                    && statusmeta != null) {
+                    updEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
+                } else if (!updEntity.Contains("statuscode") || updEntity.GetAttributeValue<OptionSetValue>("statuscode") == null) {
+                    var state = updEntity.GetAttributeValue<OptionSetValue>("statecode").Value;
+                    updEntity["statuscode"] = new OptionSetValue(defaultStateStatus[state]);
+                }
+            }
+            
+            
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             Utility.CheckStatusTransitions(row.Metadata, updEntity, xrmEntity);
 #endif

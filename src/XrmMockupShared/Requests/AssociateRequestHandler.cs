@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class AssociateRequestHandler : RequestHandler {
-        internal AssociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Associate") {}
+        internal AssociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Associate") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<AssociateRequest>(orgRequest);
@@ -55,7 +55,14 @@ namespace DG.Tools.XrmMockup {
                         linker.Attributes[manyToMany.Entity1IntersectAttribute] = relatedEntity.Id;
                         linker.Attributes[manyToMany.Entity2IntersectAttribute] = request.Target.Id;
                     }
-                    db.Add(linker);
+                    
+                    if (!db[linker.LogicalName].Any(x => 
+                        linker.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == x.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) &&
+                        linker.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == x.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute))) { 
+                        db.Add(linker);
+                    } else {
+                        throw new FaultException("An existing relation contains the same link. N:N relation cannot be made.");
+                    }
                 }
             } else {
                 if (oneToMany.ReferencedEntity == request.Target.LogicalName) {
