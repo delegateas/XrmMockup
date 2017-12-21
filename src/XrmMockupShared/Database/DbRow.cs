@@ -126,6 +126,11 @@ namespace DG.Tools.XrmMockup.Database {
             return xrmEntity;
         }
 
+        internal static DbRow MakeDBRowRef(EntityReference reference, XrmDb db)
+        {
+            return new DbRow(db[reference.LogicalName], reference.Id, new List<KeyValuePair<string, object>>());
+        }
+
         internal static DbRow FromEntity(Entity xrmEntity, XrmDb db, bool withReferenceChecks = true) {
             IEnumerable<KeyValuePair<string, object>> columns = xrmEntity.Attributes;
 
