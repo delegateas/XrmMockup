@@ -66,6 +66,9 @@ namespace DG.Tools.XrmMockup.Metadata
             Console.WriteLine("Getting All Optionsets");
             skeleton.OptionSets = RetrieveAllOptionSets();
 
+            Console.WriteLine("Getting Default state and status");
+            skeleton.DefaultStateStatus = GetDefaultStateAndStatus();
+
             return skeleton;
         }
 
@@ -197,8 +200,6 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId) {
-
-
             var privPotc = new LinkEntity(PRIVILEGE, PRIVILEGE_OTC, "privilegeid", "privilegeid", JoinOperator.LeftOuter) {
                 Columns = new ColumnSet("objecttypecode"),
                 EntityAlias = PRIVILEGE_POTCH
@@ -239,7 +240,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 var entityName = e.GetAttributeValue<AliasedValue>(PRIVILEGE_POTCH + ".objecttypecode").Value as string;
                 if (entityName == "none") continue;
 
-                var rp = toRolePrivilege(e);
+                var rp = ToRolePrivilege(e);
                 if (rp.AccessRight == AccessRights.None) continue;
                 var roleId = (Guid)e.GetAttributeValue<AliasedValue>(ROLEPRIVILEGE_ROLE_ALIAS + ".roleid").Value;
                 if (!roles.ContainsKey(roleId)) {
@@ -275,7 +276,7 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-        private RolePrivilege toRolePrivilege(Entity e) {
+        private RolePrivilege ToRolePrivilege(Entity e) {
             var rp = new RolePrivilege() {
                 CanBeGlobal = e.GetAttributeValue<bool>("canbeglobal"),
                 CanBeDeep = e.GetAttributeValue<bool>("canbedeep"),
@@ -297,8 +298,9 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         private EntityMetadata[] GetEntityMetadataBulk(HashSet<string> logicalNames) {
-            var request = new ExecuteMultipleRequest();
-            request.Requests = new OrganizationRequestCollection();
+            var request = new ExecuteMultipleRequest {
+                Requests = new OrganizationRequestCollection()
+            };
             request.Requests.AddRange(logicalNames.Select(lname => GetEntityMetadataRequest(lname)));
             request.Settings = new ExecuteMultipleSettings() {
                 ContinueOnError = false,
@@ -314,6 +316,36 @@ namespace DG.Tools.XrmMockup.Metadata
             return bulkResp
                 .Select(resp => (resp.Response as RetrieveEntityResponse).EntityMetadata)
                 .ToArray();
+        }
+
+
+        private Dictionary<string, Dictionary<int,int>> GetDefaultStateAndStatus() {
+            var dict = new Dictionary<string, Dictionary<int,int>>();
+
+            var query = new QueryExpression("statusmap") {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.PageInfo.PageNumber = 1;
+
+            var statusmaps = new List<Entity>();
+            var resp = service.RetrieveMultiple(query);
+            statusmaps.AddRange(resp.Entities);
+            while (resp.MoreRecords) {
+                query.PageInfo.PageNumber = query.PageInfo.PageNumber + 1;
+                query.PageInfo.PagingCookie = resp.PagingCookie;
+                resp = service.RetrieveMultiple(query);
+                statusmaps.AddRange(resp.Entities);
+            }
+
+            foreach (var e in statusmaps.Where(x => x.GetAttributeValue<bool>("isdefault"))) {
+                var logicalName = e.GetAttributeValue<string>("objecttypecode");
+                if (!dict.ContainsKey(logicalName)) {
+                    dict.Add(logicalName, new Dictionary<int, int>());
+                }
+                dict[logicalName].Add(e.GetAttributeValue<int>("state"),e.GetAttributeValue<int>("status"));
+            }
+
+            return dict;
         }
 
     }

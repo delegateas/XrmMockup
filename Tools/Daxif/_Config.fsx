@@ -64,6 +64,7 @@ let entitiesToGenerate =
     "calendar"
     "invoice"
     "queueitem"
+    "incident"
   ]
 
 (** 

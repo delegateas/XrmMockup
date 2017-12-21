@@ -80961,6 +80961,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Inactive = 2,
+        
+        [EnumMember()]
+        Somestatus = 122930000,
     }
     
     [DataContract()]
