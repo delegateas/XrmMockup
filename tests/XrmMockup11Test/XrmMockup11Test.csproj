@@ -67,18 +67,6 @@
     </When>
   </Choose>
   <ItemGroup>
-    <Content Include="bin\tools\CrmSvcUtil.exe">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="bin\tools\CrmSvcUtil.xml">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="bin\tools\Microsoft.Xrm.Sdk.dll">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="bin\tools\SolutionPackager.exe">
-      <Paket>True</Paket>
-    </Content>
     <Compile Include="Metadata\TypeDeclarations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="Metadata\Metadata.xml" />
