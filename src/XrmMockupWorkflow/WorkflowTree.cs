@@ -1182,7 +1182,6 @@ namespace WorkflowExecuter {
             this.VariableId = VariableId;
         }
 
-
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
             if (!variables.ContainsKey(VariableId)) {
@@ -1191,7 +1190,8 @@ namespace WorkflowExecuter {
             var attr = variables[VariableId];
             if (attr is Money) {
                 var exchangeRate = variables["ExchangeRate"] as decimal?;
-                attr = new Money((attr as Money).Value * exchangeRate == null ? 1 : exchangeRate.Value);
+                var amount = (attr as Money).Value * exchangeRate.GetValueOrDefault(1.0m);
+                attr = new Money(amount);
             }
             (variables[EntityId] as Entity).Attributes[Attribute] = attr;
         }
