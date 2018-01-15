@@ -1,7 +1,9 @@
-### unreleased
+### 0.6.0-beta - Januar 12 2018
 * Fixed an issue in SetEntityProperty where ExchangeRate could be null
 * Updated live-debugging feature to work again that was previous lost in refactoring
 * Fixed an issue where making two XrmMockup Instance resulted in EnableProxyType not working on second instance
+* Updated target framwork to .NETFramework 4.6.2
+* Fixed an issue where money field were incorrectly calculated
 
 ### 0.5.1-beta - December 21 2017
 * Added a public getter for the base currency.
