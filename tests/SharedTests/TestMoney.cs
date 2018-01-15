@@ -19,29 +19,38 @@ namespace DG.XrmMockupTest {
     public class TestMoney : UnitTestBase {
         [TestMethod]
         public void TestCalculatedIsSet() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var bus = new dg_bus();
-                bus.dg_name = "Buu";
-                bus.Id = orgAdminUIService.Create(bus);
+
+            var bus = new dg_bus();
+            bus.dg_name = "Buu";
+            bus.Id = orgAdminUIService.Create(bus);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.IsNull(retrieved.dg_Udregnet);
+            }
 
                 bus.dg_name = "Woop";
                 orgAdminUIService.Update(bus);
-                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.IsNull(retrieved.dg_Udregnet);
                 Assert.IsNull(bus.dg_AllConditions);
+            }
 
-                bus.dg_Ticketprice = 30;
-                bus.dg_EtHelTal = 5;
-                bus.dg_Udkoerselsdato = DateTime.Now;
-                orgAdminUIService.Update(bus);
-                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
+            bus.dg_Ticketprice = 30;
+            bus.dg_EtHelTal = 5;
+            bus.dg_Udkoerselsdato = DateTime.Now;
+            orgAdminUIService.Update(bus);
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.AreEqual(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
                 Assert.AreEqual(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
                 Assert.AreEqual(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
                 Assert.AreEqual(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
-                Assert.IsNotNull(retrieved.dg_AllConditions);
+                Assert.IsNotNull(retrieved.dg_AllConditions);            
             }
         }
 
