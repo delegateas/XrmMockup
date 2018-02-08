@@ -51,10 +51,14 @@ namespace DG.Tools.XrmMockup {
         /// Create a new XrmMockup instance
         /// </summary>
         /// <param name="settings"></param>
-        /// <param name="metadata"></param>
-        /// <param name="workflows"></param>
-        /// <param name="securityRoles"></param>
-        protected XrmMockupBase(XrmMockupSettings settings, MetadataSkeleton metadata, List<Entity> workflows, List<SecurityRole> securityRoles) {
+        protected XrmMockupBase(XrmMockupSettings settings) {
+
+            var metadataDirectory = "../../Metadata/";
+            if (settings.MetadataDirectoryPath != null)
+                metadataDirectory = settings.MetadataDirectoryPath;
+            MetadataSkeleton metadata = Utility.GetMetadata(metadataDirectory);
+            List<Entity> workflows = Utility.GetWorkflows(metadataDirectory);
+            List<SecurityRole> securityRoles = Utility.GetSecurityRoles(metadataDirectory);
 
             this.Core = new Core(settings, metadata, workflows, securityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this.Core);

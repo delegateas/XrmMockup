@@ -646,8 +646,8 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        internal static MetadataSkeleton GetMetadata(string prefix) {
-            var pathToMetadata = Path.Combine(prefix, "Metadata.xml");
+        internal static MetadataSkeleton GetMetadata(string folderLocation) {
+            var pathToMetadata = Path.Combine(folderLocation, "Metadata.xml");
             if (!File.Exists(pathToMetadata)) {
                 throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'." +
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
@@ -658,8 +658,8 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static List<Entity> GetWorkflows(string prefix) {
-            var pathToWorkflows = Path.Combine(prefix, "Workflows");
+        internal static List<Entity> GetWorkflows(string folderLocation) {
+            var pathToWorkflows = Path.Combine(folderLocation, "Workflows");
             var files = Directory.GetFiles(pathToWorkflows, "*.xml");
             var workflows = new List<Entity>();
             foreach (var file in files) {
@@ -675,8 +675,8 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static List<SecurityRole> GetSecurityRoles(string prefix) {
-            var pathToSecurity = Path.Combine(prefix, "SecurityRoles");
+        internal static List<SecurityRole> GetSecurityRoles(string folderLocation) {
+            var pathToSecurity = Path.Combine(folderLocation, "SecurityRoles");
             var files = Directory.GetFiles(pathToSecurity, "*.xml");
             var securityRoles = new List<SecurityRole>();
 

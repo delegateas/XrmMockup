@@ -20,17 +20,25 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public IEnumerable<Type> CodeActivityInstanceTypes { get; set; }
         /// <summary>
-        /// Enable early-bound proxy types
+        /// Enable early-bound proxy types.
         /// </summary>
         public bool? EnableProxyTypes { get; set; }
         /// <summary>
         /// Sets whether all workflow definitions should be included on startup. Default is true.
         /// </summary>
         public bool? IncludeAllWorkflows { get; set; }
-
+        /// <summary>
+        /// List of request that will not throw exceptions.
+        /// </summary>
         public IEnumerable<string> ExceptionFreeRequests { get; set; }
-
+        /// <summary>
+        /// Environment settings for connection to an online environment for live debugging.
+        /// </summary>
         public Env? OnlineEnvironment { get; set; }
+        /// <summary>
+        /// Overwrites the path to the directory containing metadata files. Default is '../../Metadata/'.
+        /// </summary>
+        public string MetadataDirectoryPath { get; set; }
     }
 
     public struct Env {
