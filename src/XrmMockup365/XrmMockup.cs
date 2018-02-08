@@ -10,19 +10,19 @@ using System.Threading.Tasks;
 
 namespace DG.Tools.XrmMockup {
     /// <summary>
-    /// A class for mocking a crm 2015 instance
+    /// A class for mocking a crm 365 instance
     /// </summary>
     public class XrmMockup365 : XrmMockupBase {
 
         private static Dictionary<XrmMockupSettings, XrmMockup365> instances = new Dictionary<XrmMockupSettings, XrmMockup365>();
 
 
-        private XrmMockup365(XrmMockupSettings Settings, MetadataSkeleton Metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) : 
-            base(Settings, Metadata, Workflows, SecurityRoles) {
+        private XrmMockup365(XrmMockupSettings Settings) : 
+            base(Settings) {
         }
         
         /// <summary>
-        /// Gets an instance of XrmMockup2015
+        /// Gets an instance of XrmMockup365
         /// </summary>
         /// <param name="Settings"></param>
         public static XrmMockup365 GetInstance(XrmMockupSettings Settings) {
@@ -30,8 +30,7 @@ namespace DG.Tools.XrmMockup {
                 return instances[Settings];
             }
 
-            var prefix = "../../Metadata";
-            var instance = new XrmMockup365(Settings, Utility.GetMetadata(prefix), Utility.GetWorkflows(prefix), Utility.GetSecurityRoles(prefix));
+            var instance = new XrmMockup365(Settings);
             instances[Settings] = instance;
             return instance;
         }

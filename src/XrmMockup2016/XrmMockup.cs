@@ -22,21 +22,19 @@ namespace DG.Tools.XrmMockup {
         private static Dictionary<XrmMockupSettings, XrmMockup2016> instances = new Dictionary<XrmMockupSettings, XrmMockup2016>();
 
 
-        private XrmMockup2016(XrmMockupSettings Settings, MetadataSkeleton Metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles) : 
-            base(Settings, Metadata, Workflows, SecurityRoles) {}
+        private XrmMockup2016(XrmMockupSettings Settings) : 
+            base(Settings) {}
 
         
-
         /// <summary>
-        /// Gets an instance of XrmMockup2011
+        /// Gets an instance of XrmMockup2016
         /// </summary>
         /// <param name="Settings"></param>
         public static XrmMockup2016 GetInstance(XrmMockupSettings Settings) {
             if (instances.ContainsKey(Settings)) {
                 return instances[Settings];
             }
-            var prefix = "../../Metadata";
-            var instance = new XrmMockup2016(Settings, Utility.GetMetadata(prefix), Utility.GetWorkflows(prefix), Utility.GetSecurityRoles(prefix));
+            var instance = new XrmMockup2016(Settings);
             instances[Settings] = instance;
             return instance;
         }
