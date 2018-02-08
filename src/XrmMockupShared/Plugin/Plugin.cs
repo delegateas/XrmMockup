@@ -21,7 +21,7 @@ namespace DG.Tools.XrmMockup {
     /// <summary>
     /// Base class for all Plugins.
     /// </summary>    
-    public class Plugin : IPlugin {
+    internal class Plugin : IPlugin {
         protected class LocalPluginContext {
             internal IServiceProvider ServiceProvider {
                 get;
