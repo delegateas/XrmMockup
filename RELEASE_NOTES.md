@@ -1,3 +1,8 @@
+### 0.6.1-beta - February xx 2018
+* Added triggering of Pre-validation plugins
+* Added a new optional parameter to the XrmSettings that specify the location of the directory containing metadata files
+* Changed the accessability level for the internal Plugin class which is only intended for internal system plugins
+
 ### 0.6.0-beta - Januar 12 2018
 * Fixed an issue in SetEntityProperty where ExchangeRate could be null
 * Updated live-debugging feature to work again that was previous lost in refactoring
