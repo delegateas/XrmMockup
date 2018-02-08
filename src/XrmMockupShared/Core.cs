@@ -365,8 +365,6 @@ namespace DG.Tools.XrmMockup {
             Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out EventOperation? eventOp);
 
             var entityInfo = GetEntityInfo(request);
-            Entity preImage = null;
-            Entity postImage = null;
 
             var settings = MockupExecutionContext.GetSettings(request);
             // Validation
@@ -374,49 +372,35 @@ namespace DG.Tools.XrmMockup {
                 var entity = request is UpdateRequest ? (request as UpdateRequest).Target : (request as CreateRequest).Target;
                 Utility.RemoveUnsettableAttributes(request.RequestName, metadata.EntityMetadata.GetMetadata(entity.LogicalName), entity);
             }
-            
-            // Pre operation
+
+            Entity preImage = null;
+            Entity postImage = null;
             if (settings.TriggerProcesses && entityInfo != null) {
                 preImage = TryRetrieve(primaryRef);
-                if (preImage != null) {
+                if (preImage != null)
                     primaryRef.Id = preImage.Id;
-                }
-                if (eventOp.HasValue) {
-                    pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                }
+                postImage = TryRetrieve(primaryRef);
             }
 
-            //Pre System Operation
-            //if (settings.TriggerProcesses && entityInfo != null)
-            //{
-            //    preImage = TryRetrieve(primaryRef);
-            //    if (preImage != null)
-            //    {
-            //        primaryRef.Id = preImage.Id;
-            //    }
-            //    if (eventOp.HasValue)
-            //    {
-            //        pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-            //    }
-            //}
+            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
+                // Pre-validation
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+
+                // Pre-operation
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+
+                // System pre-operation and pre-validation
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+            }
 
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
 
-            // Post System operation
-            //if (settings.TriggerProcesses && entityInfo != null)
-            //{
-            //    postImage = TryRetrieve(primaryRef);
-            //    if (eventOp.HasValue)
-            //        pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-            //}
-
-            // Post operation
-            if (settings.TriggerProcesses && entityInfo != null) {
-                postImage = TryRetrieve(primaryRef);
-                if (eventOp.HasValue) {
+            // Post-operation
+            if (settings.TriggerProcesses) {
+                if (entityInfo != null && eventOp.HasValue) {
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
