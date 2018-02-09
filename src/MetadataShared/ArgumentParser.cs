@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Text.RegularExpressions;
 
@@ -53,13 +54,14 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-
         public string this[string argName] {
             get {
                 if (!ArgMap.TryGetValue(argName.ToLower(), out string val)) {
                     return ConfigurationManager.AppSettings[argName];
                 }
-                return val;
+                if (val is string)
+                    return (string)val;
+                return null;
             }
         }
 
@@ -69,6 +71,23 @@ namespace DG.Tools.XrmMockup.Metadata
                     return ConfigurationManager.AppSettings[argDesc.Name];
                 }
                 return val;
+            }
+        }
+
+        public T GetAsType<T>(ArgumentDescription argDesc)
+        {
+            string value = null;
+            if (!ArgDescMap.TryGetValue(argDesc, out string val)) {
+                value = ConfigurationManager.AppSettings[argDesc.Name];
+            }
+
+            try {
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                return (T)(converter.ConvertFromInvariantString(value));
+            }
+            catch (NotSupportedException)
+            {
+                throw new NotSupportedException($"Cannot cast the arguemnt {argDesc.Name} to the type {typeof(T).ToString()}");
             }
         }
     }

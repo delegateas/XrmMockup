@@ -45,7 +45,7 @@ namespace DG.Tools.XrmMockup.Metadata {
                 ParsedArgs[Arguments.AuthProvider],
                 ParsedArgs[Arguments.Domain]
             );
-            var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions]);
+            var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies));
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
 
             var skeleton = generator.GetMetadata(AssemblyGetter.GetProjectPath());
