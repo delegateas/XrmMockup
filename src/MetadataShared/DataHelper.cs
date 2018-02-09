@@ -355,7 +355,8 @@ namespace DG.Tools.XrmMockup.Metadata
             return request;
         }
 
-        private EntityMetadata[] GetEntityMetadataBulk(HashSet<string> logicalNames) {
+        private EntityMetadata[] GetEntityMetadataBulk(HashSet<string> logicalNames)
+        {
             var request = new ExecuteMultipleRequest {
                 Requests = new OrganizationRequestCollection()
             };
@@ -368,14 +369,14 @@ namespace DG.Tools.XrmMockup.Metadata
             var bulkResp = (service.Execute(request) as ExecuteMultipleResponse).Responses;
             if (bulkResp.Any(resp => resp.Fault != null)) {
                 var resp = bulkResp.First(r => r.Fault != null);
-                throw new FaultException($"Error while retrieving entity metadata: {resp.Fault.Message}");
+                var faultedReq = (RetrieveEntityRequest)request.Requests[resp.RequestIndex];
+                throw new FaultException($"Error while retrieving entity metadata for entity {faultedReq.LogicalName}: {resp.Fault.Message}");
             }
 
             return bulkResp
                 .Select(resp => (resp.Response as RetrieveEntityResponse).EntityMetadata)
                 .ToArray();
         }
-
 
         private Dictionary<string, Dictionary<int,int>> GetDefaultStateAndStatus() {
             var dict = new Dictionary<string, Dictionary<int,int>>();
