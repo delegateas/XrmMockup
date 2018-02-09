@@ -375,11 +375,11 @@ namespace DG.Tools.XrmMockup {
 
             Entity preImage = null;
             Entity postImage = null;
+
             if (settings.TriggerProcesses && entityInfo != null) {
                 preImage = TryRetrieve(primaryRef);
                 if (preImage != null)
                     primaryRef.Id = preImage.Id;
-                postImage = TryRetrieve(primaryRef);
             }
 
             if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
@@ -399,8 +399,9 @@ namespace DG.Tools.XrmMockup {
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
 
             // Post-operation
-            if (settings.TriggerProcesses) {
-                if (entityInfo != null && eventOp.HasValue) {
+            if (settings.TriggerProcesses && entityInfo != null) {
+                postImage = TryRetrieve(primaryRef);
+                if (eventOp.HasValue) {
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
