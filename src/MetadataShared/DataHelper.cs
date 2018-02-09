@@ -28,9 +28,9 @@ namespace DG.Tools.XrmMockup.Metadata
 
         public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies) {
             this.service = service;
-
+            this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
             this.EntityLogicalNames = new HashSet<string>();
-
+            
             // Add entites from assemblies
             if (fetchFromAssemblies)
                 this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
@@ -39,16 +39,6 @@ namespace DG.Tools.XrmMockup.Metadata
             var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles" };
             foreach (var logicalName in defaultEntities) {
                 this.EntityLogicalNames.Add(logicalName);
-            }
-
-            // Add entites from solution
-            this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
-            if(this.SolutionNames.Length != 0) {
-                var solutionEntityLogicalNames = SolutionNames.SelectMany(GetEntityListFromSolution);
-                foreach(var logicalName in solutionEntityLogicalNames)
-                {
-                    this.EntityLogicalNames.Add(logicalName);
-                }
             }
 
             // Add specified entities
@@ -61,9 +51,9 @@ namespace DG.Tools.XrmMockup.Metadata
 
         public MetadataSkeleton GetMetadata(string path) {
             var skeleton = new MetadataSkeleton();
-            
-            Console.WriteLine($"Getting metadata for: {String.Join(", ", this.EntityLogicalNames.ToArray())}");
-            skeleton.EntityMetadata = GetEntityMetadataBulk(this.EntityLogicalNames).ToDictionary(m => m.LogicalName, m => m);
+
+            Console.WriteLine($"Getting entity metadata");
+            skeleton.EntityMetadata = GetEntityMetadata(this.SolutionNames, this.EntityLogicalNames.ToArray()).ToDictionary(m => m.LogicalName, m => m);
 
             Console.WriteLine("Getting currencies");
             skeleton.Currencies = GetCurrencies();
@@ -93,6 +83,30 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             var results = service.Execute(optionSetRequest) as RetrieveAllOptionSetsResponse;
             return results.OptionSetMetadata;
+        }
+
+        private IEnumerable<EntityMetadata> GetEntityMetadata(string[] solutions, string[] entities)
+        {
+            var entityComponentId = solutions.SelectMany(GetEntityComponentIdsFromSolution).Distinct();
+            var solutionRequests = entityComponentId.Select(GetEntityMetadataFromIdRequest);
+            var specificEntityRequest = entities.Select(lname => GetEntityMetadataRequest(lname));
+
+            var entitymetadata = GetEntityMetadataBulk(solutionRequests.Concat(specificEntityRequest));
+            var logicalNamesSet = new HashSet<string>(entitymetadata.Select(x => x.LogicalName));
+            var relationMetadata = GetRelationMetadata(entitymetadata);
+            var entityMetadata = entitymetadata.Concat(relationMetadata);
+
+            if (logicalNamesSet.Contains("activityparty") && NeedActivityParty(entityMetadata)) {
+                var resp = (RetrieveEntityResponse)service.Execute(GetEntityMetadataRequest("activityparty"));
+                entityMetadata = entityMetadata.Concat(new EntityMetadata[] { resp.EntityMetadata });
+            }
+
+            entityMetadata = entityMetadata.GroupBy(x => x.LogicalName).Select(x => x.First());
+
+            this.EntityLogicalNames = new HashSet<string>(entityMetadata.Select(meta => meta.LogicalName));
+            Console.WriteLine($"Retrieved entity metadata for: {String.Join(", ", this.EntityLogicalNames.ToArray())}");
+
+            return entityMetadata;
         }
 
         private List<MetaPlugin> GetPlugins(string[] solutions) {
@@ -171,37 +185,40 @@ namespace DG.Tools.XrmMockup.Metadata
             return service.RetrieveMultiple(query).Entities;
         }
 
-        private IEnumerable<string> GetEntityListFromSolution(string solutionName)
+        
+
+
+        private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
         {
             var solutionFilter = new Dictionary<string, object>() { { "uniquename", solutionName } };
             var solutionColumns = new string[] { "solutionid", "uniquename" };
             var solutions = GetEntities("solution", solutionColumns, solutionFilter);
-            var entitieLogicalNames = solutions.SelectMany(solution =>
-                {
-                    var filter = new Dictionary<string, object>() {
-                            { "solutionid", solution.Id },
-                            { "componenttype", 1 }
-                        };
-                    var columns = new string[] { "solutionid", "objectid", "componenttype" };
-                    return GetEntities("solutioncomponent", columns, filter);
-                }
-            ).Select(x => GetEntityLogicalNameFromId((Guid)x["objectid"]));
-            return entitieLogicalNames;
+
+            return solutions.SelectMany(solution => GetEntityComponentIds(solution));
         }
 
-        private string GetEntityLogicalNameFromId(Guid id)
+        private IEnumerable<EntityMetadata> GetRelationMetadata(IEnumerable<EntityMetadata> entitieMetadata)
         {
-            var request = new RetrieveEntityRequest() {
-                MetadataId = id,
-                EntityFilters = EntityFilters.Entity,
-                RetrieveAsIfPublished = true
-            };
-            var resp = (RetrieveEntityResponse)service.Execute(request);
-            return resp.EntityMetadata.LogicalName;
+            var logicalNamesSet = new HashSet<string>(entitieMetadata.Select(x => x.LogicalName));
+            var relationalEntityLogicalNames = FindAllRelationsEntities(logicalNamesSet, entitieMetadata);
+            var missingLogicalNames = relationalEntityLogicalNames.Where(relation => !logicalNamesSet.Contains(relation));
+            var relationEntityMetadata = GetEntityMetadataBulk(missingLogicalNames.Select(lname => GetEntityMetadataRequest(lname)));
+            return relationEntityMetadata;
         }
 
-        private IEnumerable<Entity> GetEntities(string logicalName, string[] columns, Dictionary<string, object> filter)
-        {
+        private IEnumerable<Guid> GetEntityComponentIds(Entity solution) {
+                var filter = new Dictionary<string, object>() {
+                        { "solutionid", solution.Id },
+                        { "componenttype", 1 }};
+                var columns = new string[] { "solutionid", "objectid", "componenttype" };
+                return GetEntities("solutioncomponent", columns, filter).Select(component => (Guid)component["objectid"]);
+        }
+
+        private bool NeedActivityParty(IEnumerable<EntityMetadata> metadata) {
+            return metadata.Any(entity => entity.Attributes.Any(attribute => attribute.AttributeType == AttributeTypeCode.PartyList));
+        }
+
+        private IEnumerable<Entity> GetEntities(string logicalName, string[] columns, Dictionary<string, object> filter) {
             var f = new FilterExpression();
             foreach(var item in filter)
                 f.AddCondition(item.Key, ConditionOperator.Equal, item.Value);
@@ -214,6 +231,16 @@ namespace DG.Tools.XrmMockup.Metadata
 
             return service.RetrieveMultiple(query).Entities
                 .Select(e => e.ToEntity<Entity>());
+        }
+
+        private IEnumerable<string> FindAllRelationsEntities(HashSet<string> allLogicalNames, IEnumerable<EntityMetadata> metadata) {
+            return metadata
+                .SelectMany(md =>
+                    md.ManyToManyRelationships
+                    .Where(m2m => m2m.Entity1LogicalName == md.LogicalName
+                        && allLogicalNames.Contains(m2m.Entity2LogicalName)
+                        && !allLogicalNames.Contains(m2m.IntersectEntityName))
+                    .Select(m2m => m2m.IntersectEntityName));
         }
 
         private HashSet<string> GetLogicalNames(AssemblyName[] assemblies) {
@@ -357,12 +384,21 @@ namespace DG.Tools.XrmMockup.Metadata
             return request;
         }
 
-        private EntityMetadata[] GetEntityMetadataBulk(HashSet<string> logicalNames)
+        private RetrieveEntityRequest GetEntityMetadataFromIdRequest(Guid id) {
+            var request = new RetrieveEntityRequest() {
+                MetadataId = id,
+                EntityFilters = EntityFilters.All,
+                RetrieveAsIfPublished = true
+            };
+            return request;
+        }
+
+        private EntityMetadata[] GetEntityMetadataBulk(IEnumerable<OrganizationRequest> requests)
         {
             var request = new ExecuteMultipleRequest {
                 Requests = new OrganizationRequestCollection()
             };
-            request.Requests.AddRange(logicalNames.Select(lname => GetEntityMetadataRequest(lname)));
+            request.Requests.AddRange(requests);
             request.Settings = new ExecuteMultipleSettings() {
                 ContinueOnError = false,
                 ReturnResponses = true
