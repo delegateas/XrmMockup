@@ -74,19 +74,13 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-        public T GetAsType<T>(ArgumentDescription argDesc)
-        {
-            string value = null;
-            if (!ArgDescMap.TryGetValue(argDesc, out string val)) {
-                value = ConfigurationManager.AppSettings[argDesc.Name];
-            }
-
+        public T GetAsType<T>(ArgumentDescription argDesc) {
+            string value = this[argDesc];
             try {
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 return (T)(converter.ConvertFromInvariantString(value));
             }
-            catch (NotSupportedException)
-            {
+            catch (NotSupportedException) {
                 throw new NotSupportedException($"Cannot cast the arguemnt {argDesc.Name} to the type {typeof(T).ToString()}");
             }
         }

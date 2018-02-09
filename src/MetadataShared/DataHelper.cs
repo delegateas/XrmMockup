@@ -43,10 +43,12 @@ namespace DG.Tools.XrmMockup.Metadata
 
             // Add entites from solution
             this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
-            var solutionEntityLogicalNames = SolutionNames.SelectMany(GetEntityListFromSolution);
-            foreach(var logicalName in solutionEntityLogicalNames)
-            {
-                this.EntityLogicalNames.Add(logicalName);
+            if(this.SolutionNames.Length != 0) {
+                var solutionEntityLogicalNames = SolutionNames.SelectMany(GetEntityListFromSolution);
+                foreach(var logicalName in solutionEntityLogicalNames)
+                {
+                    this.EntityLogicalNames.Add(logicalName);
+                }
             }
 
             // Add specified entities
@@ -180,7 +182,7 @@ namespace DG.Tools.XrmMockup.Metadata
                             { "solutionid", solution.Id },
                             { "componenttype", 1 }
                         };
-                    var columns = new string[] { "solutionid", "objectid", "componenttype", "" };
+                    var columns = new string[] { "solutionid", "objectid", "componenttype" };
                     return GetEntities("solutioncomponent", columns, filter);
                 }
             ).Select(x => GetEntityLogicalNameFromId((Guid)x["objectid"]));
