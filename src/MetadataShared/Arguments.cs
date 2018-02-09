@@ -62,7 +62,12 @@ namespace DG.Tools.XrmMockup.Metadata
             Abbreviations = new string[] { "pp" }
         };
 
-
+        public static ArgumentDescription fetchFromAssemblies = new ArgumentDescription()
+        {
+            Name = "fetchFromAssemblies",
+            Abbreviations = new string[] { "fa" }
+        };
+        
         public static ArgumentDescription[] ArgList = new ArgumentDescription[] {
             Url,
             Username,
@@ -72,7 +77,8 @@ namespace DG.Tools.XrmMockup.Metadata
             Entities,
             Solutions,
             OutDir,
-            UnitTestProjectPath
+            UnitTestProjectPath,
+            fetchFromAssemblies
         };
     }
 }

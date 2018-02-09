@@ -26,22 +26,35 @@ namespace DG.Tools.XrmMockup.Metadata
         private HashSet<string> EntityLogicalNames;
         private string[] SolutionNames;
 
-        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString) {
+        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies) {
             this.service = service;
 
-            this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
+            this.EntityLogicalNames = new HashSet<string>();
+
+            // Add entites from assemblies
+            if (fetchFromAssemblies)
+                this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
+
+            // Add default entities
             var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles" };
             foreach (var logicalName in defaultEntities) {
                 this.EntityLogicalNames.Add(logicalName);
             }
 
+            // Add entites from solution
+            this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
+            var solutionEntityLogicalNames = SolutionNames.SelectMany(GetEntityListFromSolution);
+            foreach(var logicalName in solutionEntityLogicalNames)
+            {
+                this.EntityLogicalNames.Add(logicalName);
+            }
+
+            // Add specified entities
             if (!String.IsNullOrWhiteSpace(entitiesString)) {
                 foreach (var logicalName in entitiesString.Split(',')) {
                     this.EntityLogicalNames.Add(logicalName.Trim());
                 }
             }
-
-            this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
         }
 
         public MetadataSkeleton GetMetadata(string path) {
@@ -154,6 +167,51 @@ namespace DG.Tools.XrmMockup.Metadata
                 ColumnSet = new ColumnSet(true)
             };
             return service.RetrieveMultiple(query).Entities;
+        }
+
+        private IEnumerable<string> GetEntityListFromSolution(string solutionName)
+        {
+            var solutionFilter = new Dictionary<string, object>() { { "uniquename", solutionName } };
+            var solutionColumns = new string[] { "solutionid", "uniquename" };
+            var solutions = GetEntities("solution", solutionColumns, solutionFilter);
+            var entitieLogicalNames = solutions.SelectMany(solution =>
+                {
+                    var filter = new Dictionary<string, object>() {
+                            { "solutionid", solution.Id },
+                            { "componenttype", 1 }
+                        };
+                    var columns = new string[] { "solutionid", "objectid", "componenttype", "" };
+                    return GetEntities("solutioncomponent", columns, filter);
+                }
+            ).Select(x => GetEntityLogicalNameFromId((Guid)x["objectid"]));
+            return entitieLogicalNames;
+        }
+
+        private string GetEntityLogicalNameFromId(Guid id)
+        {
+            var request = new RetrieveEntityRequest() {
+                MetadataId = id,
+                EntityFilters = EntityFilters.Entity,
+                RetrieveAsIfPublished = true
+            };
+            var resp = (RetrieveEntityResponse)service.Execute(request);
+            return resp.EntityMetadata.LogicalName;
+        }
+
+        private IEnumerable<Entity> GetEntities(string logicalName, string[] columns, Dictionary<string, object> filter)
+        {
+            var f = new FilterExpression();
+            foreach(var item in filter)
+                f.AddCondition(item.Key, ConditionOperator.Equal, item.Value);
+            var query = new QueryExpression(logicalName);
+            if (columns.Count() == 0)
+                query.ColumnSet = new ColumnSet(true);
+            else
+                query.ColumnSet = new ColumnSet(columns);
+            query.Criteria = f;
+
+            return service.RetrieveMultiple(query).Entities
+                .Select(e => e.ToEntity<Entity>());
         }
 
         private HashSet<string> GetLogicalNames(AssemblyName[] assemblies) {
