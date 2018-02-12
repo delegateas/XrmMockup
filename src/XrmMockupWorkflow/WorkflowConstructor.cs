@@ -58,7 +58,7 @@ namespace WorkflowExecuter {
             return new WorkflowTree(CompressTree(parsed.Workflow, ParseAs.Workflow)); ;
         }
 
-        private static WorkflowNode CompressTree(WorkflowParser.Workflow workflow, ParseAs parseAs) {
+        private static IWorkflowNode CompressTree(WorkflowParser.Workflow workflow, ParseAs parseAs) {
             if (parseAs == ParseAs.RollUp) {
                 return CompressRollUp(workflow.Activities[0] as WorkflowParser.ActivitySequence);
             }
@@ -68,16 +68,16 @@ namespace WorkflowExecuter {
             throw new NotImplementedException("No logic for parsing that kind of xaml in workflowconstructor");
         }
 
-        private static WorkflowNode CompressRollUp(WorkflowParser.ActivitySequence sequence) {
+        private static IWorkflowNode CompressRollUp(WorkflowParser.ActivitySequence sequence) {
             var activites = sequence.Activities;
             var hierarchicalRelationshipName = (activites[0] as WorkflowParser.ActivitySequence).Variables[0].Default.TrimEdge();
             var filterResult = (activites[1] as WorkflowParser.ActivitySequence).Variables != null ?
                 (activites[1] as WorkflowParser.ActivitySequence).Variables[0].Name : null;
             var aggregateResult = (activites[2] as WorkflowParser.ActivitySequence).Variables[0].Name;
-            var filter = new List<WorkflowNode>();
+            var filter = new List<IWorkflowNode>();
             filter.AddRange(CompressVariableCollection((activites[1] as WorkflowParser.ActivitySequence).Variables));
             filter.AddRange(CompressActivityCollection((activites[1] as WorkflowParser.ActivitySequence).Activities));
-            var aggregation = new List<WorkflowNode>();
+            var aggregation = new List<IWorkflowNode>();
             aggregation.AddRange(CompressVariableCollection((activites[2] as WorkflowParser.ActivitySequence).Variables));
             aggregation.AddRange(CompressActivityCollection((activites[2] as WorkflowParser.ActivitySequence).Activities));
             return new RollUp(hierarchicalRelationshipName, filterResult, aggregateResult, filter, aggregation);
@@ -85,7 +85,7 @@ namespace WorkflowExecuter {
 
        
 
-        private static WorkflowNode CompressCollection(Collection collection) {
+        private static IWorkflowNode CompressCollection(Collection collection) {
             if (collection.Variables != null) {
                 return new ActivityList(CompressVariableCollection(collection.Variables).ToArray());
             }
@@ -98,8 +98,8 @@ namespace WorkflowExecuter {
         }
 
 
-        private static List<WorkflowNode> CompressVariableCollection(WorkflowParser.Variable[] variables) {
-            var nodes = new List<WorkflowNode>();
+        private static List<IWorkflowNode> CompressVariableCollection(WorkflowParser.Variable[] variables) {
+            var nodes = new List<IWorkflowNode>();
             if (variables != null) {
                 foreach (var variable in variables) {
                     if (variable.Default != null) {
@@ -116,8 +116,8 @@ namespace WorkflowExecuter {
             }
             return nodes;
         }
-        private static List<WorkflowNode> CompressActivityCollection(WorkflowParser.Activity[] activities) {
-            var nodes = new List<WorkflowNode>();
+        private static List<IWorkflowNode> CompressActivityCollection(WorkflowParser.Activity[] activities) {
+            var nodes = new List<IWorkflowNode>();
             if (activities != null) {
                 for (int i = 0; i < activities.Length; i++) {
                     var node = CompressActivity(activities[i]);
@@ -139,11 +139,11 @@ namespace WorkflowExecuter {
         }
 
 
-        private static bool isCondition(WorkflowNode node) {
+        private static bool isCondition(IWorkflowNode node) {
             return node is Condition;
         }
 
-        private static WorkflowNode CompressActivity(WorkflowParser.Activity activity) {
+        private static IWorkflowNode CompressActivity(WorkflowParser.Activity activity) {
             if (activity is ActivityReference) { return CompressActivityReference(activity as ActivityReference); }
             if (activity is WorkflowParser.GetEntityProperty) {
                 return CompressGetEntityProperty(activity as WorkflowParser.GetEntityProperty);
@@ -203,42 +203,42 @@ namespace WorkflowExecuter {
             throw new NotImplementedException("Unknown activity, implement the compressor.");
         }
 
-        private static WorkflowNode CompressPostpone(WorkflowParser.Postpone postpone) {
+        private static IWorkflowNode CompressPostpone(WorkflowParser.Postpone postpone) {
             return new Postpone(postpone.BlockExecution, postpone.PostponeUntil.TrimEdge());
         }
 
-        private static WorkflowNode CompressSequence(WorkflowParser.ActivitySequence sequence) {
-            var nodes = new List<WorkflowNode>();
+        private static IWorkflowNode CompressSequence(WorkflowParser.ActivitySequence sequence) {
+            var nodes = new List<IWorkflowNode>();
             nodes.AddRange(CompressVariableCollection(sequence.Variables));
             nodes.AddRange(CompressActivityCollection(sequence.Activities));
             return new ActivityList(nodes.ToArray());
         }
 
-        private static WorkflowNode CompressAssign(WorkflowParser.Assign assign) {
+        private static IWorkflowNode CompressAssign(WorkflowParser.Assign assign) {
             return new Assign(assign.To.TrimEdge(), assign.Value.TrimEdge());
         }
 
-        private static WorkflowNode CompressSetState(WorkflowParser.SetState setState) {
+        private static IWorkflowNode CompressSetState(WorkflowParser.SetState setState) {
             return new SetState(setState.Entity.TrimEdge(), setState.EntityId, setState.EntityName,
                 new Microsoft.Xrm.Sdk.OptionSetValue(setState.StateArguments.First().ReferenceLiteral.OptionSetValue.Value),
                 new Microsoft.Xrm.Sdk.OptionSetValue(setState.StatusArguments.First().ReferenceLiteral.OptionSetValue.Value));
         }
 
-        private static WorkflowNode CompressSetAttributeValue(WorkflowParser.SetAttributeValue setAttributeValue) {
+        private static IWorkflowNode CompressSetAttributeValue(WorkflowParser.SetAttributeValue setAttributeValue) {
             return new SetAttributeValue(setAttributeValue.Entity.TrimEdge(), setAttributeValue.EntityName);
         }
 
-        private static WorkflowNode CompressAssignEntity(WorkflowParser.AssignEntity assignEntity) {
+        private static IWorkflowNode CompressAssignEntity(WorkflowParser.AssignEntity assignEntity) {
             Regex reg = new Regex(@"\(.+\,");
             var ownerId = reg.Match(assignEntity.Owner);
             return new AssignEntity(assignEntity.Entity.TrimEdge(), ownerId.Value.TrimEdge());
         }
 
-        private static WorkflowNode CompressUpdateEntity(WorkflowParser.UpdateEntity updateEntity) {
+        private static IWorkflowNode CompressUpdateEntity(WorkflowParser.UpdateEntity updateEntity) {
             return new UpdateEntity(updateEntity.Entity.TrimEdge(), updateEntity.EntityName);
         }
 
-        private static WorkflowNode CompressCreateEntity(WorkflowParser.CreateEntity createEntity) {
+        private static IWorkflowNode CompressCreateEntity(WorkflowParser.CreateEntity createEntity) {
             if (createEntity.EntityId.Contains("Null")) {
                 return new CreateEntity(null, createEntity.Entity.TrimEdge(), createEntity.EntityName);
             }
@@ -247,18 +247,18 @@ namespace WorkflowExecuter {
             return new CreateEntity(createEntity.EntityId, createEntity.Entity.TrimEdge(), createEntity.EntityName);
         }
 
-        private static WorkflowNode CompressSetEntityProperty(WorkflowParser.SetEntityProperty setEntityProperty) {
+        private static IWorkflowNode CompressSetEntityProperty(WorkflowParser.SetEntityProperty setEntityProperty) {
             return new SetEntityProperty(setEntityProperty.Attribute, setEntityProperty.Entity.TrimEdge(), setEntityProperty.Value.TrimEdge());
         }
 
-        private static WorkflowNode CompressGetEntityProperty(WorkflowParser.GetEntityProperty getEntityProperty) {
+        private static IWorkflowNode CompressGetEntityProperty(WorkflowParser.GetEntityProperty getEntityProperty) {
             var targetType = getEntityProperty.InArguments?.First(a => a.ReferenceLiteral != null);
 
             return new GetEntityProperty(getEntityProperty.Attribute, getEntityProperty.Entity.TrimEdge(), getEntityProperty.EntityName,
                 getEntityProperty.Value.TrimEdge(), targetType?.ReferenceLiteral?.Value?.Split(':')[1]);
         }
 
-        private static WorkflowNode CompressTerminateWorkflow(WorkflowParser.TerminateWorkflow terminateWorkflow) {
+        private static IWorkflowNode CompressTerminateWorkflow(WorkflowParser.TerminateWorkflow terminateWorkflow) {
             OperationStatus status;
             if (terminateWorkflow.Exception.Contains("Microsoft.Xrm.Sdk.OperationStatus.Succeeded")) {
                 status = OperationStatus.Succeeded;
@@ -274,11 +274,11 @@ namespace WorkflowExecuter {
         }
 
 
-        private static WorkflowNode CompressActivityReference(ActivityReference activityReference) {
-            return CompressActivityReference(activityReference, new List<WorkflowNode>());
+        private static IWorkflowNode CompressActivityReference(ActivityReference activityReference) {
+            return CompressActivityReference(activityReference, new List<IWorkflowNode>());
         }
 
-        private static WorkflowNode CompressActivityReference(ActivityReference activityReference, List<WorkflowNode> toPrepend) {
+        private static IWorkflowNode CompressActivityReference(ActivityReference activityReference, List<IWorkflowNode> toPrepend) {
             var args = activityReference.Arguments;
             if (args != null && args.Count() > 0) {
                 var outArg = args.FirstOrDefault(a => a is WorkflowParser.OutArgument);
@@ -321,7 +321,7 @@ namespace WorkflowExecuter {
                             CompressActivity(activityReference.Properties[0]), CompressActivity(activityReference.Properties[1]));
                     case "Wait":
                         if (args[0].Value == "True") {
-                            var list = new List<WorkflowNode>();
+                            var list = new List<IWorkflowNode>();
                             list.Add(new WaitStart());
                             list.AddRange(CompressActivityCollection(activityReference.Properties));
                             return new ActivityList(list.ToArray());
@@ -351,7 +351,7 @@ namespace WorkflowExecuter {
             return argument.TrimEdge();
         }
 
-        private static WorkflowNode CompressExpressionOperator(WorkflowParser.Argument[] args, WorkflowParser.Argument outArg) {
+        private static IWorkflowNode CompressExpressionOperator(WorkflowParser.Argument[] args, WorkflowParser.Argument outArg) {
             switch (args[0].Value) {
                 case "CreateCrmType": {
                         var parameters = CompressParameters(args[1].Value)

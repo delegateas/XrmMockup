@@ -43,7 +43,7 @@ namespace WorkflowExecuter {
     [KnownType(typeof(Assign))]
     internal class WorkflowTree {
         [DataMember]
-        public WorkflowNode StartActivity;
+        public IWorkflowNode StartActivity;
         [DataMember]
         public Dictionary<string, object> Variables;
         [DataMember]
@@ -76,12 +76,12 @@ namespace WorkflowExecuter {
         public List<WorkflowArgument> Output;
 
 
-        public WorkflowTree(WorkflowNode StartActivity) : this(StartActivity, false, false, new HashSet<string>(),
+        public WorkflowTree(IWorkflowNode StartActivity) : this(StartActivity, false, false, new HashSet<string>(),
             workflow_runas.CallingUser, Workflow_Scope.User, workflow_stage.Postoperation, workflow_stage.Postoperation,
             workflow_stage.Postoperation, Workflow_Mode.Realtime, null, "", new Dictionary<string, CodeActivity>(),
             new List<WorkflowArgument>(), new List<WorkflowArgument>()) { }
 
-        public WorkflowTree(WorkflowNode StartActivity, bool? TriggerOnCreate, bool? TriggerOnDelete,
+        public WorkflowTree(IWorkflowNode StartActivity, bool? TriggerOnCreate, bool? TriggerOnDelete,
             HashSet<string> TriggerFieldsChange, workflow_runas? RunAs, Workflow_Scope? Scope,
             workflow_stage? CreateStage, workflow_stage? UpdateStage, workflow_stage? DeleteStage, Workflow_Mode? Mode,
             Guid? Owner, string PrimaryEntityLogicalname, Dictionary<string, CodeActivity> CodeActivites,
@@ -182,12 +182,12 @@ namespace WorkflowExecuter {
     }
 
 
-    public interface WorkflowNode {
+    public interface IWorkflowNode {
         void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace);
     }
 
     [DataContract]
-    internal class CreateVariable : WorkflowNode {
+    internal class CreateVariable : IWorkflowNode {
         [DataMember]
         public object[][] Parameters { get; private set; }
         [DataMember]
@@ -283,7 +283,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Persist : WorkflowNode {
+    internal class Persist : IWorkflowNode {
         public Persist() {
         }
 
@@ -294,7 +294,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SelectFirstNonNull : WorkflowNode {
+    internal class SelectFirstNonNull : IWorkflowNode {
         [DataMember]
         public string[] Parameters { get; private set; }
         [DataMember]
@@ -321,7 +321,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Arithmetic : WorkflowNode {
+    internal class Arithmetic : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -451,7 +451,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Aggregate : WorkflowNode {
+    internal class Aggregate : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -528,7 +528,7 @@ namespace WorkflowExecuter {
 
 
     [DataContract]
-    internal class Concat : WorkflowNode {
+    internal class Concat : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -548,7 +548,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class AddTime : WorkflowNode {
+    internal class AddTime : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -591,7 +591,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SubtractTime : WorkflowNode {
+    internal class SubtractTime : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -634,7 +634,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class DiffInTime : WorkflowNode {
+    internal class DiffInTime : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -681,7 +681,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Trim : WorkflowNode {
+    internal class Trim : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -713,7 +713,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class RetrieveLastExecutionTime : WorkflowNode {
+    internal class RetrieveLastExecutionTime : IWorkflowNode {
         [DataMember]
         public string VariableName { get; private set; }
 
@@ -728,7 +728,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class RetrieveCurrentTime : WorkflowNode {
+    internal class RetrieveCurrentTime : IWorkflowNode {
         [DataMember]
         public string VariableName { get; private set; }
 
@@ -743,7 +743,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class CustomOperationArguments : WorkflowNode {
+    internal class CustomOperationArguments : IWorkflowNode {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -762,14 +762,14 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Skip : WorkflowNode {
+    internal class Skip : IWorkflowNode {
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
         }
     }
 
     [DataContract]
-    internal class GetEntityProperty : WorkflowNode {
+    internal class GetEntityProperty : IWorkflowNode {
         [DataMember]
         public string Attribute { get; private set; }
         [DataMember]
@@ -825,7 +825,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ConditionExp : WorkflowNode {
+    internal class ConditionExp : IWorkflowNode {
         [DataMember]
         public ConditionOperator Operator { get; private set; }
         [DataMember]
@@ -967,15 +967,15 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Condition : WorkflowNode {
+    internal class Condition : IWorkflowNode {
         [DataMember]
         public string GuardId { get; private set; }
         [DataMember]
-        public WorkflowNode Then { get; private set; }
+        public IWorkflowNode Then { get; private set; }
         [DataMember]
-        public WorkflowNode Otherwise { get; internal set; }
+        public IWorkflowNode Otherwise { get; internal set; }
 
-        public Condition(string GuardId, WorkflowNode Then, WorkflowNode Otherwise) {
+        public Condition(string GuardId, IWorkflowNode Then, IWorkflowNode Otherwise) {
             this.GuardId = GuardId;
             this.Then = Then;
             this.Otherwise = Otherwise;
@@ -992,7 +992,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class LogicalComparison : WorkflowNode {
+    internal class LogicalComparison : IWorkflowNode {
         [DataMember]
         public LogicalOperator Operator { get; private set; }
         [DataMember]
@@ -1033,7 +1033,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Assign : WorkflowNode {
+    internal class Assign : IWorkflowNode {
         [DataMember]
         public string To { get; private set; }
         [DataMember]
@@ -1110,7 +1110,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Postpone : WorkflowNode {
+    internal class Postpone : IWorkflowNode {
         [DataMember]
         public string BlockExecution { get; private set; }
         [DataMember]
@@ -1130,7 +1130,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ConvertType : WorkflowNode {
+    internal class ConvertType : IWorkflowNode {
         [DataMember]
         public string Input { get; private set; }
         [DataMember]
@@ -1168,7 +1168,7 @@ namespace WorkflowExecuter {
 
 
     [DataContract]
-    internal class SetEntityProperty : WorkflowNode {
+    internal class SetEntityProperty : IWorkflowNode {
         [DataMember]
         public string Attribute { get; private set; }
         [DataMember]
@@ -1198,7 +1198,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SetAttributeValue : WorkflowNode {
+    internal class SetAttributeValue : IWorkflowNode {
         [DataMember]
         public string VariableId { get; private set; }
         [DataMember]
@@ -1229,7 +1229,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class CreateEntity : WorkflowNode {
+    internal class CreateEntity : IWorkflowNode {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
@@ -1253,7 +1253,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class UpdateEntity : WorkflowNode {
+    internal class UpdateEntity : IWorkflowNode {
         [DataMember]
         public string VariableId { get; private set; }
         [DataMember]
@@ -1271,7 +1271,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class AssignEntity : WorkflowNode {
+    internal class AssignEntity : IWorkflowNode {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
@@ -1299,7 +1299,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SetState : WorkflowNode {
+    internal class SetState : IWorkflowNode {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
@@ -1335,11 +1335,11 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ActivityList : WorkflowNode {
+    internal class ActivityList : IWorkflowNode {
         [DataMember]
-        public WorkflowNode[] Activities { get; private set; }
+        public IWorkflowNode[] Activities { get; private set; }
 
-        public ActivityList(WorkflowNode[] Activities) {
+        public ActivityList(IWorkflowNode[] Activities) {
             this.Activities = Activities;
         }
 
@@ -1361,7 +1361,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class WaitStart : WorkflowNode {
+    internal class WaitStart : IWorkflowNode {
         public WaitStart() { }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
@@ -1371,7 +1371,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class TerminateWorkflow : WorkflowNode {
+    internal class TerminateWorkflow : IWorkflowNode {
         [DataMember]
         public OperationStatus status { get; private set; }
         [DataMember]
@@ -1395,21 +1395,21 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class RollUp : WorkflowNode {
+    internal class RollUp : IWorkflowNode {
         [DataMember]
         public string HierarchicalRelationshipName { get; private set; }
         [DataMember]
         public string AggregateResult { get; private set; }
         [DataMember]
-        public List<WorkflowNode> Filter { get; private set; }
+        public List<IWorkflowNode> Filter { get; private set; }
         [DataMember]
         public List<Entity> Filtered { get; private set; }
         [DataMember]
-        public List<WorkflowNode> Aggregation { get; private set; }
+        public List<IWorkflowNode> Aggregation { get; private set; }
         private string FilterResult;
 
         public RollUp(string hierarchicalRelationshipName, string filterResult, string aggregateResult,
-            List<WorkflowNode> filter, List<WorkflowNode> aggregation) {
+            List<IWorkflowNode> filter, List<IWorkflowNode> aggregation) {
             this.HierarchicalRelationshipName = hierarchicalRelationshipName;
             this.FilterResult = filterResult;
             this.AggregateResult = aggregateResult;
@@ -1461,7 +1461,7 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class CallCodeActivity : WorkflowNode {
+    internal class CallCodeActivity : IWorkflowNode {
         [DataMember]
         public string CodeActivityName;
         [DataMember]
