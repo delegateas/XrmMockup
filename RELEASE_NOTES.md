@@ -1,9 +1,10 @@
-### 0.6.1-beta - February xx 2018
-* Added triggering of Pre-validation plugins
-* Added a new optional parameter to the XrmSettings that specify the location of the directory containing metadata files
-* Changed the accessability level for the Plugin class intended for internal system plugins to be internal
+### 0.7.0-beta - February 12 2018
+* Added handling of pre-validation plugins
+* Added a new optional parameter in the XrmSettings for specifying the location of the directory containing the metadata files
+* Changed the accessibility level for the Plugin class to be internal. The class was only intended for internal system plugins
 * Added a new configuration parameter for MetadataGenerator to disable fetching of metadata of entities in local assemblies. This feature is now false as default
-* Updated and refactored MetadataGenerator to also fetch entities from the list of specified solutions. Due to this change, the generation of metadata will take longer time to complete but it will be more consistent
+* Changed MetadataGenerator to also fetch entities from the list of specified solutions.
+* The changes to which metadata generator means that the generation of metadata will take longer time to complete and might not contain the same entities as before. However, it is now more deterministic and consistent.
 
 ### 0.6.0-beta - Januar 12 2018
 * Fixed an issue in SetEntityProperty where ExchangeRate could be null
