@@ -244,6 +244,7 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         private HashSet<string> GetLogicalNames(AssemblyName[] assemblies) {
+            Console.WriteLine("Retriving logical names from local assemblies");
             var exclude = new string[] { "Microsoft.Xrm.Sdk.dll", "Microsoft.Crm.Sdk.Proxy.dll" };
             var correctAssemblies = assemblies
                 .Select(dll => Assembly.Load(dll))
