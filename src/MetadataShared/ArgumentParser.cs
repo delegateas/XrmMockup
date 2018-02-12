@@ -81,7 +81,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 return (T)(converter.ConvertFromInvariantString(value));
             }
             catch (NotSupportedException) {
-                throw new NotSupportedException($"Cannot cast the arguemnt {argDesc.Name} to the type {typeof(T).ToString()}");
+                return default(T);
             }
         }
     }
