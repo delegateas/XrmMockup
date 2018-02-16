@@ -155,6 +155,13 @@ namespace DG.Tools.XrmMockup.Database {
             if (value is EntityReference reference && db.IsValidEntity(reference.LogicalName)) {
                 return db.GetDbRow(reference, false);
             }
+            if (value is IEnumerable<Entity> entities) {
+                return entities
+                    .Where(e => db.IsValidEntity(e.LogicalName))
+                    .Select(e => db.GetDbRow(e))
+                    .ToArray();
+            }
+
             return value;
         }
 
