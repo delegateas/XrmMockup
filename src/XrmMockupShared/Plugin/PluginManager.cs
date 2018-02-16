@@ -214,6 +214,10 @@ namespace DG.Tools.XrmMockup {
                 var logicalName = (entity != null) ? entity.LogicalName : entityRef.LogicalName;
                 if (entityName != "" && entityName != logicalName) return;
 
+                if (entity != null && metadata.GetMetadata(logicalName)?.PrimaryIdAttribute != null) {
+                    entity[metadata.GetMetadata(logicalName).PrimaryIdAttribute] = guid;
+                }
+
                 if (pluginContext.Depth > 8) {
                     throw new FaultException(
                         "This workflow job was canceled because the workflow that started it included an infinite loop." +
