@@ -1,3 +1,7 @@
+### 0.7.1-beta - February 16 2018
+* Fixed a bug where the primary entity id was not included beyond the first plugin execution in a chain.
+* Fixed a bug where activitypointer was not included as a default entity in the metadata generator.
+
 ### 0.7.0-beta - February 12 2018
 * Added handling of pre-validation plugins
 * Added a new optional parameter in the XrmSettings for specifying the location of the directory containing the metadata files
