@@ -1,4 +1,4 @@
-### 0.7.2-beta 
+### 0.7.2-beta - February 21 2018
 * Fixed bug where nuget package could be installed in projects running .NET <4.6.2 but did not actually work. Now nuget fails with an error if trying to install in projects running older versions of .NET framework.
 
 ### 0.7.1-beta - February 16 2018
