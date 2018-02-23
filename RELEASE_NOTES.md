@@ -1,3 +1,6 @@
+### 0.7.3-beta - February 23 2018
+* Changed dependency description of workflow dll for 365 version.
+
 ### 0.7.2-beta - February 21 2018
 * Fixed bug where nuget package could be installed in projects running .NET <4.6.2 but did not actually work. Now nuget fails with an error if trying to install in projects running older versions of .NET framework.
 
