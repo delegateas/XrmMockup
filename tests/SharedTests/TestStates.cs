@@ -4,6 +4,7 @@ using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.XrmMockupTest {
     [TestClass]
@@ -42,6 +43,32 @@ namespace DG.XrmMockupTest {
             } catch(Exception e) {
                 Assert.IsInstanceOfType(e, typeof(FaultException));
             }
+        }
+
+        [TestMethod]
+        public void TestIsValidStateTransition()
+        {
+            var man = new dg_man()
+            {
+                statecode = dg_manState.Active,
+                statuscode = dg_man_statuscode.Active
+            };
+            man.Id = orgAdminUIService.Create(man);
+            man.SetState(orgAdminUIService, dg_manState.Inactive, dg_man_statuscode.Inactive);
+
+            var retrieved = orgAdminUIService.Retrieve(dg_man.EntityLogicalName, man.Id, new ColumnSet(true)) as dg_man;
+            Assert.AreEqual(dg_manState.Inactive, retrieved.statecode);
+            Assert.AreEqual(dg_man_statuscode.Inactive, retrieved.statuscode);
+
+            var request = new IsValidStateTransitionRequest
+            {
+                Entity = retrieved.ToEntityReference(),
+                NewState = dg_manState.Active.ToString(),
+                NewStatus = (int)dg_man_statuscode.Active
+            };
+
+            var response = orgAdminUIService.Execute(request) as IsValidStateTransitionResponse;
+            Assert.IsTrue(response.IsValid);
         }
 #endif
 
