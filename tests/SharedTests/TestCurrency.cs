@@ -8,6 +8,8 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using System.ServiceModel;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.XrmMockupTest {
 
@@ -105,7 +107,6 @@ namespace DG.XrmMockupTest {
             }
         }
 
-
         [TestMethod]
         public void TestExchangeIsSet() {
             using (var context = new Xrm(orgAdminUIService)) {
@@ -170,6 +171,46 @@ namespace DG.XrmMockupTest {
                 orgAdminUIService.Update(bus);
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
                 Assert.AreEqual(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetrieveExchangeRate() {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var dollar = new TransactionCurrency
+                {
+                    ExchangeRate = 0.6m
+                };
+                dollar.Id = orgAdminUIService.Create(dollar);
+
+                var request = new RetrieveExchangeRateRequest
+                {
+                    TransactionCurrencyId = dollar.Id
+                };
+                var response = orgAdminUIService.Execute(request) as RetrieveExchangeRateResponse;
+                Assert.AreEqual(dollar.ExchangeRate, response.ExchangeRate);
+            }
+        }
+
+        [TestMethod]
+        public void TestRetriveExhangeRateFail()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var request = new RetrieveExchangeRateRequest
+                {
+                    TransactionCurrencyId = Guid.NewGuid()
+                };
+                try
+                {
+                    orgAdminUIService.Execute(request);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                }
             }
         }
     }
