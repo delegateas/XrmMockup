@@ -30,28 +30,34 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("Required field 'NewState' is missing");
             }
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(request.Entity.LogicalName);
+
             var row = db.GetDbRowOrNull(request.Entity);
             if (row == null)
             {
                 throw new FaultException($"{request.Entity.LogicalName} With Id = {request.Entity.Id} Does Not Exist");
             }
 
+            var prevStatusCode = (int)row["statuscode"];
 
-            var newStatusCode = request.NewStatus;
-            var newStateCode = request.NewState;
-            var prevStatusCode = row["statuscode"] as OptionSetValue;
-
-            var entityMetadata = metadata.EntityMetadata.GetMetadata(request.Entity.LogicalName);
-            if (entityMetadata.EnforceStateTransitions != true)
+            if (entityMetadata.IsStateModelAware != true)
             {
-                throw new FaultException($"This message can not be used to check the state transition of {request.Entity.LogicalName} to {request.NewStatus}.");
+                throw new FaultException($"The 'IsValidStateTransition' method does not support entities of type {request.Entity.LogicalName}.");
             }
-
             var stateOptionMeta = (entityMetadata.Attributes
                 .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
-                .OptionSet.Options;
-            // Should be changed to InvariantName somehow
-            if (!stateOptionMeta.Any(o => o.Value.ToString() == newStateCode))
+                .OptionSet
+                .Options;
+            
+            var stateOption = stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == request.NewState);
+
+            if (entityMetadata.EnforceStateTransitions != true)
+            {
+                var tryState = stateOption != null ? stateOption.Value.ToString() : "-1";
+                throw new FaultException($"This message can not be used to check the state transition of {request.Entity.LogicalName} to {tryState}");
+            }
+            if (stateOption == null)
             {
                 throw new FaultException($"-1 is not a valid state code on {request.Entity.LogicalName} with Id {request.Entity.Id}.");
             }
@@ -59,12 +65,15 @@ namespace DG.Tools.XrmMockup
             var statusOptionMeta = (entityMetadata.Attributes
                 .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
                 .OptionSet.Options;
-            if (!statusOptionMeta.Any(o => o.Value == newStatusCode))
+            if (!statusOptionMeta.Any(o => 
+                (o as StatusOptionMetadata).State == stateOption.Value 
+                    && o.Value == request.NewStatus 
+                    && stateOption.Value != prevStatusCode))
             {
                 throw new FaultException($"{request.NewStatus} is not a valid status code on {request.Entity.LogicalName} with Id {request.Entity.Id}.");
             }
 
-            var prevValueOptionMeta = statusOptionMeta.FirstOrDefault(o => o.Value == prevStatusCode.Value) as StatusOptionMetadata;
+            var prevValueOptionMeta = statusOptionMeta.FirstOrDefault(o => o.Value == prevStatusCode) as StatusOptionMetadata;
 
             var transitions = prevValueOptionMeta.TransitionData;
             var resp = new IsValidStateTransitionResponse();
@@ -73,13 +82,20 @@ namespace DG.Tools.XrmMockup
                 var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
                 var doc = XDocument.Parse(transitions).Element(ns + "allowedtransitions");
                 if (doc.Descendants(ns + "allowedtransition")
-                    .Where(x => x.Attribute("tostatusid").Value == prevStatusCode.Value.ToString())
+                    .Where(x => x.Attribute("tostatusid").Value == request.NewStatus.ToString())
                     .Any())
                 {
-
+                    resp.Results["IsValid"] = true;
+                }
+                else
+                {
+                    throw new FaultException($"{request.NewStatus} is not a valid status code for state code {request.Entity.LogicalName}State.{request.NewState} on {request.Entity.LogicalName} with Id {request.Entity.Id}.");
                 }
             }
-            resp.Results["IsValid"] = null;
+            else
+            {
+                resp.Results["IsValid"] = null;
+            }
             return resp;
         }
     }
