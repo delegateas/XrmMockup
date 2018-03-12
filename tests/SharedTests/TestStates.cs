@@ -349,7 +349,6 @@ namespace DG.XrmMockupTest
 
             acc.StateCode = AccountState.Inactive;
             orgAdminService.Update(acc);
-
             retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
             Assert.AreEqual(AccountState.Inactive, retrieved.StateCode);
             Assert.AreEqual(Account_StatusCode.Inactive, retrieved.StatusCode);
