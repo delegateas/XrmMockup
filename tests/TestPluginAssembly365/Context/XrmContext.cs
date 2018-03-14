@@ -54468,6 +54468,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Select whether to turn on product recommendations for the organization.</para>
+        /// <para>Display Name: Enable Product Recommendations for this Organization</para>
+        /// </summary>
+        [AttributeLogicalName("productrecommendationsenabled")]
+        public bool? ProductRecommendationsEnabled {
+            get {
+                return GetAttributeValue<bool?>("productrecommendationsenabled");
+            }
+            set {
+                SetAttributeValue("productrecommendationsenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>The maximum value for the Mobile Offline setting Days since record last modified</para>
         /// <para>Display Name: Max value of Days since record last modified</para>
         /// </summary>
@@ -54588,16 +54602,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Select whether to turn on product recommendations for the organization.</para>
-        /// <para>Display Name: Enable Product Recommendations for this Organization</para>
+        /// <para>Select whether to use legacy application metadata sync for clients that use application metadata.</para>
+        /// <para>Display Name: Is server metadata generation required for mobile client</para>
         /// </summary>
-        [AttributeLogicalName("productrecommendationsenabled")]
-        public bool? ProductRecommendationsEnabled {
+        [AttributeLogicalName("uselegacyapplicationmetadatasync")]
+        public bool? UseLegacyApplicationMetadataSync {
             get {
-                return GetAttributeValue<bool?>("productrecommendationsenabled");
+                return GetAttributeValue<bool?>("uselegacyapplicationmetadatasync");
             }
             set {
-                SetAttributeValue("productrecommendationsenabled", value);
+                SetAttributeValue("uselegacyapplicationmetadatasync", value);
             }
         }
         

@@ -39,7 +39,7 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"{request.Entity.LogicalName} With Id = {request.Entity.Id} Does Not Exist");
             }
 
-            var prevStatusCode = (int)row["statuscode"];
+            var prevStatusCode = row.GetColumn<int>("statuscode");
 
             if (entityMetadata.IsStateModelAware != true)
             {
