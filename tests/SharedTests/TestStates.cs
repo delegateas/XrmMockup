@@ -53,7 +53,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestIsValidStateTransition()
         {
             var man = new dg_man()
@@ -76,7 +76,7 @@ namespace DG.XrmMockupTest
             Assert.IsTrue(response.Results.Keys.Contains("IsValid"));
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void TestIsValidStateTransition_FailsWhenStateCodeInvalid()
         {
             var man = new dg_man()
