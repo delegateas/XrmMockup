@@ -42,7 +42,7 @@ namespace DG.Tools.XrmMockup
             var prevStatusCode = row.GetColumn<int>("statuscode");
             var prevStateCode = row.GetColumn<int>("statecode");
 
-            var stateOption = getStateOptionMetadata(request.NewState, entityMetadata);
+            var stateOption = GetStateOptionMetadata(request.NewState, entityMetadata);
             CheckEnforceStateTransitions(request, entityMetadata, stateOption);
             var statusOptionMeta = Utility.GetStatusOptionMetadata(entityMetadata);
 
@@ -75,14 +75,12 @@ namespace DG.Tools.XrmMockup
             return resp;
         }
 
-        private static OptionMetadata getStateOptionMetadata(string stateInvariantName, EntityMetadata entityMetadata)
+        private static OptionMetadata GetStateOptionMetadata(string stateInvariantName, EntityMetadata entityMetadata)
         {
             var stateOptionMeta = (entityMetadata.Attributes
                 .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
                 .OptionSet
                 .Options;
-
-            var stateOption = stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
             return stateOption;
         }
 
