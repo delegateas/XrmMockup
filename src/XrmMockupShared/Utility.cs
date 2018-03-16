@@ -298,13 +298,9 @@ namespace DG.Tools.XrmMockup
             if (prevValueOptionMeta == null) return;
 
             var transitions = prevValueOptionMeta.TransitionData;
-            if (transitions != null && transitions != "")
-            {
-                if (IsValidStatusTransition(transitions, newValue.Value))
-                {
-                    return;
-                }
-            }
+            if (transitions != null && transitions != "" && 
+                IsValidStatusTransition(transitions, newValue.Value)) return;
+
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
         }
 
