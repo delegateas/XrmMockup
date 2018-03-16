@@ -21,8 +21,10 @@ using System.IO;
 using DG.Tools.XrmMockup.Database;
 using System.Xml.Linq;
 
-namespace DG.Tools.XrmMockup {
-    internal static class Utility {
+namespace DG.Tools.XrmMockup
+{
+    internal static class Utility
+    {
 
         internal static HashSet<string> Activities = new HashSet<string>() {
             "appointment",
@@ -58,17 +60,21 @@ namespace DG.Tools.XrmMockup {
             { "bulkoperation", new OptionSetValue(4406) },
         };
 
-        public static Entity CloneEntity(this Entity entity) {
+        public static Entity CloneEntity(this Entity entity)
+        {
             if (entity == null) return null;
             return CloneEntity(entity, null, null);
         }
 
-        public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols) {
-            var clone = new Entity(entity.LogicalName) {
+        public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols)
+        {
+            var clone = new Entity(entity.LogicalName)
+            {
                 Id = entity.Id
             };
 
-            if (metadata?.PrimaryIdAttribute != null) {
+            if (metadata?.PrimaryIdAttribute != null)
+            {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
@@ -80,32 +86,43 @@ namespace DG.Tools.XrmMockup {
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
 
-        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata) {
-            if (metadata == null || attrName.Contains(".")) {
+        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata)
+        {
+            if (metadata == null || attrName.Contains("."))
+            {
                 return true;
             }
 
             return metadata.Attributes.Any(a => a.LogicalName == attrName);
         }
 
-        public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata) where T : Entity {
+        public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata) where T : Entity
+        {
             return SetAttributes(entity, attributes, metadata, null);
         }
 
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata,
-            ColumnSet colsToKeep) where T : Entity {
+            ColumnSet colsToKeep) where T : Entity
+        {
 
-            if (colsToKeep != null && !colsToKeep.AllColumns) {
+            if (colsToKeep != null && !colsToKeep.AllColumns)
+            {
                 HashSet<string> keep = new HashSet<string>(colsToKeep.Columns);
-                foreach (var attr in attributes) {
-                    if (!IsSettableAttribute(attr.Key, metadata)) {
+                foreach (var attr in attributes)
+                {
+                    if (!IsSettableAttribute(attr.Key, metadata))
+                    {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
                     if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = attr.Value;
                 }
-            } else {
-                foreach (var attr in attributes) {
-                    if (!IsSettableAttribute(attr.Key, metadata)) {
+            }
+            else
+            {
+                foreach (var attr in attributes)
+                {
+                    if (!IsSettableAttribute(attr.Key, metadata))
+                    {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
                     entity.Attributes[attr.Key] = attr.Value;
@@ -114,10 +131,12 @@ namespace DG.Tools.XrmMockup {
             return entity;
         }
 
-        internal static void RemoveUnsettableAttributes(string actionType, EntityMetadata metadata, Entity entity) {
+        internal static void RemoveUnsettableAttributes(string actionType, EntityMetadata metadata, Entity entity)
+        {
             if (entity == null) return;
 
-            switch (actionType) {
+            switch (actionType)
+            {
                 case "Create":
                     RemoveAttribute(entity,
                         entity.Attributes.Where(a => metadata.Attributes.Any(m => m.LogicalName == a.Key && m.IsValidForCreate == false)).Select(a => a.Key).ToArray());
@@ -133,36 +152,44 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static void RemoveAttribute(Entity entity, params string[] attrNames) {
-            foreach (var attrName in attrNames) {
+        internal static void RemoveAttribute(Entity entity, params string[] attrNames)
+        {
+            foreach (var attrName in attrNames)
+            {
                 if (entity.Attributes.ContainsKey(attrName)) entity.Attributes.Remove(attrName);
             }
         }
 
-        internal static void CloseOpportunity(Core core, OpportunityState state, OptionSetValue status, Entity opportunityClose, EntityReference userRef) {
+        internal static void CloseOpportunity(Core core, OpportunityState state, OptionSetValue status, Entity opportunityClose, EntityReference userRef)
+        {
             var setStateHandler = core.RequestHandlers.Find(x => x is SetStateRequestHandler);
-            var req = new SetStateRequest() {
+            var req = new SetStateRequest()
+            {
                 EntityMoniker = opportunityClose.GetAttributeValue<EntityReference>("opportunityid"),
                 State = new OptionSetValue((int)state),
                 Status = status
             };
             setStateHandler.Execute(req, userRef);
 
-            var create = new CreateRequest {
+            var create = new CreateRequest
+            {
                 Target = opportunityClose
             };
             core.Execute(create as OrganizationRequest, userRef);
         }
 
 
-        public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName) {
-            if (!metadata.ContainsKey(logicalName)) {
+        public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName)
+        {
+            if (!metadata.ContainsKey(logicalName))
+            {
                 throw new FaultException($"Couldn't find metadata for the logicalname '{logicalName}'. Run the MetadataGenerator again, and check that the logicalname is specified in the config file.");
             }
             return metadata[logicalName];
         }
 
-        internal static void SetFullName(MetadataSkeleton metadata, Entity dbEntity) {
+        internal static void SetFullName(MetadataSkeleton metadata, Entity dbEntity)
+        {
             var fullnameFormat =
                 (FullNameConventionCode)metadata.BaseOrganization.GetAttributeValue<OptionSetValue>("fullnameconventioncode").Value;
             var first = dbEntity.GetAttributeValue<string>("firstname");
@@ -171,7 +198,8 @@ namespace DG.Tools.XrmMockup {
             if (middle == null) middle = "";
             var last = dbEntity.GetAttributeValue<string>("lastname");
             if (last == null) last = "";
-            switch (fullnameFormat) {
+            switch (fullnameFormat)
+            {
                 case FullNameConventionCode.FirstLast:
                     dbEntity["fullname"] = first != "" ? first + " " + last : last;
                     break;
@@ -211,32 +239,40 @@ namespace DG.Tools.XrmMockup {
                     break;
 
             }
-            if (dbEntity["fullname"] != null) {
+            if (dbEntity["fullname"] != null)
+            {
                 (dbEntity["fullname"] as string).TrimStart().TrimEnd();
             }
         }
 
-        internal static RelationshipMetadataBase GetRelationshipMetadataDefaultNull(Dictionary<string, EntityMetadata> entityMetadata, string name, Guid metadataId, EntityReference userRef) {
-            if (name == null && metadataId == Guid.Empty) {
+        internal static RelationshipMetadataBase GetRelationshipMetadataDefaultNull(Dictionary<string, EntityMetadata> entityMetadata, string name, Guid metadataId, EntityReference userRef)
+        {
+            if (name == null && metadataId == Guid.Empty)
+            {
                 return null;
             }
             RelationshipMetadataBase relationshipBase;
-            foreach (var meta in entityMetadata) {
+            foreach (var meta in entityMetadata)
+            {
                 relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
-                if (relationshipBase != null) {
+                if (relationshipBase != null)
+                {
                     return relationshipBase;
                 }
                 relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.SchemaName == name);
-                if (relationshipBase != null) {
+                if (relationshipBase != null)
+                {
                     return relationshipBase;
                 }
                 var oneToManyBases = meta.Value.ManyToOneRelationships.Concat(meta.Value.OneToManyRelationships);
                 relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.MetadataId == metadataId);
-                if (relationshipBase != null) {
+                if (relationshipBase != null)
+                {
                     return relationshipBase;
                 }
                 relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.SchemaName == name);
-                if (relationshipBase != null) {
+                if (relationshipBase != null)
+                {
                     return relationshipBase;
                 }
             }
@@ -244,7 +280,8 @@ namespace DG.Tools.XrmMockup {
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-        internal static void CheckStatusTransitions(EntityMetadata metadata, Entity newEntity, Entity prevEntity) {
+        internal static void CheckStatusTransitions(EntityMetadata metadata, Entity newEntity, Entity prevEntity)
+        {
             if (newEntity == null || prevEntity == null) return;
             if (!newEntity.Attributes.ContainsKey("statuscode") || !prevEntity.Attributes.ContainsKey("statuscode")) return;
             if (newEntity.LogicalName != prevEntity.LogicalName || newEntity.Id != prevEntity.Id) return;
@@ -254,55 +291,82 @@ namespace DG.Tools.XrmMockup {
 
             if (metadata.EnforceStateTransitions != true) return;
 
-            var optionsMeta = (metadata.Attributes
-                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
-                .OptionSet.Options;
+            OptionMetadataCollection optionsMeta = GetStatusOptionMetadata(metadata);
             if (!optionsMeta.Any(o => o.Value == newValue.Value)) return;
 
             var prevValueOptionMeta = optionsMeta.FirstOrDefault(o => o.Value == prevValue.Value) as StatusOptionMetadata;
             if (prevValueOptionMeta == null) return;
 
             var transitions = prevValueOptionMeta.TransitionData;
-            if (transitions != null && transitions != "") {
-                var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
-                var doc = XDocument.Parse(transitions).Element(ns + "allowedtransitions");
-                if (doc.Descendants(ns + "allowedtransition")
-                    .Where(x => x.Attribute("tostatusid").Value == newValue.Value.ToString())
-                    .Any()) {
+            if (transitions != null && transitions != "")
+            {
+                if (IsValidStatusTransition(transitions, newValue.Value))
+                {
                     return;
                 }
             }
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
         }
+
+        internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
+        {
+            return (metadata.Attributes
+                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
+                .OptionSet.Options;
+        }
+
+        internal static bool IsValidStatusTransition(string transitionData, int newStatusCode)
+        {
+            var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
+            var doc = XDocument.Parse(transitionData).Element(ns + "allowedtransitions");
+            if (doc.Descendants(ns + "allowedtransition")
+                .Where(x => x.Attribute("tostatusid").Value == newStatusCode.ToString())
+                .Any())
+            {
+                return true;
+            }
+            return false;
+        }
 #endif
 
-        internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata) {
+        internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata)
+        {
             return metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
         }
 
-        private static int GetBaseCurrencyPrecision(MetadataSkeleton metadata) {
+        private static int GetBaseCurrencyPrecision(MetadataSkeleton metadata)
+        {
             return metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
         }
 
-        private static void HandleBaseCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+        private static void HandleBaseCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
-            if (!entity.Attributes.ContainsKey(transAttr)) {
+            if (!entity.Attributes.ContainsKey(transAttr))
+            {
                 return;
             }
             var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
             var attributesMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
-            if (!currency.GetAttributeValue<decimal?>("exchangerate").HasValue) {
+            if (!currency.GetAttributeValue<decimal?>("exchangerate").HasValue)
+            {
                 throw new FaultException($"No exchangerate specified for transactioncurrency '{entity.GetAttributeValue<EntityReference>(transAttr)}'");
             }
 
             var baseCurrency = GetBaseCurrency(metadata);
-            foreach (var attr in entity.Attributes.ToList()) {
-                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && !attr.Key.EndsWith("_base")) {
-                    if (entity.GetAttributeValue<EntityReference>(transAttr) == baseCurrency) {
+            foreach (var attr in entity.Attributes.ToList())
+            {
+                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && !attr.Key.EndsWith("_base"))
+                {
+                    if (entity.GetAttributeValue<EntityReference>(transAttr) == baseCurrency)
+                    {
                         entity[attr.Key + "_base"] = attr.Value;
-                    } else {
-                        if (attr.Value is Money money) {
+                    }
+                    else
+                    {
+                        if (attr.Value is Money money)
+                        {
                             var value = money.Value / currency.GetAttributeValue<decimal?>("exchangerate").Value;
                             entity[attr.Key + "_base"] = new Money(value);
                         }
@@ -311,20 +375,25 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static void HandlePrecision(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+        internal static void HandlePrecision(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
-            if (!entity.Attributes.ContainsKey(transAttr)) {
+            if (!entity.Attributes.ContainsKey(transAttr))
+            {
                 return;
             }
             var currency = db.GetEntity(LogicalNames.TransactionCurrency, entity.GetAttributeValue<EntityReference>(transAttr).Id);
             var attributesMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName).Attributes.Where(a => a is MoneyAttributeMetadata);
             var baseCurrencyPrecision = GetBaseCurrencyPrecision(metadata);
-            foreach (var attr in entity.Attributes.ToList()) {
-                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && attr.Value != null) {
+            foreach (var attr in entity.Attributes.ToList())
+            {
+                if (attributesMetadata.Any(a => a.LogicalName == attr.Key) && attr.Value != null)
+                {
                     var attributeMetadata = attributesMetadata.First(m => m.LogicalName == attr.Key) as MoneyAttributeMetadata;
                     int? precision = null;
-                    switch (attributeMetadata.PrecisionSource) {
+                    switch (attributeMetadata.PrecisionSource)
+                    {
                         case 0:
                             precision = attributeMetadata.Precision;
                             break;
@@ -336,8 +405,10 @@ namespace DG.Tools.XrmMockup {
                             break;
                     }
 
-                    if (!precision.HasValue) {
-                        switch (attributeMetadata.PrecisionSource) {
+                    if (!precision.HasValue)
+                    {
+                        switch (attributeMetadata.PrecisionSource)
+                        {
                             case 0:
                                 throw new MockupException($"No precision set for field '{attr.Key}' on entity '{entity.LogicalName}'");
                             case 1:
@@ -348,7 +419,8 @@ namespace DG.Tools.XrmMockup {
                     }
 
                     var rounded = Math.Round(((Money)attr.Value).Value, precision.Value);
-                    if (rounded < (decimal)attributeMetadata.MinValue.Value || rounded > (decimal)attributeMetadata.MaxValue.Value) {
+                    if (rounded < (decimal)attributeMetadata.MinValue.Value || rounded > (decimal)attributeMetadata.MaxValue.Value)
+                    {
                         throw new FaultException($"'{attr.Key}' was outside the ranges '{attributeMetadata.MinValue}','{attributeMetadata.MaxValue}' with value '{rounded}' ");
                     }
                     entity[attr.Key] = new Money(rounded);
@@ -356,25 +428,35 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static void HandleCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity) {
+        internal static void HandleCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        {
             HandleBaseCurrencies(metadata, db, entity);
             HandlePrecision(metadata, db, entity);
         }
 
-        internal static bool HasCircularReference(Dictionary<string, EntityMetadata> metadata, Entity entity) {
+        internal static bool HasCircularReference(Dictionary<string, EntityMetadata> metadata, Entity entity)
+        {
             if (!metadata.ContainsKey(entity.LogicalName)) return false;
             var attributeMetadata = metadata.GetMetadata(entity.LogicalName).Attributes;
             var references = entity.Attributes.Where(a => attributeMetadata.FirstOrDefault(m => m.LogicalName == a.Key) is LookupAttributeMetadata).Select(a => a.Value);
-            foreach (var r in references) {
+            foreach (var r in references)
+            {
                 if (r == null) continue;
                 Guid guid;
-                if (r is EntityReference) {
+                if (r is EntityReference)
+                {
                     guid = (r as EntityReference).Id;
-                } else if (r is Guid) {
+                }
+                else if (r is Guid)
+                {
                     guid = (Guid)r;
-                } else if (r is EntityCollection) {
+                }
+                else if (r is EntityCollection)
+                {
                     continue;
-                } else {
+                }
+                else
+                {
                     throw new NotImplementedException($"{r.GetType()} not implemented in HasCircularReference");
                 }
                 if (guid == entity.Id) return true;
@@ -382,22 +464,27 @@ namespace DG.Tools.XrmMockup {
             return false;
         }
 
-        internal static void SetOwner(XrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner) {
+        internal static void SetOwner(XrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner)
+        {
             var ownershipType = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
-            if (!ownershipType.HasValue) {
+            if (!ownershipType.HasValue)
+            {
                 throw new MockupException($"No ownership type set for '{entity.LogicalName}'");
             }
 
-            if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned)) {
-                if (db.GetDbRowOrNull(owner) == null) {
+            if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned))
+            {
+                if (db.GetDbRowOrNull(owner) == null)
+                {
                     throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
                 }
 
                 var prevOwner = entity.Attributes.ContainsKey("ownerid") ? entity["ownerid"] : null;
                 entity["ownerid"] = owner;
 
-                if (!dataMethods.HasPermission(entity, AccessRights.ReadAccess, owner)) {
+                if (!dataMethods.HasPermission(entity, AccessRights.ReadAccess, owner))
+                {
                     entity["ownerid"] = prevOwner;
                     throw new FaultException($"Trying to assign '{entity.LogicalName}' with id '{entity.Id}'" +
                         $" to '{owner.LogicalName}' with id '{owner.Id}', but owner does not have read access for that entity");
@@ -408,12 +495,18 @@ namespace DG.Tools.XrmMockup {
                 entity["owningteam"] = null;
 
 
-                if (entity.LogicalName != LogicalNames.SystemUser && entity.LogicalName != LogicalNames.Team) {
-                    if (owner.LogicalName == LogicalNames.SystemUser && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned)) {
+                if (entity.LogicalName != LogicalNames.SystemUser && entity.LogicalName != LogicalNames.Team)
+                {
+                    if (owner.LogicalName == LogicalNames.SystemUser && ownershipType.Value.HasFlag(OwnershipTypes.UserOwned))
+                    {
                         entity["owninguser"] = owner;
-                    } else if (owner.LogicalName == "team") {
+                    }
+                    else if (owner.LogicalName == "team")
+                    {
                         entity["owningteam"] = owner;
-                    } else {
+                    }
+                    else
+                    {
                         throw new MockupException($"Trying to give owner to {owner.LogicalName} but ownershiptype is {ownershipType.ToString()}");
                     }
                     entity["owningbusinessunit"] = GetBusinessUnit(db, owner);
@@ -421,14 +514,17 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static EntityReference GetBusinessUnit(XrmDb db, EntityReference owner) {
+        internal static EntityReference GetBusinessUnit(XrmDb db, EntityReference owner)
+        {
             var user = db.GetEntityOrNull(owner);
-            if (user == null) {
+            if (user == null)
+            {
                 return null;
             }
             var buRef = user.GetAttributeValue<EntityReference>("businessunitid");
             var bu = db.GetEntityOrNull(buRef);
-            if (bu == null) {
+            if (bu == null)
+            {
                 return null;
             }
             buRef.Name = bu.GetAttributeValue<string>("name");
@@ -439,12 +535,14 @@ namespace DG.Tools.XrmMockup {
          * Possible error with cast to Entity here, was (T) before
          * 
          * */
-        public static Entity MakeProxyTypeEntity(Entity entity, Type ty) {
+        public static Entity MakeProxyTypeEntity(Entity entity, Type ty)
+        {
             var method = typeof(Entity).GetMethod("ToEntity").MakeGenericMethod(ty);
             return (Entity)method.Invoke(entity, null);
         }
 
-        public static bool MatchesCriteria(DbRow row, FilterExpression criteria) {
+        public static bool MatchesCriteria(DbRow row, FilterExpression criteria)
+        {
             if (criteria.FilterOperator == LogicalOperator.And)
                 return criteria.Filters.All(f => MatchesCriteria(row, f)) && criteria.Conditions.All(c => EvaluateCondition(row, c));
             else
@@ -452,8 +550,10 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        private static bool EvaluateCondition(DbRow row, ConditionExpression condition) {
-            if (condition.AttributeName == null) {
+        private static bool EvaluateCondition(DbRow row, ConditionExpression condition)
+        {
+            if (condition.AttributeName == null)
+            {
                 return Matches(row.Id, condition.Operator, condition.Values);
             }
 
@@ -463,7 +563,8 @@ namespace DG.Tools.XrmMockup {
             return Matches(attr, condition.Operator, values);
         }
 
-        public static object ConvertToComparableObject(object obj) {
+        public static object ConvertToComparableObject(object obj)
+        {
             if (obj is EntityReference entityReference)
                 return entityReference.Id;
 
@@ -483,8 +584,10 @@ namespace DG.Tools.XrmMockup {
                 return obj;
         }
 
-        public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values) {
-            switch (op) {
+        public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
+        {
+            switch (op)
+            {
                 case ConditionOperator.Null:
                     return attr == null;
 
@@ -508,22 +611,32 @@ namespace DG.Tools.XrmMockup {
                         return false;
                     var sAttr = (string)attr;
                     var pattern = (string)values.First();
-                    if (pattern.First() == '%' && (pattern.Last() == '%')) {
+                    if (pattern.First() == '%' && (pattern.Last() == '%'))
+                    {
                         return sAttr.Contains(pattern.Substring(1, pattern.Length - 1));
-                    } else if (pattern.First() == '%') {
+                    }
+                    else if (pattern.First() == '%')
+                    {
                         return sAttr.EndsWith(pattern.Substring(1));
-                    } else if (pattern.Last() == '%') {
+                    }
+                    else if (pattern.Last() == '%')
+                    {
                         return sAttr.StartsWith(pattern.Substring(0, pattern.Length - 1));
-                    } else {
+                    }
+                    else
+                    {
                         throw new NotImplementedException($"The like matching for '{pattern}' has not been implemented yet");
                     }
 
                 case ConditionOperator.NextXYears:
                     var now = DateTime.Now;
                     DateTime date;
-                    if (attr is DateTime) {
+                    if (attr is DateTime)
+                    {
                         date = (DateTime)attr;
-                    } else {
+                    }
+                    else
+                    {
                         date = DateTime.Parse((string)attr);
                     }
                     var x = int.Parse((string)values.First());
@@ -535,11 +648,13 @@ namespace DG.Tools.XrmMockup {
 
         }
 
-        public static bool Compare(IComparable attr, ConditionOperator op, IComparable value) {
+        public static bool Compare(IComparable attr, ConditionOperator op, IComparable value)
+        {
             // if atleast one of the two compare values are null. Then compare returns null
             if (attr == null || value == null)
                 return false;
-            switch (op) {
+            switch (op)
+            {
                 case ConditionOperator.GreaterEqual:
                     return attr.CompareTo(value) >= 0;
                 case ConditionOperator.GreaterThan:
@@ -555,51 +670,69 @@ namespace DG.Tools.XrmMockup {
 
         }
 
-        public static IEnumerable<KeyValuePair<string, object>> GetProperties(object obj) {
+        public static IEnumerable<KeyValuePair<string, object>> GetProperties(object obj)
+        {
             var ty = obj.GetType();
             var props = ty.GetProperties().Where(x => x.DeclaringType.UnderlyingSystemType == ty).ToList();
             return props.Select(p => new KeyValuePair<string, object>(p.Name, p.GetValue(obj)));
         }
 
-        public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly) {
-            try {
+        public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
+        {
+            try
+            {
                 return assembly.GetTypes();
-            } catch (ReflectionTypeLoadException e) {
+            }
+            catch (ReflectionTypeLoadException e)
+            {
                 return e.Types.Where(t => t != null);
             }
         }
-        public static T? GetOptionSetValue<T>(this Entity entity, string attributeName) where T : struct, IComparable, IConvertible, IFormattable {
+        public static T? GetOptionSetValue<T>(this Entity entity, string attributeName) where T : struct, IComparable, IConvertible, IFormattable
+        {
             var optionSet = entity.GetAttributeValue<OptionSetValue>(attributeName);
-            if (optionSet != null) {
+            if (optionSet != null)
+            {
                 return (T)Enum.ToObject(typeof(T), optionSet.Value);
-            } else {
+            }
+            else
+            {
                 return null;
             }
         }
 
-        public static List<AccessRights> GetAccessRights(this AccessRights mask) {
+        public static List<AccessRights> GetAccessRights(this AccessRights mask)
+        {
             var rights = new List<AccessRights>();
-            foreach (AccessRights right in Enum.GetValues(typeof(AccessRights))) {
+            foreach (AccessRights right in Enum.GetValues(typeof(AccessRights)))
+            {
                 if (right == AccessRights.None) continue;
-                if (mask.HasFlag(right)) {
+                if (mask.HasFlag(right))
+                {
                     rights.Add(right);
                 }
             }
             return rights;
         }
 
-        internal static void Touch(Entity dbEntity, EntityMetadata metadata, TimeSpan timeOffset, EntityReference user) {
-            if (IsSettableAttribute("modifiedon", metadata) && IsSettableAttribute("modifiedby", metadata)) {
+        internal static void Touch(Entity dbEntity, EntityMetadata metadata, TimeSpan timeOffset, EntityReference user)
+        {
+            if (IsSettableAttribute("modifiedon", metadata) && IsSettableAttribute("modifiedby", metadata))
+            {
                 dbEntity["modifiedon"] = DateTime.Now.Add(timeOffset);
                 dbEntity["modifiedby"] = user;
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, XrmDb db) {
-            foreach (var attr in entity.Attributes) {
-                if (attr.Value is EntityReference eRef) {
+        internal static void PopulateEntityReferenceNames(Entity entity, XrmDb db)
+        {
+            foreach (var attr in entity.Attributes)
+            {
+                if (attr.Value is EntityReference eRef)
+                {
                     var row = db.GetDbRowOrNull(eRef);
-                    if (row != null) {
+                    if (row != null)
+                    {
                         var nameAttr = row.Metadata.PrimaryNameAttribute;
                         eRef.Name = row.GetColumn<string>(nameAttr);
                     }
@@ -607,38 +740,47 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal static object GetComparableAttribute(object attribute) {
-            if (attribute is Money money) {
+        internal static object GetComparableAttribute(object attribute)
+        {
+            if (attribute is Money money)
+            {
                 return money.Value;
             }
-            if (attribute is EntityReference eRef) {
+            if (attribute is EntityReference eRef)
+            {
                 return eRef.Name;
             }
-            if (attribute is OptionSetValue osv) {
+            if (attribute is OptionSetValue osv)
+            {
                 return osv.Value;
             }
             return attribute;
         }
 
-        internal static RelationshipMetadataBase GetRelatedEntityMetadata(Dictionary<string, EntityMetadata> metadata, string entityType, string relationshipName) {
-            if (!metadata.ContainsKey(entityType)) {
+        internal static RelationshipMetadataBase GetRelatedEntityMetadata(Dictionary<string, EntityMetadata> metadata, string entityType, string relationshipName)
+        {
+            if (!metadata.ContainsKey(entityType))
+            {
                 return null;
             }
             var oneToMany = metadata.GetMetadata(entityType).OneToManyRelationships
                 .FirstOrDefault(r => r.SchemaName == relationshipName);
-            if (oneToMany != null) {
+            if (oneToMany != null)
+            {
                 return oneToMany;
             }
 
             var manyToOne = metadata.GetMetadata(entityType).ManyToOneRelationships
                 .FirstOrDefault(r => r.SchemaName == relationshipName);
-            if (manyToOne != null) {
+            if (manyToOne != null)
+            {
                 return manyToOne;
             }
 
             var manyToMany = metadata.GetMetadata(entityType).ManyToManyRelationships
                 .FirstOrDefault(r => r.SchemaName == relationshipName);
-            if (manyToMany != null) {
+            if (manyToMany != null)
+            {
                 return manyToMany;
             }
 
@@ -646,54 +788,66 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        internal static MetadataSkeleton GetMetadata(string folderLocation) {
+        internal static MetadataSkeleton GetMetadata(string folderLocation)
+        {
             var pathToMetadata = Path.Combine(folderLocation, "Metadata.xml");
-            if (!File.Exists(pathToMetadata)) {
+            if (!File.Exists(pathToMetadata))
+            {
                 throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'." +
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
-            using (var stream = new FileStream(pathToMetadata, FileMode.Open)) {
+            using (var stream = new FileStream(pathToMetadata, FileMode.Open))
+            {
                 return (MetadataSkeleton)serializer.ReadObject(stream);
             }
         }
 
-        internal static List<Entity> GetWorkflows(string folderLocation) {
+        internal static List<Entity> GetWorkflows(string folderLocation)
+        {
             var pathToWorkflows = Path.Combine(folderLocation, "Workflows");
             var files = Directory.GetFiles(pathToWorkflows, "*.xml");
             var workflows = new List<Entity>();
-            foreach (var file in files) {
+            foreach (var file in files)
+            {
                 workflows.Add(GetWorkflow(file));
             }
             return workflows;
         }
 
-        internal static Entity GetWorkflow(string path) {
+        internal static Entity GetWorkflow(string path)
+        {
             var serializer = new DataContractSerializer(typeof(Entity));
-            using (var stream = new FileStream(path, FileMode.Open)) {
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
                 return (Entity)serializer.ReadObject(stream);
             }
         }
 
-        internal static List<SecurityRole> GetSecurityRoles(string folderLocation) {
+        internal static List<SecurityRole> GetSecurityRoles(string folderLocation)
+        {
             var pathToSecurity = Path.Combine(folderLocation, "SecurityRoles");
             var files = Directory.GetFiles(pathToSecurity, "*.xml");
             var securityRoles = new List<SecurityRole>();
 
             var serializer = new DataContractSerializer(typeof(SecurityRole));
-            foreach (var file in files) {
-                using (var stream = new FileStream(file, FileMode.Open)) {
+            foreach (var file in files)
+            {
+                using (var stream = new FileStream(file, FileMode.Open))
+                {
                     securityRoles.Add((SecurityRole)serializer.ReadObject(stream));
                 }
             }
             return securityRoles;
         }
 
-        internal static Guid GetGuidFromReference(object reference) {
+        internal static Guid GetGuidFromReference(object reference)
+        {
             return reference is EntityReference ? (reference as EntityReference).Id : (Guid)reference;
         }
 
-        internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity) {
+        internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity)
+        {
             var reference = entity.ToEntityReference();
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             reference.KeyAttributes = entity.KeyAttributes;
@@ -702,15 +856,18 @@ namespace DG.Tools.XrmMockup {
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-        internal static string ToPrettyString(this KeyAttributeCollection keys) {
+        internal static string ToPrettyString(this KeyAttributeCollection keys)
+        {
             return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
 #endif
 
-        internal static Entity ToActivityPointer(this Entity entity) {
+        internal static Entity ToActivityPointer(this Entity entity)
+        {
             if (!Activities.Contains(entity.LogicalName)) return null;
 
-            var pointer = new Entity("activitypointer") {
+            var pointer = new Entity("activitypointer")
+            {
                 Id = entity.Id
             };
             pointer["activityid"] = entity.Id;
@@ -731,7 +888,8 @@ namespace DG.Tools.XrmMockup {
             pointer["senton"] = entity.GetAttributeValue<DateTime>("senton");
             pointer["subject"] = entity.GetAttributeValue<string>("subject");
 
-            switch (entity.GetAttributeValue<OptionSetValue>("statecode").Value) {
+            switch (entity.GetAttributeValue<OptionSetValue>("statecode").Value)
+            {
                 case 1:
                     pointer["statecode"] = new OptionSetValue(1);
                     pointer["statuscode"] = new OptionSetValue(2);
@@ -756,7 +914,8 @@ namespace DG.Tools.XrmMockup {
         }
     }
 
-    internal class LogicalNames {
+    internal class LogicalNames
+    {
         public const string TransactionCurrency = "transactioncurrency";
         public const string BusinessUnit = "businessunit";
         public const string SystemUser = "systemuser";
@@ -768,7 +927,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum workflow_runas {
+    internal enum workflow_runas
+    {
 
         [EnumMember()]
         Owner = 0,
@@ -778,7 +938,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum workflow_stage {
+    internal enum workflow_stage
+    {
 
         [EnumMember()]
         Preoperation = 20,
@@ -788,7 +949,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_Type {
+    internal enum Workflow_Type
+    {
 
         [EnumMember()]
         Definition = 1,
@@ -801,7 +963,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum componentstate {
+    internal enum componentstate
+    {
 
         [EnumMember()]
         Published = 0,
@@ -817,7 +980,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_Scope {
+    internal enum Workflow_Scope
+    {
 
         [EnumMember()]
         User = 1,
@@ -833,7 +997,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_Mode {
+    internal enum Workflow_Mode
+    {
 
         [EnumMember()]
         Background = 0,
@@ -843,7 +1008,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_BusinessProcessType {
+    internal enum Workflow_BusinessProcessType
+    {
 
         [EnumMember()]
         BusinessFlow = 0,
@@ -853,7 +1019,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_Category {
+    internal enum Workflow_Category
+    {
 
         [EnumMember()]
         Workflow = 0,
@@ -872,7 +1039,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum WorkflowState {
+    internal enum WorkflowState
+    {
 
         [EnumMember()]
         Draft = 0,
@@ -882,7 +1050,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Workflow_StatusCode {
+    internal enum Workflow_StatusCode
+    {
 
         [EnumMember()]
         Draft = 1,
@@ -892,7 +1061,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum OpportunityState {
+    internal enum OpportunityState
+    {
 
         [EnumMember()]
         Open = 0,
@@ -905,7 +1075,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     [DataContract()]
-    internal enum Opportunity_StatusCode {
+    internal enum Opportunity_StatusCode
+    {
 
         [EnumMember()]
         InProgress = 1,
