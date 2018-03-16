@@ -53,7 +53,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod,Ignore]
+        [TestMethod]
         public void TestIsValidStateTransition()
         {
             var man = new dg_man()
@@ -68,15 +68,15 @@ namespace DG.XrmMockupTest
             var request = new IsValidStateTransitionRequest
             {
                 Entity = retrieved.ToEntityReference(),
-                NewState = dg_manState.Inactive.ToString(),
+                NewState = dg_manState.Inactive.ToString(), 
                 NewStatus = (int)dg_man_statuscode.Inactive
             };
 
             var response = orgAdminUIService.Execute(request) as IsValidStateTransitionResponse;
-            Assert.IsTrue(response.Results.Keys.Contains("IsValid"));
+            Assert.IsTrue(response.IsValid);
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenStateCodeInvalid()
         {
             var man = new dg_man()
@@ -232,51 +232,20 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestIsValidStateTransition_FailsWhenEnforceStateTransitionsFalse()
         {
-            var man = new dg_man()
+            var field = new dg_field()
             {
-                statecode = dg_manState.Active,
-                statuscode = dg_man_statuscode.Active,
-
+                statecode = dg_fieldState.Active,
+                statuscode = dg_field_statuscode.Active,
             };
-            man.Id = orgAdminUIService.Create(man);
+            field.Id = orgAdminUIService.Create(field);
 
-            var retrieved = orgAdminUIService.Retrieve(dg_man.EntityLogicalName, man.Id, new ColumnSet(true)) as dg_man;
+            var retrieved = orgAdminUIService.Retrieve(dg_field.EntityLogicalName, field.Id, new ColumnSet(true)) as dg_field;
 
             var request = new IsValidStateTransitionRequest
             {
                 Entity = retrieved.ToEntityReference(),
-                NewState = dg_manState.Inactive.ToString(),
-                NewStatus = (int)dg_man_statuscode.Inactive
-            };
-            try
-            {
-                orgAdminUIService.Execute(request);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.IsInstanceOfType(e, typeof(FaultException));
-            }
-        }
-
-        [TestMethod]
-        public void TestIsValidStateTransition_FailsWhenIsStateModalAwareFalse()
-        {
-            var man = new dg_man()
-            {
-                statecode = dg_manState.Active,
-                statuscode = dg_man_statuscode.Active,
-
-            };
-            man.Id = orgAdminUIService.Create(man);
-            man["IsStateModelAware"] = false;
-            var retrieved = orgAdminUIService.Retrieve(dg_man.EntityLogicalName, man.Id, new ColumnSet(true)) as dg_man;
-
-            var request = new IsValidStateTransitionRequest
-            {
-                Entity = retrieved.ToEntityReference(),
-                NewState = dg_manState.Inactive.ToString(),
-                NewStatus = (int)dg_man_statuscode.Inactive
+                NewState = dg_fieldState.Inactive.ToString(),
+                NewStatus = (int)dg_field_statuscode.Inactive
             };
             try
             {
