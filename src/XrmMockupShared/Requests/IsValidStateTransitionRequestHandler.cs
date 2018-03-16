@@ -81,7 +81,8 @@ namespace DG.Tools.XrmMockup
                 .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
                 .OptionSet
                 .Options;
-            return stateOption;
+
+            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
         }
 
         private static void CheckEnforceStateTransitions(IsValidStateTransitionRequest request, EntityMetadata entityMetadata, OptionMetadata stateOption)
