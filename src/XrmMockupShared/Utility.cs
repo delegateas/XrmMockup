@@ -311,6 +311,16 @@ namespace DG.Tools.XrmMockup
                 .OptionSet.Options;
         }
 
+        internal static OptionMetadata GetStateOptionMetadataFromInvariantName(string stateInvariantName, EntityMetadata entityMetadata)
+        {
+            var stateOptionMeta = (entityMetadata.Attributes
+                .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
+                .OptionSet
+                .Options;
+
+            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
+        }
+
         internal static bool IsValidStatusTransition(string transitionData, int newStatusCode)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
