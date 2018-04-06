@@ -31,7 +31,7 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Required member 'LogicalName' missing for field 'IncidentResolution'");
             }
 
-            if (request.IncidentResolution.LogicalName != "incidentresolution")
+            if (!metadata.EntityMetadata.ContainsKey(request.IncidentResolution.LogicalName))
             {
                 throw new FaultException($"The entity with a name = '{request.IncidentResolution.LogicalName}' was not found in the MetadataCache.");
             }
@@ -41,13 +41,18 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Required field 'Status' is missing");
             }
 
-            var defaultStateStatuses = metadata.DefaultStateStatus
-                .Where(s => s.Key == "incident")
-                .FirstOrDefault();
-
-            if (!defaultStateStatuses.Value.Any((dss => (dss.Key == 1 && dss.Value == request.Status.Value))))
+            if (request.IncidentResolution.LogicalName != "incidentresolution")
             {
-                throw new FaultException($"{request.Status} is not a valid status code on incident with Id {request.IncidentResolution.Id}.");
+                throw new FaultException("An unexpected error occurred.");
+            }
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata("incident");
+            var statusOptionMeta = Utility.GetStatusOptionMetadata(entityMetadata);
+
+            if (!statusOptionMeta.Any(o => (o as StatusOptionMetadata).Value == request.Status.Value
+                && (o as StatusOptionMetadata).State == 1))
+            {
+                throw new FaultException($"{request.Status.Value} is not a valid status code on incident with Id {request.IncidentResolution.Id}.");
             }
 
             var incidentRef = request.IncidentResolution.GetAttributeValue<EntityReference>("incidentid");

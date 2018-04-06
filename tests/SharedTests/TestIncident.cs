@@ -22,8 +22,11 @@ namespace SharedTests
             incident.Id = orgAdminUIService.Create(incident);
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
@@ -113,14 +116,44 @@ namespace SharedTests
         }
 
         [TestMethod]
+        public void TestCloseIncidentRequestFailsWhenLogicalNameWrong()
+        {
+            var incident = new Incident();
+            incident.Id = orgAdminUIService.Create(incident);
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+
+            var incidentResolution = new Entity(Account.EntityLogicalName, Guid.NewGuid());
+            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+
+            var request = new CloseIncidentRequest()
+            {
+                IncidentResolution = incidentResolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+
+            try
+            {
+                orgAdminUIService.Execute(request);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOfType(e, typeof(FaultException));
+            }
+        }
+
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenStatusMissing()
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
@@ -145,8 +178,11 @@ namespace SharedTests
             incident.Id = orgAdminUIService.Create(incident);
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
@@ -172,13 +208,16 @@ namespace SharedTests
             incident.Id = orgAdminUIService.Create(incident);
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int) Incident_StatusCode.InProgress)
+                Status = new OptionSetValue((int)Incident_StatusCode.InProgress)
             };
 
             try
@@ -199,7 +238,10 @@ namespace SharedTests
             incident.Id = orgAdminUIService.Create(incident);
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
+            var incidentResolution = new IncidentResolution
+            {
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
@@ -223,13 +265,48 @@ namespace SharedTests
         {
             var incident = new Incident();
 
-            var incidentResolution = new Entity("incidentresolution", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
                 Status = new OptionSetValue((int)Incident_StatusCode.InformationProvided)
+            };
+
+            try
+            {
+                orgAdminUIService.Execute(request);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOfType(e, typeof(FaultException));
+            }
+        }
+
+        [TestMethod]
+        public void TestCloseIncidentRequestFailsWhenIncidentResolutionAlreadyExists()
+        {
+            var incident = new Incident();
+            incident.Id = orgAdminUIService.Create(incident);
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
+
+            orgAdminUIService.Create(incidentResolution);
+
+            var request = new CloseIncidentRequest()
+            {
+                IncidentResolution = incidentResolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
             };
 
             try
