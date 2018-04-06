@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xrm.Sdk;
@@ -30,47 +31,48 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Required member 'LogicalName' missing for field 'IncidentResolution'");
             }
 
-            if (!metadata.EntityMetadata.ContainsKey(request.IncidentResolution.LogicalName))
+            if (request.IncidentResolution.LogicalName != "incidentresolution")
             {
                 throw new FaultException($"The entity with a name = '{request.IncidentResolution.LogicalName}' was not found in the MetadataCache.");
             }
-
-            var entityMetadata = metadata.EntityMetadata.GetMetadata(request.IncidentResolution.LogicalName);
 
             if (request.Status == null)
             {
                 throw new FaultException("Required field 'Status' is missing");
             }
 
-            if (request.IncidentResolution.LogicalName != "incidentresolution")
-            {
-                throw new FaultException("An unexpected error occurred.");
-            }
+            var defaultStateStatuses = metadata.DefaultStateStatus
+                .Where(s => s.Key == "incident")
+                .FirstOrDefault();
 
-            var incidentResolution = (IncidentResolution)request.IncidentResolution;
-            
-            var statusOptionMeta = Utility.GetStatusOptionMetadata(entityMetadata);
-
-            if (!statusOptionMeta.Any(o => (o as StatusOptionMetadata).Value == request.Status.Value
-                && (o as StatusOptionMetadata).State == 1))
+            if (!defaultStateStatuses.Value.Any((dss => (dss.Key == 1 && dss.Value == request.Status.Value))))
             {
                 throw new FaultException($"{request.Status} is not a valid status code on incident with Id {request.IncidentResolution.Id}.");
             }
 
-            if(incidentResolution.IncidentId == null)
+            var incidentRef = request.IncidentResolution.GetAttributeValue<EntityReference>("incidentid");
+
+            if (incidentRef == null)
             {
                 throw new FaultException("The incident id is missing.");
             }
 
+            var incident = db.GetDbRowOrNull(incidentRef);
 
-            var resp = new CloseIncidentResponse();
-            return resp;
+            if (incident == null)
+            {
+                throw new FaultException($"incident With Id = {incidentRef.Id} Does Not Exist");
+            }
+
+            var incidentResolution = db.GetDbRowOrNull(request.IncidentResolution.ToEntityReference());
+
+            if (incidentResolution != null)
+            {
+                throw new FaultException("Cannot insert duplicate key.");
+            }
+
+            return new CloseIncidentResponse();
         }
     }
-
-    internal class IncidentResolution : Entity
-    {
-        public string Subject { get; set; }
-        public EntityReference IncidentId { get; set; }
-    }
 }
+#endif
