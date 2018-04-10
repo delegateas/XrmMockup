@@ -33,7 +33,7 @@ namespace DG.XrmMockupTest {
             }
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestRealDataRetrieve() {
             var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68")) {
                 Name = "babuasd"
@@ -44,7 +44,7 @@ namespace DG.XrmMockupTest {
             Assert.AreEqual("12321123312", retrieved.AccountNumber);
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestRealDataRetrieveMultiple() {
             var query = new QueryExpression(Account.EntityLogicalName) {
                 ColumnSet = new ColumnSet(true),

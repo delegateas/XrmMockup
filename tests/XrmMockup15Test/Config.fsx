@@ -11,10 +11,10 @@ type Config = {
 
   
 let defaultConfig = {
-  usr = @"exampleUser"
-  pwd = @"examplePass"
+  usr = @"dgadmin@delegatelab4.onmicrosoft.com"
+  pwd = @"S3nnheiser"
   dmn = @""
-  url = @"https://exampleURL/XRMServices/2011/Organization.svc"
+  url = @"https://delegatelab4.crm4.dynamics.com/XRMServices/2011/Organization.svc"
   entities = ["team";"calendar"]
   location = "Metadata"
 }

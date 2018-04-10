@@ -25,7 +25,7 @@ module Env =
   let lab4 = 
     Environment.Create(
       name = "DelegateLab4",
-      url = "https://exampleURL/XRMServices/2011/Organization.svc",
+      url = "https://delegatelab4.crm4.dynamics.com/XRMServices/2011/Organization.svc",
       ap = AuthenticationProviderType.OnlineFederation,
       creds = creds,
       args = fsi.CommandLineArgs
