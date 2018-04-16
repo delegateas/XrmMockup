@@ -68,9 +68,9 @@ namespace DG.XrmMockupTest {
                 ExceptionFreeRequests = settings.ExceptionFreeRequests,
                 OnlineEnvironment = new Env {
                     providerType = AuthenticationProviderType.OnlineFederation,
-                    uri = "https://delegatelab4.crm4.dynamics.com/XRMServices/2011/Organization.svc",
-                    username = "dgadmin@delegatelab4.onmicrosoft.com",
-                    password = "vXroY6gwh3aBsoZR"
+                    uri = "https://exampleURL/XRMServices/2011/Organization.svc",
+                    username = "exampleUser",
+                    password = "examplePass"
                 }
         };
 #if XRM_MOCKUP_TEST_2011
