@@ -323,6 +323,16 @@ namespace DG.Tools.XrmMockup
                 .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
                 .OptionSet.Options;
         }
+      
+        internal static OptionMetadata GetStateOptionMetadataFromInvariantName(string stateInvariantName, EntityMetadata entityMetadata)
+        {
+            var stateOptionMeta = (entityMetadata.Attributes
+                .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
+                .OptionSet
+                .Options;
+
+            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
+        }
 
         internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata)
         {

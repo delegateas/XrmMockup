@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\CloseIncidentRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\IsValidStateTransitionRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\QualifyLeadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />
