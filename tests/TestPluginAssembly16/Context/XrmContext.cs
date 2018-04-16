@@ -3400,6 +3400,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         [AttributeLogicalName("activityid")]
+        [RelationshipSchemaName("incidentresolution_activity_parties")]
+        public IncidentResolution incidentresolution_activity_parties {
+            get {
+                return GetRelatedEntity<IncidentResolution>("incidentresolution_activity_parties", null);
+            }
+            set {
+                SetRelatedEntity("incidentresolution_activity_parties", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("activityid")]
         [RelationshipSchemaName("appointment_activity_parties")]
         public Appointment appointment_activity_parties {
             get {
@@ -4864,6 +4875,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("activity_pointer_letter", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("activity_pointer_incident_resolution")]
+        public IEnumerable<IncidentResolution> activity_pointer_incident_resolution {
+            get {
+                return GetRelatedEntities<IncidentResolution>("activity_pointer_incident_resolution", null);
+            }
+            set {
+                SetRelatedEntities("activity_pointer_incident_resolution", null, value);
             }
         }
         
@@ -12303,6 +12324,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("business_unit_recurringappointmentmaster_activities", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("business_unit_incident_resolution_activities")]
+        public IEnumerable<IncidentResolution> business_unit_incident_resolution_activities {
+            get {
+                return GetRelatedEntities<IncidentResolution>("business_unit_incident_resolution_activities", null);
+            }
+            set {
+                SetRelatedEntities("business_unit_incident_resolution_activities", null, value);
             }
         }
         
@@ -35080,6 +35111,26 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_externalparty_incidentresolution_createdby")]
+        public IEnumerable<IncidentResolution> lk_externalparty_incidentresolution_createdby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_externalparty_incidentresolution_createdby", null);
+            }
+            set {
+                SetRelatedEntities("lk_externalparty_incidentresolution_createdby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_externalparty_incidentresolution_modifiedby")]
+        public IEnumerable<IncidentResolution> lk_externalparty_incidentresolution_modifiedby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_externalparty_incidentresolution_modifiedby", null);
+            }
+            set {
+                SetRelatedEntities("lk_externalparty_incidentresolution_modifiedby", null, value);
+            }
+        }
+        
         public static ExternalParty Retrieve(IOrganizationService service, Guid id, params Expression<Func<ExternalParty,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
@@ -39419,6 +39470,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("Incident_IncidentResolutions")]
+        public IEnumerable<IncidentResolution> Incident_IncidentResolutions {
+            get {
+                return GetRelatedEntities<IncidentResolution>("Incident_IncidentResolutions", null);
+            }
+            set {
+                SetRelatedEntities("Incident_IncidentResolutions", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("Incident_Faxes")]
         public IEnumerable<Fax> Incident_Faxes {
             get {
@@ -39490,6 +39551,735 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         public static Incident Retrieve(IOrganizationService service, Guid id, params Expression<Func<Incident,object>>[] attrs) {
+            return service.Retrieve(id, attrs);
+        }
+    }
+    
+    /// <summary>
+    /// <para>Special type of activity that includes description of the resolution, billing status, and the duration of the case.</para>
+    /// <para>Display Name: Case Resolution</para>
+    /// </summary>
+    [EntityLogicalName("incidentresolution")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class IncidentResolution : ExtendedEntity<IncidentResolutionState, IncidentResolution_StatusCode> {
+        
+        public const string EntityLogicalName = "incidentresolution";
+        
+        public const int EntityTypeCode = 4206;
+        
+        public IncidentResolution() : 
+                base(EntityLogicalName) {
+        }
+        
+        public IncidentResolution(Guid Id) : 
+                base(EntityLogicalName, Id) {
+        }
+        
+        private string DebuggerDisplay {
+            get {
+                return GetDebuggerDisplay("subject");
+            }
+        }
+        
+        [AttributeLogicalName("activityid")]
+        public override Guid Id {
+            get {
+                return base.Id;
+            }
+            set {
+                SetId("activityid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the case resolution activity.</para>
+        /// <para>Display Name: Case Resolution</para>
+        /// </summary>
+        [AttributeLogicalName("activityid")]
+        public Guid? ActivityId {
+            get {
+                return GetAttributeValue<Guid?>("activityid");
+            }
+            set {
+                SetId("activityid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Subject associated with the case resolution activity.</para>
+        /// <para>Display Name: Subject</para>
+        /// </summary>
+        [AttributeLogicalName("subject")]
+        public string Subject {
+            get {
+                return GetAttributeValue<string>("subject");
+            }
+            set {
+                SetAttributeValue("subject", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Actual duration of the case resolution activity in minutes.</para>
+        /// <para>Display Name: Actual Duration</para>
+        /// </summary>
+        [AttributeLogicalName("actualdurationminutes")]
+        public int? ActualDurationMinutes {
+            get {
+                return GetAttributeValue<int?>("actualdurationminutes");
+            }
+            set {
+                SetAttributeValue("actualdurationminutes", value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyname")]
+        public string ModifiedByName {
+            get {
+                return GetAttributeValue<string>("modifiedbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Reason for the status of the case resolution activity.</para>
+        /// <para>Display Name: Status Reason</para>
+        /// </summary>
+        [AttributeLogicalName("statuscode")]
+        public IncidentResolution_StatusCode? StatusCode {
+            get {
+                return GetOptionSetValue<IncidentResolution_StatusCode>("statuscode");
+            }
+            set {
+                SetOptionSetValue("statuscode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Scheduled end time of the case resolution activity.</para>
+        /// <para>Display Name: Scheduled End</para>
+        /// </summary>
+        [AttributeLogicalName("scheduledend")]
+        public DateTime? ScheduledEnd {
+            get {
+                return GetAttributeValue<DateTime?>("scheduledend");
+            }
+            set {
+                SetAttributeValue("scheduledend", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Information regarding whether the activity is a regular activity type or event type.</para>
+        /// <para>Display Name: Is Regular Activity</para>
+        /// </summary>
+        [AttributeLogicalName("isregularactivity")]
+        public bool? IsRegularActivity {
+            get {
+                return GetAttributeValue<bool?>("isregularactivity");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Shows the external party who created the record.</para>
+        /// <para>Display Name: Created By (External Party)</para>
+        /// </summary>
+        [AttributeLogicalName("createdbyexternalparty")]
+        public EntityReference CreatedByExternalParty {
+            get {
+                return GetAttributeValue<EntityReference>("createdbyexternalparty");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the business unit that owns the case resolution activity.</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit {
+            get {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Actual end time of the case resolution activity.</para>
+        /// <para>Display Name: Actual End</para>
+        /// </summary>
+        [AttributeLogicalName("actualend")]
+        public DateTime? ActualEnd {
+            get {
+                return GetAttributeValue<DateTime?>("actualend");
+            }
+            set {
+                SetAttributeValue("actualend", value);
+            }
+        }
+        
+        [AttributeLogicalName("incidentidname")]
+        public string IncidentIdName {
+            get {
+                return GetAttributeValue<string>("incidentidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who owns the case resolution.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser {
+            get {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the service with which the case resolution activity is associated.</para>
+        /// <para>Display Name: Service</para>
+        /// </summary>
+        [AttributeLogicalName("serviceid")]
+        public EntityReference ServiceId {
+            get {
+                return GetAttributeValue<EntityReference>("serviceid");
+            }
+            set {
+                SetAttributeValue("serviceid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who last modified the case resolution activity.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who created the case resolution activity.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfbyname")]
+        public string ModifiedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("modifiedonbehalfbyname");
+            }
+        }
+        
+        [AttributeLogicalName("createdbyname")]
+        public string CreatedByName {
+            get {
+                return GetAttributeValue<string>("createdbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Type additional information that describes the case resolution.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description {
+            get {
+                return GetAttributeValue<string>("description");
+            }
+            set {
+                SetAttributeValue("description", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Category for the case resolution activity.</para>
+        /// <para>Display Name: Category</para>
+        /// </summary>
+        [AttributeLogicalName("category")]
+        public string Category {
+            get {
+                return GetAttributeValue<string>("category");
+            }
+            set {
+                SetAttributeValue("category", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Scheduled duration of the case resolution activity, specified in minutes.</para>
+        /// <para>Display Name: Scheduled Duration</para>
+        /// </summary>
+        [AttributeLogicalName("scheduleddurationminutes")]
+        public int? ScheduledDurationMinutes {
+            get {
+                return GetAttributeValue<int?>("scheduleddurationminutes");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the data import or data migration that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber {
+            get {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the case resolution activity was last modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn {
+            get {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user or team who owns the case resolution activity.</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId {
+            get {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+            set {
+                SetAttributeValue("ownerid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Time zone code that was in use when the record was created.</para>
+        /// <para>Display Name: UTC Conversion Time Zone Code</para>
+        /// </summary>
+        [AttributeLogicalName("utcconversiontimezonecode")]
+        public int? UTCConversionTimeZoneCode {
+            get {
+                return GetAttributeValue<int?>("utcconversiontimezonecode");
+            }
+            set {
+                SetAttributeValue("utcconversiontimezonecode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Type of activity.</para>
+        /// <para>Display Name: Activity Type</para>
+        /// </summary>
+        [AttributeLogicalName("activitytypecode")]
+        public string ActivityTypeCode {
+            get {
+                return GetAttributeValue<string>("activitytypecode");
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfbyname")]
+        public string CreatedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("createdonbehalfbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Shows the external party who modified the record.</para>
+        /// <para>Display Name: Modified By (External Party)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedbyexternalparty")]
+        public EntityReference ModifiedByExternalParty {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedbyexternalparty");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who last modified the incidentresolution.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Time Zone Rule Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("timezoneruleversionnumber")]
+        public int? TimeZoneRuleVersionNumber {
+            get {
+                return GetAttributeValue<int?>("timezoneruleversionnumber");
+            }
+            set {
+                SetAttributeValue("timezoneruleversionnumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Shows whether the case resolution is open, completed, or canceled. By default, all case resolutions are completed and the status value can't be changed.</para>
+        /// <para>Display Name: Status</para>
+        /// </summary>
+        [AttributeLogicalName("statecode")]
+        public IncidentResolutionState? StateCode {
+            get {
+                return GetOptionSetValue<IncidentResolutionState>("statecode");
+            }
+            set {
+                SetOptionSetValue("statecode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Information that specifies if the case resolution activity was created from a workflow rule.</para>
+        /// <para>Display Name: Is Workflow Created</para>
+        /// </summary>
+        [AttributeLogicalName("isworkflowcreated")]
+        public bool? IsWorkflowCreated {
+            get {
+                return GetAttributeValue<bool?>("isworkflowcreated");
+            }
+            set {
+                SetAttributeValue("isworkflowcreated", value);
+            }
+        }
+        
+        [AttributeLogicalName("createdbyexternalpartyname")]
+        public string CreatedByExternalPartyName {
+            get {
+                return GetAttributeValue<string>("createdbyexternalpartyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the team who owns the case resolution.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam {
+            get {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Subcategory of the case resolution activity.</para>
+        /// <para>Display Name: Sub-Category</para>
+        /// </summary>
+        [AttributeLogicalName("subcategory")]
+        public string Subcategory {
+            get {
+                return GetAttributeValue<string>("subcategory");
+            }
+            set {
+                SetAttributeValue("subcategory", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Time spent on the case resolution activity.</para>
+        /// <para>Display Name: Time Spent</para>
+        /// </summary>
+        [AttributeLogicalName("timespent")]
+        public int? TimeSpent {
+            get {
+                return GetAttributeValue<int?>("timespent");
+            }
+            set {
+                SetAttributeValue("timespent", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Information about whether the case resolution activity was billed as part of resolving a case.</para>
+        /// <para>Display Name: Is Billed</para>
+        /// </summary>
+        [AttributeLogicalName("isbilled")]
+        public bool? IsBilled {
+            get {
+                return GetAttributeValue<bool?>("isbilled");
+            }
+            set {
+                SetAttributeValue("isbilled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Actual start time of the case resolution activity.</para>
+        /// <para>Display Name: Actual Start</para>
+        /// </summary>
+        [AttributeLogicalName("actualstart")]
+        public DateTime? ActualStart {
+            get {
+                return GetAttributeValue<DateTime?>("actualstart");
+            }
+            set {
+                SetAttributeValue("actualstart", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Scheduled start time of the case resolution activity.</para>
+        /// <para>Display Name: Scheduled Start</para>
+        /// </summary>
+        [AttributeLogicalName("scheduledstart")]
+        public DateTime? ScheduledStart {
+            get {
+                return GetAttributeValue<DateTime?>("scheduledstart");
+            }
+            set {
+                SetAttributeValue("scheduledstart", value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyexternalpartyname")]
+        public string ModifiedByExternalPartyName {
+            get {
+                return GetAttributeValue<string>("modifiedbyexternalpartyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time that the record was migrated.</para>
+        /// <para>Display Name: Record Created On</para>
+        /// </summary>
+        [AttributeLogicalName("overriddencreatedon")]
+        public DateTime? OverriddenCreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("overriddencreatedon");
+            }
+            set {
+                SetAttributeValue("overriddencreatedon", value);
+            }
+        }
+        
+        [AttributeLogicalName("owneridname")]
+        public string OwnerIdName {
+            get {
+                return GetAttributeValue<string>("owneridname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the incidentresolution.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+        
+        [AttributeLogicalName("owneridtype")]
+        public string OwnerIdType {
+            get {
+                return GetAttributeValue<string>("owneridtype");
+            }
+            set {
+                SetAttributeValue("owneridtype", value);
+            }
+        }
+        
+        [AttributeLogicalName("incidentidtype")]
+        public string IncidentIdType {
+            get {
+                return GetAttributeValue<string>("incidentidtype");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the case.</para>
+        /// <para>Display Name: Case</para>
+        /// </summary>
+        [AttributeLogicalName("incidentid")]
+        public EntityReference IncidentId {
+            get {
+                return GetAttributeValue<EntityReference>("incidentid");
+            }
+            set {
+                SetAttributeValue("incidentid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the case resolution activity was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Version number of the case.</para>
+        /// <para>Display Name: Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber {
+            get {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        [AttributeLogicalName("incidentid")]
+        [RelationshipSchemaName("Incident_IncidentResolutions")]
+        public Incident Incident_IncidentResolutions {
+            get {
+                return GetRelatedEntity<Incident>("Incident_IncidentResolutions", null);
+            }
+            set {
+                SetRelatedEntity("Incident_IncidentResolutions", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdbyexternalparty")]
+        [RelationshipSchemaName("lk_externalparty_incidentresolution_createdby")]
+        public ExternalParty lk_externalparty_incidentresolution_createdby {
+            get {
+                return GetRelatedEntity<ExternalParty>("lk_externalparty_incidentresolution_createdby", null);
+            }
+            set {
+                SetRelatedEntity("lk_externalparty_incidentresolution_createdby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_incidentresolution_modifiedonbehalfby")]
+        public SystemUser lk_incidentresolution_modifiedonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_incidentresolution_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_incidentresolution_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_incidentresolution_modifiedby")]
+        public SystemUser lk_incidentresolution_modifiedby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_incidentresolution_modifiedby", null);
+            }
+            set {
+                SetRelatedEntity("lk_incidentresolution_modifiedby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("activityid")]
+        [RelationshipSchemaName("activity_pointer_incident_resolution")]
+        public ActivityPointer activity_pointer_incident_resolution {
+            get {
+                return GetRelatedEntity<ActivityPointer>("activity_pointer_incident_resolution", null);
+            }
+            set {
+                SetRelatedEntity("activity_pointer_incident_resolution", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("owningteam")]
+        [RelationshipSchemaName("team_incidentresolution")]
+        public Team team_incidentresolution {
+            get {
+                return GetRelatedEntity<Team>("team_incidentresolution", null);
+            }
+            set {
+                SetRelatedEntity("team_incidentresolution", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("owningbusinessunit")]
+        [RelationshipSchemaName("business_unit_incident_resolution_activities")]
+        public BusinessUnit business_unit_incident_resolution_activities {
+            get {
+                return GetRelatedEntity<BusinessUnit>("business_unit_incident_resolution_activities", null);
+            }
+            set {
+                SetRelatedEntity("business_unit_incident_resolution_activities", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("owninguser")]
+        [RelationshipSchemaName("user_incidentresolution")]
+        public SystemUser user_incidentresolution {
+            get {
+                return GetRelatedEntity<SystemUser>("user_incidentresolution", null);
+            }
+            set {
+                SetRelatedEntity("user_incidentresolution", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_incidentresolution_createdonbehalfby")]
+        public SystemUser lk_incidentresolution_createdonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_incidentresolution_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_incidentresolution_createdonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyexternalparty")]
+        [RelationshipSchemaName("lk_externalparty_incidentresolution_modifiedby")]
+        public ExternalParty lk_externalparty_incidentresolution_modifiedby {
+            get {
+                return GetRelatedEntity<ExternalParty>("lk_externalparty_incidentresolution_modifiedby", null);
+            }
+            set {
+                SetRelatedEntity("lk_externalparty_incidentresolution_modifiedby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_incidentresolution_createdby")]
+        public SystemUser lk_incidentresolution_createdby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_incidentresolution_createdby", null);
+            }
+            set {
+                SetRelatedEntity("lk_incidentresolution_createdby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("incidentresolution_activity_parties")]
+        public IEnumerable<ActivityParty> incidentresolution_activity_parties {
+            get {
+                return GetRelatedEntities<ActivityParty>("incidentresolution_activity_parties", null);
+            }
+            set {
+                SetRelatedEntities("incidentresolution_activity_parties", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("IncidentResolution_SyncErrors")]
+        public IEnumerable<SyncError> IncidentResolution_SyncErrors {
+            get {
+                return GetRelatedEntities<SyncError>("IncidentResolution_SyncErrors", null);
+            }
+            set {
+                SetRelatedEntities("IncidentResolution_SyncErrors", null, value);
+            }
+        }
+        
+        public static IncidentResolution Retrieve(IOrganizationService service, Guid id, params Expression<Func<IncidentResolution,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
     }
@@ -70276,6 +71066,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("IncidentResolution_SyncErrors")]
+        public IncidentResolution IncidentResolution_SyncErrors {
+            get {
+                return GetRelatedEntity<IncidentResolution>("IncidentResolution_SyncErrors", null);
+            }
+            set {
+                SetRelatedEntity("IncidentResolution_SyncErrors", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("regardingobjectid")]
         [RelationshipSchemaName("BookingStatus_SyncErrors")]
         public BookingStatus BookingStatus_SyncErrors {
             get {
@@ -73055,6 +73856,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_incidentresolution_createdonbehalfby")]
+        public IEnumerable<IncidentResolution> lk_incidentresolution_createdonbehalfby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_incidentresolution_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_incidentresolution_createdonbehalfby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_socialactivitybase_createdonbehalfby")]
         public IEnumerable<SocialActivity> lk_socialactivitybase_createdonbehalfby {
             get {
@@ -73942,6 +74753,26 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("lk_businessunitbase_modifiedby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("user_incidentresolution")]
+        public IEnumerable<IncidentResolution> user_incidentresolution {
+            get {
+                return GetRelatedEntities<IncidentResolution>("user_incidentresolution", null);
+            }
+            set {
+                SetRelatedEntities("user_incidentresolution", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_incidentresolution_modifiedby")]
+        public IEnumerable<IncidentResolution> lk_incidentresolution_modifiedby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_incidentresolution_modifiedby", null);
+            }
+            set {
+                SetRelatedEntities("lk_incidentresolution_modifiedby", null, value);
             }
         }
         
@@ -74985,6 +75816,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_incidentresolution_modifiedonbehalfby")]
+        public IEnumerable<IncidentResolution> lk_incidentresolution_modifiedonbehalfby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_incidentresolution_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_incidentresolution_modifiedonbehalfby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_fax_modifiedby")]
         public IEnumerable<Fax> lk_fax_modifiedby {
             get {
@@ -74992,6 +75833,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("lk_fax_modifiedby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_incidentresolution_createdby")]
+        public IEnumerable<IncidentResolution> lk_incidentresolution_createdby {
+            get {
+                return GetRelatedEntities<IncidentResolution>("lk_incidentresolution_createdby", null);
+            }
+            set {
+                SetRelatedEntities("lk_incidentresolution_createdby", null, value);
             }
         }
         
@@ -78021,6 +78872,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("team_incidentresolution")]
+        public IEnumerable<IncidentResolution> team_incidentresolution {
+            get {
+                return GetRelatedEntities<IncidentResolution>("team_incidentresolution", null);
+            }
+            set {
+                SetRelatedEntities("team_incidentresolution", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("team_orders")]
         public IEnumerable<SalesOrder> team_orders {
             get {
@@ -80667,6 +81528,12 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public IQueryable<Incident> IncidentSet {
             get {
                 return CreateQuery<Incident>();
+            }
+        }
+        
+        public IQueryable<IncidentResolution> IncidentResolutionSet {
+            get {
+                return CreateQuery<IncidentResolution>();
             }
         }
         
@@ -83875,6 +84742,32 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         PrivateMessage = 1,
+    }
+    
+    [DataContract()]
+    public enum IncidentResolutionState {
+        
+        [EnumMember()]
+        Open = 0,
+        
+        [EnumMember()]
+        Completed = 1,
+        
+        [EnumMember()]
+        Canceled = 2,
+    }
+    
+    [DataContract()]
+    public enum IncidentResolution_StatusCode {
+        
+        [EnumMember()]
+        Open = 1,
+        
+        [EnumMember()]
+        Closed = 2,
+        
+        [EnumMember()]
+        Canceled = 3,
     }
     
     [DataContract()]

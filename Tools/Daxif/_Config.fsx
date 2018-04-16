@@ -65,6 +65,7 @@ let entitiesToGenerate =
     "invoice"
     "queueitem"
     "incident"
+    "incidentresolution"
   ]
 
 (** 

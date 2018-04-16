@@ -304,11 +304,14 @@ namespace DG.Tools.XrmMockup
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
         }
 
-        internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
+        internal static OptionMetadata GetStateOptionMetadataFromInvariantName(string stateInvariantName, EntityMetadata entityMetadata)
         {
-            return (metadata.Attributes
-                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
-                .OptionSet.Options;
+            var stateOptionMeta = (entityMetadata.Attributes
+                .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
+                .OptionSet
+                .Options;
+
+            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
         }
 
         internal static bool IsValidStatusTransition(string transitionData, int newStatusCode)
@@ -324,6 +327,12 @@ namespace DG.Tools.XrmMockup
             return false;
         }
 #endif
+        internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
+        {
+            return (metadata.Attributes
+                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
+                .OptionSet.Options;
+        }
 
         internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata)
         {
