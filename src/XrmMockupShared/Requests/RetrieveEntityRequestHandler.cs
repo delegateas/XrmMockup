@@ -47,7 +47,7 @@ namespace DG.Tools.XrmMockup
 
         private static EntityMetadata FilterEntityMetadataProperties(EntityMetadata metadata, EntityFilters entityFilters)
         {
-            var filteredProps = new List<string>();
+            var propsToRemove = new List<string>();
             var privilegesProps = new List<string>() { "Privileges" };
             var attributesProps = new List<string>() { "Attributes" };
             var relationshipsProps = new List<string>() { "OneToManyRelationships", "ManyToOneRelationships", "ManyToManyRelationships" };
@@ -57,27 +57,27 @@ namespace DG.Tools.XrmMockup
                 case EntityFilters.All:
                     return metadata;
                 case EntityFilters.Attributes:
-                    filteredProps.AddRange(privilegesProps);
-                    filteredProps.AddRange(relationshipsProps);
+                    propsToRemove.AddRange(privilegesProps);
+                    propsToRemove.AddRange(relationshipsProps);
                     break;
                 case EntityFilters.Privileges:
-                    filteredProps.AddRange(attributesProps);
-                    filteredProps.AddRange(relationshipsProps);
+                    propsToRemove.AddRange(attributesProps);
+                    propsToRemove.AddRange(relationshipsProps);
                     break;
                 case EntityFilters.Relationships:
-                    filteredProps.AddRange(attributesProps);
-                    filteredProps.AddRange(privilegesProps);
+                    propsToRemove.AddRange(attributesProps);
+                    propsToRemove.AddRange(privilegesProps);
                     break;
                 case EntityFilters.Entity:
                 // Default case covers EntityFilters.Entity and EntityFiltes.Default as they are equal
                 default:
-                    filteredProps.AddRange(attributesProps);
-                    filteredProps.AddRange(privilegesProps);
-                    filteredProps.AddRange(relationshipsProps);
+                    propsToRemove.AddRange(attributesProps);
+                    propsToRemove.AddRange(privilegesProps);
+                    propsToRemove.AddRange(relationshipsProps);
                     break;
             }
 
-            return CopyFilteredEntityMetadata(metadata, filteredProps);
+            return CopyFilteredEntityMetadata(metadata, propsToRemove);
         }
 
         private static EntityMetadata CopyFilteredEntityMetadata(EntityMetadata source, ICollection<string> filteredAttributes)
