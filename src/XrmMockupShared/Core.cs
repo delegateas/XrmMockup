@@ -133,13 +133,13 @@ namespace DG.Tools.XrmMockup {
                 new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
                 new RetrieveOptionSetRequestHandler(this, db, metadata, security),
                 new RetrieveExchangeRateRequestHandler(this, db, metadata, security),
+                new CloseIncidentRequestHandler(this, db, metadata, security),
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
                 new IsValidStateTransitionRequestHandler(this, db, metadata, security),
                 new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 new UpsertRequestHandler(this, db, metadata, security),
-                new CloseIncidentRequestHandler(this, db, metadata, security)
 #endif
         };
 

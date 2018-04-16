@@ -8,20 +8,25 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using System.Text;
 
-namespace SharedTests
+namespace DG.XrmMockupTest
 {
     [TestClass]
     public class TestIncident : UnitTestBase
     {
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
         [TestMethod]
         public void TestCloseIncidentRequestSuccess()
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
             var incidentResolution = new IncidentResolution
             {
                 IncidentId = incident.ToEntityReference(),
@@ -43,7 +48,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var request = new CloseIncidentRequest()
             {
@@ -66,10 +78,17 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new Entity();
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+            incidentResolution.Attributes["incidentid"] = incident.ToEntityReference();
 
             var request = new CloseIncidentRequest()
             {
@@ -93,10 +112,22 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity("invalidlogicalname", Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
+
+            var incidentResolution = new Entity
+            {
+                LogicalName = "invalidlogicalname",
+                Id = Guid.NewGuid()
+            };
+
+            incidentResolution.Attributes["incidentid"] = incident.ToEntityReference();
 
             var request = new CloseIncidentRequest()
             {
@@ -120,10 +151,20 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
 
-            var incidentResolution = new Entity(Account.EntityLogicalName, Guid.NewGuid());
-            incidentResolution.Attributes.Add("incidentid", incident.ToEntityReference());
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
+
+            var incidentResolution = new Account
+            {
+                Id = Guid.NewGuid()
+            };
+            incidentResolution.Attributes["incidentid"] = incident.ToEntityReference();
 
             var request = new CloseIncidentRequest()
             {
@@ -147,7 +188,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -176,7 +224,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -206,7 +261,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -236,7 +298,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -293,7 +362,14 @@ namespace SharedTests
         {
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -319,6 +395,5 @@ namespace SharedTests
                 Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
-#endif
     }
 }
