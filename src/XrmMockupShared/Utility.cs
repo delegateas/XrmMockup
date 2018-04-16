@@ -304,13 +304,6 @@ namespace DG.Tools.XrmMockup
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
         }
 
-        internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
-        {
-            return (metadata.Attributes
-                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
-                .OptionSet.Options;
-        }
-
         internal static bool IsValidStatusTransition(string transitionData, int newStatusCode)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
@@ -324,6 +317,12 @@ namespace DG.Tools.XrmMockup
             return false;
         }
 #endif
+        internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
+        {
+            return (metadata.Attributes
+                .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
+                .OptionSet.Options;
+        }
 
         internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata)
         {

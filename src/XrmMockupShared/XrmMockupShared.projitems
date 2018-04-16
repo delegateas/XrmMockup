@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\IsValidStateTransitionRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\QualifyLeadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Security.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Domain.cs" />
