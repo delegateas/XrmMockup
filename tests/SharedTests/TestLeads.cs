@@ -177,7 +177,6 @@ namespace DG.XrmMockupTest
             }
         }
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
         [TestMethod]
         public void TestQualifyLeadRequestLeadAlreadyClosedFails()
         {
@@ -188,38 +187,14 @@ namespace DG.XrmMockupTest
             };
 
             lead.Id = orgAdminUIService.Create(lead);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
             lead.SetState(orgAdminUIService, LeadState.Qualified, Lead_StatusCode.Qualified);
-
-            var request = new QualifyLeadRequest
-            {
-                Status = new OptionSetValue((int)Lead_StatusCode.Qualified),
-                LeadId = lead.ToEntityReference()
-            };
-            try
-            {
-                orgAdminUIService.Execute(request);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.IsInstanceOfType(e, typeof(FaultException));
-            }
-        }
 #else
-        [TestMethod]
-        public void TestQualifyLeadRequestLeadAlreadyClosedFails()
-        {
-            var lead = new Lead
-            {
-                FirstName = "Test",
-                LastName = "Lead"
-            };
-
-            lead.Id = orgAdminUIService.Create(lead);
             lead.StateCode = LeadState.Qualified;
             lead.StatusCode = Lead_StatusCode.Qualified;
-
             orgAdminUIService.Update(lead);
+#endif
 
             var request = new QualifyLeadRequest
             {
@@ -236,7 +211,6 @@ namespace DG.XrmMockupTest
                 Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
-#endif
 
         [TestMethod]
         public void TestQualifyLeadRequestInvalidStatusCodeFails()
