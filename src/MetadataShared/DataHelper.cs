@@ -360,7 +360,9 @@ namespace DG.Tools.XrmMockup.Metadata
                 case 4: return PrivilegeDepth.Deep;
                 case 8: return PrivilegeDepth.Global;
                 default:
-                    throw new NotImplementedException($"Unknown privilege depth mask: {privilegeDepth}");
+                    return (PrivilegeDepth)privilegeDepth;
+                    // https://github.com/delegateas/XrmMockup/issues/52
+                    // throw new NotImplementedException($"Unknown privilege depth mask: {privilegeDepth}");
             }
         }
 
