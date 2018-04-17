@@ -64,7 +64,7 @@ namespace DG.Tools.XrmMockup {
                             as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
                         pluginExecute = (provider) => {
                             basePluginType
-                            .GetMethod("Execute")
+                            .GetMethod("Execute", new[] { typeof(IServiceProvider) })
                             .Invoke(plugin, new object[] { provider });
                         };
 
