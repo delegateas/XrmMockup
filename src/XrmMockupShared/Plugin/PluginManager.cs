@@ -49,7 +49,7 @@ namespace DG.Tools.XrmMockup {
 
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
-                    if (type.BaseType != basePluginType) continue;
+                    if (!basePluginType.IsAssignableFrom(type) || type.IsAbstract) continue;
                     var plugin = Activator.CreateInstance(type);
 
                     Action<MockupServiceProviderAndFactory> pluginExecute = null;
