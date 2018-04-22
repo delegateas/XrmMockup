@@ -42,9 +42,9 @@ namespace DG.Tools.XrmMockup {
                 role["name"] = sr.Name;
                 role["roletemplateid"] = sr.RoleTemplateId;
                 role["createdby"] = Core.AdminUserRef;
-                role["createdon"] = DateTime.Now.Add(Core.TimeOffset);
+                role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 role["modifiedby"] = Core.AdminUserRef;
-                role["modifiedon"] = DateTime.Now.Add(Core.TimeOffset);
+                role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 db.Add(role);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
             }

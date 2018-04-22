@@ -546,26 +546,74 @@ namespace DG.Tools.XrmMockup
             return (Entity)method.Invoke(entity, null);
         }
 
-        public static bool MatchesCriteria(DbRow row, FilterExpression criteria)
+        public static bool MatchesCriteria(DbRow row, FilterExpression criteria, Entity parent = null, IEnumerable<LinkEntity> linkEntities = null)
         {
             if (criteria.FilterOperator == LogicalOperator.And)
-                return criteria.Filters.All(f => MatchesCriteria(row, f)) && criteria.Conditions.All(c => EvaluateCondition(row, c));
+                return criteria.Filters.All(f => 
+                    MatchesCriteria(row, f, parent, linkEntities)) && 
+                    criteria.Conditions.All(c => EvaluateCondition(row, c, parent, linkEntities));
             else
-                return criteria.Filters.Any(f => MatchesCriteria(row, f)) || criteria.Conditions.Any(c => EvaluateCondition(row, c));
+                return criteria.Filters.Any(f => 
+                    MatchesCriteria(row, f, parent, linkEntities)) || 
+                    criteria.Conditions.Any(c => EvaluateCondition(row, c, parent, linkEntities));
         }
 
 
-        private static bool EvaluateCondition(DbRow row, ConditionExpression condition)
+        private static bool EvaluateCondition(DbRow row, ConditionExpression condition, Entity parent = null, IEnumerable<LinkEntity> linkEntities = null)
         {
-            if (condition.AttributeName == null)
+            object attr = null;
+            switch (condition)
             {
-                return Matches(row.Id, condition.Operator, condition.Values);
+                case var c when condition.AttributeName == null:
+                    return Matches(row.Id, condition.Operator, condition.Values);
+                case var c when condition.EntityName != null:
+                    var key = $"{condition.EntityName}.{condition.AttributeName}";
+                    if (parent != null && parent.Contains(key))
+                    {
+                        attr = parent[key];
+                        if (attr is EntityReference entityRef) { attr = entityRef.Id; }
+                    }
+                    else
+                    {
+                        var path = new Stack<string>();
+                        if (FindPath(path, linkEntities, condition.EntityName))
+                        {
+                            attr = path.Reverse()
+                                .Aggregate(row, (r, a) => r == null ? null : r[a] as DbRow)
+                                ?.GetColumn(condition.AttributeName);
+                        }
+                        else
+                        {
+                            attr = null;
+                        }
+                    }
+                    break;
+                default:
+                    attr = row.GetColumn(condition.AttributeName);
+                    break;
             }
 
-            var attr = row.GetColumn(condition.AttributeName);
             if (attr is DbRow related) attr = related.Id;
             var values = condition.Values.Select(v => ConvertToComparableObject(v));
             return Matches(attr, condition.Operator, values);
+        }
+
+        private static bool FindPath(Stack<string> path, IEnumerable<LinkEntity> _linkEntities, string targetEntity)
+        {
+            foreach (var linkEntity in _linkEntities ?? Enumerable.Empty<LinkEntity>())
+            {
+                path.Push(linkEntity.LinkFromAttributeName);
+                if (linkEntity.LinkToEntityName == targetEntity || linkEntity.EntityAlias == targetEntity)
+                {
+                    return true;
+                }
+                if (FindPath(path, linkEntity.LinkEntities, targetEntity))
+                {
+                    return true;
+                }
+                path.Pop();
+            }
+            return false;
         }
 
         public static object ConvertToComparableObject(object obj)
@@ -634,7 +682,7 @@ namespace DG.Tools.XrmMockup
                     }
 
                 case ConditionOperator.NextXYears:
-                    var now = DateTime.Now;
+                    var now = DateTime.UtcNow;
                     DateTime date;
                     if (attr is DateTime)
                     {
@@ -724,7 +772,7 @@ namespace DG.Tools.XrmMockup
         {
             if (IsSettableAttribute("modifiedon", metadata) && IsSettableAttribute("modifiedby", metadata))
             {
-                dbEntity["modifiedon"] = DateTime.Now.Add(timeOffset);
+                dbEntity["modifiedon"] = DateTime.UtcNow.Add(timeOffset);
                 dbEntity["modifiedby"] = user;
             }
         }

@@ -29,7 +29,7 @@ namespace DG.Tools.XrmMockup {
             {
                 foreach (var row in rows)
                 {
-                    if (!Utility.MatchesCriteria(row, queryExpr.Criteria)) continue;
+                    if (!Utility.MatchesCriteria(row, queryExpr.Criteria, null, queryExpr.LinkEntities)) continue;
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
@@ -106,7 +106,7 @@ namespace DG.Tools.XrmMockup {
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
             var collection = new List<Entity>();
             foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
-                if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria)) continue;
+                if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria, parent, linkEntity.LinkEntities)) continue;
                 var linkedEntity = linkedRow.ToEntity();
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
@@ -145,7 +145,8 @@ namespace DG.Tools.XrmMockup {
         private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes,
                 ColumnSet columns) {
             var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
-            foreach (var attr in columns.Columns) {
+            var selectedColumns = columns.AllColumns ? attributes.Keys : columns.Columns;
+            foreach (var attr in selectedColumns) {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }
             return parentClone;
