@@ -566,6 +566,7 @@ namespace DG.Tools.XrmMockup
             {
                 case var c when condition.AttributeName == null:
                     return Matches(row.Id, condition.Operator, condition.Values);
+#if !XRM_MOCKUP_2011
                 case var c when condition.EntityName != null:
                     var key = $"{condition.EntityName}.{condition.AttributeName}";
                     if (parent != null && parent.Contains(key))
@@ -588,6 +589,7 @@ namespace DG.Tools.XrmMockup
                         }
                     }
                     break;
+#endif
                 default:
                     attr = row.GetColumn(condition.AttributeName);
                     break;
