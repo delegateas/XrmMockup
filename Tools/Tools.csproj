@@ -57,6 +57,7 @@
     <Content Include="Daxif\bin\Microsoft.IdentityModel.dll" />
     <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.dll" />
     <Content Include="Daxif\bin\SolutionPackager.exe" />
+    <Content Include="Daxif\bin\System.ServiceModel.dll" />
     <Content Include="Daxif\GenerateXrmMockupMetadata.fsx" />
     <Content Include="Daxif\GenerateCSharpContext.fsx" />
     <Content Include="Daxif\Playground.fsx" />
