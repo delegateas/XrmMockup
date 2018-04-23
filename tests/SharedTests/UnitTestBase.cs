@@ -66,12 +66,12 @@ namespace DG.XrmMockupTest {
                 EnableProxyTypes = settings.EnableProxyTypes,
                 IncludeAllWorkflows = settings.IncludeAllWorkflows,
                 ExceptionFreeRequests = settings.ExceptionFreeRequests,
-                OnlineEnvironment = new Env {
-                    providerType = AuthenticationProviderType.OnlineFederation,
-                    uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-                    username = "exampleUser",
-                    password = "examplePass"
-                }
+                //OnlineEnvironment = new Env {
+                //    providerType = AuthenticationProviderType.OnlineFederation,
+                //    uri = "https://exampleURL/XRMServices/2011/Organization.svc",
+                //    username = "exampleUser",
+                //    password = "examplePass"
+                //}
         };
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);

@@ -29,16 +29,16 @@ namespace DG.Tools.XrmMockup {
             {
                 foreach (var row in rows)
                 {
-                    if (!Utility.MatchesCriteria(row, queryExpr.Criteria, null, queryExpr.LinkEntities)) continue;
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
                     if (queryExpr.LinkEntities.Count > 0) {
                         foreach (var linkEntity in queryExpr.LinkEntities) {
                             collection.Entities.AddRange(
-                                GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db));
+                                GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db)
+                                .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                         }
-                    } else {
+                    } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
                         collection.Entities.Add(toAdd);
                     }
                 }
@@ -106,7 +106,6 @@ namespace DG.Tools.XrmMockup {
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
             var collection = new List<Entity>();
             foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
-                if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria, parent, linkEntity.LinkEntities)) continue;
                 var linkedEntity = linkedRow.ToEntity();
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
@@ -118,7 +117,7 @@ namespace DG.Tools.XrmMockup {
 
                     if (linkedAttr.Equals(entAttr)) {
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes, linkEntity.Columns);
+                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
@@ -126,10 +125,11 @@ namespace DG.Tools.XrmMockup {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
                                 subEntities.AddRange(
                                     GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db));
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db)
+                                        .Where(e => Utility.MatchesCriteria(e, nestedLinkEntity.LinkCriteria)));
                             }
                             collection.AddRange(subEntities);
-                        } else {
+                        } else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) {
                             collection.Add(aliasedEntity);
                         }
 
@@ -142,11 +142,9 @@ namespace DG.Tools.XrmMockup {
             return collection;
         }
 
-        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes,
-                ColumnSet columns) {
+        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes) {
             var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
-            var selectedColumns = columns.AllColumns ? attributes.Keys : columns.Columns;
-            foreach (var attr in selectedColumns) {
+            foreach (var attr in attributes.Keys) {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }
             return parentClone;
