@@ -583,8 +583,8 @@ namespace DG.Tools.XrmMockup
                     break;
             }
 
-            if (attr is EntityReference entityRef) { attr = entityRef.Id; }
             attr = ConvertToComparableObject(attr);
+            if (attr is EntityReference entityRef) { attr = entityRef.Id; }
             var values = condition.Values.Select(v => ConvertToComparableObject(v));
             return Matches(attr, condition.Operator, values);
         }
