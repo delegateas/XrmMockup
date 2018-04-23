@@ -6,6 +6,9 @@ Sets up all the necessary variables and functions to be used for the other scrip
 *)
 #r @"bin\Microsoft.Xrm.Sdk.dll"
 #r @"bin\Delegate.Daxif.dll"
+#r @"bin\Microsoft.Crm.Sdk.Proxy.dll"
+#r @"bin\System.ServiceModel.dll"
+
 open System
 open Microsoft.Xrm.Sdk.Client
 open DG.Daxif
@@ -66,6 +69,7 @@ let entitiesToGenerate =
     "queueitem"
     "incident"
     "incidentresolution"
+    "queue"
   ]
 
 (** 

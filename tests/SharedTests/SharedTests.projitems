@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestMoney.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOrganizationService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPlugins.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestReferences.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieve.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveMultiple.cs" />

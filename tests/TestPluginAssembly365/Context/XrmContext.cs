@@ -3367,6 +3367,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         [AttributeLogicalName("partyid")]
+        [RelationshipSchemaName("queue_activity_parties")]
+        public Queue queue_activity_parties {
+            get {
+                return GetRelatedEntity<Queue>("queue_activity_parties", null);
+            }
+            set {
+                SetRelatedEntity("queue_activity_parties", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("partyid")]
         [RelationshipSchemaName("lead_activity_parties")]
         public Lead lead_activity_parties {
             get {
@@ -12537,6 +12548,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("business_unit_queues")]
+        public IEnumerable<Queue> business_unit_queues {
+            get {
+                return GetRelatedEntities<Queue>("business_unit_queues", null);
+            }
+            set {
+                SetRelatedEntities("business_unit_queues", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("BusinessUnit_Campaigns")]
         public IEnumerable<Campaign> BusinessUnit_Campaigns {
             get {
@@ -12554,6 +12575,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("business_unit_letter_activities", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("business_unit_queues2")]
+        public IEnumerable<Queue> business_unit_queues2 {
+            get {
+                return GetRelatedEntities<Queue>("business_unit_queues2", null);
+            }
+            set {
+                SetRelatedEntities("business_unit_queues2", null, value);
             }
         }
         
@@ -25126,6 +25157,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("queueid")]
+        [RelationshipSchemaName("queue_convertruleitem")]
+        public Queue queue_convertruleitem {
+            get {
+                return GetRelatedEntity<Queue>("queue_convertruleitem", null);
+            }
+            set {
+                SetRelatedEntity("queue_convertruleitem", null, value);
+            }
+        }
+        
         [AttributeLogicalName("modifiedonbehalfby")]
         [RelationshipSchemaName("lk_convertruleitembase_modifiedonbehalfby")]
         public SystemUser lk_convertruleitembase_modifiedonbehalfby {
@@ -32126,6 +32168,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntity("Contact_Email_EmailSender", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("emailsender")]
+        [RelationshipSchemaName("Queue_Email_EmailSender")]
+        public Queue Queue_Email_EmailSender {
+            get {
+                return GetRelatedEntity<Queue>("Queue_Email_EmailSender", null);
+            }
+            set {
+                SetRelatedEntity("Queue_Email_EmailSender", null, value);
             }
         }
         
@@ -49113,6 +49166,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("mailbox_regarding_queue")]
+        public Queue mailbox_regarding_queue {
+            get {
+                return GetRelatedEntity<Queue>("mailbox_regarding_queue", null);
+            }
+            set {
+                SetRelatedEntity("mailbox_regarding_queue", null, value);
+            }
+        }
+        
         [AttributeLogicalName("organizationid")]
         [RelationshipSchemaName("organization_mailbox")]
         public Organization organization_mailbox {
@@ -49250,6 +49314,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("activitypointer_sendermailboxid_mailbox", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_defaultmailbox_mailbox")]
+        public IEnumerable<Queue> queue_defaultmailbox_mailbox {
+            get {
+                return GetRelatedEntities<Queue>("queue_defaultmailbox_mailbox", null);
+            }
+            set {
+                SetRelatedEntities("queue_defaultmailbox_mailbox", null, value);
             }
         }
         
@@ -57291,6 +57365,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("organization_queues")]
+        public IEnumerable<Queue> organization_queues {
+            get {
+                return GetRelatedEntities<Queue>("organization_queues", null);
+            }
+            set {
+                SetRelatedEntities("organization_queues", null, value);
+            }
+        }
+        
         public static Organization Retrieve(IOrganizationService service, Guid id, params Expression<Func<Organization,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
@@ -58467,6 +58551,836 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     }
     
     /// <summary>
+    /// <para>A list of records that require action, such as accounts, activities, and cases.</para>
+    /// <para>Display Name: Queue</para>
+    /// </summary>
+    [EntityLogicalName("queue")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class Queue : ExtendedEntity<QueueState, Queue_StatusCode> {
+        
+        public const string EntityLogicalName = "queue";
+        
+        public const int EntityTypeCode = 2020;
+        
+        public Queue() : 
+                base(EntityLogicalName) {
+        }
+        
+        public Queue(Guid Id) : 
+                base(EntityLogicalName, Id) {
+        }
+        
+        private string DebuggerDisplay {
+            get {
+                return GetDebuggerDisplay("name");
+            }
+        }
+        
+        [AttributeLogicalName("queueid")]
+        public override Guid Id {
+            get {
+                return base.Id;
+            }
+            set {
+                SetId("queueid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the queue.</para>
+        /// <para>Display Name: Queue</para>
+        /// </summary>
+        [AttributeLogicalName("queueid")]
+        public Guid? QueueId {
+            get {
+                return GetAttributeValue<Guid?>("queueid");
+            }
+            set {
+                SetId("queueid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the owner of the queue.</para>
+        /// <para>Display Name: Owner (deprecated)</para>
+        /// </summary>
+        [AttributeLogicalName("primaryuserid")]
+        public EntityReference PrimaryUserId {
+            get {
+                return GetAttributeValue<EntityReference>("primaryuserid");
+            }
+            set {
+                SetAttributeValue("primaryuserid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the business unit with which the queue is associated.</para>
+        /// <para>Display Name: Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("businessunitid")]
+        public EntityReference BusinessUnitId {
+            get {
+                return GetAttributeValue<EntityReference>("businessunitid");
+            }
+            set {
+                SetAttributeValue("businessunitid", value);
+            }
+        }
+        
+        [AttributeLogicalName("organizationidname")]
+        public string OrganizationIdName {
+            get {
+                return GetAttributeValue<string>("organizationidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>This attribute is no longer used. The data is now in the Mailbox.UserName attribute.</para>
+        /// <para>Display Name: User Name (Obsolete)</para>
+        /// </summary>
+        [AttributeLogicalName("emailusername")]
+        public string EmailUsername {
+            get {
+                return GetAttributeValue<string>("emailusername");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the organization associated with the queue.</para>
+        /// <para>Display Name: Organization</para>
+        /// </summary>
+        [AttributeLogicalName("organizationid")]
+        public EntityReference OrganizationId {
+            get {
+                return GetAttributeValue<EntityReference>("organizationid");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Reason for the status of the queue.</para>
+        /// <para>Display Name: Status Reason</para>
+        /// </summary>
+        [AttributeLogicalName("statuscode")]
+        public Queue_StatusCode? StatusCode {
+            get {
+                return GetOptionSetValue<Queue_StatusCode>("statuscode");
+            }
+            set {
+                SetOptionSetValue("statuscode", value);
+            }
+        }
+        
+        [AttributeLogicalName("entityimage_url")]
+        public string EntityImage_URL {
+            get {
+                return GetAttributeValue<string>("entityimage_url");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Name of the queue.</para>
+        /// <para>Display Name: Name</para>
+        /// </summary>
+        [AttributeLogicalName("name")]
+        public string Name {
+            get {
+                return GetAttributeValue<string>("name");
+            }
+            set {
+                SetAttributeValue("name", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Convert Incoming Email To Activities</para>
+        /// <para>Display Name: Convert Incoming Email To Activities</para>
+        /// </summary>
+        [AttributeLogicalName("incomingemailfilteringmethod")]
+        public Queue_IncomingEmailFilteringMethod? IncomingEmailFilteringMethod {
+            get {
+                return GetOptionSetValue<Queue_IncomingEmailFilteringMethod>("incomingemailfilteringmethod");
+            }
+            set {
+                SetOptionSetValue("incomingemailfilteringmethod", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the business unit that owns the queue.</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit {
+            get {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+        
+        [AttributeLogicalName("transactioncurrencyidname")]
+        public string TransactionCurrencyIdName {
+            get {
+                return GetAttributeValue<string>("transactioncurrencyidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who owns the queue.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser {
+            get {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Incoming email delivery method for the queue.</para>
+        /// <para>Display Name: Incoming Email Delivery Method</para>
+        /// </summary>
+        [AttributeLogicalName("incomingemaildeliverymethod")]
+        public Queue_IncomingEmailDeliveryMethod? IncomingEmailDeliveryMethod {
+            get {
+                return GetOptionSetValue<Queue_IncomingEmailDeliveryMethod>("incomingemaildeliverymethod");
+            }
+            set {
+                SetOptionSetValue("incomingemaildeliverymethod", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who last modified the queue.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user who created the queue record.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the team who owns the queue.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam {
+            get {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the currency associated with the queue.</para>
+        /// <para>Display Name: Currency</para>
+        /// </summary>
+        [AttributeLogicalName("transactioncurrencyid")]
+        public EntityReference TransactionCurrencyId {
+            get {
+                return GetAttributeValue<EntityReference>("transactioncurrencyid");
+            }
+            set {
+                SetAttributeValue("transactioncurrencyid", value);
+            }
+        }
+        
+        [AttributeLogicalName("businessunitidname")]
+        public string BusinessUnitIdName {
+            get {
+                return GetAttributeValue<string>("businessunitidname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Information that specifies whether a queue is to ignore unsolicited email (deprecated).</para>
+        /// <para>Display Name: Convert To Email Activities</para>
+        /// </summary>
+        [AttributeLogicalName("ignoreunsolicitedemail")]
+        public bool? IgnoreUnsolicitedEmail {
+            get {
+                return GetAttributeValue<bool?>("ignoreunsolicitedemail");
+            }
+            set {
+                SetAttributeValue("ignoreunsolicitedemail", value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfbyname")]
+        public string ModifiedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("modifiedonbehalfbyname");
+            }
+        }
+        
+        [AttributeLogicalName("createdbyname")]
+        public string CreatedByName {
+            get {
+                return GetAttributeValue<string>("createdbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Entity Image Id</para>
+        /// </summary>
+        [AttributeLogicalName("entityimageid")]
+        public Guid? EntityImageId {
+            get {
+                return GetAttributeValue<Guid?>("entityimageid");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Description of the queue.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description {
+            get {
+                return GetAttributeValue<string>("description");
+            }
+            set {
+                SetAttributeValue("description", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Number of Members associated with the queue.</para>
+        /// <para>Display Name: No. of Members</para>
+        /// </summary>
+        [AttributeLogicalName("numberofmembers")]
+        public int? NumberOfMembers {
+            get {
+                return GetAttributeValue<int?>("numberofmembers");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Select whether the queue is public or private. A public queue can be viewed by all. A private queue can be viewed only by the members added to the queue.</para>
+        /// <para>Display Name: Type</para>
+        /// </summary>
+        [AttributeLogicalName("queueviewtype")]
+        public Queue_QueueViewType? QueueViewType {
+            get {
+                return GetOptionSetValue<Queue_QueueViewType>("queueviewtype");
+            }
+            set {
+                SetOptionSetValue("queueviewtype", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the data import or data migration that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber {
+            get {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the queue was last modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn {
+            get {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the user or team who owns the queue.</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId {
+            get {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+            set {
+                SetAttributeValue("ownerid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Number of Queue items associated with the queue.</para>
+        /// <para>Display Name: Queue Items</para>
+        /// </summary>
+        [AttributeLogicalName("numberofitems")]
+        public int? NumberOfItems {
+            get {
+                return GetAttributeValue<int?>("numberofitems");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Shows the status of approval of the email address by O365 Admin.</para>
+        /// <para>Display Name: Email Address O365 Admin Approval Status</para>
+        /// </summary>
+        [AttributeLogicalName("isemailaddressapprovedbyo365admin")]
+        public bool? IsEmailAddressApprovedByO365Admin {
+            get {
+                return GetAttributeValue<bool?>("isemailaddressapprovedbyo365admin");
+            }
+        }
+        
+        [AttributeLogicalName("defaultmailboxname")]
+        public string DefaultMailboxName {
+            get {
+                return GetAttributeValue<string>("defaultmailboxname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Indication of whether a queue is the fax delivery queue.</para>
+        /// <para>Display Name: Fax Queue</para>
+        /// </summary>
+        [AttributeLogicalName("isfaxqueue")]
+        public bool? IsFaxQueue {
+            get {
+                return GetAttributeValue<bool?>("isfaxqueue");
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfbyname")]
+        public string CreatedOnBehalfByName {
+            get {
+                return GetAttributeValue<string>("createdonbehalfbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Email address that is associated with the queue.</para>
+        /// <para>Display Name: Incoming Email</para>
+        /// </summary>
+        [AttributeLogicalName("emailaddress")]
+        public string EMailAddress {
+            get {
+                return GetAttributeValue<string>("emailaddress");
+            }
+            set {
+                SetAttributeValue("emailaddress", value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedbyname")]
+        public string ModifiedByName {
+            get {
+                return GetAttributeValue<string>("modifiedbyname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>This attribute is no longer used. The data is now in the Mailbox.AllowEmailConnectorToUseCredentials attribute.</para>
+        /// <para>Display Name: Allow to Use Credentials for Email Processing (Obsolete)</para>
+        /// </summary>
+        [AttributeLogicalName("allowemailcredentials")]
+        public bool? AllowEmailCredentials {
+            get {
+                return GetAttributeValue<bool?>("allowemailcredentials");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Status of the queue.</para>
+        /// <para>Display Name: Status</para>
+        /// </summary>
+        [AttributeLogicalName("statecode")]
+        public QueueState? StateCode {
+            get {
+                return GetOptionSetValue<QueueState>("statecode");
+            }
+            set {
+                SetOptionSetValue("statecode", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Type of queue that is automatically assigned when a user or queue is created. The type can be public, private, or work in process.</para>
+        /// <para>Display Name: Queue Type</para>
+        /// </summary>
+        [AttributeLogicalName("queuetypecode")]
+        public Queue_QueueTypeCode? QueueTypeCode {
+            get {
+                return GetOptionSetValue<Queue_QueueTypeCode>("queuetypecode");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Exchange rate for the currency associated with the queue with respect to the base currency.</para>
+        /// <para>Display Name: Exchange Rate</para>
+        /// </summary>
+        [AttributeLogicalName("exchangerate")]
+        public decimal? ExchangeRate {
+            get {
+                return GetAttributeValue<decimal?>("exchangerate");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who last modified the queue.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+        
+        [AttributeLogicalName("primaryuseridname")]
+        public string PrimaryUserIdName {
+            get {
+                return GetAttributeValue<string>("primaryuseridname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time that the record was migrated.</para>
+        /// <para>Display Name: Record Created On</para>
+        /// </summary>
+        [AttributeLogicalName("overriddencreatedon")]
+        public DateTime? OverriddenCreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("overriddencreatedon");
+            }
+            set {
+                SetAttributeValue("overriddencreatedon", value);
+            }
+        }
+        
+        [AttributeLogicalName("owneridname")]
+        public string OwnerIdName {
+            get {
+                return GetAttributeValue<string>("owneridname");
+            }
+        }
+        
+        /// <summary>
+        /// <para>This attribute is no longer used. The data is now in the Mailbox.Password attribute.</para>
+        /// <para>Display Name: Password (Obsolete)</para>
+        /// </summary>
+        [AttributeLogicalName("emailpassword")]
+        public string EmailPassword {
+            get {
+                return GetAttributeValue<string>("emailpassword");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Shows the status of the primary email address.</para>
+        /// <para>Display Name: Primary Email Status</para>
+        /// </summary>
+        [AttributeLogicalName("emailrouteraccessapproval")]
+        public Queue_EmailRouterAccessApproval? EmailRouterAccessApproval {
+            get {
+                return GetOptionSetValue<Queue_EmailRouterAccessApproval>("emailrouteraccessapproval");
+            }
+            set {
+                SetOptionSetValue("emailrouteraccessapproval", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the queue.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy {
+            get {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+        
+        [AttributeLogicalName("owneridtype")]
+        public string OwnerIdType {
+            get {
+                return GetAttributeValue<string>("owneridtype");
+            }
+            set {
+                SetAttributeValue("owneridtype", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Date and time when the queue was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn {
+            get {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Select the mailbox associated with this queue.</para>
+        /// <para>Display Name: Mailbox</para>
+        /// </summary>
+        [AttributeLogicalName("defaultmailbox")]
+        public EntityReference DefaultMailbox {
+            get {
+                return GetAttributeValue<EntityReference>("defaultmailbox");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Outgoing email delivery method for the queue.</para>
+        /// <para>Display Name: Outgoing Email Delivery Method</para>
+        /// </summary>
+        [AttributeLogicalName("outgoingemaildeliverymethod")]
+        public Queue_OutgoingEmailDeliveryMethod? OutgoingEmailDeliveryMethod {
+            get {
+                return GetOptionSetValue<Queue_OutgoingEmailDeliveryMethod>("outgoingemaildeliverymethod");
+            }
+            set {
+                SetOptionSetValue("outgoingemaildeliverymethod", value);
+            }
+        }
+        
+        [AttributeLogicalName("entityimage_timestamp")]
+        public long? EntityImage_Timestamp {
+            get {
+                return GetAttributeValue<long?>("entityimage_timestamp");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Version number of the queue.</para>
+        /// <para>Display Name: Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber {
+            get {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        [RelationshipSchemaName("queuemembership_association")]
+        public IEnumerable<SystemUser> queuemembership_association {
+            get {
+                return GetRelatedEntities<SystemUser>("queuemembership_association", null);
+            }
+            set {
+                SetRelatedEntities("queuemembership_association", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_queue_createdonbehalfby")]
+        public SystemUser lk_queue_createdonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_queue_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_queue_createdonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("primaryuserid")]
+        [RelationshipSchemaName("queue_primary_user")]
+        public SystemUser queue_primary_user {
+            get {
+                return GetRelatedEntity<SystemUser>("queue_primary_user", null);
+            }
+            set {
+                SetRelatedEntity("queue_primary_user", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("transactioncurrencyid")]
+        [RelationshipSchemaName("TransactionCurrency_Queue")]
+        public TransactionCurrency TransactionCurrency_Queue {
+            get {
+                return GetRelatedEntity<TransactionCurrency>("TransactionCurrency_Queue", null);
+            }
+            set {
+                SetRelatedEntity("TransactionCurrency_Queue", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_queuebase_modifiedby")]
+        public SystemUser lk_queuebase_modifiedby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_queuebase_modifiedby", null);
+            }
+            set {
+                SetRelatedEntity("lk_queuebase_modifiedby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_queuebase_createdby")]
+        public SystemUser lk_queuebase_createdby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_queuebase_createdby", null);
+            }
+            set {
+                SetRelatedEntity("lk_queuebase_createdby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("organizationid")]
+        [RelationshipSchemaName("organization_queues")]
+        public Organization organization_queues {
+            get {
+                return GetRelatedEntity<Organization>("organization_queues", null);
+            }
+            set {
+                SetRelatedEntity("organization_queues", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_queue_modifiedonbehalfby")]
+        public SystemUser lk_queue_modifiedonbehalfby {
+            get {
+                return GetRelatedEntity<SystemUser>("lk_queue_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntity("lk_queue_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("owningbusinessunit")]
+        [RelationshipSchemaName("business_unit_queues2")]
+        public BusinessUnit business_unit_queues2 {
+            get {
+                return GetRelatedEntity<BusinessUnit>("business_unit_queues2", null);
+            }
+            set {
+                SetRelatedEntity("business_unit_queues2", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("businessunitid")]
+        [RelationshipSchemaName("business_unit_queues")]
+        public BusinessUnit business_unit_queues {
+            get {
+                return GetRelatedEntity<BusinessUnit>("business_unit_queues", null);
+            }
+            set {
+                SetRelatedEntity("business_unit_queues", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("defaultmailbox")]
+        [RelationshipSchemaName("queue_defaultmailbox_mailbox")]
+        public Mailbox queue_defaultmailbox_mailbox {
+            get {
+                return GetRelatedEntity<Mailbox>("queue_defaultmailbox_mailbox", null);
+            }
+            set {
+                SetRelatedEntity("queue_defaultmailbox_mailbox", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("mailbox_regarding_queue")]
+        public IEnumerable<Mailbox> mailbox_regarding_queue {
+            get {
+                return GetRelatedEntities<Mailbox>("mailbox_regarding_queue", null);
+            }
+            set {
+                SetRelatedEntities("mailbox_regarding_queue", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_convertruleitem")]
+        public IEnumerable<ConvertRuleItem> queue_convertruleitem {
+            get {
+                return GetRelatedEntities<ConvertRuleItem>("queue_convertruleitem", null);
+            }
+            set {
+                SetRelatedEntities("queue_convertruleitem", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_entries")]
+        public IEnumerable<QueueItem> queue_entries {
+            get {
+                return GetRelatedEntities<QueueItem>("queue_entries", null);
+            }
+            set {
+                SetRelatedEntities("queue_entries", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_team")]
+        public IEnumerable<Team> queue_team {
+            get {
+                return GetRelatedEntities<Team>("queue_team", null);
+            }
+            set {
+                SetRelatedEntities("queue_team", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_activity_parties")]
+        public IEnumerable<ActivityParty> queue_activity_parties {
+            get {
+                return GetRelatedEntities<ActivityParty>("queue_activity_parties", null);
+            }
+            set {
+                SetRelatedEntities("queue_activity_parties", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("Queue_Email_EmailSender")]
+        public IEnumerable<Email> Queue_Email_EmailSender {
+            get {
+                return GetRelatedEntities<Email>("Queue_Email_EmailSender", null);
+            }
+            set {
+                SetRelatedEntities("Queue_Email_EmailSender", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("Queue_SyncErrors")]
+        public IEnumerable<SyncError> Queue_SyncErrors {
+            get {
+                return GetRelatedEntities<SyncError>("Queue_SyncErrors", null);
+            }
+            set {
+                SetRelatedEntities("Queue_SyncErrors", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("queue_system_user")]
+        public IEnumerable<SystemUser> queue_system_user {
+            get {
+                return GetRelatedEntities<SystemUser>("queue_system_user", null);
+            }
+            set {
+                SetRelatedEntities("queue_system_user", null, value);
+            }
+        }
+        
+        public static Queue Retrieve(IOrganizationService service, Guid id, params Expression<Func<Queue,object>>[] attrs) {
+            return service.Retrieve(id, attrs);
+        }
+    }
+    
+    /// <summary>
     /// <para>A specific item in a queue, such as a case record or an activity record.</para>
     /// <para>Display Name: Queue Item</para>
     /// </summary>
@@ -59197,6 +60111,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("queueid")]
+        [RelationshipSchemaName("queue_entries")]
+        public Queue queue_entries {
+            get {
+                return GetRelatedEntity<Queue>("queue_entries", null);
+            }
+            set {
+                SetRelatedEntity("queue_entries", null, value);
+            }
+        }
+        
         [AttributeLogicalName("objectid")]
         [RelationshipSchemaName("ActivityPointer_QueueItem")]
         public ActivityPointer ActivityPointer_QueueItem {
@@ -59252,6 +60177,78 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         public static QueueItem Retrieve(IOrganizationService service, Guid id, params Expression<Func<QueueItem,object>>[] attrs) {
+            return service.Retrieve(id, attrs);
+        }
+    }
+    
+    [EntityLogicalName("queuemembership")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class QueueMembership : ExtendedEntity<EmptyEnum, EmptyEnum> {
+        
+        public const string EntityLogicalName = "queuemembership";
+        
+        public const int EntityTypeCode = 1213;
+        
+        public QueueMembership() : 
+                base(EntityLogicalName) {
+        }
+        
+        public QueueMembership(Guid Id) : 
+                base(EntityLogicalName, Id) {
+        }
+        
+        private string DebuggerDisplay {
+            get {
+                return GetDebuggerDisplay(null);
+            }
+        }
+        
+        [AttributeLogicalName("queuemembershipid")]
+        public override Guid Id {
+            get {
+                return base.Id;
+            }
+            set {
+                SetId("queuemembershipid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier of the queue membership.</para>
+        /// </summary>
+        [AttributeLogicalName("queuemembershipid")]
+        public Guid? QueueMembershipId {
+            get {
+                return GetAttributeValue<Guid?>("queuemembershipid");
+            }
+            set {
+                SetId("queuemembershipid", value);
+            }
+        }
+        
+        [AttributeLogicalName("systemuserid")]
+        public Guid? SystemUserId {
+            get {
+                return GetAttributeValue<Guid?>("systemuserid");
+            }
+        }
+        
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber {
+            get {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        [AttributeLogicalName("queueid")]
+        public Guid? QueueId {
+            get {
+                return GetAttributeValue<Guid?>("queueid");
+            }
+        }
+        
+        public static QueueMembership Retrieve(IOrganizationService service, Guid id, params Expression<Func<QueueMembership,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
     }
@@ -70714,6 +71711,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("Queue_SyncErrors")]
+        public Queue Queue_SyncErrors {
+            get {
+                return GetRelatedEntity<Queue>("Queue_SyncErrors", null);
+            }
+            set {
+                SetRelatedEntity("Queue_SyncErrors", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("regardingobjectid")]
         [RelationshipSchemaName("BusinessUnit_SyncErrors")]
         public BusinessUnit BusinessUnit_SyncErrors {
             get {
@@ -73116,6 +74124,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("queuemembership_association")]
+        public IEnumerable<Queue> queuemembership_association {
+            get {
+                return GetRelatedEntities<Queue>("queuemembership_association", null);
+            }
+            set {
+                SetRelatedEntities("queuemembership_association", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("teammembership_association")]
         public IEnumerable<Team> teammembership_association {
             get {
@@ -73156,6 +74174,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntity("lk_systemuser_modifiedonbehalfby", EntityRole.Referencing, value);
+            }
+        }
+        
+        [AttributeLogicalName("queueid")]
+        [RelationshipSchemaName("queue_system_user")]
+        public Queue queue_system_user {
+            get {
+                return GetRelatedEntity<Queue>("queue_system_user", null);
+            }
+            set {
+                SetRelatedEntity("queue_system_user", null, value);
             }
         }
         
@@ -74216,6 +75245,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_queue_createdonbehalfby")]
+        public IEnumerable<Queue> lk_queue_createdonbehalfby {
+            get {
+                return GetRelatedEntities<Queue>("lk_queue_createdonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_queue_createdonbehalfby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_transactioncurrencybase_createdby")]
         public IEnumerable<TransactionCurrency> lk_transactioncurrencybase_createdby {
             get {
@@ -74336,6 +75375,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("lk_queuebase_modifiedby")]
+        public IEnumerable<Queue> lk_queuebase_modifiedby {
+            get {
+                return GetRelatedEntities<Queue>("lk_queuebase_modifiedby", null);
+            }
+            set {
+                SetRelatedEntities("lk_queuebase_modifiedby", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("system_user_service_contracts")]
         public IEnumerable<Contract> system_user_service_contracts {
             get {
@@ -74416,6 +75465,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("queue_primary_user")]
+        public IEnumerable<Queue> queue_primary_user {
+            get {
+                return GetRelatedEntities<Queue>("queue_primary_user", null);
+            }
+            set {
+                SetRelatedEntities("queue_primary_user", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("lk_opportunitybase_modifiedby")]
         public IEnumerable<Opportunity> lk_opportunitybase_modifiedby {
             get {
@@ -74473,6 +75532,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("lk_campaignactivity_createdby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_queuebase_createdby")]
+        public IEnumerable<Queue> lk_queuebase_createdby {
+            get {
+                return GetRelatedEntities<Queue>("lk_queuebase_createdby", null);
+            }
+            set {
+                SetRelatedEntities("lk_queuebase_createdby", null, value);
             }
         }
         
@@ -75453,6 +76522,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("lk_email_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("lk_queue_modifiedonbehalfby")]
+        public IEnumerable<Queue> lk_queue_modifiedonbehalfby {
+            get {
+                return GetRelatedEntities<Queue>("lk_queue_modifiedonbehalfby", null);
+            }
+            set {
+                SetRelatedEntities("lk_queue_modifiedonbehalfby", null, value);
             }
         }
         
@@ -78498,6 +79577,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("queueid")]
+        [RelationshipSchemaName("queue_team")]
+        public Queue queue_team {
+            get {
+                return GetRelatedEntity<Queue>("queue_team", null);
+            }
+            set {
+                SetRelatedEntity("queue_team", null, value);
+            }
+        }
+        
         [AttributeLogicalName("createdby")]
         [RelationshipSchemaName("lk_teambase_createdby")]
         public SystemUser lk_teambase_createdby {
@@ -79859,6 +80949,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("TransactionCurrency_bookableresourcecategory", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("TransactionCurrency_Queue")]
+        public IEnumerable<Queue> TransactionCurrency_Queue {
+            get {
+                return GetRelatedEntities<Queue>("TransactionCurrency_Queue", null);
+            }
+            set {
+                SetRelatedEntities("TransactionCurrency_Queue", null, value);
             }
         }
         
@@ -81615,9 +82715,21 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        public IQueryable<Queue> QueueSet {
+            get {
+                return CreateQuery<Queue>();
+            }
+        }
+        
         public IQueryable<QueueItem> QueueItemSet {
             get {
                 return CreateQuery<QueueItem>();
+            }
+        }
+        
+        public IQueryable<QueueMembership> QueueMembershipSet {
+            get {
+                return CreateQuery<QueueMembership>();
             }
         }
         
@@ -86085,6 +87197,98 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Received = 4,
+    }
+    
+    [DataContract()]
+    public enum Queue_OutgoingEmailDeliveryMethod {
+        
+        [EnumMember()]
+        None = 0,
+        
+        [EnumMember()]
+        ServerSideSynchronizationorEmailRouter = 2,
+    }
+    
+    [DataContract()]
+    public enum Queue_EmailRouterAccessApproval {
+        
+        [EnumMember()]
+        Empty = 0,
+        
+        [EnumMember()]
+        Approved = 1,
+        
+        [EnumMember()]
+        PendingApproval = 2,
+        
+        [EnumMember()]
+        Rejected = 3,
+    }
+    
+    [DataContract()]
+    public enum Queue_QueueTypeCode {
+        
+        [EnumMember()]
+        DefaultValue = 1,
+    }
+    
+    [DataContract()]
+    public enum QueueState {
+        
+        [EnumMember()]
+        Active = 0,
+        
+        [EnumMember()]
+        Inactive = 1,
+    }
+    
+    [DataContract()]
+    public enum Queue_QueueViewType {
+        
+        [EnumMember()]
+        Public = 0,
+        
+        [EnumMember()]
+        Private = 1,
+    }
+    
+    [DataContract()]
+    public enum Queue_IncomingEmailDeliveryMethod {
+        
+        [EnumMember()]
+        None = 0,
+        
+        [EnumMember()]
+        ServerSideSynchronizationorEmailRouter = 2,
+        
+        [EnumMember()]
+        ForwardMailbox = 3,
+    }
+    
+    [DataContract()]
+    public enum Queue_IncomingEmailFilteringMethod {
+        
+        [EnumMember()]
+        Allemailmessages = 0,
+        
+        [EnumMember()]
+        EmailmessagesinresponsetoCRMemail = 1,
+        
+        [EnumMember()]
+        EmailmessagesfromCRMLeadsContactsandAccounts = 2,
+        
+        [EnumMember()]
+        EmailmessagesfromCRMrecordsthatareemailenabled = 3,
+    }
+    
+    [DataContract()]
+    public enum Queue_StatusCode {
+        
+        [EnumMember()]
+        Active = 1,
+        
+        [EnumMember()]
+        Inactive = 2,
     }
     
     [DataContract()]
