@@ -585,26 +585,8 @@ namespace DG.Tools.XrmMockup
 
             attr = ConvertToComparableObject(attr);
             if (attr is EntityReference entityRef) { attr = entityRef.Id; }
-            var values = condition.Values.Select(v => ConvertToComparableObject(v));
+            var values = condition.Values.Select(ConvertToComparableObject);
             return Matches(attr, condition.Operator, values);
-        }
-
-        private static bool FindPath(Stack<string> path, IEnumerable<LinkEntity> _linkEntities, string targetEntity)
-        {
-            foreach (var linkEntity in _linkEntities ?? Enumerable.Empty<LinkEntity>())
-            {
-                path.Push(linkEntity.LinkFromAttributeName);
-                if (linkEntity.LinkToEntityName == targetEntity || linkEntity.EntityAlias == targetEntity)
-                {
-                    return true;
-                }
-                if (FindPath(path, linkEntity.LinkEntities, targetEntity))
-                {
-                    return true;
-                }
-                path.Pop();
-            }
-            return false;
         }
 
         public static object ConvertToComparableObject(object obj)
@@ -628,6 +610,28 @@ namespace DG.Tools.XrmMockup
                 return obj;
         }
 
+        public static object ConvertTo(object obj, Type targetType)
+        {
+            if (targetType == null) { return obj; }
+            if(obj is string && !typeof(IConvertible).IsAssignableFrom(targetType)) {
+                var parse = targetType.GetMethod(
+                    nameof(Guid.Parse),
+                    BindingFlags.Static | BindingFlags.Public,
+                    null,
+                    new[] { typeof(string) },
+                    null);
+
+                if (parse != null)
+                {
+                    return parse.Invoke(null, new[] { obj });
+                }
+
+                return obj;
+            }
+
+            return Convert.ChangeType(obj, targetType);
+        }
+
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
         {
             switch (op)
@@ -639,10 +643,10 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(values.First(), attr);
+                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(values.First(), attr);
+                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -694,7 +698,7 @@ namespace DG.Tools.XrmMockup
 
         public static bool Compare(IComparable attr, ConditionOperator op, IComparable value)
         {
-            // if atleast one of the two compare values are null. Then compare returns null
+            // if at least one of the two compare values are null. Then compare returns null
             if (attr == null || value == null)
                 return false;
             switch (op)

@@ -44,10 +44,8 @@ namespace DG.Tools.XrmMockup {
                 };
             }
 
-            int aliasCount = 0;
-
             foreach (var linkEntity in entity.Elements("link-entity")) {
-                query.LinkEntities.Add(LinkEntityFromXml(logicalName.Value, linkEntity.ToString(), ref aliasCount));
+                query.LinkEntities.Add(LinkEntityFromXml(logicalName.Value, linkEntity.ToString()));
             }
 
             return query;
@@ -90,12 +88,12 @@ namespace DG.Tools.XrmMockup {
             return filterExp;
         }
 
-        public static LinkEntity LinkEntityFromXml(string parentLogicalName, string linkXml, ref int aliasCount) {
+        public static LinkEntity LinkEntityFromXml(string parentLogicalName, string linkXml) {
             var link = XElement.Parse(linkXml);
             var joinOperator = link.Attribute("link-type");
 
             var linkEntity = new LinkEntity() {
-                EntityAlias = link.Attribute("alias")?.Value ?? $"{link.Attribute("name").Value}_{aliasCount}",
+                EntityAlias = link.Attribute("alias")?.Value ?? link.Attribute("name").Value,
                 LinkFromEntityName = parentLogicalName,
                 LinkFromAttributeName = link.Attribute("to").Value,
                 LinkToEntityName = link.Attribute("name").Value,
@@ -124,8 +122,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             foreach (var subLink in link.Elements("link-entity")) {
-                aliasCount++;
-                linkEntity.LinkEntities.Add(LinkEntityFromXml(parentLogicalName, subLink.ToString(), ref aliasCount));
+                linkEntity.LinkEntities.Add(LinkEntityFromXml(parentLogicalName, subLink.ToString()));
             }
 
             return linkEntity;
