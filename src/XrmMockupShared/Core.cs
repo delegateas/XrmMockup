@@ -386,15 +386,20 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
+                // System Pre-validation
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 // Pre-validation
                 pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+
+                // Shared variables should be moved to parent context when transitioning from 10 to 20.
+                pluginContext.ParentContext = pluginContext.Clone();
+                pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
                 pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
 
-                // System pre-operation and pre-validation
-                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                // System Pre-operation
                 pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
             }
 
