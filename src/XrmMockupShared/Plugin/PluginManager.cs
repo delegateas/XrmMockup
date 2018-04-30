@@ -273,6 +273,11 @@ namespace DG.Tools.XrmMockup {
                 } catch (TargetInvocationException e) {
                     ExceptionDispatchInfo.Capture(e.InnerException).Throw();
                 }
+
+                foreach (var parameter in thisPluginContext.SharedVariables)
+                {
+                    pluginContext.SharedVariables[parameter.Key] = parameter.Value;
+                }
     }
 
             public int CompareTo(PluginTrigger other) {
