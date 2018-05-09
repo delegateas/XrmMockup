@@ -3,6 +3,8 @@ using DG.XrmMockupTest;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.ServiceModel;
@@ -41,6 +43,15 @@ namespace DG.XrmMockupTest
 
             var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
             Assert.IsNotNull(response);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
+                Assert.AreEqual(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+
+                var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
+                Assert.IsNotNull(retrievedIncidentResolution);
+            }
         }
 
         [TestMethod]
