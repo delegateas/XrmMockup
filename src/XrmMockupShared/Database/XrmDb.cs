@@ -187,5 +187,15 @@ namespace DG.Tools.XrmMockup.Database {
         }
         #endregion
 
+        public XrmDb Clone()
+        {
+            var clonedTables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.Clone());
+            var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineProxy)
+            {
+                TableDict = clonedTables
+            };
+
+            return clonedDB;
+        }
     }
 }

@@ -274,5 +274,13 @@ namespace DG.Tools.XrmMockup {
 
             return false;
         }
+
+        public Security Clone()
+        {
+            var security = new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList());
+            security.SecurityRoleMapping = this.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value);
+            security.Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            return security;
+        }
     }
 }

@@ -18,6 +18,8 @@ namespace DG.Tools.XrmMockup
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
+            throw new NotImplementedException();
+
             var request = MakeRequest<CloseIncidentRequest>(orgRequest);
 
             if (request.IncidentResolution == null)
