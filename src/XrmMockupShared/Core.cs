@@ -226,7 +226,7 @@ namespace DG.Tools.XrmMockup {
                 var manyToMany = relationshipMetadata as ManyToManyRelationshipMetadata;
 
                 if (oneToMany != null) {
-                    if (relationship.PrimaryEntityRole == EntityRole.Referenced) {
+                    if (relationship.PrimaryEntityRole == EntityRole.Referencing) {
                         var entityAttributes = db.GetEntityOrNull(entity.ToEntityReference()).Attributes;
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
                             var referencingGuid = Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
