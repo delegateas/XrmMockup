@@ -22,9 +22,14 @@ namespace DG.Tools.XrmMockup
 
             var request = MakeRequest<CloseIncidentRequest>(orgRequest);
 
+            if (request.Status == null)
+            {
+                throw new FaultException("Required field 'Status' is missing");
+            }
+
             if (request.IncidentResolution == null)
             {
-                throw new FaultException("Required field 'IncidentResolution' is missing");
+                throw new FaultException("Incident resolution is missing");
             }
 
             if (request.IncidentResolution.LogicalName == null)
@@ -32,19 +37,21 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Required member 'LogicalName' missing for field 'IncidentResolution'");
             }
 
+            if (request.IncidentResolution.LogicalName != "incidentresolution")
+            {
+                throw new FaultException("An unexpected error occurred.");
+            }
+
             if (!metadata.EntityMetadata.ContainsKey(request.IncidentResolution.LogicalName))
             {
                 throw new FaultException($"The entity with a name = '{request.IncidentResolution.LogicalName}' was not found in the MetadataCache.");
             }
 
-            if (request.Status == null)
-            {
-                throw new FaultException("Required field 'Status' is missing");
-            }
+            var incidentRef = request.IncidentResolution.GetAttributeValue<EntityReference>("incidentid");
 
-            if (request.IncidentResolution.LogicalName != "incidentresolution")
+            if (incidentRef == null)
             {
-                throw new FaultException("An unexpected error occurred.");
+                throw new FaultException("The incident id is missing.");
             }
 
             var entityMetadata = metadata.EntityMetadata.GetMetadata("incident");
@@ -56,19 +63,28 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"{request.Status.Value} is not a valid status code on incident with Id {request.IncidentResolution.Id}.");
             }
 
-            var incidentRef = request.IncidentResolution.GetAttributeValue<EntityReference>("incidentid");
-
-            if (incidentRef == null)
-            {
-                throw new FaultException("The incident id is missing.");
-            }
-
-            var incident = db.GetDbRowOrNull(incidentRef);
+            var incident = db.GetEntity(incidentRef);
 
             if (incident == null)
             {
                 throw new FaultException($"incident With Id = {incidentRef.Id} Does Not Exist");
             }
+            var incidentState = incident["statecode"] as OptionSetValue;
+
+            if (incidentState.Value == 1)
+            {
+                throw new FaultException($"incident With Id = {incidentRef.Id} is resolved and connot be closed");
+            }
+
+            if (incidentState.Value == 2)
+            {
+                throw new FaultException($"incident With Id = {incidentRef.Id} is allready cancelled  and connot be closed");
+            }
+
+            incident["statecode"] = 1;
+            incident["statuscode"] = request.Status;
+
+            db.Update(incident);
 
             var incidentResolution = db.GetDbRowOrNull(request.IncidentResolution.ToEntityReference());
 
@@ -76,6 +92,8 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("Cannot insert duplicate key.");
             }
+
+            db.Add(request.IncidentResolution);
 
             return new CloseIncidentResponse();
         }

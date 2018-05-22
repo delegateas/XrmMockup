@@ -47,10 +47,72 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
+                Assert.AreEqual(IncidentState.Resolved, retrievedIncident.StateCode);
                 Assert.AreEqual(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
 
                 var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
                 Assert.IsNotNull(retrievedIncidentResolution);
+            }
+        }
+
+        [TestMethod]
+        public void TestCloseIncidentRequestFailsWhenPreviouslyResolved()
+        {
+            var incident = new Incident();
+            incident.Id = orgAdminUIService.Create(incident);
+
+#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
+            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
+#else
+            incident.StateCode = IncidentState.Active;
+            incident.StatusCode = Incident_StatusCode.InProgress;
+            orgAdminUIService.Update(incident);
+#endif
+            var incidentResolution = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
+
+            var request = new CloseIncidentRequest()
+            {
+                IncidentResolution = incidentResolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+
+            var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
+            Assert.IsNotNull(response);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
+                Assert.AreEqual(IncidentState.Resolved, retrievedIncident.StateCode);
+                Assert.AreEqual(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+
+                var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
+                Assert.IsNotNull(retrievedIncidentResolution);
+            }
+
+            var incidentResolution2 = new IncidentResolution
+            {
+                IncidentId = incident.ToEntityReference(),
+                Subject = "Resolved Incident"
+            };
+
+            var request2 = new CloseIncidentRequest()
+            {
+                IncidentResolution = incidentResolution2,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+
+            try
+            {
+                orgAdminUIService.Execute(request2);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
