@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.XrmMockupTest
 {
@@ -57,12 +58,13 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
-            var accUpd = new Account(acc1.Id)
+            var req = new AssignRequest()
             {
-                OwnerId = user1.ToEntityReference()
+                Assignee = user1.ToEntityReference(),
+                Target = acc1.ToEntityReference()
             };
-            orgAdminUIService.Update(accUpd);
-
+            orgAdminUIService.Execute(req);
+            
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
@@ -87,12 +89,13 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
-            var accUpd = new Account(acc2.Id)
+            var req = new AssignRequest()
             {
-                OwnerId = user1.ToEntityReference()
+                Assignee = user1.ToEntityReference(),
+                Target = acc2.ToEntityReference()
             };
-            orgAdminUIService.Update(accUpd);
-
+            orgAdminUIService.Execute(req);
+            
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
@@ -117,12 +120,13 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
-            var contactUpd = new Contact(contact.Id)
+            var req = new AssignRequest()
             {
-                OwnerId = user1.ToEntityReference()
+                Assignee = user1.ToEntityReference(),
+                Target = contact.ToEntityReference()
             };
-            orgAdminUIService.Update(contactUpd);
-
+            orgAdminUIService.Execute(req);
+            
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
