@@ -82,6 +82,22 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     | f when f.EndsWith("shproj") -> Shproj
     | _                           -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
 
+let vstestPaths = 
+    [| @"[ProgramFilesX86]\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TestWindow";
+       @"[ProgramFilesX86]\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow";
+       @"[ProgramFilesX86]\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\TestWindow";
+       @"[ProgramFilesX86]\Microsoft Visual Studio 12.0\Common7\IDE\CommonExtensions\Microsoft\TestWindow";
+       @"[ProgramFilesX86]\Microsoft Visual Studio 11.0\Common7\IDE\CommonExtensions\Microsoft\TestWindow"|]
+
+let vsTestExe = 
+    if isMono then failwith "VSTest is not supported on the mono platform"
+    else "vstest.console.exe"
+
+let vstestToolPath =
+       match tryFindFile vstestPaths vsTestExe with
+       | Some path -> path
+       | None -> ""
+
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
     let getAssemblyInfoAttributes projectName =
@@ -151,7 +167,9 @@ Target "Build" (fun _ ->
 Target "RunTests" (fun _ ->
     !! testAssemblies
     |> VSTest (fun p ->
-            p)
+        { p with
+            ToolPath = vstestToolPath
+        })
 )
 
 // --------------------------------------------------------------------------------------
@@ -308,49 +326,49 @@ Target "AddLangDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Release Scripts
 
-Target "ReleaseDocs" (fun _ ->
-    let tempDocsDir = "temp/gh-pages"
-    CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
+//Target "ReleaseDocs" (fun _ ->
+//    let tempDocsDir = "temp/gh-pages"
+//    CleanDir tempDocsDir
+//    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
-    StageAll tempDocsDir
-    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push tempDocsDir
-)
+//    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
+//    StageAll tempDocsDir
+//    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
+//    Branches.push tempDocsDir
+//)
 
-#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
-open Octokit
+//#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
+//open Octokit
 
-Target "Release" (fun _ ->
-    let user =
-        match getBuildParam "github-user" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
-    let pw =
-        match getBuildParam "github-pw" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
-    let remote =
-        Git.CommandHelper.getGitResult "" "remote -v"
-        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+//Target "Release" (fun _ ->
+//    let user =
+//        match getBuildParam "github-user" with
+//        | s when not (String.IsNullOrWhiteSpace s) -> s
+//        | _ -> getUserInput "Username: "
+//    let pw =
+//        match getBuildParam "github-pw" with
+//        | s when not (String.IsNullOrWhiteSpace s) -> s
+//        | _ -> getUserPassword "Password: "
+//    let remote =
+//        Git.CommandHelper.getGitResult "" "remote -v"
+//        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
+//        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
+//        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
 
-    StageAll ""
-    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-    Branches.pushBranch "" remote (Information.getBranchName "")
+//    StageAll ""
+//    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
+//    Branches.pushBranch "" remote (Information.getBranchName "")
 
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
+//    Branches.tag "" release.NugetVersion
+//    Branches.pushTag "" remote release.NugetVersion
 
-    // release on github
-    createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-    // TODO: |> uploadFile "PATH_TO_FILE"
-    |> releaseDraft
-    |> Async.RunSynchronously
-)
+//    // release on github
+//    createClient user pw
+//    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
+//    // TODO: |> uploadFile "PATH_TO_FILE"
+//    |> releaseDraft
+//    |> Async.RunSynchronously
+//)
 
 Target "BuildPackage" DoNothing
 
@@ -373,7 +391,7 @@ Target "All" DoNothing
   ==> "NuGet"
   ==> "BuildPackage"
   ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild)
+  //=?> ("ReleaseDocs",isLocalBuild)
 
 "CleanDocs"
   ==> "GenerateHelp"
@@ -388,9 +406,9 @@ Target "All" DoNothing
 
 "BuildPackage"
   ==> "PublishNuget"
-  ==> "Release"
+  //==> "Release"
 
-"ReleaseDocs"
-  ==> "Release"
+//"ReleaseDocs"
+  //==> "Release"
   
 RunTargetOrDefault "Build"

@@ -1,3 +1,13 @@
+### 0.8.0-beta - May 23 2018
+* Add new snapshot feature. It is not possible to take a snapshot of the database and swap between different snapshot making for faster initialization setup
+* Fixed Assign Request to actually update the owner
+* Fixed issue in cascading behaviour due to incorrect fetching of related entities.
+* Implemented new requests:
+ - IsValidStateTransition
+ - CloseIncident
+ - RetrieveExchangeRate
+* Added filtering of metadata in RetrieveEntityRequest
+
 ### 0.7.3-beta - February 23 2018
 * Changed dependency description of workflow dll for 365 version.
 
