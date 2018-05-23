@@ -54,6 +54,7 @@ namespace DG.Tools.XrmMockup {
             }
             Utility.SetOwner(db, security, metadata, dbEntity, request.Assignee);
             Utility.Touch(dbEntity, metadata.EntityMetadata.GetMetadata(dbEntity.LogicalName), core.TimeOffset, userRef);
+            db.Update(dbEntity);
             return new AssignResponse();
         }
     }
