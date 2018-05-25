@@ -1,3 +1,9 @@
+### 0.8.1-beta - May 25 2018
+* Added new method for registering additional plugins
+* Added new method for disabling registered plugins
+* It is now possible to test a selection of unit test
+* XML documentation is added to nuget package
+
 ### 0.8.0-beta - May 23 2018
 * Add new snapshot feature. It is not possible to take a snapshot of the database and swap between different snapshot making for faster initialization setup
 * Fixed Assign Request to actually update the owner
