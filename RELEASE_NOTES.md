@@ -1,7 +1,7 @@
 ### 0.8.1-beta - May 25 2018
 * Added new method for registering additional plugins
 * Added new method for disabling registered plugins
-* It is now possible to test a selection of unit test
+* It is now possible to test a selection of plugins
 * XML documentation is added to nuget package
 
 ### 0.8.0-beta - May 23 2018
