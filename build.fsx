@@ -154,9 +154,9 @@ Target "CleanDocs" (fun _ ->
 Target "Build" (fun _ ->
     !! solutionFile
 #if MONO
-    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO"); ("nowarn", "1591,0108") ] "Rebuild"
+    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO"); ("nowarn", "1591,0108"); ("documentationfile", "bin\Release\XrmMockup365.xml") ] "Rebuild"
 #else
-    |> MSBuildReleaseExt "" [ ("nowarn", "1591,0108") ] "Rebuild"
+    |> MSBuildReleaseExt "" [ ("nowarn", "1591,0108"); ("documentationfile", "bin\Release\XrmMockup365.xml") ] "Rebuild"
 #endif
     |> ignore
 )
@@ -326,50 +326,6 @@ Target "AddLangDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Release Scripts
 
-//Target "ReleaseDocs" (fun _ ->
-//    let tempDocsDir = "temp/gh-pages"
-//    CleanDir tempDocsDir
-//    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
-
-//    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
-//    StageAll tempDocsDir
-//    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-//    Branches.push tempDocsDir
-//)
-
-//#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
-//open Octokit
-
-//Target "Release" (fun _ ->
-//    let user =
-//        match getBuildParam "github-user" with
-//        | s when not (String.IsNullOrWhiteSpace s) -> s
-//        | _ -> getUserInput "Username: "
-//    let pw =
-//        match getBuildParam "github-pw" with
-//        | s when not (String.IsNullOrWhiteSpace s) -> s
-//        | _ -> getUserPassword "Password: "
-//    let remote =
-//        Git.CommandHelper.getGitResult "" "remote -v"
-//        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-//        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-//        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
-
-//    StageAll ""
-//    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-//    Branches.pushBranch "" remote (Information.getBranchName "")
-
-//    Branches.tag "" release.NugetVersion
-//    Branches.pushTag "" remote release.NugetVersion
-
-//    // release on github
-//    createClient user pw
-//    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-//    // TODO: |> uploadFile "PATH_TO_FILE"
-//    |> releaseDraft
-//    |> Async.RunSynchronously
-//)
-
 Target "BuildPackage" DoNothing
 
 // --------------------------------------------------------------------------------------
@@ -391,7 +347,6 @@ Target "All" DoNothing
   ==> "NuGet"
   ==> "BuildPackage"
   ==> "All"
-  //=?> ("ReleaseDocs",isLocalBuild)
 
 "CleanDocs"
   ==> "GenerateHelp"
@@ -406,9 +361,5 @@ Target "All" DoNothing
 
 "BuildPackage"
   ==> "PublishNuget"
-  //==> "Release"
-
-//"ReleaseDocs"
-  //==> "Release"
   
 RunTargetOrDefault "Build"
