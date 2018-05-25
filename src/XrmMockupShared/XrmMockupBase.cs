@@ -291,44 +291,52 @@ namespace DG.Tools.XrmMockup {
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
 
+        /// <summary>
+        /// Takes a snapshot of the XrmMockup database
+        /// </summary>
+        /// <param name="snapshotName"></param>
         public void TakeSnapshot(string snapshotName)
         {
             Core.TakeSnapshot(snapshotName);
         }
 
+        /// <summary>
+        /// Retore the XrmMockup database from a snapshot
+        /// </summary>
+        /// <param name="snapshotName"></param>
         public void RestoreToSnapshot(string snapshotName)
         {
             Core.RestoreToSnapshot(snapshotName);
         }
 
+        /// <summary>
+        /// Delete a stored snapshot
+        /// </summary>
+        /// <param name="snapshotName"></param>
         public void DeleteSnapshot(string snapshotName)
         {
             Core.DeleteSnapshot(snapshotName);
         }
 
-        ///// <summary>
-        ///// Create a new team from an entity. Remember to provide an existing businessunit in the entity.
-        ///// </summary>
-        ///// <param name="service"></param>
-        ///// <param name="team"></param>
-        ///// <param name="securityRoles"></param>
-        ///// <returns></returns>
-        //public void IncludeAllPlugins(bool include)
-        //{
-        //    Core.IncludeAllPlugins(include);
-        //}
+        /// <summary>
+        /// Disables triggering of registered plugins. Does not include temporarily plugins. Is set to false when <see cref="ResetEnvironment"/> is called.
+        /// </summary>
+        /// <param name="include"></param>
+        public void DisableRegisteredPlugins(bool include)
+        {
+            Core.DisabelRegisteredPlugins(include);
+        }
 
-        ///// <summary>
-        ///// Create a new team from an entity. Remember to provide an existing businessunit in the entity.
-        ///// </summary>
-        ///// <param name="service"></param>
-        ///// <param name="team"></param>
-        ///// <param name="securityRoles"></param>
-        ///// <returns></returns>
-        //public void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes)
-        //{
-        //    Core.RegisterAdditionalPlugins(basePluginTypes);
-        //}
+        /// <summary>
+        /// Register additional plugins to be triggered in addition to the existing plugins in the current environment.
+        /// Plugins registered temporarily will be deleted when <see cref="ResetEnvironment"/> is called.
+        /// </summary>
+        /// <param name="scope">The scope of the plugin registration</param>
+        /// <param name="basePluginTypes"></param>
+        public void RegisterAdditionalPlugins(PluginRegistrationScope scope, params Type[] basePluginTypes)
+        {
+            Core.RegisterAdditionalPlugins(basePluginTypes, scope);
+        }
     }
 
 }

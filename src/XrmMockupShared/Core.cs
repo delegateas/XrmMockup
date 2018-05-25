@@ -595,16 +595,16 @@ namespace DG.Tools.XrmMockup {
         #endregion
 
 
-        //internal void IncludeAllPlugins(bool include)
-        //{
-        //    pluginManager.IncludeAllPlugins(include);
-        //}
+        internal void DisabelRegisteredPlugins(bool include)
+        {
+            pluginManager.DisabelRegisteredPlugins(include);
+        }
 
-        //internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes)
-        //{
-        //    foreach (var type in basePluginTypes)
-        //        pluginManager.RegisterAdditionalPlugin(type);
-        //}
+        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope)
+        {
+            foreach (var type in basePluginTypes)
+                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope);
+        }
 
         internal void TakeSnapshot(string snapshotName)
         {
@@ -648,7 +648,7 @@ namespace DG.Tools.XrmMockup {
             if (settings.IncludeAllWorkflows == false) {
                 workflowManager.ResetWorkflows();
             }
-            //pluginManager.ResetPlugins();
+            pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();

@@ -125,7 +125,7 @@ namespace DG.Tools.XrmMockup {
         /// <summary>
         /// Initializes a new instance of the <see cref="MockupPlugin"/> class.
         /// </summary>
-        /// <param name="childClassName">The <see cref="" cred="Type"/> of the derived class.</param>
+        /// <param name="childClassName">The <see cref="Type"/> of the derived class.</param>
         internal MockupPlugin(Type childClassName) {
             this.ChildClassName = childClassName.ToString();
         }

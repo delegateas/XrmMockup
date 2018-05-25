@@ -23,9 +23,9 @@ namespace DG.Tools.XrmMockup {
     internal class PluginManager {
 
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins;
-        private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> additionalPlugins;
+        private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins;
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins;
-        private bool includeAllPlugins = true;
+        private bool disableRegisteredPlugins = true;
 
         // List of SystemPlugins to execute
         private List<MockupPlugin> systemPlugins = new List<MockupPlugin>
@@ -103,27 +103,34 @@ namespace DG.Tools.XrmMockup {
                 var stage = (ExecutionStage)stepConfig.Item1.Item2;
                 var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
 
-                AddTrigger(operation, stage, trigger);
+                AddTrigger(operation, stage, trigger, register);
             }
         }
 
-        //public void ResetPlugins()
-        //{
-        //    includeAllPlugins = true;
-        //    additionalPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
-        //}
+        public void ResetPlugins()
+        {
+            disableRegisteredPlugins = false;
+            temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+        }
 
-        //public void IncludeAllPlugins(bool include)
-        //{
-        //    includeAllPlugins = include;
-        //}
+        public void DisabelRegisteredPlugins(bool disable)
+        {
+            disableRegisteredPlugins = disable;
+        }
 
-        //public void RegisterAdditionalPlugin(Type pluginType)
-        //{
-        //    if (pluginType.GetMethod("PluginProcessingStepConfigs") != null)
-        //        throw new MockupException($"Unknown plugin '{pluginType.FullName}', please use the MockPlugin to register your plugin.");
-        //    RegisterPlugin(pluginType, new Dictionary<string, EntityMetadata>(), new List<MetaPlugin>(), additionalPlugins);
-        //}
+        public void RegisterAdditionalPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, PluginRegistrationScope scope)
+        {
+            if (pluginType.GetMethod("PluginProcessingStepConfigs") == null)
+                throw new MockupException($"Unknown plugin '{pluginType.FullName}', please use the MockPlugin to register your plugin.");
+            if (scope == PluginRegistrationScope.Permanent)
+            {
+                RegisterPlugin(pluginType, metadata, plugins, registeredPlugins);
+            }
+            else if (scope == PluginRegistrationScope.Temporary)
+            {
+                RegisterPlugin(pluginType, metadata, plugins, temporaryPlugins);
+            }
+        }
 
         private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
@@ -142,22 +149,20 @@ namespace DG.Tools.XrmMockup {
                     var stage = (ExecutionStage)stepConfig.Item1.Item2;
                     var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, new Dictionary<string, EntityMetadata>());
 
-                    AddTrigger(operation, stage, trigger);
+                    AddTrigger(operation, stage, trigger, register);
                 }
             }
             SortAllLists(register);
         }
-        
 
-
-        public void AddTrigger(EventOperation operation, ExecutionStage stage, PluginTrigger trigger) {
-            if (!registeredPlugins.ContainsKey(operation)) {
-                registeredPlugins.Add(operation, new Dictionary<ExecutionStage, List<PluginTrigger>>());
+        public void AddTrigger(EventOperation operation, ExecutionStage stage, PluginTrigger trigger, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register) {
+            if (!register.ContainsKey(operation)) {
+                register.Add(operation, new Dictionary<ExecutionStage, List<PluginTrigger>>());
             }
-            if (!registeredPlugins[operation].ContainsKey(stage)) {
-                registeredPlugins[operation].Add(stage, new List<PluginTrigger>());
+            if (!register[operation].ContainsKey(stage)) {
+                register[operation].Add(stage, new List<PluginTrigger>());
             }
-            registeredPlugins[operation][stage].Add(trigger);
+            register[operation][stage].Add(trigger);
         }
 
         /// <summary>
@@ -186,12 +191,11 @@ namespace DG.Tools.XrmMockup {
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-            if (!this.registeredPlugins.ContainsKey(operation)) return;
-            if (!this.registeredPlugins[operation].ContainsKey(stage)) return;
-
-            //if(includeAllPlugins)
+            
+            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
                 registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-            //additionalPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            if(temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
+                temporaryPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
         public void TriggerSystem(EventOperation operation, ExecutionStage stage,
