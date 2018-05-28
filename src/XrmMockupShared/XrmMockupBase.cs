@@ -265,10 +265,12 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="service"></param>
         /// <param name="businessUnit"></param>
+        /// <param name="type"></param>
         /// <param name="securityRoles"></param>
         /// <returns></returns>
-        public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
+        public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, TeamType type, params Guid[] securityRoles) {
             var team = new Entity(LogicalNames.Team);
+            team["teamtype"] = new OptionSetValue((int)type);
             team["businessunitid"] = businessUnit;
             return CreateTeam(service, team, securityRoles);
         }
@@ -287,11 +289,23 @@ namespace DG.Tools.XrmMockup {
             if (team.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
+            if (team.GetAttributeValue<OptionSetValue>("teamtype") == null)
+            {
+                throw new MockupException("You tried to create a team without defining the type");
+            }
             team.Id = service.Create(team);
-            Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+            if(team.GetAttributeValue<OptionSetValue>("teamtype").Value == 0)
+            {
+                Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+            }
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
 
+        /// <summary>
+        /// Add users to a team
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="users"></param>
         public void AddUsersToTeam(EntityReference team, params EntityReference[] users)
         {
             var req = new AddMembersTeamRequest
@@ -302,6 +316,11 @@ namespace DG.Tools.XrmMockup {
             Core.Execute(req, AdminUser);
         }
 
+        /// <summary>
+        /// Remove users from a team
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="users"></param>
         public void RemoveUsersFromTeam(EntityReference team, params EntityReference[] users)
         {
             var req = new RemoveMembersTeamRequest

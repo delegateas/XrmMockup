@@ -1,3 +1,8 @@
+### 0.9.0-beta - XXX
+* Add correct handling of team privilage
+* Update create team methods to also excpect the team to have defined type
+* Add new methods for adding or removeing users from a team
+
 ### 0.8.1-beta - May 25 2018
 * Added new method for registering additional plugins
 * Added new method for disabling registered plugins

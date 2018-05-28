@@ -20,7 +20,36 @@ namespace DG.Tools.XrmMockup
         {
             var request = MakeRequest<AddMembersTeamRequest>(orgRequest);
 
-            throw new NotImplementedException();
+            // Check if the team exist
+            if (!db.HasRow(new EntityReference(LogicalNames.Team, request.TeamId)))
+            {
+                throw new MockupException($"Team with id {request.TeamId} does not exist");
+            }
+
+            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<EntityReference>("teamid").Id == request.TeamId);
+            
+            foreach (var userId in request.MemberIds)
+            {
+                // Check if the user exist
+                if (!db.HasRow(new EntityReference(LogicalNames.SystemUser, userId)))
+                {
+                    throw new MockupException($"User with id {userId} does not exist");
+                }
+
+                // Check if the user is already a member of the team
+                if (teamMembers.Any(t => t.GetAttributeValue<EntityReference>("systemuserid").Id == userId))
+                {
+                    throw new MockupException($"User with id {userId} is already member of the team with id {request.TeamId}");
+                }
+            }
+
+            foreach (var userId in request.MemberIds)
+            {
+                var teamMember = new Entity(LogicalNames.TeamMembership);
+                teamMember["teamid"] = request.TeamId;
+                teamMember["systemuserid"] = userId;
+                db.Add(teamMember);
+            }
 
             return new AddMembersTeamResponse();
         }

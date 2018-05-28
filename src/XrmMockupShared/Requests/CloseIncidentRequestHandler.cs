@@ -59,7 +59,7 @@ namespace DG.Tools.XrmMockup
             if (!statusOptionMeta.Any(o => (o as StatusOptionMetadata).Value == request.Status.Value
                 && (o as StatusOptionMetadata).State == 1))
             {
-                throw new FaultException($"{request.Status.Value} is not a valid status code on incident with Id {request.IncidentResolution.Id}.");
+                throw new FaultException($"{request.Status.Value} is not a valid status code on incident with Id {incidentRef.Id}.");
             }
 
             var incident = db.GetEntity(incidentRef);
