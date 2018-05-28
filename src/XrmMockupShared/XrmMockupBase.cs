@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.Tools.XrmMockup {
 
@@ -45,7 +46,7 @@ namespace DG.Tools.XrmMockup {
         private bool HasProxyTypes = false;
         private Core Core;
         private MockupServiceProviderAndFactory ServiceFactory;
-        
+
 
         /// <summary>
         /// Create a new XrmMockup instance
@@ -289,6 +290,26 @@ namespace DG.Tools.XrmMockup {
             team.Id = service.Create(team);
             Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
+        }
+
+        public void AddUsersToTeam(EntityReference team, params EntityReference[] users)
+        {
+            var req = new AddMembersTeamRequest
+            {
+                TeamId = team.Id,
+                MemberIds = users.Select(x => x.Id).ToArray()
+            };
+            Core.Execute(req, AdminUser);
+        }
+
+        public void RemoveUsersFromTeam(EntityReference team, params EntityReference[] users)
+        {
+            var req = new RemoveMembersTeamRequest
+            {
+                TeamId = team.Id,
+                MemberIds = users.Select(x => x.Id).ToArray()
+            };
+            Core.Execute(req, AdminUser);
         }
 
         /// <summary>

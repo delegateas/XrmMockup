@@ -203,16 +203,32 @@ namespace DG.Tools.XrmMockup {
             return securityRoles;
         }
 
-        private bool IsInBusinessUnit(Guid ownerId, Guid businessunitId) {
+        private bool IsInBusinessUnit(Guid ownerId, Guid businessunitId, EntityReference caller) {
+
+            // Check if the owner is in same business unit as the caller
             var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
-            return usersInBusinessUnit.Any(u => ownerId == u.Id);
+            var entitiesInBusinessunit = usersInBusinessUnit;
+
+            // If the caller is a system user then check if any of the teams that the caller is part of is in the same business unit
+            if (caller.LogicalName == LogicalNames.SystemUser)
+            {
+                //var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
+                //    .Select(x => x.ToEntity())
+                //    .Where(ta => ta.GetAttributeValue<EntityReference>("systemuserid")?.Id == caller.Id)
+                //    .Select(x => x.GetAttributeValue<EntityReference>("teamid")?.Id);
+
+                //var teamsInBusinessUnit = Core.GetDbTable(LogicalNames.Team).Select(x => x.ToEntity()).Where(t => teamIds.Contains(t.Id) && t.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+                //entitiesInBusinessunit.Concat(teamsInBusinessUnit);
+            }
+
+            return entitiesInBusinessunit.Any(u => ownerId == u.Id);
         }
 
-        private bool IsInBusinessUnitTree(Guid ownerId, Guid businessunitId) {
-            if (IsInBusinessUnit(ownerId, businessunitId)) return true;
+        private bool IsInBusinessUnitTree(Guid ownerId, Guid businessunitId, EntityReference caller) {
+            if (IsInBusinessUnit(ownerId, businessunitId, caller)) return true;
 
             var childBusinessUnits = Core.GetDbTable(LogicalNames.BusinessUnit).Select(x => x.ToEntity()).Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
-            return childBusinessUnits.Any(b => IsInBusinessUnitTree(ownerId, b.Id));
+            return childBusinessUnits.Any(b => IsInBusinessUnitTree(ownerId, b.Id, caller));
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
@@ -245,13 +261,13 @@ namespace DG.Tools.XrmMockup {
 
                 var callerRow = Core.GetDbRow(caller);
                 if (maxRole == PrivilegeDepth.Local) {
-                    return IsInBusinessUnit(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
+                    return IsInBusinessUnit(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id, caller);
                 }
                 if (maxRole == PrivilegeDepth.Deep) {
                     if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null) {
-                        return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id);
+                        return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id, caller);
                     }
-                    return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
+                    return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id, caller);
                 }
             }
 
