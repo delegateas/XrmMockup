@@ -210,22 +210,9 @@ namespace DG.Tools.XrmMockup {
                 .Any();
         }
 
-        private bool HasAccessTeamAccess(EntityReference owner, EntityReference caller) {
-            var ownersAccessTeamIds = Core.GetDbTable(LogicalNames.TeamMembership)
-                .Select(x => x.ToEntity())
-                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == owner.Id)
-                .Select(tm => tm.GetAttributeValue<Guid>("teamid"));
-
-            var sharedAccessTeams = ownersAccessTeamIds.Select(oatid => Core.GetDbTable(LogicalNames.Team)
-                .Select(x => x.ToEntity())
-                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id && tm.GetAttributeValue<Guid>("teamid") == oatid && tm.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
-                .Any());
-            return sharedAccessTeams.Any();
-        }
-
         private bool IsInBusinessUnit(EntityReference owner, Guid businessunitId, EntityReference caller) {
             var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
-            return usersInBusinessUnit.Any(u => owner.Id == u.Id) || HasAccessTeamAccess(owner, caller);
+            return usersInBusinessUnit.Any(u => owner.Id == u.Id);
         }
 
         private bool IsInBusinessUnitTree(EntityReference owner, Guid businessunitId, EntityReference caller) {

@@ -14,11 +14,6 @@ namespace DG.Tools.XrmMockup {
         Temporary = 1,
     }
 
-    public enum TeamType {
-        Owner = 0,
-        Access = 1
-    }
-
     internal enum ExecutionMode {
         Synchronous = 0,
         Asynchronous = 1,

@@ -90,7 +90,7 @@ namespace DG.XrmMockupTest {
                 var contact = new Contact();
                 contact.Id = service.Create(contact);
 
-                var team = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), TeamType.OwnerTeam, SecurityRoles.Cannotreadcontact);
+                var team = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Cannotreadcontact);
                 FaultException faultException = null;
                 var req = new AssignRequest();
                 try {
@@ -101,7 +101,7 @@ namespace DG.XrmMockupTest {
                 } catch (FaultException e) {
                     faultException = e;
                 }
-                var teamAdmin = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), TeamType.OwnerTeam, SecurityRoles.SystemAdministrator);
+                var teamAdmin = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var adminContact = new Contact();
                 adminContact.Id = service.Create(adminContact);
                 req.Assignee = teamAdmin.ToEntityReference();

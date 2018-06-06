@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup
                 throw new MockupException($"Team with id {request.TeamId} does not exist");
             }
 
-            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<EntityReference>("teamid").Id == request.TeamId);
+            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
             
             foreach (var userId in request.MemberIds)
             {
@@ -37,7 +37,7 @@ namespace DG.Tools.XrmMockup
                 }
 
                 // Check if the user is already a member of the team
-                if (teamMembers.Any(t => t.GetAttributeValue<EntityReference>("systemuserid").Id == userId))
+                if (teamMembers.Any(t => t.GetAttributeValue<Guid>("systemuserid") == userId))
                 {
                     throw new MockupException($"User with id {userId} is already member of the team with id {request.TeamId}");
                 }

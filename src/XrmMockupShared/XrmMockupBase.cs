@@ -261,22 +261,21 @@ namespace DG.Tools.XrmMockup {
         }
 
         /// <summary>
-        /// Create a new team with a specific businessunit
+        /// Create a new owner team with a specific businessunit
         /// </summary>
         /// <param name="service"></param>
         /// <param name="businessUnit"></param>
         /// <param name="type"></param>
         /// <param name="securityRoles"></param>
         /// <returns></returns>
-        public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, TeamType type, params Guid[] securityRoles) {
+        public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
             var team = new Entity(LogicalNames.Team);
-            team["teamtype"] = new OptionSetValue((int)type);
             team["businessunitid"] = businessUnit;
             return CreateTeam(service, team, securityRoles);
         }
 
         /// <summary>
-        /// Create a new team from an entity. Remember to provide an existing businessunit in the entity.
+        /// Create a new owner team from an entity. Remember to provide an existing businessunit in the entity.
         /// </summary>
         /// <param name="service"></param>
         /// <param name="team"></param>
@@ -289,15 +288,10 @@ namespace DG.Tools.XrmMockup {
             if (team.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
-            if (team.GetAttributeValue<OptionSetValue>("teamtype") == null)
-            {
-                throw new MockupException("You tried to create a team without defining the type");
-            }
+            team["teamtype"] = new OptionSetValue(0);
             team.Id = service.Create(team);
-            if(team.GetAttributeValue<OptionSetValue>("teamtype").Value == 0)
-            {
-                Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
-            }
+            Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
 

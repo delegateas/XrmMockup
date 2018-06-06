@@ -43,12 +43,8 @@ namespace DG.Tools.XrmMockup {
                     }
                 }
             }
-
-            if (!collection.Entities.All(e => security.HasPermission(e, AccessRights.ReadAccess, userRef))) {
-                var entitiesWithoutAccess = collection.Entities.Where(e => !security.HasPermission(e, AccessRights.ReadAccess, userRef)).Select(e => e.LogicalName).ToList();
-                throw new FaultException($"You do not have permission to access the entities " +
-                    $"'{string.Join(",", entitiesWithoutAccess)}' for read");
-            }
+            var filteredEntities = new EntityCollection();
+            filteredEntities.Entities.AddRange(collection.Entities.Where(e => security.HasPermission(e, AccessRights.ReadAccess, userRef)));
 
             var orders = queryExpr.Orders;
             var orderedCollection = new EntityCollection();
@@ -57,27 +53,27 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("Number of orders are greater than 2, unsupported in crm");
             } else if (orders.Count == 1) {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
                 else
-                    orderedCollection.Entities.AddRange(collection.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
             } else if (orders.Count == 2) {
                 if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection.Entities
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities
                         .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
                         .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
 
                 else if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Descending)
-                    orderedCollection.Entities.AddRange(collection.Entities
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities
                         .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
                         .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection.Entities
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities
                         .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
                         .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Descending)
-                    orderedCollection.Entities.AddRange(collection.Entities
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities
                         .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
                         .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
             }
@@ -90,10 +86,10 @@ namespace DG.Tools.XrmMockup {
                 }
                 colToReturn = orderedCollection;
             } else {
-                foreach (var entity in collection.Entities) {
+                foreach (var entity in filteredEntities.Entities) {
                     KeepAttributesAndAliasAttributes(entity, queryExpr.ColumnSet);
                 }
-                colToReturn = collection;
+                colToReturn = filteredEntities;
             }
 
             

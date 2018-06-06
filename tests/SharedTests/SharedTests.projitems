@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestSnapshot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestStates.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />

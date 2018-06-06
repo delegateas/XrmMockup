@@ -1,6 +1,6 @@
 ### 0.9.0-beta - June 06 2018
-* Add user priviliage check access through teams
-* Update teamseams to handle Owner and Access teams
+* Add user priviliage check access through owner teams
+* Update teams to handle Owner teams
 * Updated CreateTeam methods to also excpect a team type
 * Add new methods for adding or removing users from a team
 * Fix bug when fetching security roles in Metadata Generator

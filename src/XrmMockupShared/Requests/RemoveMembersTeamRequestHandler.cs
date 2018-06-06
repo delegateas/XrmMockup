@@ -18,7 +18,7 @@ namespace DG.Tools.XrmMockup
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
-            var request = MakeRequest<AddMembersTeamRequest>(orgRequest);
+            var request = MakeRequest<RemoveMembersTeamRequest>(orgRequest);
 
             // Check if the team exist
             if (!db.HasRow(new EntityReference(LogicalNames.Team, request.TeamId)))
@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup
                 throw new MockupException($"Team with id {request.TeamId} does not exist");
             }
 
-            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<EntityReference>("teamid").Id == request.TeamId);
+            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
 
             foreach (var userId in request.MemberIds)
             {
@@ -39,7 +39,7 @@ namespace DG.Tools.XrmMockup
 
             foreach (var userId in request.MemberIds)
             {
-                var teamMember = teamMembers.FirstOrDefault(t => t.GetAttributeValue<EntityReference>("systemuserid").Id == userId);
+                var teamMember = teamMembers.FirstOrDefault(t => t.GetAttributeValue<Guid>("systemuserid") == userId);
                 if (teamMember != null)
                 {
                     db.Delete(teamMember);
