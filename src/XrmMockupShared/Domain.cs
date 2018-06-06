@@ -15,8 +15,8 @@ namespace DG.Tools.XrmMockup {
     }
 
     public enum TeamType {
-        OwnerTeam = 0,
-        AccessTeam = 1
+        Owner = 0,
+        Access = 1
     }
 
     internal enum ExecutionMode {
