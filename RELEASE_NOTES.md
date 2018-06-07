@@ -1,3 +1,9 @@
+### 0.9.1-beta - June 07 2018
+* Reverted handling of access teams
+* Reverted TeamType for now as access teams are not supported
+* CreateTeam now creates an owner team explicitly
+* Fix bugs in AddMembersTeamRequest and RemoveMembersTeamRequest
+
 ### 0.9.0-beta - June 06 2018
 * Add user priviliage check access through owner teams
 * Update teams to handle Owner teams

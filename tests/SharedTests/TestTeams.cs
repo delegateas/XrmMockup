@@ -136,7 +136,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        
+
         #region Positive Tests
         //A User can see there own Account
         [TestMethod]
@@ -156,26 +156,6 @@ namespace DG.XrmMockupTest
             Assert.IsTrue(CanWrite(user12, account12));
             Assert.IsTrue(CanWrite(user21, account21));
             Assert.IsTrue(CanWrite(user22, account22));
-        }
-
-        //A User can see the account  of others from the same buiness unit
-        [TestMethod]
-        public void UserCanReadUnit()
-        {
-            Assert.IsTrue(CanRead(user11, account12));
-            Assert.IsTrue(CanRead(user12, account11));
-            Assert.IsTrue(CanRead(user21, account22));
-            Assert.IsTrue(CanRead(user22, account21));
-        }
-
-        //A User can edit the account  of others from the same buiness unit
-        [TestMethod]
-        public void UserCanWriteUnit()
-        {
-            Assert.IsTrue(CanWrite(user11, account12));
-            Assert.IsTrue(CanWrite(user12, account11));
-            Assert.IsTrue(CanWrite(user21, account22));
-            Assert.IsTrue(CanWrite(user22, account21));
         }
 
         //A User can see the account of its teams
