@@ -222,6 +222,29 @@ namespace DG.Tools.XrmMockup {
             return childBusinessUnits.Any(b => IsInBusinessUnitTree(owner, b.Id, caller));
         }
 
+        internal bool HasTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
+        {
+            if (!entity.Attributes.ContainsKey("ownerid") || caller.LogicalName != LogicalNames.SystemUser)
+                return false;
+            
+            var owner = entity.GetAttributeValue<EntityReference>("ownerid");
+
+            // Check owner access rights
+            if (owner.LogicalName == LogicalNames.Team)
+            {
+                return HasOwnerTeamAccess(owner, caller);
+            }
+
+            // Check if teams have access
+            var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
+            .Select(x => x.ToEntity())
+            .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
+            .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
+            .ToList();
+
+            return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+        }
+
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
             if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == entity.LogicalName))) {
                 // system has no security roles for this entity. Is a case with linkentities which have no security roles
@@ -229,13 +252,13 @@ namespace DG.Tools.XrmMockup {
             }
             if (caller.Id == Core.AdminUserRef.Id) return true;
 
-            var userRoles = GetSecurityRoles(caller)?.Where(r =>
+            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
                 r.Privileges.ContainsKey(entity.LogicalName) &&
                 r.Privileges[entity.LogicalName].ContainsKey(access));
-            if (userRoles == null || userRoles.Count() == 0) {
+            if (callerRoles == null || callerRoles.Count() == 0) {
                 return false;
             }
-            var maxRole = userRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
+            var maxRole = callerRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
             if (maxRole == PrivilegeDepth.Global) return true;
 
             if (access == AccessRights.CreateAccess) {
@@ -244,6 +267,7 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
+            // Owner Check
             if (entity.Attributes.ContainsKey("ownerid")) {
                 var owner = entity.GetAttributeValue<EntityReference>("ownerid");
                 if (owner.Id == caller.Id) {
@@ -252,20 +276,23 @@ namespace DG.Tools.XrmMockup {
 
                 var callerRow = Core.GetDbRow(caller);
 
-                if(owner.LogicalName == LogicalNames.Team)
-                {
-                    return HasOwnerTeamAccess(owner, caller);
-                }
-
                 if (maxRole == PrivilegeDepth.Local) {
-                    return IsInBusinessUnit(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller);
+
+                    if (IsInBusinessUnit(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller))
+                        return true; 
                 }
                 if (maxRole == PrivilegeDepth.Deep) {
-                    if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null) {
-                        return IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id, caller);
-                    }
-                    return IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller);
+                    if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null && IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id, caller))
+                        return true;
+                    else if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller))
+                        return true;
                 }
+            }
+
+            // check if any of the team that the user is a member of has access
+            if(caller.LogicalName == LogicalNames.SystemUser && HasTeamMemberPermission(entity, access, caller))
+            {
+                return true;
             }
 
             var entityRef = entity.ToEntityReference();

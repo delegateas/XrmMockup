@@ -23,6 +23,8 @@ namespace DG.XrmMockupTest
         private EntityReference account22;
         private EntityReference account1;
         private EntityReference account2;
+        private EntityReference account3;
+        private EntityReference account4;
 
         SystemUser user11;
         SystemUser user12;
@@ -33,6 +35,8 @@ namespace DG.XrmMockupTest
         BusinessUnit businessUnit2;
         private Team team1;
         private Team team2;
+        private Team team3;
+        private Team team4;
 
         [TestInitialize]
         public void Initialize()
@@ -46,12 +50,18 @@ namespace DG.XrmMockupTest
             businessUnit2.Id = orgAdminService.Create(businessUnit2);
 
             team1 = new Team { Name = "Team 1", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
-            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SalesManager).ToEntity<Team>();
+            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
             team2 = new Team { Name = "Team 2", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
-            team2 = crm.CreateTeam(orgAdminService, team2, SecurityRoles.SalesManager).ToEntity<Team>();
+            team2 = crm.CreateTeam(orgAdminService, team2, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
-            // SystemCustomizer - read account - user, write account - user
+            team3 = new Team { Name = "Team 3", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team3 = crm.CreateTeam(orgAdminService, team3, SecurityRoles.SystemAdministrator).ToEntity<Team>();
+
+            team4 = new Team { Name = "Team 4", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team4 = crm.CreateTeam(orgAdminService, team4, SecurityRoles.SystemAdministrator).ToEntity<Team>();
+
+            // SystemCustomizer - read account - user level, write account - user level
             user11 = crm.CreateUser(orgAdminService, businessUnit1.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
             user12 = crm.CreateUser(orgAdminService, businessUnit1.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
             user21 = crm.CreateUser(orgAdminService, businessUnit2.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
@@ -66,6 +76,9 @@ namespace DG.XrmMockupTest
             account22 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 2.2", ParentAccountId = parent2, OwnerId = user22.ToEntityReference() }));
             account1 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 1", ParentAccountId = parent1, OwnerId = team1.ToEntityReference() }));
             account2 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 2", ParentAccountId = parent2, OwnerId = team2.ToEntityReference() }));
+            account3 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 3", ParentAccountId = parent1, OwnerId = team2.ToEntityReference() }));
+            account4 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 4", ParentAccountId = parent2, OwnerId = team3.ToEntityReference() }));
+
         }
 
         [TestMethod]
@@ -202,9 +215,10 @@ namespace DG.XrmMockupTest
             Assert.IsFalse(CanRead(user21, account2));
             Assert.IsFalse(CanRead(user22, account1));
         }
-        //A user from a different office can't access a team members personal 
+
+        //A user from a different business unit can't read another members account when team has user level access
         [TestMethod]
-        public void UserCantReadOtherTeamMembers()
+        public void UserCantReadOtherTeamMembersUserLevel()
         {
             crm.AddUsersToTeam(team1.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
             crm.AddUsersToTeam(team2.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
@@ -213,6 +227,19 @@ namespace DG.XrmMockupTest
             Assert.IsFalse(CanRead(user12, account22));
             Assert.IsFalse(CanRead(user21, account11));
             Assert.IsFalse(CanRead(user22, account12));
+        }
+
+        //A user from a different business unit can read another members account when team has global level access
+        [TestMethod]
+        public void UserCanReadOtherTeamMembersGlobalLevel()
+        {
+            crm.AddUsersToTeam(team3.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
+            crm.AddUsersToTeam(team4.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
+
+            Assert.IsTrue(CanRead(user11, account21));
+            Assert.IsTrue(CanRead(user12, account22));
+            Assert.IsTrue(CanRead(user21, account11));
+            Assert.IsTrue(CanRead(user22, account12));
         }
 
         //A user can't access a team after leaving it.
