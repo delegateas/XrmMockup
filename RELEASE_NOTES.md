@@ -1,3 +1,6 @@
+### 0.9.2-beta - June 07 2018
+* Fix bug in Owner Team where members could not access records that the team had access too
+
 ### 0.9.1-beta - June 07 2018
 * Reverted handling of access teams
 * Reverted TeamType for now as access teams are not supported
