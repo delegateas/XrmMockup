@@ -203,16 +203,46 @@ namespace DG.Tools.XrmMockup {
             return securityRoles;
         }
 
-        private bool IsInBusinessUnit(Guid ownerId, Guid businessunitId) {
-            var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
-            return usersInBusinessUnit.Any(u => ownerId == u.Id);
+        private bool HasOwnerTeamAccess(EntityReference owner, EntityReference caller) {
+            return Core.GetDbTable(LogicalNames.TeamMembership)
+                .Select(x => x.ToEntity())
+                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id && tm.GetAttributeValue<Guid>("teamid") == owner.Id)
+                .Any();
         }
 
-        private bool IsInBusinessUnitTree(Guid ownerId, Guid businessunitId) {
-            if (IsInBusinessUnit(ownerId, businessunitId)) return true;
+        private bool IsInBusinessUnit(EntityReference owner, Guid businessunitId, EntityReference caller) {
+            var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+            return usersInBusinessUnit.Any(u => owner.Id == u.Id);
+        }
+
+        private bool IsInBusinessUnitTree(EntityReference owner, Guid businessunitId, EntityReference caller) {
+            if (IsInBusinessUnit(owner, businessunitId, caller)) return true;
 
             var childBusinessUnits = Core.GetDbTable(LogicalNames.BusinessUnit).Select(x => x.ToEntity()).Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
-            return childBusinessUnits.Any(b => IsInBusinessUnitTree(ownerId, b.Id));
+            return childBusinessUnits.Any(b => IsInBusinessUnitTree(owner, b.Id, caller));
+        }
+
+        internal bool HasTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
+        {
+            if (!entity.Attributes.ContainsKey("ownerid") || caller.LogicalName != LogicalNames.SystemUser)
+                return false;
+            
+            var owner = entity.GetAttributeValue<EntityReference>("ownerid");
+
+            // Check owner access rights
+            if (owner.LogicalName == LogicalNames.Team)
+            {
+                return HasOwnerTeamAccess(owner, caller);
+            }
+
+            // Check if teams have access
+            var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
+            .Select(x => x.ToEntity())
+            .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
+            .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
+            .ToList();
+
+            return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
@@ -222,13 +252,13 @@ namespace DG.Tools.XrmMockup {
             }
             if (caller.Id == Core.AdminUserRef.Id) return true;
 
-            var userRoles = GetSecurityRoles(caller)?.Where(r =>
+            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
                 r.Privileges.ContainsKey(entity.LogicalName) &&
                 r.Privileges[entity.LogicalName].ContainsKey(access));
-            if (userRoles == null || userRoles.Count() == 0) {
+            if (callerRoles == null || callerRoles.Count() == 0) {
                 return false;
             }
-            var maxRole = userRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
+            var maxRole = callerRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
             if (maxRole == PrivilegeDepth.Global) return true;
 
             if (access == AccessRights.CreateAccess) {
@@ -237,6 +267,7 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
+            // Owner Check
             if (entity.Attributes.ContainsKey("ownerid")) {
                 var owner = entity.GetAttributeValue<EntityReference>("ownerid");
                 if (owner.Id == caller.Id) {
@@ -244,15 +275,24 @@ namespace DG.Tools.XrmMockup {
                 }
 
                 var callerRow = Core.GetDbRow(caller);
+
                 if (maxRole == PrivilegeDepth.Local) {
-                    return IsInBusinessUnit(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
+
+                    if (IsInBusinessUnit(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller))
+                        return true; 
                 }
                 if (maxRole == PrivilegeDepth.Deep) {
-                    if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null) {
-                        return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id);
-                    }
-                    return IsInBusinessUnitTree(owner.Id, callerRow.GetColumn<DbRow>("businessunitid").Id);
+                    if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null && IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id, caller))
+                        return true;
+                    else if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id, caller))
+                        return true;
                 }
+            }
+
+            // check if any of the team that the user is a member of has access
+            if(caller.LogicalName == LogicalNames.SystemUser && HasTeamMemberPermission(entity, access, caller))
+            {
+                return true;
             }
 
             var entityRef = entity.ToEntityReference();
@@ -273,6 +313,14 @@ namespace DG.Tools.XrmMockup {
             }
 
             return false;
+        }
+
+        public Security Clone()
+        {
+            var security = new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList());
+            security.SecurityRoleMapping = this.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value);
+            security.Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            return security;
         }
     }
 }

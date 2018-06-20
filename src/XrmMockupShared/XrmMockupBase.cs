@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.Tools.XrmMockup {
 
@@ -45,7 +46,7 @@ namespace DG.Tools.XrmMockup {
         private bool HasProxyTypes = false;
         private Core Core;
         private MockupServiceProviderAndFactory ServiceFactory;
-        
+
 
         /// <summary>
         /// Create a new XrmMockup instance
@@ -108,7 +109,6 @@ namespace DG.Tools.XrmMockup {
         /// <param name="offset"></param>
         public void AddTime(TimeSpan offset) {
             Core.AddTime(offset);
-            
         }
 
         /// <summary>
@@ -261,10 +261,11 @@ namespace DG.Tools.XrmMockup {
         }
 
         /// <summary>
-        /// Create a new team with a specific businessunit
+        /// Create a new owner team with a specific businessunit
         /// </summary>
         /// <param name="service"></param>
         /// <param name="businessUnit"></param>
+        /// <param name="type"></param>
         /// <param name="securityRoles"></param>
         /// <returns></returns>
         public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
@@ -274,7 +275,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         /// <summary>
-        /// Create a new team from an entity. Remember to provide an existing businessunit in the entity.
+        /// Create a new owner team from an entity. Remember to provide an existing businessunit in the entity.
         /// </summary>
         /// <param name="service"></param>
         /// <param name="team"></param>
@@ -287,11 +288,89 @@ namespace DG.Tools.XrmMockup {
             if (team.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
+            team["teamtype"] = new OptionSetValue(0);
             team.Id = service.Create(team);
             Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
 
+        /// <summary>
+        /// Add users to a team
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="users"></param>
+        public void AddUsersToTeam(EntityReference team, params EntityReference[] users)
+        {
+            var req = new AddMembersTeamRequest
+            {
+                TeamId = team.Id,
+                MemberIds = users.Select(x => x.Id).ToArray()
+            };
+            Core.Execute(req, AdminUser);
+        }
+
+        /// <summary>
+        /// Remove users from a team
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="users"></param>
+        public void RemoveUsersFromTeam(EntityReference team, params EntityReference[] users)
+        {
+            var req = new RemoveMembersTeamRequest
+            {
+                TeamId = team.Id,
+                MemberIds = users.Select(x => x.Id).ToArray()
+            };
+            Core.Execute(req, AdminUser);
+        }
+
+        /// <summary>
+        /// Takes a snapshot of the XrmMockup database
+        /// </summary>
+        /// <param name="snapshotName"></param>
+        public void TakeSnapshot(string snapshotName)
+        {
+            Core.TakeSnapshot(snapshotName);
+        }
+
+        /// <summary>
+        /// Retore the XrmMockup database from a snapshot
+        /// </summary>
+        /// <param name="snapshotName"></param>
+        public void RestoreToSnapshot(string snapshotName)
+        {
+            Core.RestoreToSnapshot(snapshotName);
+        }
+
+        /// <summary>
+        /// Delete a stored snapshot
+        /// </summary>
+        /// <param name="snapshotName"></param>
+        public void DeleteSnapshot(string snapshotName)
+        {
+            Core.DeleteSnapshot(snapshotName);
+        }
+
+        /// <summary>
+        /// Disables triggering of registered plugins. Does not include temporarily plugins. Is set to false when <see cref="ResetEnvironment"/> is called.
+        /// </summary>
+        /// <param name="include"></param>
+        public void DisableRegisteredPlugins(bool include)
+        {
+            Core.DisabelRegisteredPlugins(include);
+        }
+
+        /// <summary>
+        /// Register additional plugins to be triggered in addition to the existing plugins in the current environment.
+        /// Plugins registered temporarily will be deleted when <see cref="ResetEnvironment"/> is called.
+        /// </summary>
+        /// <param name="scope">The scope of the plugin registration</param>
+        /// <param name="basePluginTypes"></param>
+        public void RegisterAdditionalPlugins(PluginRegistrationScope scope, params Type[] basePluginTypes)
+        {
+            Core.RegisterAdditionalPlugins(basePluginTypes, scope);
+        }
     }
 
 }

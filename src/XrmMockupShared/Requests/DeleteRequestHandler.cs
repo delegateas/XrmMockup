@@ -28,7 +28,7 @@ namespace DG.Tools.XrmMockup {
             if (entity != null) {
                 foreach (var relatedEntities in entity.RelatedEntities) {
                     var relationshipMeta = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OneToManyRelationships.First(r => r.SchemaName == relatedEntities.Key.SchemaName);
-                    switch (relationshipMeta.CascadeConfiguration.Assign) {
+                    switch (relationshipMeta.CascadeConfiguration.Delete) {
                         case CascadeType.Cascade:
                             foreach (var relatedEntity in relatedEntities.Value.Entities) {
                                 var req = new DeleteRequest {

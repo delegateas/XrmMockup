@@ -23,10 +23,12 @@ namespace DG.Tools.XrmMockup {
     internal class PluginManager {
 
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins;
+        private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins;
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins;
+        private bool disableRegisteredPlugins = true;
 
         // List of SystemPlugins to execute
-        private List<Plugin> systemPlugins = new List<Plugin>
+        private List<MockupPlugin> systemPlugins = new List<MockupPlugin>
         {
             //new SystemPlugins.ContactDefaultValues()
         };
@@ -34,6 +36,7 @@ namespace DG.Tools.XrmMockup {
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
             registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+            temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
@@ -50,55 +53,84 @@ namespace DG.Tools.XrmMockup {
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
                     if (type.BaseType != basePluginType) continue;
-                    var plugin = Activator.CreateInstance(type);
-
-                    Action<MockupServiceProviderAndFactory> pluginExecute = null;
-                    var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
-
-                    if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
-                    { // Matches DAXIF plugin registration
-                        stepConfigs.AddRange(
-                            basePluginType
-                            .GetMethod("PluginProcessingStepConfigs")
-                            .Invoke(plugin, new object[] { })
-                            as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
-                        pluginExecute = (provider) => {
-                            basePluginType
-                            .GetMethod("Execute")
-                            .Invoke(plugin, new object[] { provider });
-                        };
-
-                    }
-                    else
-                    { // Retrieve registration from CRM metadata
-                        var metaPlugin = plugins.FirstOrDefault(x => x.AssemblyName == type.FullName);
-                        if (metaPlugin == null)
-                        {
-                            throw new MockupException($"Unknown plugin '{type.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
-                        }
-                        var stepConfig = new StepConfig(metaPlugin.AssemblyName, metaPlugin.Stage, metaPlugin.MessageName, metaPlugin.PrimaryEntity);
-                        var extendedConfig = new ExtendedStepConfig(0, metaPlugin.Mode, metaPlugin.Name, metaPlugin.Rank, metaPlugin.FilteredAttributes, Guid.Empty.ToString());
-                        var imageTuple = new List<ImageTuple>();
-                        stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
-                        pluginExecute = (provider) => {
-                            type
-                            .GetMethod("Execute")
-                            .Invoke(plugin, new object[] { provider });
-                        };
-                    }
-
-                    // Add discovered plugin triggers
-                    foreach (var stepConfig in stepConfigs)
-                    {
-                        var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
-                        var stage = (ExecutionStage)stepConfig.Item1.Item2;
-                        var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
-
-                        AddTrigger(operation, stage, trigger);
-                    }
+                    RegisterPlugin(type, metadata, plugins, register);
                 }
             }
             SortAllLists(register);
+        }
+
+        private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        {
+            var plugin = Activator.CreateInstance(basePluginType);
+
+            Action<MockupServiceProviderAndFactory> pluginExecute = null;
+            var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
+
+            if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
+            { // Matches DAXIF plugin registration
+                stepConfigs.AddRange(
+                    basePluginType
+                    .GetMethod("PluginProcessingStepConfigs")
+                    .Invoke(plugin, new object[] { })
+                    as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
+                pluginExecute = (provider) => {
+                    basePluginType
+                    .GetMethod("Execute")
+                    .Invoke(plugin, new object[] { provider });
+                };
+            }
+            else
+            { // Retrieve registration from CRM metadata
+                var metaPlugin = plugins.FirstOrDefault(x => x.AssemblyName == basePluginType.FullName);
+                if (metaPlugin == null)
+                {
+                    throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                }
+                var stepConfig = new StepConfig(metaPlugin.AssemblyName, metaPlugin.Stage, metaPlugin.MessageName, metaPlugin.PrimaryEntity);
+                var extendedConfig = new ExtendedStepConfig(0, metaPlugin.Mode, metaPlugin.Name, metaPlugin.Rank, metaPlugin.FilteredAttributes, Guid.Empty.ToString());
+                var imageTuple = new List<ImageTuple>();
+                stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
+                pluginExecute = (provider) => {
+                    basePluginType
+                    .GetMethod("Execute")
+                    .Invoke(plugin, new object[] { provider });
+                };
+            }
+
+            // Add discovered plugin triggers
+            foreach (var stepConfig in stepConfigs)
+            {
+                var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
+                var stage = (ExecutionStage)stepConfig.Item1.Item2;
+                var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
+
+                AddTrigger(operation, stage, trigger, register);
+            }
+        }
+
+        public void ResetPlugins()
+        {
+            disableRegisteredPlugins = false;
+            temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+        }
+
+        public void DisabelRegisteredPlugins(bool disable)
+        {
+            disableRegisteredPlugins = disable;
+        }
+
+        public void RegisterAdditionalPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, PluginRegistrationScope scope)
+        {
+            if (pluginType.GetMethod("PluginProcessingStepConfigs") == null)
+                throw new MockupException($"Unknown plugin '{pluginType.FullName}', please use the MockPlugin to register your plugin.");
+            if (scope == PluginRegistrationScope.Permanent)
+            {
+                RegisterPlugin(pluginType, metadata, plugins, registeredPlugins);
+            }
+            else if (scope == PluginRegistrationScope.Temporary)
+            {
+                RegisterPlugin(pluginType, metadata, plugins, temporaryPlugins);
+            }
         }
 
         private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
@@ -118,20 +150,20 @@ namespace DG.Tools.XrmMockup {
                     var stage = (ExecutionStage)stepConfig.Item1.Item2;
                     var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, new Dictionary<string, EntityMetadata>());
 
-                    AddTrigger(operation, stage, trigger);
+                    AddTrigger(operation, stage, trigger, register);
                 }
             }
             SortAllLists(register);
         }
 
-        private void AddTrigger(EventOperation operation, ExecutionStage stage, PluginTrigger trigger) {
-            if (!registeredPlugins.ContainsKey(operation)) {
-                registeredPlugins.Add(operation, new Dictionary<ExecutionStage, List<PluginTrigger>>());
+        public void AddTrigger(EventOperation operation, ExecutionStage stage, PluginTrigger trigger, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register) {
+            if (!register.ContainsKey(operation)) {
+                register.Add(operation, new Dictionary<ExecutionStage, List<PluginTrigger>>());
             }
-            if (!registeredPlugins[operation].ContainsKey(stage)) {
-                registeredPlugins[operation].Add(stage, new List<PluginTrigger>());
+            if (!register[operation].ContainsKey(stage)) {
+                register[operation].Add(stage, new List<PluginTrigger>());
             }
-            registeredPlugins[operation][stage].Add(trigger);
+            register[operation][stage].Add(trigger);
         }
 
         /// <summary>
@@ -160,10 +192,11 @@ namespace DG.Tools.XrmMockup {
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-            if (!this.registeredPlugins.ContainsKey(operation)) return;
-            if (!this.registeredPlugins[operation].ContainsKey(stage)) return;
-
-            registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            
+            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
+                registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            if(temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
+                temporaryPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
         public void TriggerSystem(EventOperation operation, ExecutionStage stage,
@@ -176,7 +209,7 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        class PluginTrigger : IComparable<PluginTrigger> {
+        internal class PluginTrigger : IComparable<PluginTrigger> {
             public Action<MockupServiceProviderAndFactory> pluginExecute;
 
             string entityName;

@@ -21,7 +21,7 @@ namespace DG.Tools.XrmMockup {
     /// <summary>
     /// Base class for all Plugins.
     /// </summary>    
-    internal class Plugin : IPlugin {
+    public class MockupPlugin : IPlugin {
         protected class LocalPluginContext {
             internal IServiceProvider ServiceProvider {
                 get;
@@ -123,10 +123,10 @@ namespace DG.Tools.XrmMockup {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Plugin"/> class.
+        /// Initializes a new instance of the <see cref="MockupPlugin"/> class.
         /// </summary>
-        /// <param name="childClassName">The <see cref="" cred="Type"/> of the derived class.</param>
-        internal Plugin(Type childClassName) {
+        /// <param name="childClassName">The <see cref="Type"/> of the derived class.</param>
+        internal MockupPlugin(Type childClassName) {
             this.ChildClassName = childClassName.ToString();
         }
 

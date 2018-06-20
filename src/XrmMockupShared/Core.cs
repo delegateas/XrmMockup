@@ -19,6 +19,16 @@ using Microsoft.Xrm.Sdk.Client;
 
 namespace DG.Tools.XrmMockup {
 
+    internal class Snapshot
+    {
+        public XrmDb db;
+        public Security security;
+        public EntityReference AdminUserRef;
+        public EntityReference RootBusinessUnitRef;
+        public Guid OrganizationId;
+        public TimeSpan TimeOffset;
+    }
+
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
@@ -30,6 +40,7 @@ namespace DG.Tools.XrmMockup {
         private XrmMockupSettings settings;
         private MetadataSkeleton metadata;
         private XrmDb db;
+        private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private OrganizationServiceProxy OnlineProxy;
         internal EntityReference baseCurrency;
@@ -68,6 +79,7 @@ namespace DG.Tools.XrmMockup {
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
@@ -135,6 +147,8 @@ namespace DG.Tools.XrmMockup {
                 new RetrieveExchangeRateRequestHandler(this, db, metadata, security),
                 new QualifyLeadRequestHandler(this, db, metadata, security),
                 new CloseIncidentRequestHandler(this, db, metadata, security),
+                new AddMembersTeamRequestHandler(this, db, metadata, security),
+                new RemoveMembersTeamRequestHandler(this, db, metadata, security),
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
                 new IsValidStateTransitionRequestHandler(this, db, metadata, security),
                 new CalculateRollupFieldRequestHandler(this, db, metadata, security),
@@ -227,7 +241,7 @@ namespace DG.Tools.XrmMockup {
                 var manyToMany = relationshipMetadata as ManyToManyRelationshipMetadata;
 
                 if (oneToMany != null) {
-                    if (relationship.PrimaryEntityRole == EntityRole.Referenced) {
+                    if (relationship.PrimaryEntityRole == EntityRole.Referencing) {
                         var entityAttributes = db.GetEntityOrNull(entity.ToEntityReference()).Attributes;
                         if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null) {
                             var referencingGuid = Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
@@ -584,11 +598,60 @@ namespace DG.Tools.XrmMockup {
         #endregion
 
 
+        internal void DisabelRegisteredPlugins(bool include)
+        {
+            pluginManager.DisabelRegisteredPlugins(include);
+        }
+
+        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope)
+        {
+            foreach (var type in basePluginTypes)
+                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope);
+        }
+
+        internal void TakeSnapshot(string snapshotName)
+        {
+            if (snapshots.ContainsKey(snapshotName))
+                snapshots.Remove(snapshotName);
+            var snapshot = new Snapshot()
+            {
+                db = this.db.Clone(),
+                AdminUserRef = this.AdminUserRef,
+                OrganizationId = this.OrganizationId,
+                RootBusinessUnitRef = this.RootBusinessUnitRef,
+                TimeOffset = this.TimeOffset,
+                security = this.security.Clone(),
+            };
+            snapshots.Add(snapshotName, snapshot);
+        }
+
+        internal void RestoreToSnapshot(string snapshotName)
+        {
+            if (!snapshots.ContainsKey(snapshotName))
+                throw new KeyNotFoundException("A Snapshot with that name does not exist");
+            var snapshot = snapshots[snapshotName];
+            this.db = snapshot.db.Clone();
+            this.security = snapshot.security.Clone();
+            this.AdminUserRef = snapshot.AdminUserRef;
+            this.RootBusinessUnitRef = snapshot.RootBusinessUnitRef;
+            this.TimeOffset = snapshot.TimeOffset;
+            this.OrganizationId = snapshot.OrganizationId;
+            this.RequestHandlers = GetRequestHandlers(this.db);
+        }
+
+        internal void DeleteSnapshot(string snapshotName)
+        {
+            if (!snapshots.ContainsKey(snapshotName))
+                throw new KeyNotFoundException("A Snapshot with that name does not exist");
+            snapshots.Remove(snapshotName);
+        }
+
         internal void ResetEnvironment() {
             this.TimeOffset = new TimeSpan();
             if (settings.IncludeAllWorkflows == false) {
                 workflowManager.ResetWorkflows();
             }
+            pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();

@@ -7,6 +7,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
@@ -288,57 +289,71 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId) {
-            var privPotc = new LinkEntity(PRIVILEGE, PRIVILEGE_OTC, "privilegeid", "privilegeid", JoinOperator.LeftOuter) {
-                Columns = new ColumnSet("objecttypecode"),
-                EntityAlias = PRIVILEGE_POTCH
+            // Queries
+            var privQuery = new QueryExpression(PRIVILEGE)
+            {
+                ColumnSet = new ColumnSet("privilegeid", "accessright", "canbeglobal", "canbedeep", "canbelocal", "canbebasic")
             };
-            var rpR = new LinkEntity(ROLEPRIVILEGES, ROLE, "roleid", "parentrootroleid", JoinOperator.LeftOuter) {
-                Columns = new ColumnSet("name", "roleid", "roletemplateid"),
-                LinkCriteria = new FilterExpression()
+            var privileges = QueryPaging(privQuery);
+
+            var privOTCQuery = new QueryExpression(PRIVILEGE_OTC)
+            {
+                ColumnSet = new ColumnSet("privilegeid", "objecttypecode")
             };
-            rpR.LinkCriteria.AddCondition("businessunitid", ConditionOperator.Equal, rootBUId);
-            rpR.EntityAlias = ROLEPRIVILEGE_ROLE_ALIAS;
+            var privilegeOTCs = QueryPaging(privOTCQuery);
 
-            var privRp = new LinkEntity(PRIVILEGE, ROLEPRIVILEGES, "privilegeid", "privilegeid", JoinOperator.LeftOuter) {
-                Columns = new ColumnSet("privilegedepthmask")
+            var rolePrivQuery = new QueryExpression(ROLEPRIVILEGES)
+            {
+                ColumnSet = new ColumnSet("privilegeid", "roleid", "privilegedepthmask")
             };
-            privRp.LinkEntities.Add(rpR);
-            privRp.LinkEntities.Add(privPotc);
-            privRp.EntityAlias = PRIVILEGE_ROLEPRIVILEGE_ALIAS;
+            var rolePrivileges = QueryPaging(rolePrivQuery);
 
-            var query = new QueryExpression(PRIVILEGE) {
-                ColumnSet = new ColumnSet("accessright", "canbeglobal", "canbedeep", "canbelocal", "canbebasic")
+            var roleQuery = new QueryExpression(ROLE)
+            {
+                ColumnSet = new ColumnSet("parentrootroleid", "name", "roleid", "roletemplateid", "businessunitid")
             };
-            query.LinkEntities.Add(privRp);
+            var rolelist = QueryPaging(roleQuery);
 
-            var entities = new List<Entity>();
-            query.PageInfo.PageNumber = 1;
+            // Joins
+            // rpr <- roleprivileges left outer join roles
+            var roleprivilegeLOJrole =
+                from roleprivilege in rolePrivileges
+                join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id into res
+                from role in res.DefaultIfEmpty()
+                where ((EntityReference)role["businessunitid"]).Id.Equals(rootBUId)
+                select new { roleprivilege, role };
 
-            var resp = service.RetrieveMultiple(query);
-            entities.AddRange(resp.Entities);
-            while (resp.MoreRecords) {
-                query.PageInfo.PageNumber = query.PageInfo.PageNumber + 1;
-                query.PageInfo.PagingCookie = resp.PagingCookie;
-                resp = service.RetrieveMultiple(query);
-                entities.AddRange(resp.Entities);
-            }
+            // pp <- privileges left outer join privilegeOTCs
+            var privilegesLOJprivilegeOTCs =
+                from privilege in privileges
+                join privilegeOTC in privilegeOTCs on ((Guid)privilege["privilegeid"]) equals ((EntityReference)privilegeOTC["privilegeid"]).Id into res
+                from privilegeOTC in res.DefaultIfEmpty()
+                select new { privilege, privilegeOTC };
 
+            // entities <- pp left outer join rpr
+            var entities =
+                from pp in privilegesLOJprivilegeOTCs
+                join rpr in roleprivilegeLOJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
+                from rpr in res.DefaultIfEmpty()
+                select new { pp, rpr };
+            
+            // Role generation
             var roles = new Dictionary<Guid, SecurityRole>();
-            foreach (var e in entities.Where(e => e.Attributes.ContainsKey(ROLEPRIVILEGE_ROLE_ALIAS + ".roleid"))) {
-                var entityName = e.GetAttributeValue<AliasedValue>(PRIVILEGE_POTCH + ".objecttypecode").Value as string;
+            foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid"))) {  
+                var entityName = (string)e.pp.privilegeOTC["objecttypecode"];  
                 if (entityName == "none") continue;
 
-                var rp = ToRolePrivilege(e);
+                var rp = ToRolePrivilege(e.pp.privilege, e.rpr.roleprivilege);
                 if (rp.AccessRight == AccessRights.None) continue;
-                var roleId = (Guid)e.GetAttributeValue<AliasedValue>(ROLEPRIVILEGE_ROLE_ALIAS + ".roleid").Value;
+                var roleId = (Guid)e.rpr.roleprivilege["roleid"];   
                 if (!roles.ContainsKey(roleId)) {
                     roles[roleId] = new SecurityRole() {
-                        Name = e.GetAttributeValue<AliasedValue>(ROLEPRIVILEGE_ROLE_ALIAS + ".name").Value as string,
+                        Name = (string)e.rpr.role["name"],  
                         RoleId = roleId
                     };
 
-                    if (e.Attributes.ContainsKey(ROLEPRIVILEGE_ROLE_ALIAS + ".roletemplateid")) {
-                        roles[roleId].RoleTemplateId = (e.GetAttributeValue<AliasedValue>(ROLEPRIVILEGE_ROLE_ALIAS + ".roletemplateid").Value as EntityReference).Id;
+                    if (e.rpr.role.Attributes.ContainsKey("roletemplateid")) {     
+                        roles[roleId].RoleTemplateId = ((EntityReference)e.rpr.role["roletemplateid"]).Id; 
                     }
 
                     roles[roleId].Privileges = new Dictionary<string, Dictionary<AccessRights, RolePrivilege>>();
@@ -353,6 +368,22 @@ namespace DG.Tools.XrmMockup.Metadata
             return roles;
         }
 
+        private List<Entity> QueryPaging(QueryExpression query)
+        {
+            query.PageInfo.PageNumber = 1;
+            var entities = new List<Entity>();
+            var resp = service.RetrieveMultiple(query);
+            entities.AddRange(resp.Entities);
+            while (resp.MoreRecords)
+            {
+                query.PageInfo.PageNumber = query.PageInfo.PageNumber + 1;
+                query.PageInfo.PagingCookie = resp.PagingCookie;
+                resp = service.RetrieveMultiple(query);
+                entities.AddRange(resp.Entities);
+            }
+            return entities;
+        }
+
         private PrivilegeDepth PrivilegeDepthToEnum(int privilegeDepth) {
             switch (privilegeDepth) {
                 case 1: return PrivilegeDepth.Basic;
@@ -364,14 +395,14 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-        private RolePrivilege ToRolePrivilege(Entity e) {
+        private RolePrivilege ToRolePrivilege(Entity e1, Entity e2) {
             var rp = new RolePrivilege() {
-                CanBeGlobal = e.GetAttributeValue<bool>("canbeglobal"),
-                CanBeDeep = e.GetAttributeValue<bool>("canbedeep"),
-                CanBeLocal = e.GetAttributeValue<bool>("canbelocal"),
-                CanBeBasic = e.GetAttributeValue<bool>("canbebasic"),
-                AccessRight = e.GetAttributeValue<AccessRights>("accessright"),
-                PrivilegeDepth = PrivilegeDepthToEnum((int)e.GetAttributeValue<AliasedValue>(PRIVILEGE_ROLEPRIVILEGE_ALIAS + ".privilegedepthmask").Value)
+                CanBeGlobal = e1.GetAttributeValue<bool>("canbeglobal"),
+                CanBeDeep = e1.GetAttributeValue<bool>("canbedeep"),
+                CanBeLocal = e1.GetAttributeValue<bool>("canbelocal"),
+                CanBeBasic = e1.GetAttributeValue<bool>("canbebasic"),
+                AccessRight = e1.GetAttributeValue<AccessRights>("accessright"),
+                PrivilegeDepth = PrivilegeDepthToEnum((int)e2["privilegedepthmask"])
             };
             return rp;
 

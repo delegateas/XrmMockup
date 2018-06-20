@@ -52,6 +52,19 @@ namespace DG.Tools.XrmMockup.Database {
         IEnumerator IEnumerable.GetEnumerator() {
             return MainDict.Values.GetEnumerator();
         }
+
+        public DbTable Clone()
+        {
+            //var attributeMetadata = this._attributeMetadata.ToDictionary(x => x.Key, x => x.Value);
+            var clonedTable = new DbTable(this.Metadata)
+            {
+                TableName = this.TableName,
+                //_attributeMetadata = attributeMetadata,                
+            };
+            var clonedMainDict = this.MainDict.ToDictionary(x => x.Key, x => x.Value.Clone(clonedTable));
+            clonedTable.MainDict = clonedMainDict;
+            return clonedTable;
+        }
     }
 }
 

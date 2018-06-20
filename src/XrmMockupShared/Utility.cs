@@ -929,6 +929,7 @@ namespace DG.Tools.XrmMockup
         public const string Contact = "contact";
         public const string Lead = "lead";
         public const string Opportunity = "opportunity";
+        public const string TeamMembership = "teammembership";
     }
 
     [DataContract()]
