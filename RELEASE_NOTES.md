@@ -1,3 +1,6 @@
+### 0.9.3-beta - June 13 2018
+* Fixed a bug in ExecuteMultiple where IsFaulted was not set
+
 ### 0.9.2-beta - June 07 2018
 * Fix bug in Owner Team where members could not access records that the team had access too
 
