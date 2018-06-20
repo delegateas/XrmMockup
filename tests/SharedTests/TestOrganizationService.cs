@@ -7,7 +7,8 @@ using System.Linq;
 using System.ServiceModel;
 using System.Text;
 
-namespace SharedTests {
+namespace DG.XrmMockupTest
+{
     [TestClass]
     public class TestOrganizationService : UnitTestBase {
         [TestMethod]

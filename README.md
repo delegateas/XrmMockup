@@ -1,4 +1,5 @@
-# XrmMockup
+# XrmMockup [![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/delegateAS/XrmMockup?svg=true&branch=master)](https://ci.appveyor.com/project/DelegateAS/XrmMockup) [![NuGet Pre Release](https://img.shields.io/nuget/vpre/XrmMockup365.svg)](https://www.nuget.org/packages?q=XrmMockup)
+
 
 XrmMockup is a tool which simulates ***your*** exact Dynamics 365/CRM instance locally including all of its logic in the form of workflows, plugins, and the security model.
 

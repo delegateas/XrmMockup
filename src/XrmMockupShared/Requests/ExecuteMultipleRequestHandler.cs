@@ -38,11 +38,13 @@ namespace DG.Tools.XrmMockup {
                     responses.Add(resp);
                     if (!request.Settings.ContinueOnError) {
                         toReturn.Results["Responses"] = responses;
+                        toReturn.Results["IsFaulted"] = true;
                         return toReturn;
                     }
                 }
             }
             toReturn.Results["Responses"] = responses;
+            toReturn.Results["IsFaulted"] = responses.Any(x => x.Fault != null);
             return toReturn;
         }
     }

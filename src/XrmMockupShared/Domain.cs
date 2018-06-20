@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace DG.Tools.XrmMockup {
 
+    /// <summary>
+    /// Enum for defining the scope of the registered plugin
+    /// </summary>
+    public enum PluginRegistrationScope {
+        Permanent = 0,
+        Temporary = 1,
+    }
 
     internal enum ExecutionMode {
         Synchronous = 0,

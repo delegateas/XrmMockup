@@ -1,3 +1,38 @@
+### 0.9.3-beta - June 13 2018
+* Fixed a bug in ExecuteMultiple where IsFaulted was not set
+
+### 0.9.2-beta - June 07 2018
+* Fix bug in Owner Team where members could not access records that the team had access too
+
+### 0.9.1-beta - June 07 2018
+* Reverted handling of access teams
+* Reverted TeamType for now as access teams are not supported
+* CreateTeam now creates an owner team explicitly
+* Fix bugs in AddMembersTeamRequest and RemoveMembersTeamRequest
+
+### 0.9.0-beta - June 06 2018
+* Add user priviliage check access through owner teams
+* Update teams to handle Owner teams
+* Updated CreateTeam methods to also excpect a team type
+* Add new methods for adding or removing users from a team
+* Fix bug when fetching security roles in Metadata Generator
+
+### 0.8.1-beta - May 25 2018
+* Added new method for registering additional plugins
+* Added new method for disabling registered plugins
+* It is now possible to test a selection of plugins
+* XML documentation is added to nuget package
+
+### 0.8.0-beta - May 23 2018
+* Add new snapshot feature. It is now possible to take a snapshot of the database and swap between different snapshot making for faster initialization setup
+* Fixed Assign Request to actually update the owner
+* Fixed issue in cascading behaviour due to incorrect fetching of related entities.
+* Implemented new requests:
+ - IsValidStateTransition
+ - CloseIncident
+ - RetrieveExchangeRate
+* Added filtering of metadata in RetrieveEntityRequest
+
 ### 0.7.3-beta - February 23 2018
 * Changed dependency description of workflow dll for 365 version.
 

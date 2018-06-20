@@ -110,7 +110,7 @@ namespace DG.Tools.XrmMockup {
             Utility.SetOwner(db, security, metadata, clonedEntity, owner);
 
             if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
-                clonedEntity.LogicalName == LogicalNames.SystemUser || clonedEntity.LogicalName == LogicalNames.Team) {
+                (clonedEntity.LogicalName == LogicalNames.SystemUser || clonedEntity.LogicalName == LogicalNames.Team)) {
                 clonedEntity["businessunitid"] = metadata.RootBusinessUnit.ToEntityReference();
             }
 

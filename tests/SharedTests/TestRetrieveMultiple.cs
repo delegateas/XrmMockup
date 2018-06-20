@@ -250,21 +250,27 @@ namespace DG.XrmMockupTest {
                 var retrieved2 = this.orgAdminUIService.Retrieve(Account.EntityLogicalName, id2,
                     new ColumnSet("accountid")).ToEntity<Account>();
                 context.Attach(retrieved2);
+                context.LoadEnumeration(retrieved, x => x.Referencedaccount_parent_account);
 
-                var test = context.LoadEnumeration(retrieved, x => x.Referencedaccount_parent_account);
-                var test2 = context.Load(retrieved2, x => x.Referencingaccount_parent_account);
+                var testEnumeration1 = context.LoadEnumeration(retrieved, x => x.Referencedaccount_parent_account);
+                var testEnumeration2 = context.LoadEnumeration(retrieved2, x => x.Referencedaccount_parent_account);
+                var testRelated1 = context.Load(retrieved, x => x.Referencingaccount_parent_account);
+                var testRelated2 = context.Load(retrieved2, x => x.Referencingaccount_parent_account);
 
                 var accountsWithContacts =
                     context.AccountSet
                         .Join<Account, Contact, Guid, object>(context.ContactSet, acc => acc.Id, c => c.ParentCustomerId.Id, (acc, c) => new { acc, c })
                         .FirstOrDefault();
 
-                Assert.IsTrue(test.Count() > 0);
-                Assert.IsTrue(test2.RelatedEntities.Count() > 0);
-                Assert.IsTrue(test2.RelatedEntities.Values.First().Entities.Count() > 0);
-                Assert.AreEqual(test.Count(), test2.RelatedEntities.Values.First().Entities.Count());
+                Assert.IsTrue(testEnumeration1.Count() == 0);
+                Assert.IsTrue(testEnumeration2.Count() > 0);
+                Assert.IsNotNull(testRelated1);
+                Assert.IsNull(testRelated2);
+                Assert.IsTrue(testRelated1.RelatedEntities.Count() > 0);
+                Assert.IsTrue(testRelated1.RelatedEntities.Values.First().Entities.Count() > 0);
+                Assert.AreEqual(testEnumeration2.Count(), testRelated1.RelatedEntities.Values.First().Entities.Count());
                 Assert.AreEqual(retrieved.ParentAccountId.Id, id2);
-                Assert.AreEqual(retrieved.Referencedaccount_parent_account?.FirstOrDefault()?.Id, id2);
+                Assert.AreEqual(retrieved2.Referencedaccount_parent_account?.FirstOrDefault()?.Id, id1);
             }
         }
 

@@ -67,7 +67,7 @@ namespace DG.XrmMockupTest {
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithResults);
 
                 Assert.AreEqual(5, responseWithResults.Responses.Count);
-
+                Assert.IsFalse(responseWithResults.IsFaulted);
                 // Display the results returned in the responses.
                 foreach (var responseItem in responseWithResults.Responses) {
                     var response = responseItem.Response;
@@ -117,6 +117,7 @@ namespace DG.XrmMockupTest {
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithNoResults);
 
                 Assert.AreEqual(0, responseWithNoResults.Responses.Count);
+                Assert.IsFalse(responseWithNoResults.IsFaulted);
 
             }
         }
@@ -155,6 +156,7 @@ namespace DG.XrmMockupTest {
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithContinueOnError);
 
                 Assert.AreEqual(2, responseWithContinueOnError.Responses.Count);
+                Assert.IsTrue(responseWithContinueOnError.IsFaulted);
                 Assert.IsTrue(responseWithContinueOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
 
@@ -195,6 +197,7 @@ namespace DG.XrmMockupTest {
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithStopOnError);
 
                 Assert.AreEqual(1, responseWithStopOnError.Responses.Count);
+                Assert.IsTrue(responseWithStopOnError.IsFaulted);
                 Assert.IsTrue(responseWithStopOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
 
@@ -239,6 +242,7 @@ namespace DG.XrmMockupTest {
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
                 Assert.AreEqual(3, responseWithContinueOnErrorAndReturns.Responses.Count(
                     x => x.Response != null && x.Fault == null));
+                Assert.IsTrue(responseWithContinueOnErrorAndReturns.IsFaulted);
 
 
             }
@@ -281,6 +285,7 @@ namespace DG.XrmMockupTest {
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
                 Assert.AreEqual(1, responseWithStopOnErrorAndReturns.Responses.Count(
                     x => x.Response != null && x.Fault == null));
+                Assert.IsTrue(responseWithStopOnErrorAndReturns.IsFaulted);
             }
         }
 

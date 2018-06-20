@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestActivities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOpportunity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOrderByQueryExpression.cs" />
@@ -34,8 +35,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestServiceRoles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSecurityRoles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSharing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestSnapshot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestStates.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />

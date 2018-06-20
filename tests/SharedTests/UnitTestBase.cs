@@ -37,7 +37,8 @@ namespace DG.XrmMockupTest {
             this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             this.orgAdminService = crm.GetAdminService();
-            this.orgRealDataService = crmRealData.GetAdminService();
+            if(crmRealData != null)
+                this.orgRealDataService = crmRealData.GetAdminService();
         }
 
         [TestCleanup]
@@ -60,36 +61,51 @@ namespace DG.XrmMockupTest {
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
             };
 
-            var realDataSettings = new XrmMockupSettings {
-                BasePluginTypes = settings.BasePluginTypes,
-                CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
-                EnableProxyTypes = settings.EnableProxyTypes,
-                IncludeAllWorkflows = settings.IncludeAllWorkflows,
-                ExceptionFreeRequests = settings.ExceptionFreeRequests,
-                //OnlineEnvironment = new Env {
-                //    providerType = AuthenticationProviderType.OnlineFederation,
-                //    uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-                //    username = "exampleUser",
-                //    password = "examplePass"
-                //}
-        };
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);
-            crmRealData = XrmMockup2011.GetInstance(realDataSettings);
 #elif XRM_MOCKUP_TEST_2013
             crm = XrmMockup2013.GetInstance(settings);
-            crmRealData = XrmMockup2013.GetInstance(realDataSettings);
 #elif XRM_MOCKUP_TEST_2015
             crm = XrmMockup2015.GetInstance(settings);
-            crmRealData = XrmMockup2015.GetInstance(realDataSettings);
 #elif XRM_MOCKUP_TEST_2016
             crm = XrmMockup2016.GetInstance(settings);
-            crmRealData = XrmMockup2016.GetInstance(realDataSettings);
 #elif XRM_MOCKUP_TEST_365
             crm = XrmMockup365.GetInstance(settings);
-            crmRealData = XrmMockup365.GetInstance(realDataSettings);
 #endif
+
+            try
+            {
+                var realDataSettings = new XrmMockupSettings
+                {
+                    BasePluginTypes = settings.BasePluginTypes,
+                    CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
+                    EnableProxyTypes = settings.EnableProxyTypes,
+                    IncludeAllWorkflows = settings.IncludeAllWorkflows,
+                    ExceptionFreeRequests = settings.ExceptionFreeRequests,
+                    OnlineEnvironment = new Env
+                    {
+                        providerType = AuthenticationProviderType.OnlineFederation,
+                        uri = "https://exampleURL/XRMServices/2011/Organization.svc",
+                        username = "exampleUser",
+                        password = "examplePass"
+                    }
+                };
+#if XRM_MOCKUP_TEST_2011
+                crmRealData = XrmMockup2011.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2013
+                crmRealData = XrmMockup2013.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2015
+                crmRealData = XrmMockup2015.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2016
+                crmRealData = XrmMockup2016.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_365
+                crmRealData = XrmMockup365.GetInstance(realDataSettings);
+#endif
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
-
 }
