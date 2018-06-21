@@ -2,6 +2,7 @@
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,31 +43,27 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("This object type cannot be added to a queue.");
             }
 
-
-            DbRow queueItem = null;
-            queueItem = db.GetDBEntityRows("queueitem")
+            DbRow queueItemRow = null;
+            queueItemRow = db.GetDBEntityRows("queueitem")
                 .FirstOrDefault(r =>
-                    r.GetColumn<EntityReference>("objectid").Id == request.Target.Id &&
-                    r.GetColumn<EntityReference>("queueid").Id == (request.SourceQueueId != Guid.Empty ? request.SourceQueueId : request.DestinationQueueId));
+                    r.GetColumn<DbRow>("objectid")?.Id == request.Target.Id &&
+                    r.GetColumn<DbRow>("queueid")?.Id == (request.SourceQueueId != Guid.Empty ? request.SourceQueueId : request.DestinationQueueId));
 
             Entity source = null;
-            if(request.SourceQueueId != Guid.Empty)
+            if (request.SourceQueueId != Guid.Empty)
             {
                 source = db.GetEntityOrNull(new EntityReference("queue", request.SourceQueueId));
             }
 
-            if (request.SourceQueueId != Guid.Empty && (queueItem == null || source == null))
+            var target = db.GetEntityOrNull(request.Target);
+
+            if (request.SourceQueueId != Guid.Empty && (queueItemRow == null || source == null))
             {
                 throw new FaultException($"Could not find any queue item associated with the Target with id: {request.Target.Id} in the specified SourceQueueId: {request.SourceQueueId}. Either the SourceQueueId or Target is invalid or the queue item does not exist.");
             }
-            else if (queueItem == null)
+            else if (queueItemRow == null && target == null)
             {
-                var target = db.GetDbRowOrNull(request.Target);
-
-                if (target == null)
-                {
-                    throw new FaultException($"{request.Target.LogicalName} With Id = {request.Target.Id} Does Not Exist");
-                }
+                throw new FaultException($"{request.Target.LogicalName} With Id = {request.Target.Id} Does Not Exist");
             }
 
             var destination = db.GetEntityOrNull(new EntityReference("queue", request.DestinationQueueId));
@@ -80,17 +77,17 @@ namespace DG.Tools.XrmMockup
             {
                 var propertiesMetadata = metadata.EntityMetadata.GetMetadata(request.QueueItemProperties.LogicalName);
 
-                if(propertiesMetadata == null)
+                if (propertiesMetadata == null)
                 {
                     throw new FaultException($"The entity with a name = '{request.QueueItemProperties.LogicalName}' was not found in the MetadataCache.");
                 }
 
-                if(propertiesMetadata.LogicalName != "queueitem")
+                if (propertiesMetadata.LogicalName != "queueitem")
                 {
                     throw new FaultException("An unexpected error occured.");
                 }
                 var attributeLogicalNames = propertiesMetadata.Attributes.Select(a => a.LogicalName).ToList();
-                
+
                 var unsupportedAttribute = request
                     .QueueItemProperties
                     .Attributes
@@ -103,19 +100,39 @@ namespace DG.Tools.XrmMockup
                 }
             }
 
+            bool hasTargetPermission = security.HasPermission(target, AccessRights.ReadAccess, userRef);
+
+            bool hasQueueItemPermission = security.HasPermission(new Entity("queueitem"), AccessRights.None, userRef);
+
             bool hasQueuePermission = security.HasPermission(destination, AccessRights.ReadAccess, userRef) &&
                 (request.SourceQueueId == Guid.Empty || security.HasPermission(source, AccessRights.ReadAccess, userRef));
 
-            if(!hasQueuePermission)
+            if (!hasQueuePermission || !hasTargetPermission || !hasQueueItemPermission)
             {
                 throw new FaultException($"Principal user (Id={userRef.Id}, type=8) is missing prvReadQueue privilege (Id=b140e729-dfeb-4ba1-a33f-39ff830bac90)");
             }
 
-            // TODO: Missing some permission checks QueueItem and on Target prop https://msdn.microsoft.com/en-us/library/microsoft.crm.sdk.messages.addtoqueuerequest.aspx
-            // TODO: Missing tests
+            Entity queueItem = queueItemRow?.ToEntity();
+            if (queueItemRow == null)
+            {
+
+                queueItem = request.QueueItemProperties != null ? Utility.CloneEntity(request.QueueItemProperties) : new Entity("queueitem");
+                queueItem.Id = Guid.Empty;
+                queueItem["queueid"] = destination.ToEntityReference();
+                var createQueueItemRequest = new CreateRequest
+                {
+                    Target = queueItem
+                };
+                queueItem.Id = (core.Execute(createQueueItemRequest as OrganizationRequest, userRef) as CreateResponse).id;
+            }
+            else
+            {
+                queueItem["queueid"] = destination.ToEntityReference();
+                db.Update(queueItem);
+            }
 
             var response = new AddToQueueResponse();
-            response["QueueItemId"] = queueItem != null ? queueItem.Id : Guid.NewGuid();
+            response["QueueItemId"] = queueItem.Id;
             return response;
         }
     }

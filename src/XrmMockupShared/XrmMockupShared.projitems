@@ -19,6 +19,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\AddMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\AddPrincipalToQueueRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveUserQueuesRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveFromQueueRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\ReleaseToQueueRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\PickFromQueueRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\AddToQueueRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CloseIncidentRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\IsValidStateTransitionRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />

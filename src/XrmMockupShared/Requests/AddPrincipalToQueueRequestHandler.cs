@@ -38,7 +38,7 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Expected non-empty Guid.");
             }
 
-            var queue = db.GetDbRowOrNull(new EntityReference("queue", request.QueueId));
+            var queue = db.GetEntityOrNull(new EntityReference("queue", request.QueueId));
 
             if(queue == null)
             {
@@ -56,6 +56,15 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("An unexpected error occurred.");
             }
+
+            bool hasQueuePermission = security.HasPermission(queue, AccessRights.WriteAccess, userRef);
+
+            if(!hasQueuePermission)
+            {
+                throw new FaultException($"Principal user(Id={userRef.Id}, type=8) is missing prvWriteQueue");
+            }
+
+            // TODO ADD THE PRINCIPALS AS MEMBERS TO THE QUEUE
 
             return new AddPrincipalToQueueResponse();
         }
