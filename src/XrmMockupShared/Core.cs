@@ -153,6 +153,10 @@ namespace DG.Tools.XrmMockup {
                 new IsValidStateTransitionRequestHandler(this, db, metadata, security),
                 new CalculateRollupFieldRequestHandler(this, db, metadata, security),
                 new AddPrincipalToQueueRequestHandler(this, db, metadata, security),
+                new PickFromQueueRequestHandler(this, db, metadata, security),
+                new ReleaseToQueueRequestHandler(this, db, metadata, security),
+                new RemoveFromQueueRequestHandler(this, db, metadata, security),
+                new RetrieveUserQueuesRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 new UpsertRequestHandler(this, db, metadata, security),

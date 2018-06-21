@@ -5,12 +5,15 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk.Query;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
     [TestClass]
     public class TestQueue : UnitTestBase
     {
+        // Excluded from CRM 2011 & 2015 because of context generation issue for these versions
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2015)
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
         #region AddPrincipalToQueueRequest
         [TestMethod]
@@ -229,6 +232,13 @@ namespace DG.XrmMockupTest
 
             var response = orgAdminUIService.Execute(request) as AddPrincipalToQueueResponse;
             Assert.IsNotNull(response);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var queueMembership = context.QueueMembershipSet.Where(x => x.QueueId == queue.Id && x.SystemUserId == systemUser.Id).FirstOrDefault();
+
+                Assert.IsNotNull(queueMembership);
+            }
         }
         #endregion
 
@@ -418,7 +428,7 @@ namespace DG.XrmMockupTest
 
             var newQueueItem = orgAdminUIService.Retrieve(QueueItem.EntityLogicalName, queueItem.Id, new ColumnSet(true)) as QueueItem;
             Assert.IsNotNull(newQueueItem);
-            Assert.IsTrue(queueItem.WorkerId.Id == orgUser.Id);
+            Assert.IsTrue(newQueueItem.WorkerId.Id == orgUser.Id);
         }
         #endregion
 
@@ -490,13 +500,23 @@ namespace DG.XrmMockupTest
 
             letter.Id = orgAdminUIService.Create(letter);
 
+            var orgUser = new SystemUser();
+
+            orgUser.Id = orgAdminUIService.Create(orgUser);
+
             var queueItem = new QueueItem
             {
                 QueueId = queue.ToEntityReference(),
-                ObjectId = letter.ToEntityReference()
+                ObjectId = letter.ToEntityReference(),
+                WorkerId = orgUser.ToEntityReference()
             };
 
             queueItem.Id = orgAdminUIService.Create(queueItem);
+
+            var assignedQueueItem = orgAdminUIService.Retrieve(QueueItem.EntityLogicalName, queueItem.Id, new ColumnSet(true)) as QueueItem;
+            Assert.IsNotNull(assignedQueueItem);
+            Assert.AreEqual(orgUser.Id, assignedQueueItem.WorkerId.Id);
+            Assert.AreEqual(queue.Id, assignedQueueItem.QueueId.Id);
 
             var request = new ReleaseToQueueRequest
             {
@@ -506,6 +526,11 @@ namespace DG.XrmMockupTest
             var response = orgAdminUIService.Execute(request) as ReleaseToQueueResponse;
 
             Assert.IsNotNull(response);
+            
+            var releasedQueueItem = orgAdminUIService.Retrieve(QueueItem.EntityLogicalName, queueItem.Id, new ColumnSet(true)) as QueueItem;
+            Assert.IsNotNull(releasedQueueItem);
+            Assert.IsNull(releasedQueueItem.WorkerId);
+            Assert.AreEqual(queue.Id, assignedQueueItem.QueueId.Id);
         }
         #endregion
 
@@ -585,14 +610,22 @@ namespace DG.XrmMockupTest
 
             queueItem.Id = orgAdminUIService.Create(queueItem);
 
-            var request = new RemoveFromQueueRequest
+            var addedQueueItem = orgAdminUIService.Retrieve(QueueItem.EntityLogicalName, queueItem.Id, new ColumnSet(true)) as QueueItem;
+
+            Assert.AreEqual(addedQueueItem.QueueId.Id, queue.Id);
+
+            var removeRequest = new RemoveFromQueueRequest
             {
                 QueueItemId = queueItem.Id
             };
 
-            var response = orgAdminUIService.Execute(request) as RemoveFromQueueResponse;
+            var response = orgAdminUIService.Execute(removeRequest) as RemoveFromQueueResponse;
 
             Assert.IsNotNull(response);
+
+            var removedQueueItem = orgAdminUIService.Retrieve(QueueItem.EntityLogicalName, queueItem.Id, new ColumnSet(true)) as QueueItem;
+
+            Assert.IsNull(removedQueueItem.QueueId);
         }
         #endregion
 
@@ -650,7 +683,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestRetrieveUserQueuesRetrivesPublicQueues()
         {
-
+            // TODO
         }
         #endregion
 #endif
@@ -1075,5 +1108,6 @@ namespace DG.XrmMockupTest
         }
 
         #endregion
+#endif
     }
 }
