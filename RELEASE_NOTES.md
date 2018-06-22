@@ -1,3 +1,6 @@
+### 0.9.4-beta - June 22 2018
+* Fixed a bug where registered plugins are disabled when XrmMockup is initialized first time
+
 ### 0.9.3-beta - June 13 2018
 * Fixed a bug in ExecuteMultiple where IsFaulted was not set
 
