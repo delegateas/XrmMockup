@@ -1,3 +1,6 @@
+### 0.9.5-beta - June 29 2018
+* Fixed a bug when accessing ParentPluginContext on a PluginContext.
+
 ### 0.9.4-beta - June 22 2018
 * Fixed a bug where registered plugins are disabled when XrmMockup is initialized first time
 
