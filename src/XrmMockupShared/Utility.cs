@@ -930,6 +930,11 @@ namespace DG.Tools.XrmMockup
         public const string Lead = "lead";
         public const string Opportunity = "opportunity";
         public const string TeamMembership = "teammembership";
+        public const string Queue = "queue";
+        public const string QueueMembership = "queuemembership";
+        public const string QueueItem = "queueitem";
+        public const string Incident = "incident";
+        public const string IncidentResolution = "incidentresolution";
     }
 
     [DataContract()]
