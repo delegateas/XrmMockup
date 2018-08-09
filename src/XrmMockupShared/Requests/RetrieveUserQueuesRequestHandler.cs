@@ -26,17 +26,17 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Expected non-empty Guid.");
             }
 
-            var queueMemberships =
-                (from queue in db.GetDBEntityRows("queue")
+            var userQueues =
+                (from queue in db.GetDBEntityRows(LogicalNames.Queue)
                  where request.IncludePublic || queue.GetColumn<int>("queueviewtype") == 1
-                 join membership in db.GetDBEntityRows("queuemembership") on queue.Id equals membership.GetColumn<Guid?>("queueid").Value
-                 where membership.GetColumn<Guid?>("systemuserid").Value == request.UserId
+                 join membership in db.GetDBEntityRows(LogicalNames.QueueMembership) on queue.Id equals membership.GetColumn<Guid?>("queueid").Value
+                 where membership.GetColumn<Guid?>("systemuserid").HasValue && membership.GetColumn<Guid?>("systemuserid").Value == request.UserId
                  select queue.ToEntity())
                 .ToList();
 
-            var queueCollection = new EntityCollection(queueMemberships)
+            var queueCollection = new EntityCollection(userQueues)
             {
-                EntityName = "queue"
+                EntityName = LogicalNames.Queue
             };
 
             var response = new RetrieveUserQueuesResponse();

@@ -26,18 +26,18 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Expected non-empty Guid.");
             }
 
-            var worker = db.GetEntityOrNull(new EntityReference("systemuser", request.WorkerId));
+            var worker = db.GetEntityOrNull(new EntityReference(LogicalNames.SystemUser, request.WorkerId));
 
             if(worker == null)
             {
                 throw new FaultException($"Invalid workerid: {request.WorkerId} of type 8");
             }
 
-            var queueItem = db.GetEntityOrNull(new EntityReference("queueitem", request.QueueItemId));
+            var queueItem = db.GetEntityOrNull(new EntityReference(LogicalNames.QueueItem, request.QueueItemId));
 
             if(queueItem == null)
             {
-                throw new FaultException($"queueitem With Id = {request.QueueItemId} Does Not Exist");
+                throw new FaultException($"{LogicalNames.QueueItem} With Id = {request.QueueItemId} Does Not Exist");
             }
 
             if(!security.HasPermission(queueItem, AccessRights.WriteAccess, userRef))

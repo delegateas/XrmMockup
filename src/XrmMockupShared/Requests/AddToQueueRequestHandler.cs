@@ -44,7 +44,7 @@ namespace DG.Tools.XrmMockup
             }
 
             DbRow queueItemRow = null;
-            queueItemRow = db.GetDBEntityRows("queueitem")
+            queueItemRow = db.GetDBEntityRows(LogicalNames.QueueItem)
                 .FirstOrDefault(r =>
                     r.GetColumn<DbRow>("objectid")?.Id == request.Target.Id &&
                     r.GetColumn<DbRow>("queueid")?.Id == (request.SourceQueueId != Guid.Empty ? request.SourceQueueId : request.DestinationQueueId));
@@ -52,7 +52,7 @@ namespace DG.Tools.XrmMockup
             Entity source = null;
             if (request.SourceQueueId != Guid.Empty)
             {
-                source = db.GetEntityOrNull(new EntityReference("queue", request.SourceQueueId));
+                source = db.GetEntityOrNull(new EntityReference(LogicalNames.Queue, request.SourceQueueId));
             }
 
             var target = db.GetEntityOrNull(request.Target);
@@ -66,7 +66,7 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"{request.Target.LogicalName} With Id = {request.Target.Id} Does Not Exist");
             }
 
-            var destination = db.GetEntityOrNull(new EntityReference("queue", request.DestinationQueueId));
+            var destination = db.GetEntityOrNull(new EntityReference(LogicalNames.Queue, request.DestinationQueueId));
 
             if (destination == null)
             {
@@ -82,7 +82,7 @@ namespace DG.Tools.XrmMockup
                     throw new FaultException($"The entity with a name = '{request.QueueItemProperties.LogicalName}' was not found in the MetadataCache.");
                 }
 
-                if (propertiesMetadata.LogicalName != "queueitem")
+                if (propertiesMetadata.LogicalName != LogicalNames.QueueItem)
                 {
                     throw new FaultException("An unexpected error occured.");
                 }
@@ -102,7 +102,7 @@ namespace DG.Tools.XrmMockup
 
             bool hasTargetPermission = security.HasPermission(target, AccessRights.ReadAccess, userRef);
 
-            bool hasQueueItemPermission = security.HasPermission(new Entity("queueitem"), AccessRights.None, userRef);
+            bool hasQueueItemPermission = security.HasPermission(new Entity(LogicalNames.QueueItem), AccessRights.None, userRef);
 
             bool hasQueuePermission = security.HasPermission(destination, AccessRights.ReadAccess, userRef) &&
                 (request.SourceQueueId == Guid.Empty || security.HasPermission(source, AccessRights.ReadAccess, userRef));
@@ -116,7 +116,7 @@ namespace DG.Tools.XrmMockup
             if (queueItemRow == null)
             {
 
-                queueItem = request.QueueItemProperties != null ? Utility.CloneEntity(request.QueueItemProperties) : new Entity("queueitem");
+                queueItem = request.QueueItemProperties != null ? Utility.CloneEntity(request.QueueItemProperties) : new Entity(LogicalNames.QueueItem);
                 queueItem.Id = Guid.Empty;
                 queueItem["queueid"] = destination.ToEntityReference();
                 var createQueueItemRequest = new CreateRequest

@@ -33,10 +33,10 @@ namespace DG.Tools.XrmMockup
 
             if (request.IncidentResolution.LogicalName == null)
             {
-                throw new FaultException("Required member 'LogicalName' missing for field 'IncidentResolution'");
+                throw new FaultException($"Required member 'LogicalName' missing for field '{LogicalNames.IncidentResolution}'");
             }
 
-            if (request.IncidentResolution.LogicalName != "incidentresolution")
+            if (request.IncidentResolution.LogicalName != LogicalNames.IncidentResolution)
             {
                 throw new FaultException("An unexpected error occurred.");
             }
@@ -50,34 +50,34 @@ namespace DG.Tools.XrmMockup
 
             if (incidentRef == null)
             {
-                throw new FaultException("The incident id is missing.");
+                throw new FaultException($"The {LogicalNames.Incident} id is missing.");
             }
 
-            var entityMetadata = metadata.EntityMetadata.GetMetadata("incident");
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(LogicalNames.Incident);
             var statusOptionMeta = Utility.GetStatusOptionMetadata(entityMetadata);
 
             if (!statusOptionMeta.Any(o => (o as StatusOptionMetadata).Value == request.Status.Value
                 && (o as StatusOptionMetadata).State == 1))
             {
-                throw new FaultException($"{request.Status.Value} is not a valid status code on incident with Id {incidentRef.Id}.");
+                throw new FaultException($"{request.Status.Value} is not a valid status code on {LogicalNames.Incident} with Id {incidentRef.Id}.");
             }
 
             var incident = db.GetEntity(incidentRef);
 
             if (incident == null)
             {
-                throw new FaultException($"incident With Id = {incidentRef.Id} Does Not Exist");
+                throw new FaultException($"{LogicalNames.Incident} With Id = {incidentRef.Id} Does Not Exist");
             }
             var incidentState = incident["statecode"] as OptionSetValue;
 
             if (incidentState.Value == 1)
             {
-                throw new FaultException($"incident With Id = {incidentRef.Id} is resolved and connot be closed");
+                throw new FaultException($"{LogicalNames.Incident} With Id = {incidentRef.Id} is resolved and connot be closed");
             }
 
             if (incidentState.Value == 2)
             {
-                throw new FaultException($"incident With Id = {incidentRef.Id} is allready cancelled  and connot be closed");
+                throw new FaultException($"{LogicalNames.Incident} With Id = {incidentRef.Id} is allready cancelled  and connot be closed");
             }
 
             incident["statecode"] = 1;

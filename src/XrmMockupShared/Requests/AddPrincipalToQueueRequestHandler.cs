@@ -1,13 +1,10 @@
 ﻿#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-using DG.Tools.XrmMockup;
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
 
 namespace DG.Tools.XrmMockup
 {
@@ -26,45 +23,34 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("Required field 'Principal' is missing");
             }
 
-            var principalMetadata = metadata.EntityMetadata.GetMetadata(request.Principal.LogicalName);
-
-            if(principalMetadata == null)
-            {
+            var principalMetadata = metadata.EntityMetadata.GetMetadata(request.Principal.LogicalName) ?? 
                 throw new FaultException($"The entity with a name = '{request.Principal.LogicalName}' was not found in the MetadataCache.");
-            }
 
             if(request.QueueId == Guid.Empty)
             {
                 throw new FaultException("Expected non-empty Guid.");
             }
 
-            var queue = db.GetEntityOrNull(new EntityReference("queue", request.QueueId));
+            var queue = db.GetEntityOrNull(new EntityReference(LogicalNames.Queue, request.QueueId)) ??
+                throw new FaultException($"{LogicalNames.Queue} With Id = {request.QueueId} Does Not Exist");
 
-            if(queue == null)
-            {
-                throw new FaultException($"queue With Id = {request.QueueId} Does Not Exist");
-            }
-
-            if(request.Principal.LogicalName != "team" && request.Principal.LogicalName != "systemuser")
+            if (request.Principal.LogicalName != LogicalNames.Team && request.Principal.LogicalName != LogicalNames.SystemUser)
             {
                 throw new FaultException("This action is not supported.");
             }
 
-            var principal = db.GetDbRowOrNull(request.Principal.ToEntityReference());
+            var principal = db.GetDbRowOrNull(request.Principal.ToEntityReference()) ?? 
+                throw new FaultException($"{request.Principal.LogicalName} With Id = {request.Principal.Id} Does Not Exist");
 
-            if(principal == null)
-            {
-                throw new FaultException("An unexpected error occurred.");
-            }
-
-            bool hasQueuePermission = security.HasPermission(queue, AccessRights.WriteAccess, userRef);
-
-            if(!hasQueuePermission)
+            if(!security.HasPermission(queue, AccessRights.WriteAccess, userRef))
             {
                 throw new FaultException($"Principal user(Id={userRef.Id}, type=8) is missing prvWriteQueue");
             }
 
-            // TODO ADD THE PRINCIPALS AS MEMBERS TO THE QUEUE
+            var queueMembership = new Entity(LogicalNames.QueueMembership);
+            queueMembership["systemuserid"] = principal.Id;
+            queueMembership["queueid"] = queue.Id;
+            db.Add(queueMembership);
 
             return new AddPrincipalToQueueResponse();
         }

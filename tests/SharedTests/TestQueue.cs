@@ -12,7 +12,7 @@ namespace DG.XrmMockupTest
     [TestClass]
     public class TestQueue : UnitTestBase
     {
-        // Excluded from CRM 2011 & 2015 because of context generation issue for these versions
+        // TODO Excluded from CRM 2011 & 2015 because of context generation issue for these versions
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2015)
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
         #region AddPrincipalToQueueRequest
@@ -233,12 +233,16 @@ namespace DG.XrmMockupTest
             var response = orgAdminUIService.Execute(request) as AddPrincipalToQueueResponse;
             Assert.IsNotNull(response);
 
-            using (var context = new Xrm(orgAdminUIService))
+            var retrieveUserQueuesRequest = new RetrieveUserQueuesRequest
             {
-                var queueMembership = context.QueueMembershipSet.Where(x => x.QueueId == queue.Id && x.SystemUserId == systemUser.Id).FirstOrDefault();
+                UserId = systemUser.Id
+            };
 
-                Assert.IsNotNull(queueMembership);
-            }
+            var retrieveUserQueuesResponse = orgAdminUIService.Execute(retrieveUserQueuesRequest) as RetrieveUserQueuesResponse;
+
+            Assert.IsNotNull(retrieveUserQueuesResponse);
+            Assert.AreEqual(1, retrieveUserQueuesResponse.EntityCollection.Entities.Count);
+            Assert.IsTrue(retrieveUserQueuesResponse.EntityCollection.Entities.Any(q => q.Id == queue.Id));
         }
         #endregion
 
@@ -646,7 +650,7 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        public void TestRetrieveUserQueuesRetrivesPrivateQueues()
+        public void TestRetrieveUserQueuesRetrievesPrivateQueues()
         {
             var orgUser = new SystemUser();
 
@@ -654,19 +658,33 @@ namespace DG.XrmMockupTest
 
             var privateQueue = new Queue
             {
-                QueueViewType = Queue_QueueViewType.Private,
-                OwnerId = orgUser.ToEntityReference()
+                QueueViewType = Queue_QueueViewType.Private
             };
 
             privateQueue.Id = orgAdminUIService.Create(privateQueue);
 
             var publicQueue = new Queue
             {
-                QueueViewType = Queue_QueueViewType.Public,
-                OwnerId = orgUser.ToEntityReference()
+                QueueViewType = Queue_QueueViewType.Public
             };
 
             publicQueue.Id = orgAdminUIService.Create(publicQueue);
+
+            var addToPrivateQueueRequest = new AddPrincipalToQueueRequest
+            {
+                QueueId = privateQueue.Id,
+                Principal = orgUser
+            };
+
+            var addToPrivateQueueResponse = orgAdminUIService.Execute(addToPrivateQueueRequest);
+
+            var addToPublicQueueRequest = new AddPrincipalToQueueRequest
+            {
+                QueueId = publicQueue.Id,
+                Principal = orgUser
+            };
+
+            var addToPublicQueueResponse = orgAdminUIService.Execute(addToPublicQueueRequest);
 
             var request = new RetrieveUserQueuesRequest
             {
@@ -676,14 +694,58 @@ namespace DG.XrmMockupTest
             var response = orgAdminUIService.Execute(request) as RetrieveUserQueuesResponse;
 
             Assert.IsNotNull(response);
-            Assert.IsTrue(response.EntityCollection.Entities.Contains(privateQueue));
-            Assert.IsFalse(response.EntityCollection.Entities.Contains(publicQueue));
+            Assert.IsTrue(response.EntityCollection.Entities.Any(q => q.Id == privateQueue.Id));
+            Assert.IsTrue(response.EntityCollection.Entities.All(q => q.Id != publicQueue.Id));
         }
 
         [TestMethod]
-        public void TestRetrieveUserQueuesRetrivesPublicQueues()
+        public void TestRetrieveUserQueuesRetrievesPublicQueues()
         {
-            // TODO
+            var orgUser = new SystemUser();
+
+            orgUser.Id = orgAdminUIService.Create(orgUser);
+
+            var privateQueue = new Queue
+            {
+                QueueViewType = Queue_QueueViewType.Private
+            };
+
+            privateQueue.Id = orgAdminUIService.Create(privateQueue);
+
+            var publicQueue = new Queue
+            {
+                QueueViewType = Queue_QueueViewType.Public
+            };
+
+            publicQueue.Id = orgAdminUIService.Create(publicQueue);
+
+            var addToPrivateQueueRequest = new AddPrincipalToQueueRequest
+            {
+                QueueId = privateQueue.Id,
+                Principal = orgUser
+            };
+
+            var addToPrivateQueueResponse = orgAdminUIService.Execute(addToPrivateQueueRequest);
+
+            var addToPublicQueueRequest = new AddPrincipalToQueueRequest
+            {
+                QueueId = publicQueue.Id,
+                Principal = orgUser
+            };
+
+            var addToPublicQueueResponse = orgAdminUIService.Execute(addToPublicQueueRequest);
+
+            var request = new RetrieveUserQueuesRequest
+            {
+                UserId = orgUser.Id,
+                IncludePublic = true
+            };
+
+            var response = orgAdminUIService.Execute(request) as RetrieveUserQueuesResponse;
+
+            Assert.IsNotNull(response);
+            Assert.IsTrue(response.EntityCollection.Entities.Any(q => q.Id == privateQueue.Id));
+            Assert.IsTrue(response.EntityCollection.Entities.Any(q => q.Id == publicQueue.Id));
         }
         #endregion
 #endif
