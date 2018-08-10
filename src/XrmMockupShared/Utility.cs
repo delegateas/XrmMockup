@@ -921,6 +921,7 @@ namespace DG.Tools.XrmMockup
 
     internal class LogicalNames
     {
+        public const string Account = "account";
         public const string TransactionCurrency = "transactioncurrency";
         public const string BusinessUnit = "businessunit";
         public const string SystemUser = "systemuser";
