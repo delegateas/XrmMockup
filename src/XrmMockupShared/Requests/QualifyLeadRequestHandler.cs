@@ -13,6 +13,74 @@ namespace DG.Tools.XrmMockup
 {
     internal class QualifyLeadRequestHandler : RequestHandler
     {
+        private readonly Dictionary<string, string> leadToAccountAttributesMap = new Dictionary<string, string>
+        {
+            { "sic", "sic" },
+            { "emailaddress1", "emailaddress1" },
+            { "companyname", "name" },
+            { "fax", "fax" },
+            { "websiteurl", "websiteurl" },
+            { "address1_country", "address1_country" },
+            { "address1_city", "address1_city" },
+            { "address1_line1", "address1_line1" },
+            { "address1_line2", "address1_line2" },
+            { "address1_line3", "address1_line3" },
+            { "address1_postalcode", "address1_postalcode" },
+            { "address1_stateorprovince", "address1_stateorprovince" },
+            { "telephone2", "telephone2" },
+            { "donotpostalmail", "donotpostalmail" },
+            { "donotphone", "donotphone" },
+            { "donotfax", "donotfax" },
+            { "donotsendmm", "donotsendmm" },
+            { "description", "description" },
+            { "donotemail", "donotemail" },
+            { "yomicompanyname", "yominame" },
+            { "donotbulkemail", "donotbulkemail" }
+        };
+
+        private readonly Dictionary<string, string> leadToContactAttributesMap = new Dictionary<string, string>
+        {
+            { "mobilephone", "mobilephone" },
+            { "emailaddress1", "emailaddress1" },
+            { "emailaddress3", "emailaddress3" },
+            { "websiteurl", "websiteurl" },
+            { "yomilastname", "yomilastname" },
+            { "lastname", "lastname" },
+            { "donotpostalmail", "donotpostalmail" },
+            { "donotphone", "donotphone" },
+            { "yomimiddlename", "yomimiddlename" },
+            { "description", "description" },
+            { "firstname", "firstname" },
+            { "donotemail", "donotemail" },
+            { "address1_stateorprovince", "address1_stateorprovince" },
+            { "address2_county", "address2_county" },
+            { "donotfax", "donotfax" },
+            { "donotsendmm", "donotsendmm" },
+            { "jobtitle", "jobtitle" },
+            { "pager", "pager" },
+            { "address1_country", "address1_country" },
+            { "address1_line1", "address1_line1" },
+            { "address1_line2", "address1_line2" },
+            { "address1_line3", "address1_line3" },
+            { "telephone2", "telephone2" },
+            { "telephone3", "telephone3" },
+            { "address2_fax", "address2_fax" },
+            { "donotbulkemail", "donotbulkemail" },
+            { "emailaddress2", "emailaddress2" },
+            { "fax", "fax" },
+            { "yomifirstname", "yomifirstname" },
+            { "address1_postalcode", "address1_postalcode" },
+            { "address1_city", "address1_city" },
+            { "address2_country", "address2_country" }
+        };
+
+        private readonly Dictionary<string, string> leadToOpportunityAttributesMap = new Dictionary<string, string>
+        {
+            { "subject", "name" },
+            { "qualificationcomments", "qualificationcomments" },
+            { "description", "description" }
+        };
+
         internal QualifyLeadRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "QualifyLead")
         {
         }
@@ -86,17 +154,17 @@ namespace DG.Tools.XrmMockup
 
             if (request.CreateAccount)
             {
-                createdEntities.Add(CreateAccountFromLead(lead, userRef));
+                createdEntities.Add(CreateEntityFromLead(lead, LogicalNames.Account, leadToAccountAttributesMap, userRef).ToEntityReference());
             }
 
             if (request.CreateContact)
             {
-                createdEntities.Add(CreateContactFromLead(lead, userRef));
+                createdEntities.Add(CreateEntityFromLead(lead, LogicalNames.Contact, leadToContactAttributesMap, userRef).ToEntityReference());
             }
 
             if (request.CreateOpportunity)
             {
-                createdEntities.Add(CreateOpportunityFromLead(lead, userRef, request.OpportunityCustomerId, request.OpportunityCurrencyId));
+                createdEntities.Add(CreateOpportunityFromLead(lead, request.OpportunityCustomerId, request.OpportunityCurrencyId, userRef).ToEntityReference());
             }
 
             lead["statuscode"] = status;
@@ -107,7 +175,7 @@ namespace DG.Tools.XrmMockup
             return resp;
         }
 
-        private EntityReference CreateOpportunityFromLead(Entity lead, EntityReference userRef, EntityReference customer, EntityReference currency)
+        private Entity CreateOpportunityFromLead(Entity lead, EntityReference customer, EntityReference currency, EntityReference userRef)
         {
             if (customer != null)
             {
@@ -117,17 +185,11 @@ namespace DG.Tools.XrmMockup
                     throw new FaultException($"CustomerIdType for {LogicalNames.Opportunity} can either be an {LogicalNames.Account} or {LogicalNames.Contact}");
                 }
             }
-
             var opportunity = new Entity(LogicalNames.Opportunity);
-            if (lead.Attributes.Contains("subject"))
-                opportunity["name"] = lead["subject"];
-            if (lead.Attributes.Contains("qualificationcomments"))
-                opportunity["qualificationcomments"] = lead["qualificationcomments"];
-            if (lead.Attributes.Contains("description"))
-                opportunity["description"] = lead["description"];
+            MapAttributesFromLead(lead, leadToOpportunityAttributesMap, ref opportunity);
             opportunity["originatingleadid"] = lead.ToEntityReference();
 
-            if(customer != null)
+            if (customer != null)
             {
                 opportunity["customerid"] = customer;
             }
@@ -138,132 +200,29 @@ namespace DG.Tools.XrmMockup
             }
 
             opportunity.Id = CreateEntity(opportunity, userRef);
-            return opportunity.ToEntityReference();
+
+            return opportunity;
         }
 
-        private EntityReference CreateContactFromLead(Entity lead, EntityReference userRef)
+        private Entity CreateEntityFromLead(Entity lead, string newEntityLogicalName, IDictionary<string, string> attributesMap, EntityReference userRef)
         {
-            var contact = new Entity(LogicalNames.Contact);
-            if (lead.Attributes.Contains("mobilephone"))
-                contact["mobilephone"] = lead["mobilephone"];
-            if (lead.Attributes.Contains("emailaddress1"))
-                contact["emailaddress1"] = lead["emailaddress1"];
-            if (lead.Attributes.Contains("emailaddress3"))
-                contact["emailaddress3"] = lead["emailaddress3"];
-            if (lead.Attributes.Contains("websiteurl"))
-                contact["websiteurl"] = lead["websiteurl"];
-            if (lead.Attributes.Contains("yomilastname"))
-                contact["yomilastname"] = lead["yomilastname"];
-            if (lead.Attributes.Contains("lastname"))
-                contact["lastname"] = lead["lastname"];
-            if (lead.Attributes.Contains("donotpostalmail"))
-                contact["donotpostalmail"] = lead["donotpostalmail"];
-            if (lead.Attributes.Contains("donotphone"))
-                contact["donotphone"] = lead["donotphone"];
-            if (lead.Attributes.Contains("yomimiddlename"))
-                contact["yomimiddlename"] = lead["yomimiddlename"];
-            if (lead.Attributes.Contains("description"))
-                contact["description"] = lead["description"];
-            if (lead.Attributes.Contains("firstname"))
-                contact["firstname"] = lead["firstname"];
-            if (lead.Attributes.Contains("donotemail"))
-                contact["donotemail"] = lead["donotemail"];
-            if (lead.Attributes.Contains("address1_stateorprovince"))
-                contact["address1_stateorprovince"] = lead["address1_stateorprovince"];
-            if (lead.Attributes.Contains("address2_county"))
-                contact["address2_county"] = lead["address2_county"];
-            if (lead.Attributes.Contains("donotfax"))
-                contact["donotfax"] = lead["donotfax"];
-            if (lead.Attributes.Contains("donotsendmm"))
-                contact["donotsendmm"] = lead["donotsendmm"];
-            if (lead.Attributes.Contains("jobtitle"))
-                contact["jobtitle"] = lead["jobtitle"];
-            if (lead.Attributes.Contains("pager"))
-                contact["pager"] = lead["pager"];
-            if (lead.Attributes.Contains("address1_country"))
-                contact["address1_country"] = lead["address1_country"];
-            if (lead.Attributes.Contains("address1_line1"))
-                contact["address1_line1"] = lead["address1_line1"];
-            if (lead.Attributes.Contains("address1_line2"))
-                contact["address1_line2"] = lead["address1_line2"];
-            if (lead.Attributes.Contains("address1_line3"))
-                contact["address1_line3"] = lead["address1_line3"];
-            if (lead.Attributes.Contains("telephone2"))
-                contact["telephone2"] = lead["telephone2"];
-            if (lead.Attributes.Contains("telephone3"))
-                contact["telephone3"] = lead["telephone3"];
-            if (lead.Attributes.Contains("address2_fax"))
-                contact["address2_fax"] = lead["address2_fax"];
-            if (lead.Attributes.Contains("donotbulkemail"))
-                contact["donotbulkemail"] = lead["donotbulkemail"];
-            if (lead.Attributes.Contains("emailaddress2"))
-                contact["emailaddress2"] = lead["emailaddress2"];
-            if (lead.Attributes.Contains("fax"))
-                contact["fax"] = lead["fax"];
-            if (lead.Attributes.Contains("yomifirstname"))
-                contact["yomifirstname"] = lead["yomifirstname"];
-            if (lead.Attributes.Contains("address1_postalcode"))
-                contact["address1_postalcode"] = lead["address1_postalcode"];
-            if (lead.Attributes.Contains("address1_city"))
-                contact["address1_city"] = lead["address1_city"];
-            if (lead.Attributes.Contains("address2_country"))
-                contact["address2_country"] = lead["address2_country"];
-            contact["originatingleadid"] = lead.ToEntityReference();
+            var newEntity = new Entity(newEntityLogicalName);
 
-            contact.Id = CreateEntity(contact, userRef);
-            return contact.ToEntityReference();
+            MapAttributesFromLead(lead, attributesMap, ref newEntity);
+
+            newEntity["originatingleadid"] = lead.ToEntityReference();
+
+            newEntity.Id = CreateEntity(newEntity, userRef);
+            return newEntity;
         }
 
-        private EntityReference CreateAccountFromLead(Entity lead, EntityReference userRef)
+        private void MapAttributesFromLead(Entity lead, IDictionary<string, string> attributesMap, ref Entity toEntity)
         {
-            var account = new Entity(LogicalNames.Account);
-
-            if(lead.Attributes.Contains("sic"))
-                account["sic"] = lead["sic"];
-            if(lead.Attributes.Contains("emailaddress1"))
-                account["emailaddress1"] = lead["emailaddress1"];
-            if(lead.Attributes.Contains("companyname"))
-                account["name"] = lead["companyname"];
-            if (lead.Attributes.Contains("fax"))
-                account["fax"] = lead["fax"];
-            if (lead.Attributes.Contains("websiteurl"))
-                account["websiteurl"] = lead["websiteurl"];
-            if (lead.Attributes.Contains("address1_country"))
-                account["address1_country"] = lead["address1_country"];
-            if (lead.Attributes.Contains("address1_city"))
-                account["address1_city"] = lead["address1_city"];
-            if (lead.Attributes.Contains("address1_line1"))
-                account["address1_line1"] = lead["address1_line1"];
-            if (lead.Attributes.Contains("address1_line2"))
-                account["address1_line2"] = lead["address1_line2"];
-            if (lead.Attributes.Contains("address1_line3"))
-                account["address1_line3"] = lead["address1_line3"];
-            if (lead.Attributes.Contains("address1_postalcode"))
-                account["address1_postalcode"] = lead["address1_postalcode"];
-            if (lead.Attributes.Contains("address1_stateorprovince"))
-                account["address1_stateorprovince"] = lead["address1_stateorprovince"];
-            if (lead.Attributes.Contains("telephone2"))
-                account["telephone2"] = lead["telephone2"];
-            if (lead.Attributes.Contains("donotpostalmail"))
-                account["donotpostalmail"] = lead["donotpostalmail"];
-            if (lead.Attributes.Contains("donotphone"))
-                account["donotphone"] = lead["donotphone"];
-            if (lead.Attributes.Contains("donotfax"))
-                account["donotfax"] = lead["donotfax"];
-            if (lead.Attributes.Contains("donotsendmm"))
-                account["donotsendmm"] = lead["donotsendmm"];
-            if (lead.Attributes.Contains("description"))
-                account["description"] = lead["description"];
-            if (lead.Attributes.Contains("donotemail"))
-                account["donotemail"] = lead["donotemail"];
-            if (lead.Attributes.Contains("yominame"))
-                account["yominame"] = lead["yominame"];
-            if (lead.Attributes.Contains("donotbulkemail"))
-                account["donotbulkemail"] = lead["donotbulkemail"];
-            account["originatingleadid"] = lead.ToEntityReference();
-
-            account.Id = CreateEntity(account, userRef);
-            return account.ToEntityReference();
+            foreach(var attr in attributesMap)
+            {
+                if(lead.Attributes.Contains(attr.Key))
+                    toEntity[attr.Value] = lead[attr.Key];
+            }
         }
 
         private Guid CreateEntity(Entity entity, EntityReference userRef)
