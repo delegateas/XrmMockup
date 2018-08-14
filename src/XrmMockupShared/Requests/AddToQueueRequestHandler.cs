@@ -42,9 +42,8 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("This object type cannot be added to a queue.");
             }
-
-            DbRow queueItemRow = null;
-            queueItemRow = db.GetDBEntityRows(LogicalNames.QueueItem)
+            
+            var queueItemRow = db.GetDBEntityRows(LogicalNames.QueueItem)
                 .FirstOrDefault(r =>
                     r.GetColumn<DbRow>("objectid")?.Id == request.Target.Id &&
                     r.GetColumn<DbRow>("queueid")?.Id == (request.SourceQueueId != Guid.Empty ? request.SourceQueueId : request.DestinationQueueId));
@@ -112,8 +111,8 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"Principal user (Id={userRef.Id}, type=8) is missing prvReadQueue privilege (Id=b140e729-dfeb-4ba1-a33f-39ff830bac90)");
             }
 
-            Entity queueItem = queueItemRow?.ToEntity();
-            if (queueItemRow == null)
+            var queueItem = queueItemRow?.ToEntity();
+            if (queueItem == null)
             {
 
                 queueItem = request.QueueItemProperties != null ? Utility.CloneEntity(request.QueueItemProperties) : new Entity(LogicalNames.QueueItem);
