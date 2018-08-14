@@ -157,6 +157,7 @@ namespace DG.Tools.XrmMockup {
                 new ReleaseToQueueRequestHandler(this, db, metadata, security),
                 new RemoveFromQueueRequestHandler(this, db, metadata, security),
                 new RetrieveUserQueuesRequestHandler(this, db, metadata, security),
+                new RouteToRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 new UpsertRequestHandler(this, db, metadata, security),
