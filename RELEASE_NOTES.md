@@ -1,3 +1,6 @@
+### 0.9.6-beta - August 16 2018
+* Fixed a bug in delete request where a related entity only had N:N relationship.
+
 ### 0.9.5-beta - June 29 2018
 * Fixed a bug when accessing ParentPluginContext on a PluginContext.
 
