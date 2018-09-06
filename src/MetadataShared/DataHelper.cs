@@ -320,7 +320,8 @@ namespace DG.Tools.XrmMockup.Metadata
                 from roleprivilege in rolePrivileges
                 join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id into res
                 from role in res.DefaultIfEmpty()
-                where ((EntityReference)role["businessunitid"]).Id.Equals(rootBUId)
+                where ((EntityReference)role["businessunitid"]).Id.Equals(rootBUId) &&
+                    (int)roleprivilege["privilegedepthmask"] != 0
                 select new { roleprivilege, role };
 
             // pp <- privileges left outer join privilegeOTCs
@@ -342,7 +343,7 @@ namespace DG.Tools.XrmMockup.Metadata
             foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid"))) {  
                 var entityName = (string)e.pp.privilegeOTC["objecttypecode"];  
                 if (entityName == "none") continue;
-
+                
                 var rp = ToRolePrivilege(e.pp.privilege, e.rpr.roleprivilege);
                 if (rp.AccessRight == AccessRights.None) continue;
                 var roleId = (Guid)e.rpr.roleprivilege["roleid"];   
