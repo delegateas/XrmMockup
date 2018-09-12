@@ -155,6 +155,7 @@ namespace DG.Tools.XrmMockup {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 new UpsertRequestHandler(this, db, metadata, security),
 #endif
+                new RetrieveAttributeRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly) {
