@@ -22,6 +22,12 @@ namespace DG.Tools.XrmMockup {
                 queryExpr = XmlHandling.FetchXmlToQueryExpression(fetchExpr.Query);
             }
 
+            if (!security.HasPermission(queryExpr.EntityName, AccessRights.ReadAccess, userRef))
+            {
+                throw new FaultException($"Trying to query entity '{queryExpr.EntityName}'" +
+                    $", but the calling user with id '{userRef.Id}' does not have Read access");
+            }
+
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
             var rows = db.GetDBEntityRows(queryExpr.EntityName);

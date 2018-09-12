@@ -245,6 +245,26 @@ namespace DG.Tools.XrmMockup {
             return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
         }
 
+        internal bool HasPermission(string logicalName, AccessRights access, EntityReference caller)
+        {
+            if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == logicalName)))
+            {
+                // system has no security roles for this entity. Is a case with linkentities which have no security roles
+                return true;
+            }
+            if (caller.Id == Core.AdminUserRef.Id) return true;
+
+            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
+                r.Privileges.ContainsKey(logicalName) &&
+                r.Privileges[logicalName].ContainsKey(access));
+            return callerRoles != null && callerRoles.Count() > 0;
+        }
+
+        internal bool HasPermission(EntityReference entityReference, AccessRights access, EntityReference caller)
+        {
+            return HasPermission(Core.GetDbRow(entityReference).ToEntity(), access, caller);
+        }
+
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
             if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == entity.LogicalName))) {
                 // system has no security roles for this entity. Is a case with linkentities which have no security roles

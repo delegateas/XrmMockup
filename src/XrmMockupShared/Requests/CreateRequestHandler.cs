@@ -28,9 +28,29 @@ namespace DG.Tools.XrmMockup {
             clonedEntity.Attributes.AddRange(validAttributes);
 
 
-            if (userRef != null && userRef.Id != Guid.Empty && !security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef)) {
-                throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                    $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
+            if (userRef != null && userRef.Id != Guid.Empty)
+            {
+                if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                        $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
+                }
+
+                var references = clonedEntity.Attributes.Where(x => x.Value is EntityReference).ToArray();
+                foreach(var attr in references)
+                {
+                    var reference = attr.Value as EntityReference;
+                    if (!security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                }
             }
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity)) {
