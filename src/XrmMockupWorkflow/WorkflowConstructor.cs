@@ -356,7 +356,7 @@ namespace WorkflowExecuter {
                 case "CreateCrmType": {
                         var parameters = CompressParameters(args[1].Value)
                             .Select(group => group.Split(',').Select(p => p.Trim().Replace("\"", "")).ToArray());
-                        if (args[2].ReferenceLiteral != null) {
+                        if (args[2].ReferenceLiteral != null && args[2].ReferenceLiteral.Value != null) {
                             return new CreateVariable(parameters.ToArray(), args[2].ReferenceLiteral.Value.Split(':')[1],
                                 outArg.Value.TrimEdge());
                         } else if (args[1].Value.Contains("EntityReference")) {

@@ -215,6 +215,9 @@ namespace WorkflowExecuter {
                 case "Int32":
                     variables[VariableName] = int.Parse((string)Parameters[0][1]);
                     break;
+                case "Guid":
+                    variables[VariableName] = Guid.Parse((string)Parameters[0][1]);
+                    break;
                 case "Decimal":
                     variables[VariableName] = decimal.Parse((string)Parameters[0][1]);
                     break;
