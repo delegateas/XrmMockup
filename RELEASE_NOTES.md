@@ -1,3 +1,6 @@
+### 0.9.7-beta - September 12 2018
+* Added target type Guid, fixed bug when reference did not have value.
+
 ### 0.9.6-beta - August 16 2018
 * Fixed a bug in delete request where a related entity only had N:N relationship.
 
