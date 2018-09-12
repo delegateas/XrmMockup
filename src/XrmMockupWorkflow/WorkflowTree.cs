@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Activities;
 using Microsoft.Xrm.Sdk.Workflow;
 using DG.Tools.XrmMockup;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace WorkflowExecuter {
     [Serializable]
@@ -816,8 +817,28 @@ namespace WorkflowExecuter {
             }
             var attr = entity.Attributes[Attribute];
             if (TargetType == "EntityReference") {
-                if (attr is Guid) {
+                if (attr is Guid)
+                {
                     attr = new EntityReference(EntityLogicalName, (Guid)attr);
+                }
+                else if (!(attr is EntityReference))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
+                }
+            }
+            if (TargetType == "String")
+            {
+                if (attr is OptionSetValue)
+                {
+                    attr = Util.GetOptionSetValueLabel(entity.LogicalName, Attribute, attr as OptionSetValue, orgService);
+                }
+                else if (attr is EntityReference)
+                {
+                    attr = Util.GetPrimaryName(attr as EntityReference, orgService);
+                }
+                else if (!(attr is string))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
                 }
             }
             variables[VariableName] = attr;
@@ -1153,15 +1174,14 @@ namespace WorkflowExecuter {
                         variables[Result] = variables[Input];
                         break;
                     }
-
-                    //if (variables[Input] is Guid) {
-                    //    variables[Result] = (Guid)variables[Input];
-                    //    break;
-                    //}
-
-                    throw new NotImplementedException("Unknown input when trying to convert type to entityreference");
+                    throw new NotImplementedException($"Unknown input when trying to convert type {variables[Input].GetType().Name} to entityreference");
                 default:
-                    throw new NotImplementedException($"Unknown operator '{Type}'");
+                    if (Type.ToLower() == variables[Input].GetType().Name.ToLower())
+                    {
+                        variables[Result] = variables[Input];
+                        break;
+                    }
+                    throw new NotImplementedException($"Unknown input when trying to convert type {variables[Input].GetType().Name} to {Type}");
             }
         }
     }
@@ -1528,6 +1548,29 @@ namespace WorkflowExecuter {
             request.Target = primaryEntity.ToEntityReference();
             RetrieveResponse response = (RetrieveResponse)orgService.Execute(request);
             return response.Entity.RelatedEntities[relationship].Entities;
+        }
+
+        public static string GetPrimaryName(EntityReference entityReference, IOrganizationService orgService)
+        {
+            var primaryNameAttribute = ((RetrieveEntityResponse)orgService.Execute(new RetrieveEntityRequest
+            {
+                LogicalName = entityReference.LogicalName,
+                EntityFilters = EntityFilters.Entity
+            })).EntityMetadata.PrimaryNameAttribute;
+            var referencedEntity = orgService.Retrieve(entityReference.LogicalName, entityReference.Id, new ColumnSet(primaryNameAttribute));
+            return referencedEntity.GetAttributeValue<string>(primaryNameAttribute);
+        }
+
+        public static string GetOptionSetValueLabel(string entityLogicalName, string attributeLogicalName, OptionSetValue optionSetValue, IOrganizationService orgService)
+        {
+            var optionSetMetadata = ((PicklistAttributeMetadata)((RetrieveAttributeResponse)orgService.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogicalName,
+                LogicalName = attributeLogicalName
+            })).AttributeMetadata).OptionSet;
+
+            var option = optionSetMetadata.Options.SingleOrDefault(x => x.Value == optionSetValue.Value);
+            return option.Label.UserLocalizedLabel.Label;
         }
 
         public static XrmWorkflowContext GetDefaultContext() {
