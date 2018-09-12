@@ -36,7 +36,7 @@ namespace DG.Tools.XrmMockup {
                         $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
                 }
 
-                var references = clonedEntity.Attributes.Where(x => x.Value is EntityReference).ToArray();
+                var references = clonedEntity.Attributes.Where(x => x.Value is EntityReference && x.Key != "ownerid").ToArray();
                 foreach(var attr in references)
                 {
                     var reference = attr.Value as EntityReference;

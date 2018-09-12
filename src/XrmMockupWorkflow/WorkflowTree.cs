@@ -841,7 +841,7 @@ namespace WorkflowExecuter {
                 {
                     attr = Util.GetPrimaryName(attr as EntityReference, orgService);
                 }
-                else if (!(attr is string))
+                else if (attr != null && !(attr is string))
                 {
                     throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
                 }

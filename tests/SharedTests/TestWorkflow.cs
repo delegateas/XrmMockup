@@ -1,16 +1,9 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
 using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
 using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
-using System.ServiceModel;
 using System.IO;
-using DG.Tools;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 
@@ -240,6 +233,17 @@ namespace DG.XrmMockupTest {
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
+
+                var email = orgAdminService.RetrieveMultiple(new QueryExpression
+                {
+                    EntityName = Email.EntityLogicalName,
+                    ColumnSet = new ColumnSet(true)
+                }).Entities.FirstOrDefault() as Email;
+
+                Assert.IsNotNull(email);
+                Assert.AreEqual("&lt;span&gt;&lt;span&gt;Some kind of email&lt;/span&gt;&lt;/span&gt;", email.Description);
+                Assert.AreEqual("Something", email.Subject);
+                Assert.AreEqual(retrieved.ToEntityReference(), email.RegardingObjectId);
             }
         }
     }
