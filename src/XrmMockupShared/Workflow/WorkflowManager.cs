@@ -180,8 +180,8 @@ namespace DG.Tools.XrmMockup {
                 parsedWorkflows[workflow.Id].HardReset();
                 return parsedWorkflows[workflow.Id];
             }
-            var parsed = WorkflowConstructor.Parse(workflow, codeActivityTriggers, WorkflowConstructor.ParseAs.Workflow);
             try {
+                var parsed = WorkflowConstructor.Parse(workflow, codeActivityTriggers, WorkflowConstructor.ParseAs.Workflow);
                 parsedWorkflows.Add(workflow.Id, parsed);
                 return parsed;
             } catch (Exception) {
