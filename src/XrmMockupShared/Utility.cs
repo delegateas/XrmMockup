@@ -882,7 +882,7 @@ namespace DG.Tools.XrmMockup
             pointer["actualend"] = entity.GetAttributeValue<DateTime>("actualend");
             pointer["actualstart"] = entity.GetAttributeValue<DateTime>("actualstart");
             pointer["description"] = entity.GetAttributeValue<string>("description");
-            pointer["deliveryprioritycode"] = entity.GetAttributeValue<int>("deliveryprioritycode");
+            pointer["deliveryprioritycode"] = entity.GetAttributeValue<OptionSetValue>("deliveryprioritycode");
             pointer["isbilled"] = entity.GetAttributeValue<bool>("isbilled");
             pointer["isregularactivity"] = entity.GetAttributeValue<bool>("isregularactivity");
             pointer["isworkflowcreated"] = entity.GetAttributeValue<bool>("isworkflowcreated");

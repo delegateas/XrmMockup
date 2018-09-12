@@ -5,10 +5,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Runtime.Serialization;
 using System.Activities;
 using Microsoft.Xrm.Sdk.Workflow;
@@ -42,6 +39,7 @@ namespace WorkflowExecuter {
     [KnownType(typeof(CallCodeActivity))]
     [KnownType(typeof(ConvertType))]
     [KnownType(typeof(Assign))]
+    [KnownType(typeof(SendEmail))]
     internal class WorkflowTree {
         [DataMember]
         public IWorkflowNode StartActivity;
@@ -811,6 +809,13 @@ namespace WorkflowExecuter {
             if (entity.LogicalName != EntityLogicalName) {
                 return;
             }
+
+            if (Attribute == "!Process_Custom_Attribute_URL_")
+            {
+                variables[VariableName] = "https://somedummycrm.crm.dynamics.com/main.aspx?someparametrs";
+                return;
+            }
+
             if (!entity.Attributes.ContainsKey(Attribute)) {
                 variables[VariableName] = null;
                 return;
@@ -1528,6 +1533,32 @@ namespace WorkflowExecuter {
     }
 
 
+    [DataContract]
+    internal class SendEmail : IWorkflowNode
+    {
+        [DataMember]
+        public string EntityId;
+        [DataMember]
+        public string DisplayName;
+        [DataMember]
+        public string Entity;
+
+        public SendEmail(string entityId, string displayName, string entity)
+        {
+            EntityId = entityId;
+            DisplayName = displayName;
+            Entity = entity;
+        }
+
+        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (EntityId == "{x:Null}")
+            {
+                orgService.Create(variables[Entity.TrimEdge()] as Entity);
+            }
+        }
+    }
 
     static class Util {
         public static DataCollection<Entity> GetRelatedEntities(string relatedEntityName, Dictionary<string, object> variables,

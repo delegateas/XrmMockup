@@ -4,9 +4,7 @@ using System;
 using System.Activities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using WorkflowParser;
 
 
@@ -198,6 +196,11 @@ namespace WorkflowExecuter {
 
             if (activity is WorkflowParser.Persist) {
                 return new Persist();
+            }
+
+            if (activity is WorkflowParser.SendEmail)
+            {
+                return CompressSendEmail(activity as WorkflowParser.SendEmail);
             }
 
             throw new NotImplementedException("Unknown activity, implement the compressor.");
@@ -455,5 +458,8 @@ namespace WorkflowExecuter {
             Regex reg = new Regex(@"\{(.+)\}|(,)");
             return reg.Matches(value).Cast<Match>().Select(m => m.Value.Trim('{', '}', ' '));
         }
+
+        private static IWorkflowNode CompressSendEmail(WorkflowParser.SendEmail sendEmail) 
+            => new SendEmail(sendEmail.EntityId, sendEmail.DisplayName, sendEmail.Entity);
     }
 }
