@@ -527,7 +527,7 @@ namespace DG.XrmMockupTest {
                           join contact in context.ContactSet on lead.ParentContactId.Id equals contact.Id
                           select new { lead.Subject, contact.FirstName, contact.LastName, contact.FullName })
                           .ToList();
-                Assert.AreEqual(result.Count, 2);
+                Assert.AreEqual(2, result.Count);
             }
         }
     }
