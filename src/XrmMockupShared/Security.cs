@@ -106,6 +106,25 @@ namespace DG.Tools.XrmMockup {
                 Shares[target].Remove(revokee);
             }
         }
+        internal AccessRights GetAccessRights(EntityReference target, EntityReference userRef)
+        {
+            var entity = Core.GetDbRow(target);
+            return GetAccessRights(entity.ToEntity(), userRef);
+        }
+
+        internal AccessRights GetAccessRights(Entity target, EntityReference userRef)
+        {
+            var ret = AccessRights.None;
+            ret |= HasPermission(target, AccessRights.CreateAccess, userRef) ? AccessRights.CreateAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ReadAccess, userRef) ? AccessRights.ReadAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.WriteAccess, userRef) ? AccessRights.WriteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.DeleteAccess, userRef) ? AccessRights.DeleteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendAccess, userRef) ? AccessRights.AppendAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendToAccess, userRef) ? AccessRights.AppendToAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AssignAccess, userRef) ? AccessRights.AssignAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ShareAccess, userRef) ? AccessRights.ShareAccess : AccessRights.None;
+            return ret;
+        }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal void CascadeOwnerUpdate(Entity dbEntity, EntityReference userRef, EntityReference ownerRef) {

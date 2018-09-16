@@ -156,6 +156,8 @@ namespace DG.Tools.XrmMockup {
                 new UpsertRequestHandler(this, db, metadata, security),
 #endif
                 new RetrieveAttributeRequestHandler(this, db, metadata, security),
+                new WhoAmIRequestHandler(this, db, metadata, security),
+                new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly) {
@@ -484,11 +486,11 @@ namespace DG.Tools.XrmMockup {
                 return handler.Execute(request, userRef);
             }
             
-            if (settings.ExceptionFreeRequests.Contains(request.RequestName)) {
+            if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false) {
                 return new OrganizationResponse();
             }
 
-            throw new NotImplementedException("Execute for the given request has not been implemented yet.");
+            throw new NotImplementedException($"Execute for the request '{request.RequestName}' has not been implemented yet.");
         }
 
         private string RequestNameToMessageName(string requestName) {

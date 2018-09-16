@@ -13,6 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOpportunity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOrderByQueryExpression.cs" />
