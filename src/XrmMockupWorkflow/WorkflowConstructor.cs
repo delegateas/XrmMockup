@@ -441,6 +441,7 @@ namespace WorkflowExecuter {
                 case "RetrieveLastExecutionTime": {
                         return new RetrieveLastExecutionTime(outArg.Value.TrimEdge());
                     }
+                case "Now":
                 case "RetrieveCurrentTime": {
                         return new RetrieveCurrentTime(outArg.Value.TrimEdge());
                     }
