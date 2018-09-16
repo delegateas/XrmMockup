@@ -928,7 +928,7 @@ namespace DG.Tools.XrmMockup
                 ColumnSet = query.ColumnSet,
             };
 
-            for (var i = 0; i < query.Attributes.Count - 1; i++)
+            for (var i = 0; i <= query.Attributes.Count - 1; i++)
             {
                 ret.Criteria.Conditions.Add(new ConditionExpression(query.Attributes[i], ConditionOperator.Equal, query.Values[i]));
             }
