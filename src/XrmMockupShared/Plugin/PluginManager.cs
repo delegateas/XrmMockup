@@ -52,8 +52,9 @@ namespace DG.Tools.XrmMockup {
 
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
-                    if (type.BaseType != basePluginType) continue;
-                    RegisterPlugin(type, metadata, plugins, register);
+                    if (type.BaseType != null && (type.BaseType == basePluginType || (type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == basePluginType))) { 
+                        RegisterPlugin(type, metadata, plugins, register);
+                    }
                 }
             }
             SortAllLists(register);
@@ -81,20 +82,24 @@ namespace DG.Tools.XrmMockup {
             }
             else
             { // Retrieve registration from CRM metadata
-                var metaPlugin = plugins.FirstOrDefault(x => x.AssemblyName == basePluginType.FullName);
-                if (metaPlugin == null)
+                var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
+                if (metaSteps == null)
                 {
                     throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                    return;
                 }
-                var stepConfig = new StepConfig(metaPlugin.AssemblyName, metaPlugin.Stage, metaPlugin.MessageName, metaPlugin.PrimaryEntity);
-                var extendedConfig = new ExtendedStepConfig(0, metaPlugin.Mode, metaPlugin.Name, metaPlugin.Rank, metaPlugin.FilteredAttributes, Guid.Empty.ToString());
-                var imageTuple = new List<ImageTuple>();
-                stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
-                pluginExecute = (provider) => {
-                    basePluginType
-                    .GetMethod("Execute")
-                    .Invoke(plugin, new object[] { provider });
-                };
+
+                foreach(var metaStep in metaSteps) { 
+                    var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
+                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, Guid.Empty.ToString());
+                    var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
+                    stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
+                    pluginExecute = (provider) => {
+                        basePluginType
+                        .GetMethod("Execute")
+                        .Invoke(plugin, new object[] { provider });
+                    };
+                }
             }
 
             // Add discovered plugin triggers
