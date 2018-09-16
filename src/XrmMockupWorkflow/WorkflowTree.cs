@@ -11,6 +11,7 @@ using System.Activities;
 using Microsoft.Xrm.Sdk.Workflow;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Metadata;
+using System.Text;
 
 namespace WorkflowExecuter {
     [Serializable]
@@ -803,10 +804,17 @@ namespace WorkflowExecuter {
                 entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
 
             } else {
-                entity = variables[EntityId] as Entity;
+                entity = variables.ContainsKey(EntityId) ? variables[EntityId] as Entity : null;
+            }
+
+            if (entity == null)
+            {
+                variables[VariableName] = null;
+                return;
             }
 
             if (entity.LogicalName != EntityLogicalName) {
+                variables[VariableName] = null;
                 return;
             }
 
@@ -1181,7 +1189,12 @@ namespace WorkflowExecuter {
                     }
                     throw new NotImplementedException($"Unknown input when trying to convert type {variables[Input].GetType().Name} to entityreference");
                 default:
-                    if (Type.ToLower() == variables[Input].GetType().Name.ToLower())
+                    if (variables[Input] == null)
+                    {
+                        variables[Result] = null;
+                        break;
+                    }
+                    else if (Type.ToLower() == variables[Input].GetType().Name.ToLower())
                     {
                         variables[Result] = variables[Input];
                         break;
@@ -1409,13 +1422,18 @@ namespace WorkflowExecuter {
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            var sb = new StringBuilder($"Workflow exited with status '{status}'");
             if (variables[messageId] != null && (variables[messageId] as string != "")) {
-                Console.WriteLine($"Workflow exited with status '{status}', the reason was '{variables[messageId]}'");
-            } else {
-                Console.WriteLine($"Workflow exited with status '{status}'");
+                sb.Append($", the reason was '{variables[messageId]}'");
             }
-
-
+            if (status == OperationStatus.Canceled)
+            {
+                throw new InvalidPluginExecutionException(OperationStatus.Canceled, variables[messageId].ToString());
+            }
+            else
+            {
+                Console.WriteLine(sb.ToString());
+            }
         }
     }
 
