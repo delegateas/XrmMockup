@@ -505,6 +505,30 @@ namespace DG.XrmMockupTest {
                 Assert.IsNotNull(reFetched);
             }
         }
-    }
 
+        [TestMethod]
+        public void RetrieveMultipleWithQueryByAttribute()
+        {
+            var result = orgAdminUIService.RetrieveMultiple(new QueryByAttribute
+            {
+                EntityName = Account.EntityLogicalName,
+                Attributes = { "name" },
+                Values = { account3.Name }
+            });
+            Assert.AreEqual(1, result.Entities.Count);
+        }
+
+        [TestMethod]
+        public void RetrieveMultipleWithAliasedNullAttribute()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var result = (from lead in context.LeadSet
+                          join contact in context.ContactSet on lead.ParentContactId.Id equals contact.Id
+                          select new { lead.Subject, contact.FirstName, contact.LastName, contact.FullName })
+                          .ToList();
+                Assert.AreEqual(result.Count, 2);
+            }
+        }
+    }
 }

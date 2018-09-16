@@ -917,6 +917,24 @@ namespace DG.Tools.XrmMockup
             }
             return pointer;
         }
+
+        public static QueryExpression QueryByAttributeToQueryExpression(QueryByAttribute query)
+        {
+            var ret = new QueryExpression
+            {
+                EntityName = query.EntityName,
+                TopCount = query.TopCount,
+                PageInfo = query.PageInfo,
+                ColumnSet = query.ColumnSet,
+            };
+
+            for (var i = 0; i < query.Attributes.Count - 1; i++)
+            {
+                ret.Criteria.Conditions.Add(new ConditionExpression(query.Attributes[i], ConditionOperator.Equal, query.Values[i]));
+            }
+
+            return ret;
+        }
     }
 
     internal class LogicalNames
