@@ -845,9 +845,23 @@ namespace WorkflowExecuter {
                 {
                     attr = Util.GetOptionSetValueLabel(entity.LogicalName, Attribute, attr as OptionSetValue, orgService);
                 }
+                else if (attr is bool)
+                {
+                    attr = Util.GetBooleanLabel(entity.LogicalName, Attribute, (bool) attr, orgService);
+                }
                 else if (attr is EntityReference)
                 {
                     attr = Util.GetPrimaryName(attr as EntityReference, orgService);
+                }
+                else if (attr is Money)
+                {
+                    // TODO: should respect record currency and user format preferences
+                    attr = $"{(attr as Money).Value:C}";
+                }
+                else if (attr is int)
+                {
+                    // TODO: should respect user format preferences
+                    attr = $"{((int) attr):N0}";
                 }
                 else if (attr != null && !(attr is string))
                 {
@@ -1223,7 +1237,8 @@ namespace WorkflowExecuter {
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
             if (!variables.ContainsKey(VariableId)) {
-                throw new WorkflowException($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
+                Console.WriteLine($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
+                variables[VariableId] = null;
             }
             var attr = variables[VariableId];
             if (attr is Money) {
@@ -1619,6 +1634,17 @@ namespace WorkflowExecuter {
             })).AttributeMetadata).OptionSet;
 
             var option = optionSetMetadata.Options.SingleOrDefault(x => x.Value == optionSetValue.Value);
+            return option.Label.UserLocalizedLabel.Label;
+        }
+
+        public static string GetBooleanLabel(string entityLogicalName, string attributeLogicalName, bool value, IOrganizationService orgService)
+        {
+            var booleanMetadata = ((BooleanAttributeMetadata)((RetrieveAttributeResponse)orgService.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogicalName,
+                LogicalName = attributeLogicalName
+            })).AttributeMetadata).OptionSet;
+            var option = value ? booleanMetadata.TrueOption : booleanMetadata.FalseOption;
             return option.Label.UserLocalizedLabel.Label;
         }
 

@@ -246,6 +246,94 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(retrieved.ToEntityReference(), email.RegardingObjectId);
             }
         }
+
+        [TestMethod]
+        public void TestClear()
+        {
+            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestClear.xml"));
+            var service = crm.GetAdminService();
+            var lead = new Lead
+            {
+                Subject = "test"
+            };
+
+            lead.Id = service.Create(lead);
+
+            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+            Assert.IsNull(retrieved.Subject);
+        }
+
+        [TestMethod]
+        public void TestTypeConvertingOptionsetToString()
+        {
+            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
+            var service = crm.GetAdminService();
+            var lead = new Lead
+            {
+                LeadSourceCode = Lead_LeadSourceCode.TradeShow
+            };
+
+            lead.Id = service.Create(lead);
+
+            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+            Assert.AreEqual("Trade Show", retrieved.Description);
+        }
+
+        [TestMethod]
+        public void TestTypeConvertingEntityToString()
+        {
+            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
+            var service = crm.GetAdminService();
+            var acc = new Account
+            {
+                Name = "Contoso Corp."
+            };
+            acc.Id = service.Create(acc);
+            var lead = new Lead
+            {
+                CustomerId = acc.ToEntityReference()
+            };
+
+            lead.Id = service.Create(lead);
+
+            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+            Assert.AreEqual(acc.Name, retrieved.Description);
+        }
+
+        [TestMethod]
+        public void TestTypeConvertingMoneyToString()
+        {
+            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
+            var service = crm.GetAdminService();
+            var lead = new Lead
+            {
+                Revenue = 997.98m
+            };
+
+            lead.Id = service.Create(lead);
+
+            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+            // TODO.. we should somewhere declare formating and currency should be from record
+            // Assert.AreEqual("997,98 zł", retrieved.Description);
+            Assert.AreEqual($"{lead.Revenue:C}", retrieved.Description);
+        }
+
+        [TestMethod]
+        public void TestTypeConvertingIntToString()
+        {
+            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
+            var service = crm.GetAdminService();
+            var lead = new Lead
+            {
+                NumberOfEmployees = 11111
+            };
+
+            lead.Id = service.Create(lead);
+
+            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+            // TODO.. we should somewhere declare formating
+            Assert.AreEqual($"{lead.NumberOfEmployees:N0}", retrieved.Description);
+        }
     }
 }
 #endif

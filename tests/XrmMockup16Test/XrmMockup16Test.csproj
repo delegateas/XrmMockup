@@ -101,6 +101,11 @@
     <Content Include="Metadata\Workflows\OwningBUWorkflow.xml" />
     <Content Include="Metadata\Workflows\RelatedWorkflow.xml" />
     <Content Include="Metadata\Workflows\SendMailWorkflow.xml" />
+    <Content Include="Metadata\Workflows\TestClear.xml" />
+    <Content Include="Metadata\Workflows\TestTypeConvertingEntityToString.xml" />
+    <Content Include="Metadata\Workflows\TestTypeConvertingIntToString.xml" />
+    <Content Include="Metadata\Workflows\TestTypeConvertingMoneyToString.xml" />
+    <Content Include="Metadata\Workflows\TestTypeConvertingOptionsetToString.xml" />
     <Content Include="Metadata\Workflows\WaitingWorkflow.xml" />
   </ItemGroup>
   <Choose>
