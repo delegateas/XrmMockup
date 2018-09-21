@@ -162,7 +162,7 @@ namespace DG.Tools.XrmMockup.Metadata
                                         {
                                             Conditions =
                                             {
-                                                new ConditionExpression("uniquename", ConditionOperator.In, new [] { "PwCOrlenFlotaRelease001"})
+                                                new ConditionExpression("uniquename", ConditionOperator.In, solutions)
                                             }
                                         }
                                     }
