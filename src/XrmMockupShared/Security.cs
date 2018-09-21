@@ -212,7 +212,15 @@ namespace DG.Tools.XrmMockup {
 
         private bool IsInBusinessUnit(EntityReference owner, Guid businessunitId, EntityReference caller) {
             var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
-            return usersInBusinessUnit.Any(u => owner.Id == u.Id);
+            if (usersInBusinessUnit.Any(u => owner.Id == u.Id))
+            {
+                return true;
+            }
+            else
+            {
+                var teamsInBusinessUnit = Core.GetDbTable(LogicalNames.Team).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+                return teamsInBusinessUnit.Any(u => owner.Id == u.Id);
+            }
         }
 
         private bool IsInBusinessUnitTree(EntityReference owner, Guid businessunitId, EntityReference caller) {
@@ -230,19 +238,21 @@ namespace DG.Tools.XrmMockup {
             var owner = entity.GetAttributeValue<EntityReference>("ownerid");
 
             // Check owner access rights
-            if (owner.LogicalName == LogicalNames.Team)
+            if (owner.LogicalName == LogicalNames.Team && HasOwnerTeamAccess(owner, caller))
             {
-                return HasOwnerTeamAccess(owner, caller);
+                return true;
             }
+            else
+            {
+                // Check if teams have access
+                var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
+                .Select(x => x.ToEntity())
+                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
+                .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
+                .ToList();
 
-            // Check if teams have access
-            var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
-            .Select(x => x.ToEntity())
-            .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
-            .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
-            .ToList();
-
-            return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+                return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+            }
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller) {
