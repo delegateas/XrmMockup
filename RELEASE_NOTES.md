@@ -1,3 +1,6 @@
+### 0.9.8-beta - September  2018
+* Fixed a bug where members of a team could not read any records owned by a team in the same Business Unit og child Business Unit
+
 ### 0.9.7-beta - September 12 2018
 * Added target type Guid, fixed bug when reference did not have value.
 
