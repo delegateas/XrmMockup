@@ -1,3 +1,6 @@
+### 0.9.9-beta - 5 November  2018
+* Add support for 'In' and 'NotIn' in conditional expression for query expressions
+
 ### 0.9.8-beta - September  2018
 * Fixed a bug where members of a team could not read any records owned by a team in the same Business Unit og child Business Unit
 
