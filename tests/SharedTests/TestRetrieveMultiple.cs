@@ -505,6 +505,83 @@ namespace DG.XrmMockupTest {
                 Assert.IsNotNull(reFetched);
             }
         }
+
+        [TestMethod]
+        public void TestQueryExpressionIn()
+        {
+            var query = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.In, new Guid[] { contact1.Id, contact2.Id }));
+
+            query.Criteria = filter;
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.AreEqual(2, res.Count());
+            Assert.IsTrue(res.Any(x => x.Id == lead1.Id));
+            Assert.IsTrue(res.Any(x => x.Id == lead2.Id));
+        }
+
+        [TestMethod]
+        public void TestQueryExpressionInEmpty()
+        {
+            var query = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.In, new Guid[] {}));
+
+            query.Criteria = filter;
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.AreEqual(0, res.Count());
+        }
+
+        [TestMethod]
+        public void TestQueryExpressionNotIn()
+        {
+            var query = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.NotIn, new Guid[] { contact1.Id, contact2.Id }));
+
+            query.Criteria = filter;
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.IsTrue(!res.Any(x => x.Id == lead1.Id));
+            Assert.IsTrue(!res.Any(x => x.Id == lead2.Id));
+        }
+
+        [TestMethod]
+        public void TestQueryExpressionNotInEmpty()
+        {
+            var leadCount = 0;
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                leadCount = context.LeadSet.Select(x => x.LeadId).ToList().Count();
+            }
+
+            var query = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.NotIn, new Guid[] { }));
+
+            query.Criteria = filter;
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.AreEqual(leadCount, res.Count());
+        }
     }
 
 }

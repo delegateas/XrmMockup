@@ -554,7 +554,6 @@ namespace DG.Tools.XrmMockup
                 return criteria.Filters.Any(f => MatchesCriteria(row, f)) || criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
-
         private static bool EvaluateCondition(DbRow row, ConditionExpression condition)
         {
             if (condition.AttributeName == null)
@@ -646,7 +645,10 @@ namespace DG.Tools.XrmMockup
                     }
                     var x = int.Parse((string)values.First());
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
-
+                case ConditionOperator.In:
+                    return values.Contains(attr);
+                case ConditionOperator.NotIn:
+                    return !values.Contains(attr);
                 default:
                     throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
             }
