@@ -23,8 +23,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid BusinessUnitId {
             get {
-                _propertyBag.TryGetValue("BusinessUnitId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("BusinessUnitId", out object BusinessUnitId);
+                return (Guid)BusinessUnitId;
             }
             set {
                 _propertyBag["BusinessUnitId"] = value;
@@ -33,8 +33,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid CorrelationId {
             get {
-                _propertyBag.TryGetValue("CorrelationId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("CorrelationId", out object CorrelationId);
+                return (Guid)CorrelationId;
             }
             set {
                 _propertyBag["CorrelationId"] = value;
@@ -43,8 +43,8 @@ namespace DG.Tools.XrmMockup {
 
         public int Depth {
             get {
-                _propertyBag.TryGetValue("Depth", out var output);
-                return output as int? ?? default(int);
+                _propertyBag.TryGetValue("Depth", out object Depth);
+                return (int)Depth;
             }
             set {
                 _propertyBag["Depth"] = value;
@@ -53,8 +53,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid InitiatingUserId {
             get {
-                _propertyBag.TryGetValue("InitiatingUserId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("InitiatingUserId", out object InitiatingUserId);
+                return (Guid)InitiatingUserId;
             }
             set {
                 _propertyBag["InitiatingUserId"] = value;
@@ -69,8 +69,8 @@ namespace DG.Tools.XrmMockup {
 
         public bool IsExecutingOffline {
             get {
-                _propertyBag.TryGetValue("IsExecutingOffline", out var output);
-                return output as bool? ?? default(bool);
+                _propertyBag.TryGetValue("IsExecutingOffline", out object IsExecutingOffline);
+                return (bool)IsExecutingOffline;
             }
             set {
                 _propertyBag["IsExecutingOffline"] = value;
@@ -79,8 +79,8 @@ namespace DG.Tools.XrmMockup {
 
         public bool IsInTransaction {
             get {
-                _propertyBag.TryGetValue("IsInTransaction", out var output);
-                return output as bool? ?? default(bool);
+                _propertyBag.TryGetValue("IsInTransaction", out object IsInTransaction);
+                return (bool)IsInTransaction;
             }
             set {
                 _propertyBag["IsInTransaction"] = value;
@@ -89,8 +89,8 @@ namespace DG.Tools.XrmMockup {
 
         public bool IsOfflinePlayback {
             get {
-                _propertyBag.TryGetValue("IsOfflinePlayback", out var output);
-                return output as bool? ?? default(bool);
+                _propertyBag.TryGetValue("IsOfflinePlayback", out object IsOfflinePlayback);
+                return (bool)IsOfflinePlayback;
             }
             set {
                 _propertyBag["IsOfflinePlayback"] = value;
@@ -99,8 +99,8 @@ namespace DG.Tools.XrmMockup {
 
         public int IsolationMode {
             get {
-                _propertyBag.TryGetValue("IsolationMode", out var output);
-                return output as int? ?? default(int);
+                _propertyBag.TryGetValue("IsolationMode", out object IsolationMode);
+                return (int)IsolationMode;
             }
             set {
                 _propertyBag["IsolationMode"] = value;
@@ -109,8 +109,8 @@ namespace DG.Tools.XrmMockup {
 
         public string MessageName {
             get {
-                _propertyBag.TryGetValue("MessageName", out var output);
-                return output as string;
+                _propertyBag.TryGetValue("MessageName", out object MessageName);
+                return (string)MessageName;
             }
             set {
                 _propertyBag["MessageName"] = value;
@@ -119,8 +119,8 @@ namespace DG.Tools.XrmMockup {
 
         public int Mode {
             get {
-                _propertyBag.TryGetValue("Mode", out var output);
-                return output as int? ?? default(int);
+                _propertyBag.TryGetValue("Mode", out object Mode);
+                return (int)Mode;
             }
             set {
                 _propertyBag["Mode"] = value;
@@ -129,8 +129,8 @@ namespace DG.Tools.XrmMockup {
 
         public DateTime OperationCreatedOn {
             get {
-                _propertyBag.TryGetValue("OperationCreatedOn", out var output);
-                return output as DateTime? ?? default(DateTime);
+                _propertyBag.TryGetValue("OperationCreatedOn", out object OperationCreatedOn);
+                return (DateTime)OperationCreatedOn;
             }
             set {
                 _propertyBag["OperationCreatedOn"] = value;
@@ -139,8 +139,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid OperationId {
             get {
-                _propertyBag.TryGetValue("OperationId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("OperationId", out object OperationId);
+                return (Guid)OperationId;
             }
             set {
                 _propertyBag["OperationId"] = value;
@@ -149,8 +149,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid OrganizationId {
             get {
-                _propertyBag.TryGetValue("OrganizationId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("OrganizationId", out object OrganizationId);
+                return (Guid)OrganizationId;
             }
             set {
                 _propertyBag["OrganizationId"] = value;
@@ -159,8 +159,8 @@ namespace DG.Tools.XrmMockup {
 
         public string OrganizationName {
             get {
-                _propertyBag.TryGetValue("OrganizationName", out var output);
-                return output as string;
+                _propertyBag.TryGetValue("OrganizationName", out object OrganizationName);
+                return (string)OrganizationName;
             }
             set {
                 _propertyBag["OrganizationName"] = value;
@@ -175,8 +175,8 @@ namespace DG.Tools.XrmMockup {
 
         public EntityReference OwningExtension {
             get {
-                _propertyBag.TryGetValue("OwningExtension", out var output);
-                return output as EntityReference;
+                _propertyBag.TryGetValue("OwningExtension", out object OwningExtension);
+                return (EntityReference)OwningExtension;
             }
             set {
                 _propertyBag["OwningExtension"] = value;
@@ -185,8 +185,8 @@ namespace DG.Tools.XrmMockup {
 
         public IPluginExecutionContext ParentContext {
             get {
-                _propertyBag.TryGetValue("ParentContext", out var output);
-                return output as IPluginExecutionContext;
+                _propertyBag.TryGetValue("ParentContext", out object ParentContext);
+                return (IPluginExecutionContext)ParentContext;
             }
             set {
                 _propertyBag["ParentContext"] = value;
@@ -207,8 +207,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid PrimaryEntityId {
             get {
-                _propertyBag.TryGetValue("PrimaryEntityId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("PrimaryEntityId", out object PrimaryEntityId);
+                return (Guid)PrimaryEntityId;
             }
             set {
                 _propertyBag["PrimaryEntityId"] = value;
@@ -217,8 +217,8 @@ namespace DG.Tools.XrmMockup {
 
         public string PrimaryEntityName {
             get {
-                _propertyBag.TryGetValue("PrimaryEntityName", out var output);
-                return output as string;
+                _propertyBag.TryGetValue("PrimaryEntityName", out object PrimaryEntityName);
+                return (string)PrimaryEntityName;
             }
             set {
                 _propertyBag["PrimaryEntityName"] = value;
@@ -227,8 +227,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid? RequestId {
             get {
-                _propertyBag.TryGetValue("RequestId", out var output);
-                return output as Guid?;
+                _propertyBag.TryGetValue("RequestId", out object RequestId);
+                return (Guid?)RequestId;
             }
             set {
                 _propertyBag["RequestId"] = value;
@@ -237,8 +237,8 @@ namespace DG.Tools.XrmMockup {
 
         public string SecondaryEntityName {
             get {
-                _propertyBag.TryGetValue("SecondaryEntityName", out var output);
-                return output as string;
+                _propertyBag.TryGetValue("SecondaryEntityName", out object SecondaryEntityName);
+                return (string)SecondaryEntityName;
             }
             set {
                 _propertyBag["SecondaryEntityName"] = value;
@@ -253,8 +253,8 @@ namespace DG.Tools.XrmMockup {
 
         public int Stage {
             get {
-                _propertyBag.TryGetValue("Stage", out var output);
-                return output as int? ?? default(int);
+                _propertyBag.TryGetValue("Stage", out object Stage);
+                return (int)Stage;
             }
             set {
                 _propertyBag["Stage"] = value;
@@ -263,8 +263,8 @@ namespace DG.Tools.XrmMockup {
 
         public Guid UserId {
             get {
-                _propertyBag.TryGetValue("UserId", out var output);
-                return output as Guid? ?? default(Guid);
+                _propertyBag.TryGetValue("UserId", out object UserId);
+                return (Guid)UserId;
             }
             set {
                 _propertyBag["UserId"] = value;

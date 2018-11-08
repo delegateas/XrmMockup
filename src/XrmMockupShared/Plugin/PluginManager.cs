@@ -25,7 +25,7 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins;
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins;
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins;
-        private bool disableRegisteredPlugins = true;
+        private bool disableRegisteredPlugins = false;
 
         // List of SystemPlugins to execute
         private List<MockupPlugin> systemPlugins = new List<MockupPlugin>

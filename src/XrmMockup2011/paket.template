@@ -1,5 +1,6 @@
 type project
 licenseUrl http://opensource.org/licenses/MIT
+iconUrl https://raw.githubusercontent.com/delegateas/delegateas.github.io/master/img/XrmMockup-sticker_small.png
 authors Delegate A/S, Martin Kasban Tange, Magnus Gether Sørensen
 tags microsoft crm xrm dynamics mockup fake c# csharp test testing unittest xrmmockup 2011
 include-pdbs true
