@@ -1,3 +1,6 @@
+### 0.9.10-beta - 16 November  2018
+* Add support for formatted values in RetrieveMultiple
+
 ### 0.9.9-beta - 5 November  2018
 * Add support for 'In' and 'NotIn' in conditional expression for query expressions
 
