@@ -919,6 +919,94 @@ namespace DG.Tools.XrmMockup
             }
             return pointer;
         }
+
+        private static Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata)
+        {
+            return
+                attributeMetadata is PicklistAttributeMetadata ||
+                attributeMetadata is BooleanAttributeMetadata ||
+                attributeMetadata is MoneyAttributeMetadata ||
+                attributeMetadata is LookupAttributeMetadata ||
+                attributeMetadata is IntegerAttributeMetadata ||
+                attributeMetadata is DateTimeAttributeMetadata ||
+                attributeMetadata is MemoAttributeMetadata ||
+                attributeMetadata is DoubleAttributeMetadata ||
+                attributeMetadata is DecimalAttributeMetadata;
+        }
+
+        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
+        {
+            if (metadataAtt is PicklistAttributeMetadata)
+            {
+                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
+                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
+                return optionset.Label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is BooleanAttributeMetadata)
+            {
+                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
+                return label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is MoneyAttributeMetadata)
+            {
+                var currencysymbol =
+                    db.GetEntity(
+                        db.GetEntity(entity.ToEntityReference())
+                        .GetAttributeValue<EntityReference>("transactioncurrencyid"))
+                    .GetAttributeValue<string>("currencysymbol");
+
+                return currencysymbol + (value as Money).Value.ToString();
+            }
+
+            if (metadataAtt is LookupAttributeMetadata)
+            {
+                try
+                {
+                    return (value as EntityReference).Name;
+                }
+                catch (NullReferenceException e)
+                {
+                    Console.WriteLine("No lookup entity exists: " + e.Message);
+                }
+            }
+
+            if (metadataAtt is IntegerAttributeMetadata ||
+                metadataAtt is DateTimeAttributeMetadata ||
+                metadataAtt is MemoAttributeMetadata ||
+                metadataAtt is DoubleAttributeMetadata ||
+                metadataAtt is DecimalAttributeMetadata)
+            {
+                return value.ToString();
+            }
+
+            return null;
+        }
+
+        internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
+        {
+            var validMetadata = metadata.Attributes
+                .Where(a => IsValidForFormattedValues(a));
+
+            var formattedValues = new List<KeyValuePair<string, string>>();
+            foreach (var a in entity.Attributes)
+            {
+                if (a.Value == null) continue;
+                var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
+                var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
+                if (formattedValuePair.Value != null)
+                {
+                    formattedValues.Add(formattedValuePair);
+                }
+            }
+
+            if (formattedValues.Count > 0)
+            {
+                entity.FormattedValues.AddRange(formattedValues);
+            }
+        }
     }
 
     internal class LogicalNames

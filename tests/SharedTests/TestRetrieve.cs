@@ -185,6 +185,37 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
             }
         }
+
+        [TestMethod]
+        public void TestFormattedValuesRetrieveMultiple()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var invoice = new Invoice()
+                {
+                    Name = "test",
+                    PriorityCode = Invoice_PriorityCode.DefaultValue,
+                };
+                invoice.Id = orgAdminUIService.Create(invoice);
+
+                var retrieved = context.InvoiceSet.FirstOrDefault();
+                Assert.AreEqual("Default Value", retrieved.FormattedValues["prioritycode"]);
+            }
+        }
+
+        [TestMethod]
+        public void TestFormattedValuesRetrieve()
+        {
+            var invoice = new Invoice()
+            {
+                Name = "test",
+                PriorityCode = Invoice_PriorityCode.DefaultValue,
+            };
+            invoice.Id = orgAdminUIService.Create(invoice);
+
+            var retrieved = orgAdminUIService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet(true));
+            Assert.AreEqual("Default Value", retrieved.FormattedValues["prioritycode"]);
+        }
     }
 
 }

@@ -22,13 +22,15 @@ namespace DG.XrmMockupTest {
                     Id = Guid.NewGuid(),
                     FirstName = "Fred",
                     LastName = "Bloggs",
-                    AnnualIncome = 12345m
+                    AnnualIncome = 12345m,
+                    TransactionCurrencyId = crm.BaseCurrency
                 };
                 var contact2 = new Contact() {
                     Id = Guid.NewGuid(),
                     FirstName = "Jo",
                     LastName = "Bloggs",
-                    AnnualIncome = 678910m
+                    AnnualIncome = 678910m,
+                    TransactionCurrencyId = crm.BaseCurrency
                 };
                 crm.PopulateWith(contact1, contact2);
 
@@ -46,17 +48,23 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void When_ordering_by_money_fields_descending_expected_result_is_returned() {
             using (var context = new Xrm(orgAdminService)) {
-                var contact1 = new Contact();
-                contact1.Id = Guid.NewGuid();
-                contact1.FirstName = "Fred";
-                contact1.LastName = "Bloggs";
-                contact1.AnnualIncome = 12345m;
+                var contact1 = new Contact
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Fred",
+                    LastName = "Bloggs",
+                    AnnualIncome = 12345m,
+                    TransactionCurrencyId = crm.BaseCurrency
+                };
 
-                var contact2 = new Contact();
-                contact2.Id = Guid.NewGuid();
-                contact2.FirstName = "Jo";
-                contact2.LastName = "Bloggs";
-                contact2.AnnualIncome = 678910m;
+                var contact2 = new Contact
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Jo",
+                    LastName = "Bloggs",
+                    AnnualIncome = 678910m,
+                    TransactionCurrencyId = crm.BaseCurrency
+                };
 
                 crm.PopulateWith(contact1, contact2);
 

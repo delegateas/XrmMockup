@@ -33,6 +33,8 @@ namespace DG.Tools.XrmMockup {
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
+                    Utility.SetFormmattedValues(db, toAdd, row.Metadata);
+
                     if (queryExpr.LinkEntities.Count > 0) {
                         foreach (var linkEntity in queryExpr.LinkEntities) {
                             collection.Entities.AddRange(
@@ -91,7 +93,6 @@ namespace DG.Tools.XrmMockup {
                 }
                 colToReturn = filteredEntities;
             }
-
             
             var resp = new RetrieveMultipleResponse();
             resp.Results["EntityCollection"] = colToReturn;
