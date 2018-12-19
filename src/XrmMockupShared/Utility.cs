@@ -304,16 +304,6 @@ namespace DG.Tools.XrmMockup
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
         }
 
-        internal static OptionMetadata GetStateOptionMetadataFromInvariantName(string stateInvariantName, EntityMetadata entityMetadata)
-        {
-            var stateOptionMeta = (entityMetadata.Attributes
-                .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
-                .OptionSet
-                .Options;
-
-            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
-        }
-
         internal static bool IsValidStatusTransition(string transitionData, int newStatusCode)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/crm/2009/WebServices");
@@ -332,6 +322,16 @@ namespace DG.Tools.XrmMockup
             return (metadata.Attributes
                 .FirstOrDefault(a => a is StatusAttributeMetadata) as StatusAttributeMetadata)
                 .OptionSet.Options;
+        }
+      
+        internal static OptionMetadata GetStateOptionMetadataFromInvariantName(string stateInvariantName, EntityMetadata entityMetadata)
+        {
+            var stateOptionMeta = (entityMetadata.Attributes
+                .FirstOrDefault(a => a is StateAttributeMetadata) as StateAttributeMetadata)
+                .OptionSet
+                .Options;
+
+            return stateOptionMeta.FirstOrDefault(o => (o as StateOptionMetadata).InvariantName == stateInvariantName);
         }
 
         internal static EntityReference GetBaseCurrency(MetadataSkeleton metadata)
@@ -1011,6 +1011,7 @@ namespace DG.Tools.XrmMockup
 
     internal class LogicalNames
     {
+        public const string Account = "account";
         public const string TransactionCurrency = "transactioncurrency";
         public const string BusinessUnit = "businessunit";
         public const string SystemUser = "systemuser";

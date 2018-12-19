@@ -145,6 +145,7 @@ namespace DG.Tools.XrmMockup {
                 new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
                 new RetrieveOptionSetRequestHandler(this, db, metadata, security),
                 new RetrieveExchangeRateRequestHandler(this, db, metadata, security),
+                new QualifyLeadRequestHandler(this, db, metadata, security),
                 new CloseIncidentRequestHandler(this, db, metadata, security),
                 new AddMembersTeamRequestHandler(this, db, metadata, security),
                 new RemoveMembersTeamRequestHandler(this, db, metadata, security),
