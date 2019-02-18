@@ -1,3 +1,12 @@
+### 0.9.11-beta - 18 February 2018
+* Fixed error where default values for boolean and picklists were not set (thanks @majakubowski)
+* Allows several plugin steps for the same plugin type (thanks @majakubowski)
+* Now supports QueryByAttribute, RetrieveAttribute, RetrievePrincipalAccess & WhoAmI (thanks @majakubowski)
+* Fixed error where null values was not handled correctly on create and update (thanks @majakubowski)
+* Workflows: Added support for clear (thanks @majakubowski)
+* Workflows: Added support for send email (thanks @majakubowski)
+* Workflows: Various bug fixes and improvements (thanks @majakubowski)
+
 ### 0.9.10-beta - 16 November  2018
 * Add support for formatted values in RetrieveMultiple
 
