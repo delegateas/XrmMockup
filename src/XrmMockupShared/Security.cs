@@ -125,6 +125,25 @@ namespace DG.Tools.XrmMockup
                 Shares[target].Remove(revokee);
             }
         }
+        internal AccessRights GetAccessRights(EntityReference target, EntityReference userRef)
+        {
+            var entity = Core.GetDbRow(target);
+            return GetAccessRights(entity.ToEntity(), userRef);
+        }
+
+        internal AccessRights GetAccessRights(Entity target, EntityReference userRef)
+        {
+            var ret = AccessRights.None;
+            ret |= HasPermission(target, AccessRights.CreateAccess, userRef) ? AccessRights.CreateAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ReadAccess, userRef) ? AccessRights.ReadAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.WriteAccess, userRef) ? AccessRights.WriteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.DeleteAccess, userRef) ? AccessRights.DeleteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendAccess, userRef) ? AccessRights.AppendAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendToAccess, userRef) ? AccessRights.AppendToAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AssignAccess, userRef) ? AccessRights.AssignAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ShareAccess, userRef) ? AccessRights.ShareAccess : AccessRights.None;
+            return ret;
+        }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal void CascadeOwnerUpdate(Entity dbEntity, EntityReference userRef, EntityReference ownerRef)
@@ -348,6 +367,26 @@ namespace DG.Tools.XrmMockup
             return (Shares.ContainsKey(entityRef) &&
                 Shares[entityRef].ContainsKey(caller) &&
                 Shares[entityRef][caller].HasFlag(access));
+        }
+
+        internal bool HasPermission(string logicalName, AccessRights access, EntityReference caller)
+        {
+            if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == logicalName)))
+            {
+                // system has no security roles for this entity. Is a case with linkentities which have no security roles
+                return true;
+            }
+            if (caller.Id == Core.AdminUserRef.Id) return true;
+
+            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
+               r.Privileges.ContainsKey(logicalName) &&
+               r.Privileges[logicalName].ContainsKey(access));
+            return callerRoles != null && callerRoles.Count() > 0;
+        }
+
+        internal bool HasPermission(EntityReference entityReference, AccessRights access, EntityReference caller)
+        {
+            return HasPermission(Core.GetDbRow(entityReference).ToEntity(), access, caller);
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller)

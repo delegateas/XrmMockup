@@ -884,7 +884,7 @@ namespace DG.Tools.XrmMockup
             pointer["actualend"] = entity.GetAttributeValue<DateTime>("actualend");
             pointer["actualstart"] = entity.GetAttributeValue<DateTime>("actualstart");
             pointer["description"] = entity.GetAttributeValue<string>("description");
-            pointer["deliveryprioritycode"] = entity.GetAttributeValue<int>("deliveryprioritycode");
+            pointer["deliveryprioritycode"] = entity.GetAttributeValue<OptionSetValue>("deliveryprioritycode");
             pointer["isbilled"] = entity.GetAttributeValue<bool>("isbilled");
             pointer["isregularactivity"] = entity.GetAttributeValue<bool>("isregularactivity");
             pointer["isworkflowcreated"] = entity.GetAttributeValue<bool>("isworkflowcreated");
@@ -1006,6 +1006,24 @@ namespace DG.Tools.XrmMockup
             {
                 entity.FormattedValues.AddRange(formattedValues);
             }
+        }
+
+        public static QueryExpression QueryByAttributeToQueryExpression(QueryByAttribute query)
+        {
+            var ret = new QueryExpression
+            {
+                EntityName = query.EntityName,
+                TopCount = query.TopCount,
+                PageInfo = query.PageInfo,
+                ColumnSet = query.ColumnSet,
+            };
+
+            for (var i = 0; i <= query.Attributes.Count - 1; i++)
+            {
+                ret.Criteria.Conditions.Add(new ConditionExpression(query.Attributes[i], ConditionOperator.Equal, query.Values[i]));
+            }
+
+            return ret;
         }
     }
 

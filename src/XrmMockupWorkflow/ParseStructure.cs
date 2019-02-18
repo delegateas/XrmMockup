@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.Serialization;
-using System.Xml.Linq;
-using System.Xml.Serialization;
-using Microsoft.Xrm.Sdk;
+﻿using System.Xml.Serialization;
 
 namespace WorkflowParser {
 
@@ -86,6 +78,7 @@ namespace WorkflowParser {
         [XmlElement("Null", Type = typeof(Null))]
         [XmlElement("Collection", Type = typeof(Collection))]
         [XmlElement("Persist", Type = typeof(Persist))]
+        [XmlElement("SendEmail", Type = typeof(SendEmail))]
         public Activity[] Activities;
     }
 
@@ -121,7 +114,8 @@ namespace WorkflowParser {
         XmlArrayItem("Postpone", Type = typeof(Postpone)),
         XmlArrayItem("Null", Type = typeof(Null)),
         XmlArrayItem("Collection", Type = typeof(Collection)),
-        XmlArrayItem("Persist", Type = typeof(Persist))]
+        XmlArrayItem("Persist", Type = typeof(Persist)),
+        XmlArrayItem("SendEmail", Type = typeof(SendEmail))]
         public Activity[] Properties;
     }
 
@@ -198,6 +192,7 @@ namespace WorkflowParser {
         [XmlElement("Null", Type = typeof(Null))]
         [XmlElement("Collection", Type = typeof(Collection))]
         [XmlElement("Persist", Type = typeof(Persist))]
+        [XmlElement("SendEmail", Type = typeof(SendEmail))]
         public Activity[] Activities;
 
     }
@@ -223,6 +218,7 @@ namespace WorkflowParser {
         [XmlElement("Null", Type = typeof(Null))]
         [XmlElement("Collection", Type = typeof(Collection))]
         [XmlElement("Persist", Type = typeof(Persist))]
+        [XmlElement("SendEmail", Type = typeof(SendEmail))]
         public Activity[] Activities;
 
     }
@@ -414,4 +410,16 @@ namespace WorkflowParser {
         public string Value;
     }
 
+    [XmlType("SendEmail")]
+    public class SendEmail : Activity {
+
+        [XmlAttribute("EntityId")]
+        public string EntityId;
+
+        [XmlAttribute("DisplayName")]
+        public string DisplayName;
+
+        [XmlAttribute("Entity")]
+        public string Entity;
+    }
 }

@@ -26,11 +26,40 @@ namespace DG.Tools.XrmMockup {
             var validAttributes = clonedEntity.Attributes.Where(x => x.Value != null);
             clonedEntity.Attributes = new AttributeCollection();
             clonedEntity.Attributes.AddRange(validAttributes);
+            
+            if (userRef != null && userRef.Id != Guid.Empty)
+            {
+                if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
+                }
 
+                var references = clonedEntity.Attributes.Where(x => x.Value is EntityReference && x.Key != "ownerid").ToArray();
 
-            if (userRef != null && userRef.Id != Guid.Empty && !security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef)) {
-                throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                    $", but the calling user with id '{userRef.Id}' does not have create access for that entity");
+                if (references.Any())
+                {
+                    if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
+                            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                    }
+                } 
+
+                foreach(var attr in references)
+                {
+                    var reference = attr.Value as EntityReference;
+                    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                }
             }
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity)) {
@@ -117,13 +146,14 @@ namespace DG.Tools.XrmMockup {
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit && !clonedEntity.Attributes.ContainsKey("parentbusinessunitid")) {
                 clonedEntity["parentbusinessunitid"] = metadata.RootBusinessUnit.ToEntityReference();
             }
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI) {
-                foreach (var attr in entityMetadata.Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList()) {
-                    if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
-                        clonedEntity[attr.LogicalName] = (attr as BooleanAttributeMetadata).DefaultValue;
-                    }
-                }
 
+            foreach (var attr in entityMetadata.Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList()) {
+                if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
+                    clonedEntity[attr.LogicalName] = (attr as BooleanAttributeMetadata).DefaultValue;
+                }
+            }
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI) {
                 foreach (var attr in entityMetadata.Attributes.Where(a =>
                     (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList()) {
                     if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
@@ -135,6 +165,11 @@ namespace DG.Tools.XrmMockup {
             if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser) {
                 Utility.SetFullName(metadata, clonedEntity);
             }
+
+            clonedEntity.Attributes
+                .Where(x => x.Value is string && string.IsNullOrEmpty((string)x.Value))
+                .ToList()
+                .ForEach(x => clonedEntity[x.Key] = null);
 
             if (Utility.Activities.Contains(clonedEntity.LogicalName)) {
                 clonedEntity["activitytypecode"] = Utility.ActivityTypeCode[clonedEntity.LogicalName];

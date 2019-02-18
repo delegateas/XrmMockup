@@ -18,8 +18,19 @@ namespace DG.Tools.XrmMockup {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
             var queryExpr = request.Query as QueryExpression;
             var fetchExpr = request.Query as FetchExpression;
-            if (queryExpr == null) {
+            var queryByAttr = request.Query as QueryByAttribute;
+            if (fetchExpr != null) {
                 queryExpr = XmlHandling.FetchXmlToQueryExpression(fetchExpr.Query);
+            }
+            else if (queryByAttr != null)
+            {
+                queryExpr = Utility.QueryByAttributeToQueryExpression(queryByAttr);
+            }
+
+            if (!security.HasPermission(queryExpr.EntityName, AccessRights.ReadAccess, userRef))
+            {
+                throw new FaultException($"Trying to query entity '{queryExpr.EntityName}'" +
+                    $", but the calling user with id '{userRef.Id}' does not have Read access");
             }
 
             var collection = new EntityCollection();
@@ -143,7 +154,10 @@ namespace DG.Tools.XrmMockup {
                 ColumnSet columns) {
             var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
             foreach (var attr in columns.Columns) {
-                parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
+                if (attributes.ContainsKey(attr))
+                {
+                    parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
+                }
             }
             return parentClone;
         }

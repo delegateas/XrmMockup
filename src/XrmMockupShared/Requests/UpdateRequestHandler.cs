@@ -83,6 +83,11 @@ namespace DG.Tools.XrmMockup {
                 Utility.SetFullName(metadata, updEntity);
             }
 
+            updEntity.Attributes
+                .Where(x => x.Value is string && string.IsNullOrEmpty((string)x.Value))
+                .ToList()
+                .ForEach(x => updEntity[x.Key] = null);
+
             xrmEntity.SetAttributes(updEntity.Attributes, metadata.EntityMetadata[updEntity.LogicalName]);
 
             var transactioncurrencyId = "transactioncurrencyid";

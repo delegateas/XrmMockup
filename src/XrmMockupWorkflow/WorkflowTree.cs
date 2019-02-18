@@ -5,14 +5,13 @@ using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Runtime.Serialization;
 using System.Activities;
 using Microsoft.Xrm.Sdk.Workflow;
 using DG.Tools.XrmMockup;
+using Microsoft.Xrm.Sdk.Metadata;
+using System.Text;
 
 namespace WorkflowExecuter {
     [Serializable]
@@ -41,6 +40,7 @@ namespace WorkflowExecuter {
     [KnownType(typeof(CallCodeActivity))]
     [KnownType(typeof(ConvertType))]
     [KnownType(typeof(Assign))]
+    [KnownType(typeof(SendEmail))]
     internal class WorkflowTree {
         [DataMember]
         public IWorkflowNode StartActivity;
@@ -807,20 +807,68 @@ namespace WorkflowExecuter {
                 entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
 
             } else {
-                entity = variables[EntityId] as Entity;
+                entity = variables.ContainsKey(EntityId) ? variables[EntityId] as Entity : null;
+            }
+
+            if (entity == null)
+            {
+                variables[VariableName] = null;
+                return;
             }
 
             if (entity.LogicalName != EntityLogicalName) {
+                variables[VariableName] = null;
                 return;
             }
+
+            if (Attribute == "!Process_Custom_Attribute_URL_")
+            {
+                variables[VariableName] = "https://somedummycrm.crm.dynamics.com/main.aspx?someparametrs";
+                return;
+            }
+
             if (!entity.Attributes.ContainsKey(Attribute)) {
                 variables[VariableName] = null;
                 return;
             }
             var attr = entity.Attributes[Attribute];
             if (TargetType == "EntityReference") {
-                if (attr is Guid) {
+                if (attr is Guid)
+                {
                     attr = new EntityReference(EntityLogicalName, (Guid)attr);
+                }
+                else if (!(attr is EntityReference))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
+                }
+            }
+            if (TargetType == "String")
+            {
+                if (attr is OptionSetValue)
+                {
+                    attr = Util.GetOptionSetValueLabel(entity.LogicalName, Attribute, attr as OptionSetValue, orgService);
+                }
+                else if (attr is bool)
+                {
+                    attr = Util.GetBooleanLabel(entity.LogicalName, Attribute, (bool) attr, orgService);
+                }
+                else if (attr is EntityReference)
+                {
+                    attr = Util.GetPrimaryName(attr as EntityReference, orgService);
+                }
+                else if (attr is Money)
+                {
+                    // TODO: should respect record currency and user format preferences
+                    attr = $"{(attr as Money).Value:C}";
+                }
+                else if (attr is int)
+                {
+                    // TODO: should respect user format preferences
+                    attr = $"{((int) attr):N0}";
+                }
+                else if (attr != null && !(attr is string))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
                 }
             }
             variables[VariableName] = attr;
@@ -1156,15 +1204,19 @@ namespace WorkflowExecuter {
                         variables[Result] = variables[Input];
                         break;
                     }
-
-                    //if (variables[Input] is Guid) {
-                    //    variables[Result] = (Guid)variables[Input];
-                    //    break;
-                    //}
-
-                    throw new NotImplementedException("Unknown input when trying to convert type to entityreference");
+                    throw new NotImplementedException($"Unknown input when trying to convert type {variables[Input].GetType().Name} to entityreference");
                 default:
-                    throw new NotImplementedException($"Unknown operator '{Type}'");
+                    if (variables[Input] == null)
+                    {
+                        variables[Result] = null;
+                        break;
+                    }
+                    else if (Type.ToLower() == variables[Input].GetType().Name.ToLower())
+                    {
+                        variables[Result] = variables[Input];
+                        break;
+                    }
+                    throw new NotImplementedException($"Unknown input when trying to convert type {variables[Input].GetType().Name} to {Type}");
             }
         }
     }
@@ -1188,7 +1240,8 @@ namespace WorkflowExecuter {
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
             if (!variables.ContainsKey(VariableId)) {
-                throw new WorkflowException($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
+                Console.WriteLine($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
+                variables[VariableId] = null;
             }
             var attr = variables[VariableId];
             if (attr is Money) {
@@ -1387,13 +1440,18 @@ namespace WorkflowExecuter {
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            var sb = new StringBuilder($"Workflow exited with status '{status}'");
             if (variables[messageId] != null && (variables[messageId] as string != "")) {
-                Console.WriteLine($"Workflow exited with status '{status}', the reason was '{variables[messageId]}'");
-            } else {
-                Console.WriteLine($"Workflow exited with status '{status}'");
+                sb.Append($", the reason was '{variables[messageId]}'");
             }
-
-
+            if (status == OperationStatus.Canceled)
+            {
+                throw new InvalidPluginExecutionException(OperationStatus.Canceled, variables[messageId].ToString());
+            }
+            else
+            {
+                Console.WriteLine(sb.ToString());
+            }
         }
     }
 
@@ -1511,6 +1569,32 @@ namespace WorkflowExecuter {
     }
 
 
+    [DataContract]
+    internal class SendEmail : IWorkflowNode
+    {
+        [DataMember]
+        public string EntityId;
+        [DataMember]
+        public string DisplayName;
+        [DataMember]
+        public string Entity;
+
+        public SendEmail(string entityId, string displayName, string entity)
+        {
+            EntityId = entityId;
+            DisplayName = displayName;
+            Entity = entity;
+        }
+
+        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (EntityId == "{x:Null}")
+            {
+                orgService.Create(variables[Entity.TrimEdge()] as Entity);
+            }
+        }
+    }
 
     static class Util {
         public static DataCollection<Entity> GetRelatedEntities(string relatedEntityName, Dictionary<string, object> variables,
@@ -1531,6 +1615,40 @@ namespace WorkflowExecuter {
             request.Target = primaryEntity.ToEntityReference();
             RetrieveResponse response = (RetrieveResponse)orgService.Execute(request);
             return response.Entity.RelatedEntities[relationship].Entities;
+        }
+
+        public static string GetPrimaryName(EntityReference entityReference, IOrganizationService orgService)
+        {
+            var primaryNameAttribute = ((RetrieveEntityResponse)orgService.Execute(new RetrieveEntityRequest
+            {
+                LogicalName = entityReference.LogicalName,
+                EntityFilters = EntityFilters.Entity
+            })).EntityMetadata.PrimaryNameAttribute;
+            var referencedEntity = orgService.Retrieve(entityReference.LogicalName, entityReference.Id, new ColumnSet(primaryNameAttribute));
+            return referencedEntity.GetAttributeValue<string>(primaryNameAttribute);
+        }
+
+        public static string GetOptionSetValueLabel(string entityLogicalName, string attributeLogicalName, OptionSetValue optionSetValue, IOrganizationService orgService)
+        {
+            var optionSetMetadata = ((PicklistAttributeMetadata)((RetrieveAttributeResponse)orgService.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogicalName,
+                LogicalName = attributeLogicalName
+            })).AttributeMetadata).OptionSet;
+
+            var option = optionSetMetadata.Options.SingleOrDefault(x => x.Value == optionSetValue.Value);
+            return option.Label.UserLocalizedLabel.Label;
+        }
+
+        public static string GetBooleanLabel(string entityLogicalName, string attributeLogicalName, bool value, IOrganizationService orgService)
+        {
+            var booleanMetadata = ((BooleanAttributeMetadata)((RetrieveAttributeResponse)orgService.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogicalName,
+                LogicalName = attributeLogicalName
+            })).AttributeMetadata).OptionSet;
+            var option = value ? booleanMetadata.TrueOption : booleanMetadata.FalseOption;
+            return option.Label.UserLocalizedLabel.Label;
         }
 
         public static XrmWorkflowContext GetDefaultContext() {
