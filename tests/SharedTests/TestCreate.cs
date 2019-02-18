@@ -194,5 +194,16 @@ namespace DG.XrmMockupTest {
             Assert.IsNotNull(lead.DoNotPostalMail);
             Assert.IsNotNull(lead.DoNotSendMM);
         }
+
+        [TestMethod]
+        public void CreatingEntityWithSdkModeShouldInitializePicklistAttributes()
+        {
+            var id = orgAdminService.Create(new Lead());
+            var lead = orgAdminService.Retrieve<Lead>(id);
+            Assert.IsNotNull(lead.LeadQualityCode);
+            Assert.IsNotNull(lead.PreferredContactMethodCode);
+            Assert.IsNotNull(lead.PriorityCode);
+            Assert.IsNotNull(lead.SalesStageCode);
+        }
     }
 }

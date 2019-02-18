@@ -152,13 +152,11 @@ namespace DG.Tools.XrmMockup {
                     clonedEntity[attr.LogicalName] = (attr as BooleanAttributeMetadata).DefaultValue;
                 }
             }
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI) {
-                foreach (var attr in entityMetadata.Attributes.Where(a =>
-                    (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList()) {
-                    if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
-                        clonedEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
-                    }
+            
+            foreach (var attr in entityMetadata.Attributes.Where(a =>
+                (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList()) {
+                if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName)) {
+                    clonedEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
                 }
             }
 

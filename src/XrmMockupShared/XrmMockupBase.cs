@@ -265,7 +265,6 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="service"></param>
         /// <param name="businessUnit"></param>
-        /// <param name="type"></param>
         /// <param name="securityRoles"></param>
         /// <returns></returns>
         public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {
