@@ -618,6 +618,9 @@ namespace DG.Tools.XrmMockup
                 case ConditionOperator.LessThan:
                     return Compare((IComparable)attr, op, (IComparable)values.First());
 
+                case ConditionOperator.NotLike:
+                    return !Matches(attr, ConditionOperator.Like, values);
+
                 case ConditionOperator.Like:
                     if (attr == null)
                         return false;
@@ -625,7 +628,7 @@ namespace DG.Tools.XrmMockup
                     var pattern = (string)values.First();
                     if (pattern.First() == '%' && (pattern.Last() == '%'))
                     {
-                        return sAttr.Contains(pattern.Substring(1, pattern.Length - 1));
+                        return sAttr.Contains(pattern.Substring(1, pattern.Length - 2));
                     }
                     else if (pattern.First() == '%')
                     {

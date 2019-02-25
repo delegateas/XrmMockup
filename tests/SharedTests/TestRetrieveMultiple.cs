@@ -607,5 +607,43 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(2, result.Count);
             }
         }
+
+        [TestMethod]
+        public void TestLINQContains()
+        {
+            var account = new Account()
+            {
+                Name = "NotIn",
+
+            };
+            account.Id = orgAdminService.Create(account);
+
+            var searchstring = "a";
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var query = 
+                    from c in xrm.AccountSet
+                    where c.Name.Contains(searchstring)
+                    select new
+                    {
+                        c.Name
+                    };
+                var queryList = query.ToList();
+                Assert.IsTrue(queryList.Count > 0);
+            }
+
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var query =
+                    from c in xrm.AccountSet
+                    where !c.Name.Contains(searchstring)
+                    select new
+                    {
+                        c.AccountId
+                    };
+                var queryNotA = query.FirstOrDefault();
+                Assert.AreEqual(account.Id, queryNotA.AccountId);
+            }
+        }
     }
 }
