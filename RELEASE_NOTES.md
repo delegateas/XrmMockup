@@ -1,3 +1,7 @@
+### 0.10.1-beta - 25 February 2019
+* Added ConditionOperator NotLike
+* Fixed error with Like, where both sides were wildcard
+
 ### 0.10.0-beta - 25 February 2019
 * Added a check that ensures selected attributes exist on the entity.
 * Fixed errors in MergeRequest.
