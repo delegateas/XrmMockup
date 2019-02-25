@@ -351,10 +351,11 @@ namespace DG.Tools.XrmMockup
 
             if (maxRole == PrivilegeDepth.Deep)
             {
+                var bu = callerRow.GetColumn<DbRow>("businessunitid");
                 // if the owner-user or the owner-team is in one of the child BUs of the callers parent BU or BU, he has access
-                if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null && IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id))
+                if (bu.GetColumn<DbRow>("parentbusinessunitid") != null && IsInBusinessUnitTree(owner, bu.GetColumn<DbRow>("parentbusinessunitid").Id))
                     return true;
-                else if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id))
+                else if (IsInBusinessUnitTree(owner, bu.Id))
                     return true;
             }
             

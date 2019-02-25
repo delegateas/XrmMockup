@@ -86,7 +86,7 @@ namespace DG.Tools.XrmMockup
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
 
-        public static bool IsSettableAttribute(string attrName, EntityMetadata metadata)
+        public static bool IsValidAttribute(string attrName, EntityMetadata metadata)
         {
             if (metadata == null || attrName.Contains("."))
             {
@@ -107,12 +107,20 @@ namespace DG.Tools.XrmMockup
 
             if (colsToKeep != null && !colsToKeep.AllColumns)
             {
+                foreach (var col in colsToKeep.Columns)
+                {
+                    if (!IsValidAttribute(col, metadata))
+                    {
+                        throw new MockupException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{col}'");
+                    }
+                }
+
                 HashSet<string> keep = new HashSet<string>(colsToKeep.Columns);
                 foreach (var attr in attributes)
                 {
-                    if (!IsSettableAttribute(attr.Key, metadata))
+                    if (!IsValidAttribute(attr.Key, metadata))
                     {
-                        throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
+                        throw new MockupException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
                     if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = attr.Value;
                 }
@@ -121,7 +129,7 @@ namespace DG.Tools.XrmMockup
             {
                 foreach (var attr in attributes)
                 {
-                    if (!IsSettableAttribute(attr.Key, metadata))
+                    if (!IsValidAttribute(attr.Key, metadata))
                     {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
@@ -724,7 +732,7 @@ namespace DG.Tools.XrmMockup
 
         internal static void Touch(Entity dbEntity, EntityMetadata metadata, TimeSpan timeOffset, EntityReference user)
         {
-            if (IsSettableAttribute("modifiedon", metadata) && IsSettableAttribute("modifiedby", metadata))
+            if (IsValidAttribute("modifiedon", metadata) && IsValidAttribute("modifiedby", metadata))
             {
                 dbEntity["modifiedon"] = DateTime.Now.Add(timeOffset);
                 dbEntity["modifiedby"] = user;

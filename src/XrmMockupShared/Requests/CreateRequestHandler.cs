@@ -69,7 +69,7 @@ namespace DG.Tools.XrmMockup {
             var transactioncurrencyId = "transactioncurrencyid";
             var exchangerate = "exchangerate";
             if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) &&
-                Utility.IsSettableAttribute(transactioncurrencyId, entityMetadata) &&
+                Utility.IsValidAttribute(transactioncurrencyId, entityMetadata) &&
                 entityMetadata.Attributes.Any(m => m is MoneyAttributeMetadata) &&
                 (settings.ServiceRole == MockupServiceSettings.Role.UI ||
                 (settings.ServiceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
@@ -83,7 +83,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (!clonedEntity.Attributes.ContainsKey(exchangerate) &&
-                Utility.IsSettableAttribute(exchangerate, entityMetadata) &&
+                Utility.IsValidAttribute(exchangerate, entityMetadata) &&
                 clonedEntity.Attributes.ContainsKey(transactioncurrencyId)) {
                 var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db.GetEntityOrNull(currencyId);
@@ -91,8 +91,8 @@ namespace DG.Tools.XrmMockup {
                 Utility.HandleCurrencies(metadata, db, clonedEntity);
             }
             
-            if (Utility.IsSettableAttribute("statecode", entityMetadata) &&
-                Utility.IsSettableAttribute("statuscode", entityMetadata)) {
+            if (Utility.IsValidAttribute("statecode", entityMetadata) &&
+                Utility.IsValidAttribute("statuscode", entityMetadata)) {
                 var defaultState = 0;
                 var defaultStateStatus = metadata.DefaultStateStatus[clonedEntity.LogicalName];
                 if (!clonedEntity.Attributes.ContainsKey("statecode") &&
@@ -119,15 +119,15 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-            if (Utility.IsSettableAttribute("createdon", entityMetadata)) {
+            if (Utility.IsValidAttribute("createdon", entityMetadata)) {
                 clonedEntity["createdon"] = DateTime.Now.Add(core.TimeOffset);
             }
-            if (Utility.IsSettableAttribute("createdby", entityMetadata)) {
+            if (Utility.IsValidAttribute("createdby", entityMetadata)) {
                 clonedEntity["createdby"] = userRef;
             }
 
-            if (Utility.IsSettableAttribute("modifiedon", entityMetadata) &&
-                Utility.IsSettableAttribute("modifiedby", entityMetadata)) {
+            if (Utility.IsValidAttribute("modifiedon", entityMetadata) &&
+                Utility.IsValidAttribute("modifiedby", entityMetadata)) {
                 clonedEntity["modifiedon"] = clonedEntity["createdon"];
                 clonedEntity["modifiedby"] = clonedEntity["createdby"];
             }

@@ -86,7 +86,6 @@ namespace DG.Tools.XrmMockup {
                 if (metaSteps == null || metaSteps.Count == 0)
                 {
                     throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
-                    return;
                 }
 
                 foreach(var metaStep in metaSteps) { 

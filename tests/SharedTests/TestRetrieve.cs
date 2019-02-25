@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using DG.Tools.XrmMockup;
 
 namespace DG.XrmMockupTest {
 
@@ -215,6 +216,27 @@ namespace DG.XrmMockupTest {
 
             var retrieved = orgAdminUIService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet(true));
             Assert.AreEqual("Default Value", retrieved.FormattedValues["prioritycode"]);
+        }
+
+        [TestMethod]
+        public void TestRetrieveInvalidAttributeFails()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var id1 = this.orgAdminUIService.Create(new Account() { Name = "SomeName" });
+                var attr = "invalidatttributeaaaaaaaaaaaa";
+                try
+                {
+                    orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,
+                        new ColumnSet(attr)).ToEntity<Account>();
+                    Assert.Fail();
+                } catch(Exception e)
+                {
+                    Assert.IsInstanceOfType(e, typeof(MockupException));
+                    Assert.AreEqual($"'account' entity doesn't contain attribute with Name = '{attr}'", e.Message);
+                }
+
+            }
         }
     }
 
