@@ -1,4 +1,9 @@
-### 0.9.11-beta - 18 February 2018
+### 0.10.0-beta - 25 February 2019
+* Added a check that ensures selected attributes exist on the entity.
+* Fixed errors in MergeRequest.
+* Fixed errors related to security checks for Parent Businessunit privilege.
+
+### 0.9.11-beta - 18 February 2019
 * Fixed error where default values for boolean and picklists were not set (thanks @majakubowski)
 * Allows several plugin steps for the same plugin type (thanks @majakubowski)
 * Now supports QueryByAttribute, RetrieveAttribute, RetrievePrincipalAccess & WhoAmI (thanks @majakubowski)
