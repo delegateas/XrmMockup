@@ -1,3 +1,8 @@
+### 0.11.0-beta - 04 March 2019
+* Implemented FilterExpressions conditions across multiple LinkEntities (@aronmek)
+* Changed the Created/Modified On fields to be Utc based. (@aronmek)
+* Fixed error related to shared variables in plugincontext (@aronmek)
+
 ### 0.10.2-beta - 04 March 2019
 * Fixed error when checking permissions in Deep privileges
 * Now, XrmMockup also considers files in execution directory when looking for proxy types.
