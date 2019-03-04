@@ -1,3 +1,7 @@
+### 0.10.2-beta - 04 March 2019
+* Fixed error when checking permissions in Deep privileges
+* Now, XrmMockup also considers files in execution directory when looking for proxy types.
+
 ### 0.10.1-beta - 25 February 2019
 * Added ConditionOperator NotLike
 * Fixed error with Like, where both sides were wildcard
