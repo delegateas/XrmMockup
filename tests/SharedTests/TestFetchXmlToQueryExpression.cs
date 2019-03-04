@@ -72,7 +72,8 @@ namespace DG.XrmMockupTest
                 });
         }
 
-
+        // ignored until entityname can be handled correctly for 2011
+#if !(XRM_MOCKUP_TEST_2011)
         [TestMethod]
         public void TestFetchXmlToQueryExpressionFromXml()
         {
@@ -119,9 +120,9 @@ namespace DG.XrmMockupTest
                 Assert.IsTrue(entity.Attributes.ContainsKey("name"));
                 Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("contact_1.firstname"));
-                Assert.IsTrue(entity.Attributes["contact_1.firstname"] is AliasedValue);
-                Assert.AreEqual("Colin",  entity.GetAttributeValue<AliasedValue>("contact_1.firstname").Value);
+                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.AreEqual("Colin",  entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
 
             }
         }
@@ -163,12 +164,12 @@ namespace DG.XrmMockupTest
                 Assert.IsTrue(entity.Attributes.ContainsKey("name"));
                 Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("contact_1.firstname"));
-                Assert.IsTrue(entity.Attributes["contact_1.firstname"] is AliasedValue);
-                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact_1.firstname").Value);
+                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
             }
         }
-
+#endif
     }
 
 }

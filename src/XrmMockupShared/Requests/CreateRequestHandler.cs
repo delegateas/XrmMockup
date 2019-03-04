@@ -120,7 +120,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (Utility.IsValidAttribute("createdon", entityMetadata)) {
-                clonedEntity["createdon"] = DateTime.Now.Add(core.TimeOffset);
+                clonedEntity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
             }
             if (Utility.IsValidAttribute("createdby", entityMetadata)) {
                 clonedEntity["createdby"] = userRef;

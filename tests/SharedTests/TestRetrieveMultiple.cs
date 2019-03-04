@@ -117,6 +117,57 @@ namespace DG.XrmMockupTest {
             }
         }
 
+        // ignored until entityname can be handled correctly for 2011
+#if !(XRM_MOCKUP_TEST_2011)
+        [TestMethod]
+        public void TestFilterOnJoin()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from con in context.ContactSet
+                    join lead in context.LeadSet
+                    on con.ContactId equals lead.ParentContactId.Id
+                    where lead.Subject.StartsWith("Some") && con.LastName.StartsWith("contact")
+                    select new { con.LastName, lead.Subject };
+
+                var result = query.ToArray();
+                Assert.AreEqual(2, result.Count());
+            }
+        }
+#endif
+        [TestMethod]
+        public void TestAllColumns()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from con in context.ContactSet
+                    where con.ContactId == contact1.Id
+                    select con;
+
+                var result = query.First();
+                Assert.AreEqual(contact1.LastName, result.LastName);
+            }
+        }
+
+        [TestMethod]
+        public void TestFilterOnOptionSet()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                contact1.SetState(orgAdminUIService, ContactState.Inactive);
+
+                var query =
+                    from con in context.ContactSet
+                    where con.StateCode == ContactState.Inactive
+                    select con;
+
+                var result = query.First();
+                Assert.AreEqual(contact1.LastName, result.LastName);
+            }
+        }
+
         [TestMethod]
         public void TestOrderingJoin() {
             using (var context = new Xrm(orgAdminUIService)) {
