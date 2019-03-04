@@ -554,24 +554,44 @@ namespace DG.Tools.XrmMockup
             return (Entity)method.Invoke(entity, null);
         }
 
-        public static bool MatchesCriteria(DbRow row, FilterExpression criteria)
+        public static bool MatchesCriteria(Entity row, FilterExpression criteria)
         {
             if (criteria.FilterOperator == LogicalOperator.And)
-                return criteria.Filters.All(f => MatchesCriteria(row, f)) && criteria.Conditions.All(c => EvaluateCondition(row, c));
+                return criteria.Filters.All(f => 
+                    MatchesCriteria(row, f)) && 
+                    criteria.Conditions.All(c => EvaluateCondition(row, c));
             else
-                return criteria.Filters.Any(f => MatchesCriteria(row, f)) || criteria.Conditions.Any(c => EvaluateCondition(row, c));
+                return criteria.Filters.Any(f => 
+                    MatchesCriteria(row, f)) || 
+                    criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
-        private static bool EvaluateCondition(DbRow row, ConditionExpression condition)
+        private static bool EvaluateCondition(Entity row, ConditionExpression condition)
         {
-            if (condition.AttributeName == null)
+            object attr = null;
+            switch (condition)
             {
-                return Matches(row.Id, condition.Operator, condition.Values);
+                case var c when condition.AttributeName == null:
+                    return Matches(row.Id, condition.Operator, condition.Values);
+#if !XRM_MOCKUP_2011
+                case var c when condition.EntityName != null:
+                    var key = $"{condition.EntityName}.{condition.AttributeName}";
+                    if (row != null && row.Contains(key))
+                    {
+                        attr = row[key];
+                    }
+                    break;
+#endif
+                default:
+                    if (row.Contains(condition.AttributeName))
+                    {
+                        attr = row[condition.AttributeName];
+                    }
+                    break;
             }
 
-            var attr = row.GetColumn(condition.AttributeName);
-            if (attr is DbRow related) attr = related.Id;
-            var values = condition.Values.Select(v => ConvertToComparableObject(v));
+            attr = ConvertToComparableObject(attr);
+            var values = condition.Values.Select(ConvertToComparableObject);
             return Matches(attr, condition.Operator, values);
         }
 
@@ -596,6 +616,28 @@ namespace DG.Tools.XrmMockup
                 return obj;
         }
 
+        public static object ConvertTo(object obj, Type targetType)
+        {
+            if (targetType == null) { return obj; }
+            if(obj is string && !typeof(IConvertible).IsAssignableFrom(targetType)) {
+                var parse = targetType.GetMethod(
+                    nameof(Guid.Parse),
+                    BindingFlags.Static | BindingFlags.Public,
+                    null,
+                    new[] { typeof(string) },
+                    null);
+
+                if (parse != null)
+                {
+                    return parse.Invoke(null, new[] { obj });
+                }
+
+                return obj;
+            }
+
+            return Convert.ChangeType(obj, targetType);
+        }
+
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
         {
             switch (op)
@@ -607,10 +649,10 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(values.First(), attr);
+                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(values.First(), attr);
+                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -644,7 +686,7 @@ namespace DG.Tools.XrmMockup
                     }
 
                 case ConditionOperator.NextXYears:
-                    var now = DateTime.Now;
+                    var now = DateTime.UtcNow;
                     DateTime date;
                     if (attr is DateTime)
                     {
@@ -668,7 +710,7 @@ namespace DG.Tools.XrmMockup
 
         public static bool Compare(IComparable attr, ConditionOperator op, IComparable value)
         {
-            // if atleast one of the two compare values are null. Then compare returns null
+            // if at least one of the two compare values are null. Then compare returns null
             if (attr == null || value == null)
                 return false;
             switch (op)
@@ -737,7 +779,7 @@ namespace DG.Tools.XrmMockup
         {
             if (IsValidAttribute("modifiedon", metadata) && IsValidAttribute("modifiedby", metadata))
             {
-                dbEntity["modifiedon"] = DateTime.Now.Add(timeOffset);
+                dbEntity["modifiedon"] = DateTime.UtcNow.Add(timeOffset);
                 dbEntity["modifiedby"] = user;
             }
         }
