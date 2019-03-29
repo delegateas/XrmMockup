@@ -25,6 +25,15 @@ namespace DG.Tools.XrmMockup {
         public string MessageName;
         public string AssemblyName;
         public string PrimaryEntity;
+        public List<MetaImage> Images;
+    }
+
+    public class MetaImage
+    {
+        public string Attributes;
+        public string EntityAlias;
+        public string Name;
+        public int ImageType;
     }
 
 

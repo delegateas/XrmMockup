@@ -141,6 +141,40 @@ namespace DG.Tools.XrmMockup.Metadata
             solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions);
             solutionComponentQuery.LinkEntities.Add(solutionQuery);
 
+
+            var imagesQuery = new QueryExpression
+            {
+                EntityName = "sdkmessageprocessingstepimage",
+                ColumnSet = new ColumnSet("attributes", "entityalias", "name", "imagetype", "sdkmessageprocessingstepid"),
+                LinkEntities =
+                {
+                    new LinkEntity("sdkmessageprocessingstepimage", "sdkmessageprocessingstep", "sdkmessageprocessingstepid", "sdkmessageprocessingstepid", JoinOperator.Inner)
+                    {
+                        LinkEntities =
+                        {
+                            new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
+                            {
+                                LinkEntities =
+                                {
+                                    new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner)
+                                    {
+                                        LinkCriteria =
+                                        {
+                                            Conditions =
+                                            {
+                                                new ConditionExpression("uniquename", ConditionOperator.In, new [] { "PwCOrlenFlotaRelease001"})
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var images = service.RetrieveMultiple(imagesQuery);
+
             var plugins = new List<MetaPlugin>();
 
             foreach (var plugin in service.RetrieveMultiple(pluginQuery).Entities) {
@@ -152,7 +186,17 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
-                    PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string
+                    PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
+                    Images = images.Entities
+                        .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
+                        .Select(x => new MetaImage
+                        {
+                            Attributes = x.GetAttributeValue<string>("attributes"),
+                            EntityAlias = x.GetAttributeValue<string>("entityalias"),
+                            ImageType = x.GetAttributeValue<OptionSetValue>("imagetype").Value,
+                            Name = x.GetAttributeValue<string>("name")
+                        })
+                        .ToList()
                 };
                 plugins.Add(metaPlugin);
             }

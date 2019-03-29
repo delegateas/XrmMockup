@@ -18,8 +18,19 @@ namespace DG.Tools.XrmMockup {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
             var queryExpr = request.Query as QueryExpression;
             var fetchExpr = request.Query as FetchExpression;
-            if (queryExpr == null) {
+            var queryByAttr = request.Query as QueryByAttribute;
+            if (fetchExpr != null) {
                 queryExpr = XmlHandling.FetchXmlToQueryExpression(fetchExpr.Query);
+            }
+            else if (queryByAttr != null)
+            {
+                queryExpr = Utility.QueryByAttributeToQueryExpression(queryByAttr);
+            }
+
+            if (!security.HasPermission(queryExpr.EntityName, AccessRights.ReadAccess, userRef))
+            {
+                throw new FaultException($"Trying to query entity '{queryExpr.EntityName}'" +
+                    $", but the calling user with id '{userRef.Id}' does not have Read access");
             }
 
             var collection = new EntityCollection();
@@ -29,16 +40,18 @@ namespace DG.Tools.XrmMockup {
             {
                 foreach (var row in rows)
                 {
-                    if (!Utility.MatchesCriteria(row, queryExpr.Criteria)) continue;
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
+
+                    Utility.SetFormmattedValues(db, toAdd, row.Metadata);
 
                     if (queryExpr.LinkEntities.Count > 0) {
                         foreach (var linkEntity in queryExpr.LinkEntities) {
                             collection.Entities.AddRange(
-                                GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db));
+                                GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db)
+                                .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                         }
-                    } else {
+                    } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
                         collection.Entities.Add(toAdd);
                     }
                 }
@@ -91,7 +104,6 @@ namespace DG.Tools.XrmMockup {
                 }
                 colToReturn = filteredEntities;
             }
-
             
             var resp = new RetrieveMultipleResponse();
             resp.Results["EntityCollection"] = colToReturn;
@@ -102,7 +114,6 @@ namespace DG.Tools.XrmMockup {
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
             var collection = new List<Entity>();
             foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
-                if (!Utility.MatchesCriteria(linkedRow, linkEntity.LinkCriteria)) continue;
                 var linkedEntity = linkedRow.ToEntity();
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
@@ -114,7 +125,7 @@ namespace DG.Tools.XrmMockup {
 
                     if (linkedAttr.Equals(entAttr)) {
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes, linkEntity.Columns);
+                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
@@ -122,10 +133,11 @@ namespace DG.Tools.XrmMockup {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
                                 subEntities.AddRange(
                                     GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db));
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db)
+                                        .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
                             collection.AddRange(subEntities);
-                        } else {
+                        } else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) {
                             collection.Add(aliasedEntity);
                         }
 
@@ -138,10 +150,9 @@ namespace DG.Tools.XrmMockup {
             return collection;
         }
 
-        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes,
-                ColumnSet columns) {
+        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes) {
             var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
-            foreach (var attr in columns.Columns) {
+            foreach (var attr in attributes.Keys) {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }
             return parentClone;

@@ -49,9 +49,9 @@ namespace DG.Tools.XrmMockup
                 role["name"] = sr.Name;
                 role["roletemplateid"] = sr.RoleTemplateId;
                 role["createdby"] = Core.AdminUserRef;
-                role["createdon"] = DateTime.Now.Add(Core.TimeOffset);
+                role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 role["modifiedby"] = Core.AdminUserRef;
-                role["modifiedon"] = DateTime.Now.Add(Core.TimeOffset);
+                role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 db.Add(role);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
             }
@@ -124,6 +124,25 @@ namespace DG.Tools.XrmMockup
             {
                 Shares[target].Remove(revokee);
             }
+        }
+        internal AccessRights GetAccessRights(EntityReference target, EntityReference userRef)
+        {
+            var entity = Core.GetDbRow(target);
+            return GetAccessRights(entity.ToEntity(), userRef);
+        }
+
+        internal AccessRights GetAccessRights(Entity target, EntityReference userRef)
+        {
+            var ret = AccessRights.None;
+            ret |= HasPermission(target, AccessRights.CreateAccess, userRef) ? AccessRights.CreateAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ReadAccess, userRef) ? AccessRights.ReadAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.WriteAccess, userRef) ? AccessRights.WriteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.DeleteAccess, userRef) ? AccessRights.DeleteAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendAccess, userRef) ? AccessRights.AppendAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AppendToAccess, userRef) ? AccessRights.AppendToAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.AssignAccess, userRef) ? AccessRights.AssignAccess : AccessRights.None;
+            ret |= HasPermission(target, AccessRights.ShareAccess, userRef) ? AccessRights.ShareAccess : AccessRights.None;
+            return ret;
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
@@ -332,13 +351,11 @@ namespace DG.Tools.XrmMockup
 
             if (maxRole == PrivilegeDepth.Deep)
             {
-                // if the owner-user or the owner-team is in one of the child BUs of the callers parent BU or BU, he has access
-                if (callerRow.GetColumn<DbRow>("parentbusinessunitid") != null && IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("parentbusinessunitid").Id))
-                    return true;
-                else if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id))
+                // if the owner-user or the owner-team is in the same BU, or sub BU's, as the caller, he has access
+                if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id))
                     return true;
             }
-            
+
             return false;
         }
 
@@ -348,6 +365,26 @@ namespace DG.Tools.XrmMockup
             return (Shares.ContainsKey(entityRef) &&
                 Shares[entityRef].ContainsKey(caller) &&
                 Shares[entityRef][caller].HasFlag(access));
+        }
+
+        internal bool HasPermission(string logicalName, AccessRights access, EntityReference caller)
+        {
+            if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == logicalName)))
+            {
+                // system has no security roles for this entity. Is a case with linkentities which have no security roles
+                return true;
+            }
+            if (caller.Id == Core.AdminUserRef.Id) return true;
+
+            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
+               r.Privileges.ContainsKey(logicalName) &&
+               r.Privileges[logicalName].ContainsKey(access));
+            return callerRoles != null && callerRoles.Count() > 0;
+        }
+
+        internal bool HasPermission(EntityReference entityReference, AccessRights access, EntityReference caller)
+        {
+            return HasPermission(Core.GetDbRow(entityReference).ToEntity(), access, caller);
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller)

@@ -44,16 +44,14 @@ namespace DG.Tools.XrmMockup {
                 };
             }
 
-            int aliasCount = 0;
-
             foreach (var linkEntity in entity.Elements("link-entity")) {
-                query.LinkEntities.Add(LinkEntityFromXml(logicalName.Value, linkEntity.ToString(), ref aliasCount));
+                query.LinkEntities.Add(LinkEntityFromXml(logicalName.Value, linkEntity.ToString()));
             }
 
             return query;
         }
 
-        public static FilterExpression FilterExpFromXml(string filterXml) {
+        public static FilterExpression FilterExpFromXml(string filterXml, string currentEntity = null) {
             var filter = XElement.Parse(filterXml);
             var filterExp = new FilterExpression();
 
@@ -65,34 +63,37 @@ namespace DG.Tools.XrmMockup {
 
             foreach (var condition in filter.Elements("condition")) {
                 var attr = condition.Attribute("attribute").Value;
+                var entityName = condition.Attribute("entityname")?.Value ?? currentEntity;
                 var op = Mappings.ConditionalOperator[condition.Attribute("operator").Value];
+                object[] values = null;
                 if (condition.HasElements) {
-                    var values = new List<object>();
-                    foreach (var value in condition.Elements("value")) {
-                        values.Add(value.Value);
-                    }
-
-                    filterExp.AddCondition(attr, op, values);
-                } else {
-                    var value = condition.Attribute("value").Value;
-                    filterExp.AddCondition(attr, op, value);
-
+                    values = condition.Elements("value")
+                        .Select(v => v.Value)
+                        .ToArray();
                 }
+                else {
+                    values = new[] { condition.Attribute("value").Value };
+                }
+#if XRM_MOCKUP_2011
+                filterExp.AddCondition(attr, op, values);
+#else
+                filterExp.AddCondition(entityName, attr, op, values);
+#endif
             }
 
             foreach (var subFilter in filter.Elements("filter")) {
-                filterExp.AddFilter(FilterExpFromXml(subFilter.ToString()));
+                filterExp.AddFilter(FilterExpFromXml(subFilter.ToString(), currentEntity));
             }
 
             return filterExp;
         }
 
-        public static LinkEntity LinkEntityFromXml(string parentLogicalName, string linkXml, ref int aliasCount) {
+        public static LinkEntity LinkEntityFromXml(string parentLogicalName, string linkXml) {
             var link = XElement.Parse(linkXml);
             var joinOperator = link.Attribute("link-type");
 
             var linkEntity = new LinkEntity() {
-                EntityAlias = $"{link.Attribute("name").Value}_{aliasCount}",
+                EntityAlias = link.Attribute("alias")?.Value ?? link.Attribute("name").Value,
                 LinkFromEntityName = parentLogicalName,
                 LinkFromAttributeName = link.Attribute("to").Value,
                 LinkToEntityName = link.Attribute("name").Value,
@@ -117,12 +118,11 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (link.Element("filter") != null) {
-                linkEntity.LinkCriteria = FilterExpFromXml(link.Element("filter").ToString());
+                linkEntity.LinkCriteria = FilterExpFromXml(link.Element("filter").ToString(), linkEntity.EntityAlias);
             }
 
             foreach (var subLink in link.Elements("link-entity")) {
-                aliasCount++;
-                linkEntity.LinkEntities.Add(LinkEntityFromXml(parentLogicalName, subLink.ToString(), ref aliasCount));
+                linkEntity.LinkEntities.Add(LinkEntityFromXml(parentLogicalName, subLink.ToString()));
             }
 
             return linkEntity;

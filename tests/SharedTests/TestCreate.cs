@@ -10,6 +10,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using DG.XrmContext;
 
 namespace DG.XrmMockupTest {
 
@@ -171,6 +172,38 @@ namespace DG.XrmMockupTest {
                     Assert.AreEqual(contact.Id, acc.PrimaryContactId.Id);
                 }
             }
+        }
+
+        [TestMethod]
+        public void CreatingAttributeWithEmptyStringShouldReturnNull()
+        {
+            var id = orgAdminUIService.Create(new Lead { Subject = string.Empty });
+            var lead = orgAdminService.Retrieve<Lead>(id);
+            Assert.IsNull(lead.Subject);
+        }
+
+        [TestMethod]
+        public void CreatingEntityWithSdkModeShouldInitializeBooleanAttributes()
+        {
+            var id = orgAdminService.Create(new Lead());
+            var lead = orgAdminService.Retrieve<Lead>(id);
+            Assert.IsNotNull(lead.DoNotBulkEMail);
+            Assert.IsNotNull(lead.DoNotEMail);
+            Assert.IsNotNull(lead.DoNotFax);
+            Assert.IsNotNull(lead.DoNotPhone);
+            Assert.IsNotNull(lead.DoNotPostalMail);
+            Assert.IsNotNull(lead.DoNotSendMM);
+        }
+
+        [TestMethod]
+        public void CreatingEntityWithSdkModeShouldInitializePicklistAttributes()
+        {
+            var id = orgAdminService.Create(new Lead());
+            var lead = orgAdminService.Retrieve<Lead>(id);
+            Assert.IsNotNull(lead.LeadQualityCode);
+            Assert.IsNotNull(lead.PreferredContactMethodCode);
+            Assert.IsNotNull(lead.PriorityCode);
+            Assert.IsNotNull(lead.SalesStageCode);
         }
     }
 }

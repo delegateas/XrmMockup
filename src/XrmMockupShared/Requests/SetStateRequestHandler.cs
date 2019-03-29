@@ -19,8 +19,8 @@ namespace DG.Tools.XrmMockup {
 
             var row = db.GetDbRow(request.EntityMoniker);
             var record = row.ToEntity();
-            if (Utility.IsSettableAttribute("statecode", row.Metadata) &&
-                Utility.IsSettableAttribute("statuscode", row.Metadata)) {
+            if (Utility.IsValidAttribute("statecode", row.Metadata) &&
+                Utility.IsValidAttribute("statuscode", row.Metadata)) {
                 var prevEntity = record.CloneEntity();
                 record["statecode"] = request.State;
                 record["statuscode"] = request.Status;

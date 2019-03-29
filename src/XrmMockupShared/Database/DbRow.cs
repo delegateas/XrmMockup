@@ -46,7 +46,7 @@ namespace DG.Tools.XrmMockup.Database {
 
         public AttributeMetadata GetAttributeMetadata(string key) {
             if (!AttributeMetadata.TryGetValue(key, out AttributeMetadata attrMetadata))
-                throw new MockupException($"Unable to find attribute with the logical name '{key}' in metadata for '{Table.TableName}'");
+                throw new MockupException($"'{Table.TableName}' entity doesn't contain attribute with name '{key}'");
             return attrMetadata;
         }
 
@@ -61,6 +61,9 @@ namespace DG.Tools.XrmMockup.Database {
 
         public object this[string colName] {
             get {
+                // check that attribute exists
+                GetAttributeMetadata(colName);
+
                 Columns.TryGetValue(colName, out object val);
                 if (val is DbRow related && related.IsDeleted) {
                     Columns.Remove(colName);

@@ -1,3 +1,33 @@
+### 0.11.0-beta - 04 March 2019
+* Implemented FilterExpressions conditions across multiple LinkEntities (@aronmek)
+* Changed the Created/Modified On fields to be Utc based. (@aronmek)
+* Fixed error related to shared variables in plugincontext (@aronmek)
+
+### 0.10.2-beta - 04 March 2019
+* Fixed error when checking permissions in Deep privileges
+* Now, XrmMockup also considers files in execution directory when looking for proxy types.
+
+### 0.10.1-beta - 25 February 2019
+* Added ConditionOperator NotLike
+* Fixed error with Like, where both sides were wildcard
+
+### 0.10.0-beta - 25 February 2019
+* Added a check that ensures selected attributes exist on the entity.
+* Fixed errors in MergeRequest.
+* Fixed errors related to security checks for Parent Businessunit privilege.
+
+### 0.9.11-beta - 18 February 2019
+* Fixed error where default values for boolean and picklists were not set (thanks @majakubowski)
+* Allows several plugin steps for the same plugin type (thanks @majakubowski)
+* Now supports QueryByAttribute, RetrieveAttribute, RetrievePrincipalAccess & WhoAmI (thanks @majakubowski)
+* Fixed error where null values was not handled correctly on create and update (thanks @majakubowski)
+* Workflows: Added support for clear (thanks @majakubowski)
+* Workflows: Added support for send email (thanks @majakubowski)
+* Workflows: Various bug fixes and improvements (thanks @majakubowski)
+
+### 0.9.10-beta - 16 November  2018
+* Add support for formatted values in RetrieveMultiple
+
 ### 0.9.9-beta - 5 November  2018
 * Add support for 'In' and 'NotIn' in conditional expression for query expressions
 

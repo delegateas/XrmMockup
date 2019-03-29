@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
+using System.IO;
 
 namespace DG.Tools.XrmMockup {
 
@@ -80,13 +81,37 @@ namespace DG.Tools.XrmMockup {
             };
 
             var regex = new Regex("^XrmMockup.*\\.dll$");
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(asm => asm.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("ProxyTypesAssemblyAttribute")))
-                .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name));
+            var assemblies = new List<Assembly>();
+            var addedAssemblies = new HashSet<string>();
 
-            var assembly = assemblies.FirstOrDefault();
-            if (assembly != null) {
-                Core.EnableProxyTypes(assembly);
+            var exeAsm = AppDomain.CurrentDomain.GetAssemblies();
+            assemblies.AddRange(exeAsm);
+            foreach (var name in exeAsm.Select(x => x.FullName))
+            {
+                addedAssemblies.Add(name);
+            }
+
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            foreach (string dll in Directory.GetFiles(path, "*.dll"))
+            {
+                var asm = Assembly.LoadFile(dll);
+                if (addedAssemblies.Contains(asm.FullName)) continue;
+
+                assemblies.Add(asm);
+                addedAssemblies.Add(asm.FullName);
+            }
+
+            var useableAssemblies =
+                assemblies
+                .Where(asm => asm.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("ProxyTypesAssemblyAttribute")))
+                .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name))
+                .ToList();
+
+            if (useableAssemblies?.Any() == true) {
+                foreach (var asm in useableAssemblies)
+                {
+                    Core.EnableProxyTypes(asm);
+                }
                 HasProxyTypes = true;
             }
         }
@@ -265,7 +290,6 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="service"></param>
         /// <param name="businessUnit"></param>
-        /// <param name="type"></param>
         /// <param name="securityRoles"></param>
         /// <returns></returns>
         public Entity CreateTeam(IOrganizationService service, EntityReference businessUnit, params Guid[] securityRoles) {

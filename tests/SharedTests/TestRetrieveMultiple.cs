@@ -117,6 +117,57 @@ namespace DG.XrmMockupTest {
             }
         }
 
+        // ignored until entityname can be handled correctly for 2011
+#if !(XRM_MOCKUP_TEST_2011)
+        [TestMethod]
+        public void TestFilterOnJoin()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from con in context.ContactSet
+                    join lead in context.LeadSet
+                    on con.ContactId equals lead.ParentContactId.Id
+                    where lead.Subject.StartsWith("Some") && con.LastName.StartsWith("contact")
+                    select new { con.LastName, lead.Subject };
+
+                var result = query.ToArray();
+                Assert.AreEqual(2, result.Count());
+            }
+        }
+#endif
+        [TestMethod]
+        public void TestAllColumns()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from con in context.ContactSet
+                    where con.ContactId == contact1.Id
+                    select con;
+
+                var result = query.First();
+                Assert.AreEqual(contact1.LastName, result.LastName);
+            }
+        }
+
+        [TestMethod]
+        public void TestFilterOnOptionSet()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                contact1.SetState(orgAdminUIService, ContactState.Inactive);
+
+                var query =
+                    from con in context.ContactSet
+                    where con.StateCode == ContactState.Inactive
+                    select con;
+
+                var result = query.First();
+                Assert.AreEqual(contact1.LastName, result.LastName);
+            }
+        }
+
         [TestMethod]
         public void TestOrderingJoin() {
             using (var context = new Xrm(orgAdminUIService)) {
@@ -582,6 +633,68 @@ namespace DG.XrmMockupTest {
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
             Assert.AreEqual(leadCount, res.Count());
         }
-    }
 
+        [TestMethod]
+        public void RetrieveMultipleWithQueryByAttribute()
+        {
+            var result = orgAdminUIService.RetrieveMultiple(new QueryByAttribute
+            {
+                EntityName = Account.EntityLogicalName,
+                Attributes = { "name" },
+                Values = { account3.Name }
+            });
+            Assert.AreEqual(1, result.Entities.Count);
+        }
+
+        [TestMethod]
+        public void RetrieveMultipleWithAliasedNullAttribute()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var result = (from lead in context.LeadSet
+                          join contact in context.ContactSet on lead.ParentContactId.Id equals contact.Id
+                          select new { lead.Subject, contact.FirstName, contact.LastName, contact.FullName })
+                          .ToList();
+                Assert.AreEqual(2, result.Count);
+            }
+        }
+
+        [TestMethod]
+        public void TestLINQContains()
+        {
+            var account = new Account()
+            {
+                Name = "NotIn",
+
+            };
+            account.Id = orgAdminService.Create(account);
+
+            var searchstring = "a";
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var query = 
+                    from c in xrm.AccountSet
+                    where c.Name.Contains(searchstring)
+                    select new
+                    {
+                        c.Name
+                    };
+                var queryList = query.ToList();
+                Assert.IsTrue(queryList.Count > 0);
+            }
+
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var query =
+                    from c in xrm.AccountSet
+                    where !c.Name.Contains(searchstring)
+                    select new
+                    {
+                        c.AccountId
+                    };
+                var queryNotA = query.FirstOrDefault();
+                Assert.AreEqual(account.Id, queryNotA.AccountId);
+            }
+        }
+    }
 }

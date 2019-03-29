@@ -39,10 +39,10 @@ namespace DG.XrmMockupTest {
                 schedulerService.Create(new Contact());
 
                 try {
-                    var otherAccount = new Contact {
+                    var contact = new Contact {
                         OwnerId = orgUser.ToEntityReference()
                     };
-                    schedulerService.Create(otherAccount);
+                    schedulerService.Create(contact);
                     Assert.Fail();
                 } catch (Exception e) {
                     Assert.IsInstanceOfType(e, typeof(FaultException));

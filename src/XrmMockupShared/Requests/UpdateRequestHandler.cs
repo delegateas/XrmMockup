@@ -23,6 +23,7 @@ namespace DG.Tools.XrmMockup {
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
                 row.Table.TableName != LogicalNames.Opportunity &&
+                row.Table.TableName != LogicalNames.SystemUser &&
                 row.GetColumn<int?>("statecode") == 1) {
                 throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
             }
@@ -31,6 +32,14 @@ namespace DG.Tools.XrmMockup {
                 row.Table.TableName == LogicalNames.Opportunity &&
                 row.GetColumn<int?>("statecode") == 1) {
                 throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
+            }
+
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName == LogicalNames.SystemUser &&
+                row.GetColumn<bool?>("isdisabled") == true)
+            {
+                throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
             }
 
             // modify for all activites
@@ -82,6 +91,11 @@ namespace DG.Tools.XrmMockup {
             if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead || updEntity.LogicalName == LogicalNames.SystemUser) {
                 Utility.SetFullName(metadata, updEntity);
             }
+
+            updEntity.Attributes
+                .Where(x => x.Value is string && string.IsNullOrEmpty((string)x.Value))
+                .ToList()
+                .ForEach(x => updEntity[x.Key] = null);
 
             xrmEntity.SetAttributes(updEntity.Attributes, metadata.EntityMetadata[updEntity.LogicalName]);
 
