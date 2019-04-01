@@ -1,3 +1,7 @@
+### 0.11.1-beta - 01 April 2019
+* Fixed a bug in calculated fields which expected caluclated fields based on lookup fields to always have a value.
+* Added a new optional flag "BigBang" that simulates the entire universe.
+
 ### 0.11.0-beta - 04 March 2019
 * Implemented FilterExpressions conditions across multiple LinkEntities (@aronmek)
 * Changed the Created/Modified On fields to be Utc based. (@aronmek)
