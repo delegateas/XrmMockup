@@ -804,6 +804,11 @@ namespace WorkflowExecuter {
                     return;
                 }
                 var entRef = primaryEntity.Attributes[relatedAttr] as EntityReference;
+                if (entRef == null)
+                {
+                    variables[VariableName] = null;
+                    return;
+                }
                 entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
 
             } else {
