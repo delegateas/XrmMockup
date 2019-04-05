@@ -451,26 +451,30 @@ namespace DG.Tools.XrmMockup {
             try
             {
                 DirectoryInfo d = new DirectoryInfo(path);
-                FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
-
-                foreach (FileInfo file in Files)
+                if (Directory.Exists(path))
                 {
-                    var isRestrictedFile = (filesToIgnore != null && filesToIgnore.Count > 0) && 
-                                           filesToIgnore.Any(f => file.Name.IndexOf(f, StringComparison.Ordinal) > -1);
+                    FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
 
-                    if (!isRestrictedFile)
+                    foreach (FileInfo file in Files)
                     {
-                        var assembly = Assembly.LoadFrom(file.FullName);
-                        var allTypes = assembly.GetTypes();
-                        foreach (Type type in allTypes)
+                        var isRestrictedFile = (filesToIgnore != null && filesToIgnore.Count > 0) &&
+                                               filesToIgnore.Any(f => file.Name.IndexOf(f, StringComparison.Ordinal) > -1);
+
+                        if (!isRestrictedFile)
                         {
-                            if (typesToLoad.Any(p => p == type.BaseType))
+                            var assembly = Assembly.LoadFrom(file.FullName);
+                            var allTypes = assembly.GetTypes();
+                            foreach (Type type in allTypes)
                             {
-                                types.Add(type);
+                                if (typesToLoad.Any(p => p == type.BaseType))
+                                {
+                                    types.Add(type);
+                                }
                             }
                         }
                     }
                 }
+                
 
                 return types;
             }
