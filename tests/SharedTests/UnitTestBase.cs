@@ -1,15 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Web.Configuration;
+using System.Activities;
 using DG.Tools;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk.Workflow;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
 
     [TestClass]
-    public class UnitTestBase {//hi this is a test
+    public class UnitTestBase
+    {
         private static DateTime _startTime { get; set; }
 
         protected IOrganizationService orgAdminUIService;
@@ -33,27 +42,32 @@ namespace DG.XrmMockupTest {
         protected static XrmMockup365 crmRealData;
 #endif
 
-        public UnitTestBase() {
+        public UnitTestBase()
+        {
             this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             this.orgAdminService = crm.GetAdminService();
-            if(crmRealData != null)
+            if (crmRealData != null)
                 this.orgRealDataService = crmRealData.GetAdminService();
         }
 
         [TestCleanup]
-        public void TestCleanup() {
+        public void TestCleanup()
+        {
             crm.ResetEnvironment();
         }
 
 
         [AssemblyInitialize]
-        public static void InitializeServices(TestContext context) {
+        public static void InitializeServices(TestContext context)
+        {
             InitializeMockup(context);
         }
 
-        public static void InitializeMockup(TestContext context) {
-            var settings = new XrmMockupSettings {
+        public static void InitializeMockup(TestContext context)
+        {
+            var settings = new XrmMockupSettings
+            {
                 BasePluginTypes = new Type[] { typeof(DG.Some.Namespace.Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
@@ -65,13 +79,23 @@ namespace DG.XrmMockupTest {
             crm = XrmMockup2011.GetInstance(settings);
 #elif XRM_MOCKUP_TEST_2013
             crm = XrmMockup2013.GetInstance(settings);
+            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
 #elif XRM_MOCKUP_TEST_2015
             crm = XrmMockup2015.GetInstance(settings);
+            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
 #elif XRM_MOCKUP_TEST_2016
             crm = XrmMockup2016.GetInstance(settings);
+            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
 #elif XRM_MOCKUP_TEST_365
             crm = XrmMockup365.GetInstance(settings);
+            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
 #endif
+
+            RegisterPluginsFromExternalAssemblies(crm, settings.BasePluginTypes.ToList());
+
+
+
+
 
             try
             {
@@ -106,6 +130,91 @@ namespace DG.XrmMockupTest {
             {
                 // ignore
             }
+        }
+
+        /// <summary>
+        /// allows you to register additional workflow activities from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="crm">the mocked instance to register the plugins against</param>
+        /// <param name="matchingTypes">base types to match against eg. CodeActivity / AccountWorkflowActivity</param>
+        private static void RegisterWorkflowCodeActivitiesFromExternalAssemblies(XrmMockupBase crm, List<Type> matchingTypes)
+        {
+            string workFlowAssembliesPath = WebConfigurationManager.AppSettings["CompiledWorkflowAssembliesPath"];
+            if (!string.IsNullOrEmpty(workFlowAssembliesPath))
+            {
+                var workflowTypes = GetLoadableTypesFromAssembliesInPath(workFlowAssembliesPath, matchingTypes);
+
+                foreach (Type type in workflowTypes)
+                {
+                    crm.AddCodeActivityTrigger(type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// allows you to register additional plugin steps from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="crm">the mocked instance to register the plugins against</param>
+        /// <param name="matchingTypes">base types to match against eg. Plugin</param>
+        private static void RegisterPluginsFromExternalAssemblies(XrmMockupBase crm, List<Type> matchingTypes)
+        {
+            string pluginAssembliesPath = WebConfigurationManager.AppSettings["CompiledPluginAssembliesPath"];
+            if (!string.IsNullOrEmpty(pluginAssembliesPath))
+            {
+                var pluginTypes = GetLoadableTypesFromAssembliesInPath(pluginAssembliesPath, matchingTypes);
+
+                foreach (Type type in pluginTypes)
+                {
+                    crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, type);
+                }
+            }
+        }
+
+        private static IEnumerable<Type> GetLoadableTypesFromAssembliesInPath(string path, List<Type> typesToLoad)
+        {
+            List<Type> types = new List<Type>();
+            try
+            {
+                DirectoryInfo d = new DirectoryInfo(path);
+                FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
+
+                foreach (FileInfo file in Files)
+                {
+                    if (!IsRestrictedLibrary(file.Name))
+                    {
+                        var assembly = Assembly.LoadFrom(file.FullName);
+                        var allTypes = assembly.GetTypes();
+                        foreach (Type type in allTypes)
+                        {
+                            if (typesToLoad.Any(p => p == type.BaseType))
+                            {
+                                types.Add(type);
+                            }
+                        }
+                    }
+                }
+
+                return types;
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
+        }
+
+        /// <summary>
+        /// Give the ability to ignore loading types from any library matching the filter below
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        private static bool IsRestrictedLibrary(string fullName)
+        {
+            if (fullName.StartsWith("Microsoft."))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

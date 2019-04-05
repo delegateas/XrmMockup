@@ -174,6 +174,8 @@ namespace DG.Tools.XrmMockup {
             AddTime(new TimeSpan(days, 0, 0, 0));
         }
 
+        
+
         /// <summary>
         /// Increase the local time that mockup uses by an offset of days
         /// </summary>
@@ -197,6 +199,15 @@ namespace DG.Tools.XrmMockup {
         public void AddWorkflow(string path) {
             var workflow = Utility.GetWorkflow(path);
             Core.AddWorkflow(workflow);
+        }
+
+        /// <summary>
+        /// add a code activity trigger from a known type
+        /// </summary>
+        /// <param name="type"></param>
+        public void AddCodeActivityTrigger(Type type)
+        {
+            Core.AddCodeActivityTrigger(type);
         }
 
         /// <summary>

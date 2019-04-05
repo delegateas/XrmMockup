@@ -166,6 +166,8 @@ namespace DG.Tools.XrmMockup
                 new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
         };
 
+        
+
         internal void EnableProxyTypes(Assembly assembly)
         {
             foreach (var type in assembly.GetLoadableTypes())
@@ -590,6 +592,11 @@ namespace DG.Tools.XrmMockup
         internal void AddWorkflow(Entity workflow)
         {
             workflowManager.AddWorkflow(workflow);
+        }
+
+        internal void AddCodeActivityTrigger(Type type)
+        {
+            workflowManager.AddCodeActivityTrigger(type);
         }
 
         internal bool ContainsEntity(Entity entity)
