@@ -9,7 +9,7 @@ using Microsoft.Xrm.Sdk.Client;
 namespace DG.XrmMockupTest {
 
     [TestClass]
-    public class UnitTestBase {
+    public class UnitTestBase {//hi this is a test
         private static DateTime _startTime { get; set; }
 
         protected IOrganizationService orgAdminUIService;
