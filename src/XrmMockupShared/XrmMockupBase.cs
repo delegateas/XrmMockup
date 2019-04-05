@@ -406,6 +406,79 @@ namespace DG.Tools.XrmMockup {
         {
             Core.RegisterAdditionalPlugins(basePluginTypes, scope);
         }
+
+        /// <summary>
+        /// allows you to register additional workflow activities from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="workFlowAssembliesPath"></param>
+        /// <param name="matchingTypes">base types to match against eg. CodeActivity / AccountWorkflowActivity</param>
+        /// <param name="filesToIgnore"></param>
+        public void RegisterWorkflowCodeActivitiesFromExternalAssemblies(string workFlowAssembliesPath, List<Type> matchingTypes, List<string> filesToIgnore)
+        {
+            if (!string.IsNullOrEmpty(workFlowAssembliesPath))
+            {
+                var workflowTypes = GetLoadableTypesFromAssembliesInPath(workFlowAssembliesPath, matchingTypes, filesToIgnore);
+
+                foreach (Type type in workflowTypes)
+                {
+                    AddCodeActivityTrigger(type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// allows you to register additional plugin steps from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="pluginAssembliesPath"></param>
+        /// <param name="matchingTypes">base types to match against eg. Plugin</param>
+        /// <param name="filesToIgnore"></param>
+        public void RegisterPluginsFromExternalAssemblies(string pluginAssembliesPath, List<Type> matchingTypes, List<string> filesToIgnore)
+        {
+            if (!string.IsNullOrEmpty(pluginAssembliesPath))
+            {
+                var pluginTypes = GetLoadableTypesFromAssembliesInPath(pluginAssembliesPath, matchingTypes,filesToIgnore);
+
+                foreach (Type type in pluginTypes)
+                {
+                    RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, type);
+                }
+            }
+        }
+
+        private IEnumerable<Type> GetLoadableTypesFromAssembliesInPath(string path, List<Type> typesToLoad, List<string> filesToIgnore)
+        {
+            List<Type> types = new List<Type>();
+            try
+            {
+                DirectoryInfo d = new DirectoryInfo(path);
+                FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
+
+                foreach (FileInfo file in Files)
+                {
+                    var isRestrictedFile = (filesToIgnore != null && filesToIgnore.Count > 0) && 
+                                           filesToIgnore.Any(f => file.Name.IndexOf(f, StringComparison.Ordinal) > -1);
+
+                    if (!isRestrictedFile)
+                    {
+                        var assembly = Assembly.LoadFrom(file.FullName);
+                        var allTypes = assembly.GetTypes();
+                        foreach (Type type in allTypes)
+                        {
+                            if (typesToLoad.Any(p => p == type.BaseType))
+                            {
+                                types.Add(type);
+                            }
+                        }
+                    }
+                }
+
+                return types;
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
+        }
     }
 
 }

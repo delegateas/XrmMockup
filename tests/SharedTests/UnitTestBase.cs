@@ -75,23 +75,32 @@ namespace DG.XrmMockupTest
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
             };
 
+            string workFlowAssembliesPath = WebConfigurationManager.AppSettings["CompiledWorkflowAssembliesPath"];
+            var librariesToIgnore = new List<string>() {"Microsoft."};
+
+
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);
 #elif XRM_MOCKUP_TEST_2013
             crm = XrmMockup2013.GetInstance(settings);
-            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_2015
             crm = XrmMockup2015.GetInstance(settings);
-            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_2016
             crm = XrmMockup2016.GetInstance(settings);
-            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_365
             crm = XrmMockup365.GetInstance(settings);
-            RegisterWorkflowCodeActivitiesFromExternalAssemblies(crm, new List<Type>() { typeof(CodeActivity) });
+            var customWorkflowTypes = new List<Type>() { typeof(CodeActivity) };
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #endif
 
-            RegisterPluginsFromExternalAssemblies(crm, settings.BasePluginTypes.ToList());
+            string pluginAssembliesPath = WebConfigurationManager.AppSettings["CompiledPluginAssembliesPath"];
+            crm.RegisterPluginsFromExternalAssemblies(pluginAssembliesPath,settings.BasePluginTypes.ToList(), librariesToIgnore);
 
 
 
@@ -130,91 +139,6 @@ namespace DG.XrmMockupTest
             {
                 // ignore
             }
-        }
-
-        /// <summary>
-        /// allows you to register additional workflow activities from a list of compiled assemblies, present at a given location
-        /// </summary>
-        /// <param name="crm">the mocked instance to register the plugins against</param>
-        /// <param name="matchingTypes">base types to match against eg. CodeActivity / AccountWorkflowActivity</param>
-        private static void RegisterWorkflowCodeActivitiesFromExternalAssemblies(XrmMockupBase crm, List<Type> matchingTypes)
-        {
-            string workFlowAssembliesPath = WebConfigurationManager.AppSettings["CompiledWorkflowAssembliesPath"];
-            if (!string.IsNullOrEmpty(workFlowAssembliesPath))
-            {
-                var workflowTypes = GetLoadableTypesFromAssembliesInPath(workFlowAssembliesPath, matchingTypes);
-
-                foreach (Type type in workflowTypes)
-                {
-                    crm.AddCodeActivityTrigger(type);
-                }
-            }
-        }
-
-        /// <summary>
-        /// allows you to register additional plugin steps from a list of compiled assemblies, present at a given location
-        /// </summary>
-        /// <param name="crm">the mocked instance to register the plugins against</param>
-        /// <param name="matchingTypes">base types to match against eg. Plugin</param>
-        private static void RegisterPluginsFromExternalAssemblies(XrmMockupBase crm, List<Type> matchingTypes)
-        {
-            string pluginAssembliesPath = WebConfigurationManager.AppSettings["CompiledPluginAssembliesPath"];
-            if (!string.IsNullOrEmpty(pluginAssembliesPath))
-            {
-                var pluginTypes = GetLoadableTypesFromAssembliesInPath(pluginAssembliesPath, matchingTypes);
-
-                foreach (Type type in pluginTypes)
-                {
-                    crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, type);
-                }
-            }
-        }
-
-        private static IEnumerable<Type> GetLoadableTypesFromAssembliesInPath(string path, List<Type> typesToLoad)
-        {
-            List<Type> types = new List<Type>();
-            try
-            {
-                DirectoryInfo d = new DirectoryInfo(path);
-                FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
-
-                foreach (FileInfo file in Files)
-                {
-                    if (!IsRestrictedLibrary(file.Name))
-                    {
-                        var assembly = Assembly.LoadFrom(file.FullName);
-                        var allTypes = assembly.GetTypes();
-                        foreach (Type type in allTypes)
-                        {
-                            if (typesToLoad.Any(p => p == type.BaseType))
-                            {
-                                types.Add(type);
-                            }
-                        }
-                    }
-                }
-
-                return types;
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                return e.Types.Where(t => t != null);
-            }
-        }
-
-        /// <summary>
-        /// Give the ability to ignore loading types from any library matching the filter below
-        /// </summary>
-        /// <param name="fullName"></param>
-        /// <returns></returns>
-        private static bool IsRestrictedLibrary(string fullName)
-        {
-            if (fullName.StartsWith("Microsoft."))
-            {
-                return true;
-            }
-
-            return false;
         }
     }
 }
