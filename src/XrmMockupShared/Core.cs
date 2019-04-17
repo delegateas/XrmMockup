@@ -713,10 +713,10 @@ namespace DG.Tools.XrmMockup
             pluginManager.DisabelRegisteredPlugins(include);
         }
 
-        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope)
+        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope,StepDerivationType stepDerivationType)
         {
             foreach (var type in basePluginTypes)
-                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope);
+                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope, stepDerivationType);
         }
 
         internal void TakeSnapshot(string snapshotName)

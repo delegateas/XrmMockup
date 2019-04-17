@@ -100,7 +100,7 @@ namespace DG.XrmMockupTest
 #endif
 
             string pluginAssembliesPath = WebConfigurationManager.AppSettings["CompiledPluginAssembliesPath"];
-            crm.RegisterPluginsFromExternalAssemblies(pluginAssembliesPath,settings.BasePluginTypes.ToList(), librariesToIgnore);
+            crm.RegisterPluginsFromExternalAssemblies(pluginAssembliesPath,settings.BasePluginTypes.ToList(), librariesToIgnore,StepDerivationType.BASECLASS);
 
 
 

@@ -1261,4 +1261,15 @@ namespace DG.Tools.XrmMockup
         OutSold = 5,
     }
 
+    [DataContract()]
+    public enum StepDerivationType
+    {
+        [EnumMember()]
+        BASECLASS =1,
+        [EnumMember()]
+        METADATA = 2,
+        [EnumMember()]
+        BOTH = 3
+    }
+
 }
