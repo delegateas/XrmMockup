@@ -127,9 +127,9 @@ namespace DG.Tools.XrmMockup {
             {
                 // Retrieve registration from CRM metadata
                 var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
-                if (metaSteps == null || metaSteps.Count == 0)
+                if (metaSteps.Count == 0)
                 {
-                    throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                    Console.WriteLine($"Unknown plugin '{basePluginType.FullName}', no steps are registerd in CRM and so this plugin will not be fired at any point. Please use DAXIF registration or make sure the plugin is uploaded to CRM.");
                 }
 
                 foreach (var metaStep in metaSteps)
