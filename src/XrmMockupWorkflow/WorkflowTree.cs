@@ -1549,6 +1549,14 @@ namespace WorkflowExecuter {
                 arg => (outArguments.ContainsKey(arg.Value) ? null : variablesInstance[arg.Value]));
 
             var codeActivities = variables["CodeActivites"] as Dictionary<string, CodeActivity>;
+
+            if (codeActivities==null || !codeActivities.ContainsKey(CodeActivityName))
+            {
+                //cannot run the code activity!
+                Console.WriteLine("Cannot Execute '"+ CodeActivityName + "' workflow activity as it does not exist in the CodeActivities List. Have you registered it?");
+                return;
+            }
+
             var codeActivity = codeActivities[CodeActivityName];
             var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
             var workflowContext = new XrmWorkflowContext();

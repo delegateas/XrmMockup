@@ -32,8 +32,8 @@ namespace DG.Tools.XrmMockup.Metadata {
 
         static void Main(string[] args)
         {
-            Console.WriteLine("attach debugger now! Press Enter when done...");
-            Console.ReadLine();
+            //Console.WriteLine("attach debugger now! Press Enter when done...");
+            //Console.ReadLine();
             ParsedArgs = new ArgumentParser(Arguments.ArgList, args);
             AppDomain.CurrentDomain.AssemblyResolve += ResolveXrmAssemblies;
             GenerateMetadata();
