@@ -81,7 +81,40 @@ namespace DG.Tools.XrmMockup {
 
         private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, StepDerivationType stepDerivationType)
         {
-            var plugin = Activator.CreateInstance(basePluginType);
+            object plugin = null;
+            var constructors = basePluginType.GetConstructors();
+            //is there a parameterless constructor
+            bool hasParameterlessConstructor = false;
+            bool hasTwoStringConstructor = false;
+            foreach (ConstructorInfo constructorInfo in constructors)
+            {
+                var parameters = constructorInfo.GetParameters();
+                if (parameters.Length == 0)
+                {
+                    hasParameterlessConstructor = true;
+                }
+                else if (parameters.Length == 2)
+                {
+                    //are they both string
+                    if(parameters[0].ParameterType.Equals(typeof(String)) &&
+                    parameters[0].ParameterType.Equals(typeof(String)))
+                    {
+                        hasTwoStringConstructor = true;
+                    }
+                }
+            }
+            //is there a constructor that takes two stirntgs, as it will be for the configuration
+            if (!hasTwoStringConstructor && hasParameterlessConstructor)
+            {
+                plugin = Activator.CreateInstance(basePluginType);
+            }
+            else if (!hasParameterlessConstructor && !hasTwoStringConstructor)
+            {
+                throw new Exception(
+                    "Plugin does not have either a parameterless constructor or a construcor that takes two config strings");
+            }
+
+            
 
             //Action<MockupServiceProviderAndFactory> pluginExecute = null;
 

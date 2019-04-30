@@ -143,7 +143,7 @@ namespace DG.Tools.XrmMockup.Metadata
             solutions = solutions.Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep") {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name"),
+                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name","configuration"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
@@ -210,6 +210,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
+                    UnsecureConfiguration = plugin.GetAttributeValue<string>("configuration"),
                     PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
