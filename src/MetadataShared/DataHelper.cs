@@ -516,7 +516,10 @@ namespace DG.Tools.XrmMockup.Metadata
                 if (!dict.ContainsKey(logicalName)) {
                     dict.Add(logicalName, new Dictionary<int, int>());
                 }
-                dict[logicalName].Add(e.GetAttributeValue<int>("state"),e.GetAttributeValue<int>("status"));
+                var state = e.GetAttributeValue<int>("state");
+                if (!dict[logicalName].ContainsKey(state)) {
+                    dict[logicalName].Add(state, e.GetAttributeValue<int>("status"));
+                }
             }
 
             return dict;
