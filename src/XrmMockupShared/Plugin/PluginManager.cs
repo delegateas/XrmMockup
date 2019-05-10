@@ -86,6 +86,7 @@ namespace DG.Tools.XrmMockup {
             //is there a parameterless constructor
             bool hasParameterlessConstructor = false;
             bool hasTwoStringConstructor = false;
+            bool hasOneStringConstructor = false;
             foreach (ConstructorInfo constructorInfo in constructors)
             {
                 var parameters = constructorInfo.GetParameters();
@@ -93,22 +94,30 @@ namespace DG.Tools.XrmMockup {
                 {
                     hasParameterlessConstructor = true;
                 }
+                if (parameters.Length == 1)
+                {
+                    if (parameters[0].ParameterType.Equals(typeof(String)))
+                    {
+                        hasOneStringConstructor = true;
+                    }
+                }
                 else if (parameters.Length == 2)
                 {
                     //are they both string
                     if(parameters[0].ParameterType.Equals(typeof(String)) &&
-                    parameters[0].ParameterType.Equals(typeof(String)))
+                    parameters[1].ParameterType.Equals(typeof(String)))
                     {
                         hasTwoStringConstructor = true;
                     }
                 }
             }
             //is there a constructor that takes two stirntgs, as it will be for the configuration
-            if (!hasTwoStringConstructor && hasParameterlessConstructor)
+            if (!hasOneStringConstructor && !hasTwoStringConstructor && hasParameterlessConstructor)
             {
                 plugin = Activator.CreateInstance(basePluginType);
             }
-            else if (!hasParameterlessConstructor && !hasTwoStringConstructor)
+            
+            else if (!hasParameterlessConstructor && !hasOneStringConstructor && !hasTwoStringConstructor)
             {
                 throw new Exception(
                     "Plugin does not have either a parameterless constructor or a construcor that takes two config strings");
@@ -126,6 +135,17 @@ namespace DG.Tools.XrmMockup {
             {
                 if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
                 { // Matches DAXIF plugin registration
+
+                    if (hasOneStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, "");
+                    }
+                    else if (hasTwoStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, "", "");
+                    }
 
                     Action<MockupServiceProviderAndFactory> pluginExecute = (provider) => {
                         basePluginType
@@ -171,6 +191,19 @@ namespace DG.Tools.XrmMockup {
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, Guid.Empty.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
                     //stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
+
+                    if (hasOneStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, metaStep.UnsecureConfiguration);
+                    }
+                    else if (hasTwoStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters
+                        plugin = Activator.CreateInstance(basePluginType,metaStep.UnsecureConfiguration,"");
+                    }
+
+
                     Action<MockupServiceProviderAndFactory> pluginExecute = (provider) => {
                         basePluginType
                             .GetMethod("Execute")
