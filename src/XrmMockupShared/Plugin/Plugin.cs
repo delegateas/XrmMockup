@@ -165,13 +165,16 @@ namespace DG.Tools.XrmMockup {
                      )
                      select a.Item4).FirstOrDefault();
 
-                if (entityAction != null) {
-                    localcontext.Trace(string.Format(
+                if (entityAction != null)
+                {
+                    var message = string.Format(
                         CultureInfo.InvariantCulture,
                         "{0} is firing for Entity: {1}, Message: {2}",
                         this.ChildClassName,
                         localcontext.PluginExecutionContext.PrimaryEntityName,
-                        localcontext.PluginExecutionContext.MessageName));
+                        localcontext.PluginExecutionContext.MessageName);
+                    localcontext.Trace(message);
+                    Console.WriteLine(message);
 
                     try {
                         entityAction.Invoke(localcontext);

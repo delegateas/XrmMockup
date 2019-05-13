@@ -1556,12 +1556,16 @@ namespace WorkflowExecuter {
                 Console.WriteLine("Cannot Execute '"+ CodeActivityName + "' workflow activity as it does not exist in the CodeActivities List. Have you registered it?");
                 return;
             }
+           
 
             var codeActivity = codeActivities[CodeActivityName];
             var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
             var workflowContext = new XrmWorkflowContext();
             workflowContext.PrimaryEntityId = primaryEntity.Id;
             workflowContext.PrimaryEntityName = primaryEntity.LogicalName;
+
+            Console.WriteLine("Executing Workflow Activity:" + CodeActivityName + " for entity: " + primaryEntity.LogicalName);
+
             var invoker = new WorkflowInvoker(codeActivity);
             invoker.Extensions.Add(trace);
             invoker.Extensions.Add(workflowContext);

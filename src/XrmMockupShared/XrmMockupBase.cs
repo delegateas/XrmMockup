@@ -419,7 +419,7 @@ namespace DG.Tools.XrmMockup {
             if (!string.IsNullOrEmpty(workFlowAssembliesPath))
             {
                 var workflowTypes = GetLoadableTypesFromAssembliesInPath(workFlowAssembliesPath, matchingTypes, filesToIgnore, matchOnTypeFullName);
-
+                Console.WriteLine("Found " + workflowTypes.Count() + " Workflows to load from external assemblies");
                 foreach (Type type in workflowTypes)
                 {
                     AddCodeActivityTrigger(type);
@@ -440,7 +440,7 @@ namespace DG.Tools.XrmMockup {
             if (!string.IsNullOrEmpty(pluginAssembliesPath))
             {
                 var pluginTypes = GetLoadableTypesFromAssembliesInPath(pluginAssembliesPath, matchingTypes,filesToIgnore, matchOnTypeFullName);
-
+                Console.WriteLine("Found " + pluginTypes.Count() + " Plugins to load from external assemblies");
                 foreach (Type type in pluginTypes)
                 {
                     RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, stepDerivationType, type );
@@ -485,7 +485,7 @@ namespace DG.Tools.XrmMockup {
                                     if (type.BaseType != null && baseTypesToLoad.Any(p => p.FullName == type.BaseType.FullName))
                                     {
                                         //does it have an execute method?
-                                        var executeMethod = type.BaseType.GetMethod("Execute");
+                                        var executeMethod = type.BaseType.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                         if (executeMethod != null)
                                         {
                                             types.Add(type);
@@ -495,7 +495,7 @@ namespace DG.Tools.XrmMockup {
                                     {
                                         //does it have an execute method?
 
-                                        var executeMethod = type.GetMethod("Execute");
+                                        var executeMethod = type.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                         if (executeMethod != null)
                                         {
                                             types.Add(type);
@@ -506,7 +506,7 @@ namespace DG.Tools.XrmMockup {
                                 {
                                     if (type.BaseType!=null && baseTypesToLoad.Any(p => p == type.BaseType))
                                     {
-                                        var executeMethod = type.BaseType.GetMethod("Execute");
+                                        var executeMethod = type.BaseType.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                         if (executeMethod != null)
                                         {
                                             types.Add(type);
@@ -514,7 +514,7 @@ namespace DG.Tools.XrmMockup {
                                     }
                                     else if (type.GetInterfaces().Any(i => interfacesToLoad.Any(itl => itl == i))) //match against interfaces
                                     {
-                                        var executeMethod = type.GetMethod("Execute");
+                                        var executeMethod = type.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                         if (executeMethod != null)
                                         {
                                             types.Add(type);

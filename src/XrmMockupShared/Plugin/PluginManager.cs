@@ -182,7 +182,7 @@ namespace DG.Tools.XrmMockup {
                 var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
                 if (metaSteps.Count == 0)
                 {
-                    Console.WriteLine($"Unknown plugin '{basePluginType.FullName}', no steps are registerd in CRM and so this plugin will not be fired at any point. Please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                    Console.WriteLine($"Unknown plugin '{basePluginType.FullName}', no steps are registered in CRM and so this plugin will not be fired at any point. Please use DAXIF registration or make sure the plugin is uploaded to CRM.");
                 }
 
                 foreach (var metaStep in metaSteps)
