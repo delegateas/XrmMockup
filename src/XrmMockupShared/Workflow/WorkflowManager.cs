@@ -172,6 +172,7 @@ namespace DG.Tools.XrmMockup {
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            Console.WriteLine("Executing Workflow (xml based):" + workflow.WorkflowName + " for entity: " + primaryEntity.LogicalName);
             return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService(typeof(ITracingService)) as ITracingService);
         }
 

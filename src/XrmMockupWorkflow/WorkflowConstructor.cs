@@ -31,13 +31,15 @@ namespace WorkflowExecuter {
             var input = arguments.Where(a => a.Direction == WorkflowArgument.DirectionType.Input && !a.IsTarget).ToList();
             var output = arguments.Where(a => a.Direction == WorkflowArgument.DirectionType.Output && !a.IsTarget).ToList();
 
-            return new WorkflowTree(CompressTree(parsed.Workflow, parseAs),
+            var tree = new WorkflowTree(CompressTree(parsed.Workflow, parseAs),
                 workflow.GetAttributeValue<bool?>("triggeroncreate"), workflow.GetAttributeValue<bool?>("triggerondelete"),
                triggerFields, workflow.GetOptionSetValue<workflow_runas>("runas"), workflow.GetOptionSetValue<Workflow_Scope>("scope"),
                workflow.GetOptionSetValue<workflow_stage>("createstage"), workflow.GetOptionSetValue<workflow_stage>("updatestage"),
                workflow.GetOptionSetValue<workflow_stage>("deletestage"), workflow.GetOptionSetValue<Workflow_Mode>("mode"),
                workflow.GetAttributeValue<EntityReference>("ownerid").Id, workflow.GetAttributeValue<string>("primaryentity"), codeActivites,
                input, output);
+            tree.WorkflowName = workflow.GetAttributeValue<string>("name");
+            return tree;
         }
 
         private static WorkflowArgument ConvertToArgument(Property p) {

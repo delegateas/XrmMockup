@@ -74,6 +74,8 @@ namespace WorkflowExecuter {
         public List<WorkflowArgument> Input;
         [DataMember]
         public List<WorkflowArgument> Output;
+        [DataMember]
+        public string WorkflowName { get; set; }
 
 
         public WorkflowTree(IWorkflowNode StartActivity) : this(StartActivity, false, false, new HashSet<string>(),
@@ -103,6 +105,8 @@ namespace WorkflowExecuter {
             this.Input = Input;
             this.Output = Output;
         }
+
+        
 
         public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset, 
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
@@ -810,6 +814,11 @@ namespace WorkflowExecuter {
                     return;
                 }
                 entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
+                
+                if (!variables.ContainsKey(EntityId))
+                {
+                    variables.Add(EntityId, entity);
+                }
 
             } else {
                 entity = variables.ContainsKey(EntityId) ? variables[EntityId] as Entity : null;
