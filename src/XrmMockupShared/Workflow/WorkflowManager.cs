@@ -172,6 +172,7 @@ namespace DG.Tools.XrmMockup {
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            Console.WriteLine("Executing Workflow (xml based):" + workflow.WorkflowName + " for entity: " + primaryEntity.LogicalName);
             return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService(typeof(ITracingService)) as ITracingService);
         }
 
@@ -204,6 +205,16 @@ namespace DG.Tools.XrmMockup {
 #endif
         }
 
+        internal void AddCodeActivityTrigger(Type type)
+        {
+            var codeActivity = (CodeActivity)Activator.CreateInstance(type);
+
+            if (!codeActivityTriggers.ContainsKey(type.Name))
+            {
+                codeActivityTriggers.Add(type.Name, codeActivity);
+            }
+        }
+
         public Entity GetActionDefaultNull(string requestName) {
             return actions.FirstOrDefault(e => e.GetAttributeValue<string>("name") == requestName);
         }
@@ -214,5 +225,7 @@ namespace DG.Tools.XrmMockup {
             parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
             waitingWorkflows = new List<WaitInfo>();
         }
+
+        
     }
 }

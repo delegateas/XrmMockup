@@ -1,15 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Web.Configuration;
+using System.Activities;
 using DG.Tools;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk.Workflow;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
 
     [TestClass]
-    public class UnitTestBase {
+    public class UnitTestBase
+    {
         private static DateTime _startTime { get; set; }
 
         protected IOrganizationService orgAdminUIService;
@@ -33,27 +42,32 @@ namespace DG.XrmMockupTest {
         protected static XrmMockup365 crmRealData;
 #endif
 
-        public UnitTestBase() {
+        public UnitTestBase()
+        {
             this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             this.orgAdminService = crm.GetAdminService();
-            if(crmRealData != null)
+            if (crmRealData != null)
                 this.orgRealDataService = crmRealData.GetAdminService();
         }
 
         [TestCleanup]
-        public void TestCleanup() {
+        public void TestCleanup()
+        {
             crm.ResetEnvironment();
         }
 
 
         [AssemblyInitialize]
-        public static void InitializeServices(TestContext context) {
+        public static void InitializeServices(TestContext context)
+        {
             InitializeMockup(context);
         }
 
-        public static void InitializeMockup(TestContext context) {
-            var settings = new XrmMockupSettings {
+        public static void InitializeMockup(TestContext context)
+        {
+            var settings = new XrmMockupSettings
+            {
                 BasePluginTypes = new Type[] { typeof(DG.Some.Namespace.Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
@@ -61,17 +75,36 @@ namespace DG.XrmMockupTest {
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
             };
 
+            string workFlowAssembliesPath = WebConfigurationManager.AppSettings["CompiledWorkflowAssembliesPath"];
+            var librariesToIgnore = new List<string>() {"Microsoft."};
+
+
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);
 #elif XRM_MOCKUP_TEST_2013
             crm = XrmMockup2013.GetInstance(settings);
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_2015
             crm = XrmMockup2015.GetInstance(settings);
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_2016
             crm = XrmMockup2016.GetInstance(settings);
+            var customWorkflowTypes = new List<Type>() {typeof(CodeActivity)};
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #elif XRM_MOCKUP_TEST_365
             crm = XrmMockup365.GetInstance(settings);
+            var customWorkflowTypes = new List<Type>() { typeof(CodeActivity) };
+            crm.RegisterWorkflowCodeActivitiesFromExternalAssemblies(workFlowAssembliesPath, customWorkflowTypes, librariesToIgnore);
 #endif
+
+            string pluginAssembliesPath = WebConfigurationManager.AppSettings["CompiledPluginAssembliesPath"];
+            crm.RegisterPluginsFromExternalAssemblies(pluginAssembliesPath,settings.BasePluginTypes.ToList(), librariesToIgnore,StepDerivationType.BASECLASS);
+
+
+
+
 
             try
             {

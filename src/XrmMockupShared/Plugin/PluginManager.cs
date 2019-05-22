@@ -39,11 +39,11 @@ namespace DG.Tools.XrmMockup {
             temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
-            RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
+            RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins,StepDerivationType.BASECLASS);
             RegisterSystemPlugins(registeredSystemPlugins);
         }
 
-        private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, StepDerivationType stepDerivationType)
         {
             foreach (var basePluginType in basePluginTypes)
             {
@@ -53,60 +53,183 @@ namespace DG.Tools.XrmMockup {
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
                     if (type.BaseType != null && (type.BaseType == basePluginType || (type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == basePluginType))) { 
-                        RegisterPlugin(type, metadata, plugins, register);
+                        RegisterPlugin(type, metadata, plugins, register, stepDerivationType);
                     }
                 }
             }
             SortAllLists(register);
         }
 
-        private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        
+
+        public class StepRegistration
         {
-            var plugin = Activator.CreateInstance(basePluginType);
+            public StepConfig StepConfig { get; private set; }
+            public ExtendedStepConfig ExtendedStepConfig { get; private set; }
+            public IEnumerable<ImageTuple> ImageTuples { get; private set; }
+            public Action<MockupServiceProviderAndFactory> PluginExecuteMethod { get; private set; }
 
-            Action<MockupServiceProviderAndFactory> pluginExecute = null;
-            var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
-
-            if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
-            { // Matches DAXIF plugin registration
-                stepConfigs.AddRange(
-                    basePluginType
-                    .GetMethod("PluginProcessingStepConfigs")
-                    .Invoke(plugin, new object[] { })
-                    as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
-                pluginExecute = (provider) => {
-                    basePluginType
-                    .GetMethod("Execute")
-                    .Invoke(plugin, new object[] { provider });
-                };
+            public StepRegistration(StepConfig stepConfig, ExtendedStepConfig extendedStepConfig, IEnumerable<ImageTuple> imageTuples, Action<MockupServiceProviderAndFactory> pluginExecuteMethod)
+            {
+                StepConfig = stepConfig;
+                ExtendedStepConfig = extendedStepConfig;
+                ImageTuples = imageTuples;
+                PluginExecuteMethod = pluginExecuteMethod;
             }
-            else
-            { // Retrieve registration from CRM metadata
-                var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
-                if (metaSteps == null || metaSteps.Count == 0)
+            
+        }
+
+        private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, StepDerivationType stepDerivationType)
+        {
+            object plugin = null;
+            var constructors = basePluginType.GetConstructors();
+            //is there a parameterless constructor
+            bool hasParameterlessConstructor = false;
+            bool hasTwoStringConstructor = false;
+            bool hasOneStringConstructor = false;
+            foreach (ConstructorInfo constructorInfo in constructors)
+            {
+                var parameters = constructorInfo.GetParameters();
+                if (parameters.Length == 0)
                 {
-                    throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                    hasParameterlessConstructor = true;
+                }
+                if (parameters.Length == 1)
+                {
+                    if (parameters[0].ParameterType.Equals(typeof(String)))
+                    {
+                        hasOneStringConstructor = true;
+                    }
+                }
+                else if (parameters.Length == 2)
+                {
+                    //are they both string
+                    if(parameters[0].ParameterType.Equals(typeof(String)) &&
+                    parameters[1].ParameterType.Equals(typeof(String)))
+                    {
+                        hasTwoStringConstructor = true;
+                    }
+                }
+            }
+            //is there a constructor that takes two stirntgs, as it will be for the configuration
+            if (!hasOneStringConstructor && !hasTwoStringConstructor && hasParameterlessConstructor)
+            {
+                plugin = Activator.CreateInstance(basePluginType);
+            }
+            
+            else if (!hasParameterlessConstructor && !hasOneStringConstructor && !hasTwoStringConstructor)
+            {
+                throw new Exception(
+                    "Plugin does not have either a parameterless constructor or a construcor that takes two config strings");
+            }
+
+            
+
+            //Action<MockupServiceProviderAndFactory> pluginExecute = null;
+
+            //var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
+
+            var stepConfigs = new List<StepRegistration>();
+
+            if (stepDerivationType == StepDerivationType.BASECLASS || stepDerivationType==StepDerivationType.BOTH)
+            {
+                if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
+                { // Matches DAXIF plugin registration
+
+                    if (hasOneStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, "");
+                    }
+                    else if (hasTwoStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, "", "");
+                    }
+
+                    Action<MockupServiceProviderAndFactory> pluginExecute = (provider) => {
+                        basePluginType
+                            .GetMethod("Execute")
+                            .Invoke(plugin, new object[] { provider });
+                    };
+
+
+                    var sc = basePluginType.GetMethod("PluginProcessingStepConfigs").Invoke(plugin, new object[] { })
+                        as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>;
+                    foreach (var item in sc)
+                    {
+                        StepConfig stepconfig = item.Item1;
+                        ExtendedStepConfig exstepconfig = item.Item2;
+                        IEnumerable<ImageTuple> imagetuplelist = item.Item3;
+
+                        StepRegistration stepReg = new StepRegistration(stepconfig,exstepconfig,imagetuplelist,pluginExecute);
+
+                        stepConfigs.Add(stepReg);
+                    }
+
+                    //stepConfigs.AddRange(basePluginType.GetMethod("PluginProcessingStepConfigs").Invoke(plugin, new object[] { })as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
+                    
+                }
+                else
+                {
+                    stepDerivationType = StepDerivationType.METADATA; //fallback to trying to get plugin steps from metadata instead
+                }
+            }
+
+            if (stepDerivationType == StepDerivationType.METADATA || stepDerivationType == StepDerivationType.BOTH)
+            {
+                // Retrieve registration from CRM metadata
+                var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
+                if (metaSteps.Count == 0)
+                {
+                    Console.WriteLine($"Unknown plugin '{basePluginType.FullName}', no steps are registered in CRM and so this plugin will not be fired at any point. Please use DAXIF registration or make sure the plugin is uploaded to CRM.");
                 }
 
-                foreach(var metaStep in metaSteps) { 
+                foreach (var metaStep in metaSteps)
+                {
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, Guid.Empty.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
-                    stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
-                    pluginExecute = (provider) => {
+                    //stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
+
+                    if (hasOneStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters. currently, these are null when not being drived from the metadata directly.
+                        plugin = Activator.CreateInstance(basePluginType, metaStep.UnsecureConfiguration);
+                    }
+                    else if (hasTwoStringConstructor)
+                    {
+                        //activate plugin, passing in unsecure and secure configs as parameters
+                        plugin = Activator.CreateInstance(basePluginType,metaStep.UnsecureConfiguration,"");
+                    }
+
+
+                    Action<MockupServiceProviderAndFactory> pluginExecute = (provider) => {
                         basePluginType
-                        .GetMethod("Execute")
-                        .Invoke(plugin, new object[] { provider });
+                            .GetMethod("Execute")
+                            .Invoke(plugin, new object[] { provider });
                     };
+
+                    StepRegistration stepReg = new StepRegistration(stepConfig, extendedConfig, imageTuple, pluginExecute);
+                    stepConfigs.Add(stepReg);
                 }
             }
+
+
+            
 
             // Add discovered plugin triggers
             foreach (var stepConfig in stepConfigs)
             {
-                var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
-                var stage = (ExecutionStage)stepConfig.Item1.Item2;
-                var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
+                //var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
+                //var stage = (ExecutionStage)stepConfig.Item1.Item2;
+                //var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
+
+                var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.StepConfig.Item3);
+                var stage = (ExecutionStage)stepConfig.StepConfig.Item2;
+
+                Tuple<StepConfig, ExtendedStepConfig,IEnumerable<ImageTuple>> stepConfigTuple = new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig.StepConfig,stepConfig.ExtendedStepConfig,stepConfig.ImageTuples);
+                var trigger = new PluginTrigger(operation, stage, stepConfig.PluginExecuteMethod, stepConfigTuple, metadata);
 
                 AddTrigger(operation, stage, trigger, register);
             }
@@ -123,17 +246,17 @@ namespace DG.Tools.XrmMockup {
             disableRegisteredPlugins = disable;
         }
 
-        public void RegisterAdditionalPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, PluginRegistrationScope scope)
+        public void RegisterAdditionalPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, PluginRegistrationScope scope, StepDerivationType stepDerivationType)
         {
-            if (pluginType.GetMethod("PluginProcessingStepConfigs") == null)
-                throw new MockupException($"Unknown plugin '{pluginType.FullName}', please use the MockPlugin to register your plugin.");
+            //if (pluginType.GetMethod("PluginProcessingStepConfigs") == null)
+            //    throw new MockupException($"Unknown plugin '{pluginType.FullName}', please use the MockPlugin to register your plugin.");
             if (scope == PluginRegistrationScope.Permanent)
             {
-                RegisterPlugin(pluginType, metadata, plugins, registeredPlugins);
+                RegisterPlugin(pluginType, metadata, plugins, registeredPlugins, stepDerivationType);
             }
             else if (scope == PluginRegistrationScope.Temporary)
             {
-                RegisterPlugin(pluginType, metadata, plugins, temporaryPlugins);
+                RegisterPlugin(pluginType, metadata, plugins, temporaryPlugins, stepDerivationType);
             }
         }
 

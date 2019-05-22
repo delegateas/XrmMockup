@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Linq;
 using System.ServiceModel;
@@ -126,8 +127,11 @@ namespace DG.Tools.XrmMockup.Database {
                     }
                 }
                 if (currentDbRow == null) {
-                    throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
-                        "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
+                    Trace.WriteLine($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
+                                      "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
+                    return null;
+                    //throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
+                    //    "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
             }
 
@@ -157,15 +161,16 @@ namespace DG.Tools.XrmMockup.Database {
 
 
         internal DbRow GetDbRow(string logicalName, Guid id) {
-            return GetDbRow(new EntityReference(logicalName, id));
+            var row = GetDbRow(new EntityReference(logicalName, id));
+            return row;
         }
 
         public Entity GetEntity(string logicalName, Guid id) {
-            return GetDbRow(logicalName, id).ToEntity();
+            return GetDbRow(logicalName, id)?.ToEntity();
         }
 
         public Entity GetEntity(EntityReference reference) {
-            return GetDbRow(reference).ToEntity();
+            return GetDbRow(reference)?.ToEntity();
         }
 
 

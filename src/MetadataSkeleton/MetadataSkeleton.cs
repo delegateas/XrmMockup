@@ -26,6 +26,7 @@ namespace DG.Tools.XrmMockup {
         public string AssemblyName;
         public string PrimaryEntity;
         public List<MetaImage> Images;
+        public string UnsecureConfiguration;
     }
 
     public class MetaImage

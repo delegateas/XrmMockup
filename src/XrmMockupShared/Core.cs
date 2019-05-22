@@ -166,6 +166,8 @@ namespace DG.Tools.XrmMockup
                 new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
         };
 
+        
+
         internal void EnableProxyTypes(Assembly assembly)
         {
             foreach (var type in assembly.GetLoadableTypes())
@@ -592,6 +594,11 @@ namespace DG.Tools.XrmMockup
             workflowManager.AddWorkflow(workflow);
         }
 
+        internal void AddCodeActivityTrigger(Type type)
+        {
+            workflowManager.AddCodeActivityTrigger(type);
+        }
+
         internal bool ContainsEntity(Entity entity)
         {
             var dbentity = db.GetEntityOrNull(entity.ToEntityReference());
@@ -706,10 +713,10 @@ namespace DG.Tools.XrmMockup
             pluginManager.DisabelRegisteredPlugins(include);
         }
 
-        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope)
+        internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope,StepDerivationType stepDerivationType)
         {
             foreach (var type in basePluginTypes)
-                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope);
+                pluginManager.RegisterAdditionalPlugin(type, metadata.EntityMetadata, metadata.Plugins, scope, stepDerivationType);
         }
 
         internal void TakeSnapshot(string snapshotName)

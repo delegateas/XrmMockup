@@ -27,9 +27,11 @@ namespace DG.Tools.XrmMockup.Metadata
         private HashSet<string> EntityLogicalNames;
         private string[] SolutionNames;
 
-        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies) {
+        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString,
+            bool fetchFromAssemblies)
+        {
             this.service = service;
-            this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
+            this.SolutionNames = solutionsString.Split(new string[] { ","},StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
             this.EntityLogicalNames = new HashSet<string>();
             
             // Add entites from assemblies
@@ -48,6 +50,27 @@ namespace DG.Tools.XrmMockup.Metadata
                     this.EntityLogicalNames.Add(logicalName.Trim());
                 }
             }
+
+            if (SolutionNames.Length == 0 && string.IsNullOrEmpty(entitiesString))
+            {
+                //load all entities from crm
+                RetrieveAllEntitiesRequest request = new RetrieveAllEntitiesRequest()
+                {
+                    EntityFilters = EntityFilters.Entity,
+                    RetrieveAsIfPublished = true
+                };
+
+                // Retrieve the MetaData.
+                RetrieveAllEntitiesResponse response = (RetrieveAllEntitiesResponse)service.Execute(request);
+                foreach (var emd in response.EntityMetadata)
+                {
+                    if (!EntityLogicalNames.Contains(emd.LogicalName))
+                    {
+                        EntityLogicalNames.Add(emd.LogicalName);
+                    }
+                }
+            }
+            
         }
 
         public MetadataSkeleton GetMetadata(string path) {
@@ -61,6 +84,8 @@ namespace DG.Tools.XrmMockup.Metadata
 
             Console.WriteLine("Getting plugins");
             skeleton.Plugins = GetPlugins(this.SolutionNames);
+            Console.WriteLine(skeleton.Plugins.Count + " Plugin steps found");
+            
 
             Console.WriteLine("Getting organization");
             skeleton.BaseOrganization = GetBaseOrganization();
@@ -111,12 +136,14 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         private List<MetaPlugin> GetPlugins(string[] solutions) {
-            if (solutions == null || solutions.Length == 0) {
-                return new List<MetaPlugin>();
-            }
+            //if (solutions == null || solutions.Length == 0) {
+            //    return new List<MetaPlugin>();
+            //}
+
+            solutions = solutions.Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep") {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name"),
+                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name","configuration"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
@@ -128,57 +155,54 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             pluginQuery.LinkEntities.Add(sdkMessageFilterQuery);
 
-            var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner) {
-                Columns = new ColumnSet(),
-                LinkCriteria = new FilterExpression()
-            };
-            pluginQuery.LinkEntities.Add(solutionComponentQuery);
+            EntityCollection images = new EntityCollection();
+            if (solutions.Length > 0)
+            {
+                var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
+                {
+                    Columns = new ColumnSet(),
+                    LinkCriteria = new FilterExpression()
+                };
+                pluginQuery.LinkEntities.Add(solutionComponentQuery);
 
-            var solutionQuery = new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner) {
-                Columns = new ColumnSet(),
-                LinkCriteria = new FilterExpression()
-            };
-            solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions);
-            solutionComponentQuery.LinkEntities.Add(solutionQuery);
-
+                var solutionQuery = new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner)
+                {
+                    Columns = new ColumnSet(),
+                    LinkCriteria = new FilterExpression()
+                };
+                solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions);
+                solutionComponentQuery.LinkEntities.Add(solutionQuery);
+            }
 
             var imagesQuery = new QueryExpression
             {
                 EntityName = "sdkmessageprocessingstepimage",
-                ColumnSet = new ColumnSet("attributes", "entityalias", "name", "imagetype", "sdkmessageprocessingstepid"),
-                LinkEntities =
-                {
-                    new LinkEntity("sdkmessageprocessingstepimage", "sdkmessageprocessingstep", "sdkmessageprocessingstepid", "sdkmessageprocessingstepid", JoinOperator.Inner)
-                    {
-                        LinkEntities =
-                        {
-                            new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
-                            {
-                                LinkEntities =
-                                {
-                                    new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner)
-                                    {
-                                        LinkCriteria =
-                                        {
-                                            Conditions =
-                                            {
-                                                new ConditionExpression("uniquename", ConditionOperator.In, new [] { "PwCOrlenFlotaRelease001"})
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                ColumnSet = new ColumnSet("attributes", "entityalias", "name", "imagetype", "sdkmessageprocessingstepid")
             };
+            var msgprocstepimage = new LinkEntity("sdkmessageprocessingstepimage", "sdkmessageprocessingstep", "sdkmessageprocessingstepid", "sdkmessageprocessingstepid", JoinOperator.Inner);
 
-            var images = service.RetrieveMultiple(imagesQuery);
+
+            if (solutions.Length > 0)
+            {
+                var msgprocstep = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner);
+                var solsLinkEntity = new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner);
+                solsLinkEntity.LinkCriteria.Conditions.Add(new ConditionExpression("uniquename", ConditionOperator.In, new[] { solutions }));
+                msgprocstep.LinkEntities.Add(solsLinkEntity);
+                msgprocstepimage.LinkEntities.Add(msgprocstep);
+            }
+
+
+            imagesQuery.LinkEntities.Add(msgprocstepimage);
+
+            images = service.RetrieveMultiple(imagesQuery);
+
 
             var plugins = new List<MetaPlugin>();
-
-            foreach (var plugin in service.RetrieveMultiple(pluginQuery).Entities) {
-                var metaPlugin = new MetaPlugin() {
+            var allplugins = RetrieveLarge(service, pluginQuery).Entities;
+            foreach (var plugin in allplugins)
+            {
+                var metaPlugin = new MetaPlugin()
+                {
                     Name = plugin.GetAttributeValue<string>("name"),
                     Rank = plugin.GetAttributeValue<int>("rank"),
                     FilteredAttributes = plugin.GetAttributeValue<string>("filteringattributes"),
@@ -186,6 +210,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
+                    UnsecureConfiguration = plugin.GetAttributeValue<string>("configuration"),
                     PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
@@ -202,6 +227,44 @@ namespace DG.Tools.XrmMockup.Metadata
             }
 
             return plugins;
+        }
+
+        public EntityCollection RetrieveLarge(IOrganizationService organizationService, QueryBase query)
+        {
+            var entityCollection = new EntityCollection();
+            RetrieveMultipleResponse multipleResponse = new RetrieveMultipleResponse();
+            int pageNumber = 1;
+            do
+            {
+                if (query is QueryExpression)
+                {
+                    (query as QueryExpression).PageInfo.Count = 5000;
+                    (query as QueryExpression).PageInfo.PagingCookie = (pageNumber == 1)
+                        ? null
+                        : multipleResponse.EntityCollection.PagingCookie;
+                    (query as QueryExpression).PageInfo.PageNumber = pageNumber++;
+                }
+                else if (query is QueryByAttribute)
+                {
+                    (query as QueryByAttribute).PageInfo.Count = 5000;
+                    (query as QueryByAttribute).PageInfo.PagingCookie = (pageNumber == 1)
+                        ? null
+                        : multipleResponse.EntityCollection.PagingCookie;
+                    (query as QueryByAttribute).PageInfo.PageNumber = pageNumber++;
+
+                }
+                else
+                {
+                    return null;
+                }
+                RetrieveMultipleRequest multipleRequest = new RetrieveMultipleRequest { Query = query };
+                multipleResponse = (RetrieveMultipleResponse)organizationService.Execute(multipleRequest);
+
+                entityCollection.Entities.AddRange(multipleResponse.EntityCollection.Entities);
+            } while (multipleResponse.EntityCollection.MoreRecords);
+
+            return entityCollection;
+
         }
 
         private List<Entity> GetCurrencies() {

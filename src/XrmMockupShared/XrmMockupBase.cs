@@ -174,6 +174,8 @@ namespace DG.Tools.XrmMockup {
             AddTime(new TimeSpan(days, 0, 0, 0));
         }
 
+        
+
         /// <summary>
         /// Increase the local time that mockup uses by an offset of days
         /// </summary>
@@ -197,6 +199,15 @@ namespace DG.Tools.XrmMockup {
         public void AddWorkflow(string path) {
             var workflow = Utility.GetWorkflow(path);
             Core.AddWorkflow(workflow);
+        }
+
+        /// <summary>
+        /// add a code activity trigger from a known type
+        /// </summary>
+        /// <param name="type"></param>
+        public void AddCodeActivityTrigger(Type type)
+        {
+            Core.AddCodeActivityTrigger(type);
         }
 
         /// <summary>
@@ -391,9 +402,137 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="scope">The scope of the plugin registration</param>
         /// <param name="basePluginTypes"></param>
-        public void RegisterAdditionalPlugins(PluginRegistrationScope scope, params Type[] basePluginTypes)
+        public void RegisterAdditionalPlugins(PluginRegistrationScope scope, StepDerivationType stepDerivationType, params Type[] basePluginTypes)
         {
-            Core.RegisterAdditionalPlugins(basePluginTypes, scope);
+            Core.RegisterAdditionalPlugins(basePluginTypes, scope, stepDerivationType);
+        }
+
+        /// <summary>
+        /// allows you to register additional workflow activities from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="workFlowAssembliesPath"></param>
+        /// <param name="matchingTypes">base types to match against eg. CodeActivity / AccountWorkflowActivity</param>
+        /// <param name="filesToIgnore"></param>
+        /// <param name="matchOnTypeFullName">If yes, a type equality test is ignored in favour of checking the FullName properrty for equality instead. Useful if types are being loaded from ilmerged assemblies</param>
+        public void RegisterWorkflowCodeActivitiesFromExternalAssemblies(string workFlowAssembliesPath, List<Type> matchingTypes, List<string> filesToIgnore, bool matchOnTypeFullName = false)
+        {
+            if (!string.IsNullOrEmpty(workFlowAssembliesPath))
+            {
+                var workflowTypes = GetLoadableTypesFromAssembliesInPath(workFlowAssembliesPath, matchingTypes, filesToIgnore, matchOnTypeFullName);
+                Console.WriteLine("Found " + workflowTypes.Count() + " Workflows to load from external assemblies");
+                foreach (Type type in workflowTypes)
+                {
+                    AddCodeActivityTrigger(type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// allows you to register additional plugin steps from a list of compiled assemblies, present at a given location
+        /// </summary>
+        /// <param name="pluginAssembliesPath"></param>
+        /// <param name="matchingTypes">base types to match against eg. Plugin</param>
+        /// <param name="filesToIgnore"></param>
+        /// <param name="stepDerivationType">where to get the plugin step registrations from. either as part of the plugin hardcoded, or as part of the live crm metadata</param>
+        /// <param name="matchOnTypeFullName">If yes, a type equality test is ignored in favour of checking the FullName properrty for equality instead. Useful if types are being loaded from ilmerged assemblies</param>
+        public void RegisterPluginsFromExternalAssemblies(string pluginAssembliesPath, List<Type> matchingTypes, List<string> filesToIgnore, StepDerivationType stepDerivationType, bool matchOnTypeFullName = false)
+        {
+            if (!string.IsNullOrEmpty(pluginAssembliesPath))
+            {
+                var pluginTypes = GetLoadableTypesFromAssembliesInPath(pluginAssembliesPath, matchingTypes,filesToIgnore, matchOnTypeFullName);
+                Console.WriteLine("Found " + pluginTypes.Count() + " Plugins to load from external assemblies");
+                foreach (Type type in pluginTypes)
+                {
+                    RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, stepDerivationType, type );
+                }
+            }
+        }
+
+        private IEnumerable<Type> GetLoadableTypesFromAssembliesInPath(string path, List<Type> baseTypesAndInterfacesToLoad, List<string> filesToIgnore, bool matchOnTypeFullName = false)
+        {
+            List<Type> types = new List<Type>();
+
+            List<Type> baseTypesToLoad = baseTypesAndInterfacesToLoad.Where(t => !t.IsInterface).ToList();
+            List<Type> interfacesToLoad = baseTypesAndInterfacesToLoad.Where(t => t.IsInterface).ToList();
+
+
+            try
+            {
+                DirectoryInfo d = new DirectoryInfo(path);
+                if (Directory.Exists(path))
+                {
+                    FileInfo[] Files = d.GetFiles("*.dll"); //get libraries
+
+                    foreach (FileInfo file in Files)
+                    {
+                        var isRestrictedFile = (filesToIgnore != null && filesToIgnore.Count > 0) &&
+                                               filesToIgnore.Any(f => file.Name.IndexOf(f, StringComparison.Ordinal) > -1);
+
+                        if (!isRestrictedFile)
+                        {
+                            var assembly = Assembly.LoadFrom(file.FullName);
+                            var allTypes = assembly.GetTypes();
+                            foreach (Type type in allTypes)
+                            {
+                                if (baseTypesToLoad.Any(ttl => ttl.FullName == type.FullName))
+                                {
+                                    //this type matches a base type so ignore it
+                                    continue;
+                                }
+
+                                if (matchOnTypeFullName)
+                                {
+                                    if (type.BaseType != null && baseTypesToLoad.Any(p => p.FullName == type.BaseType.FullName))
+                                    {
+                                        //does it have an execute method?
+                                        var executeMethod = type.BaseType.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                                        if (executeMethod != null)
+                                        {
+                                            types.Add(type);
+                                        }
+                                    }
+                                    else if (type.GetInterfaces().Any(i => interfacesToLoad.Any(itl => itl.FullName == i.FullName))) //match against interfaces
+                                    {
+                                        //does it have an execute method?
+
+                                        var executeMethod = type.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                                        if (executeMethod != null)
+                                        {
+                                            types.Add(type);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (type.BaseType!=null && baseTypesToLoad.Any(p => p == type.BaseType))
+                                    {
+                                        var executeMethod = type.BaseType.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                                        if (executeMethod != null)
+                                        {
+                                            types.Add(type);
+                                        }
+                                    }
+                                    else if (type.GetInterfaces().Any(i => interfacesToLoad.Any(itl => itl == i))) //match against interfaces
+                                    {
+                                        var executeMethod = type.GetMethod("Execute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                                        if (executeMethod != null)
+                                        {
+                                            types.Add(type);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                return types;
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
         }
     }
 
