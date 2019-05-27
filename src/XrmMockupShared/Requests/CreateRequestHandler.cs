@@ -37,29 +37,29 @@ namespace DG.Tools.XrmMockup {
 
                 var references = clonedEntity.Attributes.Where(x => x.Value is EntityReference && x.Key != "ownerid").ToArray();
 
-                if (references.Any())
-                {
-                    if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
-                            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
-                    }
-                } 
+                //if (references.Any())
+                //{
+                //    if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
+                //    {
+                //        throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
+                //            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                //    }
+                //} 
 
-                foreach(var attr in references)
-                {
-                    var reference = attr.Value as EntityReference;
-                    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                    }
-                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                    }
-                }
+                //foreach(var attr in references)
+                //{
+                //    var reference = attr.Value as EntityReference;
+                //    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                //    {
+                //        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                //            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                //    }
+                //    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                //    {
+                //        throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                //            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                //    }
+                //}
             }
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity)) {
