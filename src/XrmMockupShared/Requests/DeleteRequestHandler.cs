@@ -16,7 +16,8 @@ namespace DG.Tools.XrmMockup {
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<DeleteRequest>(orgRequest);
-            var entity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef);
+            var casSelection = new CascadeSelection() { delete = true };
+            var entity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef, casSelection);
             if (entity == null) {
                 throw new FaultException($"{request.Target.LogicalName} with Id '{request.Target.Id}' does not exist");
             }

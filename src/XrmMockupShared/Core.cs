@@ -30,12 +30,24 @@ namespace DG.Tools.XrmMockup
         public TimeSpan TimeOffset;
     }
 
+   
+    internal class CascadeSelection {
+        public bool assign = false;
+        public bool delete = false;
+        public bool merge = false;
+        public bool reparent = false;
+        public bool share = false;
+        public bool unshare = false;
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        public bool rollup = false;
+#endif
+    }
+
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
     internal class Core
     {
-
         private PluginManager pluginManager;
         private WorkflowManager workflowManager;
         private Security security;
@@ -340,8 +352,43 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        private bool HasCascadeBehaviour(CascadeType? cascadeType)
+        {
+            return cascadeType != null && cascadeType != CascadeType.NoCascade;
+        }
+
+        private bool CascadeCompare(CascadeConfiguration cascadeConfiguration, CascadeSelection selection)
+        {
+            if (selection == null)
+                return true;
+
+            if (selection.assign && HasCascadeBehaviour(cascadeConfiguration.Assign))
+                return true;
+
+            if (selection.delete && HasCascadeBehaviour(cascadeConfiguration.Delete))
+                return true;
+
+            if (selection.merge && HasCascadeBehaviour(cascadeConfiguration.Merge))
+                return true;
+
+            if (selection.reparent && HasCascadeBehaviour(cascadeConfiguration.Reparent))
+                return true;
+
+            if (selection.share && HasCascadeBehaviour(cascadeConfiguration.Share))
+                return true;
+
+            if (selection.unshare && HasCascadeBehaviour(cascadeConfiguration.Unshare))
+                return true;
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+            if (selection.rollup && HasCascadeBehaviour(cascadeConfiguration.RollupView))
+                return true;
+#endif
+            return false;
+        }
+
         //TODO: update to also take in cascading filtering on Assign, Delete, Merge, reparent, rollup
-        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef, params Relationship[] relations)
+        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef, CascadeSelection cascadeSelection = null, params Relationship[] relations)
         {
             var entity = db.GetEntityOrNull(reference);
             if (entity == null)
@@ -362,34 +409,60 @@ namespace DG.Tools.XrmMockup
                 primaryEntityRole == EntityRole.Referenced 
                 ? metadata.OneToManyRelationships 
                 : metadata.ManyToOneRelationships;
-            var relatopnsShipManyMetadata = metadata.ManyToManyRelationships;
+
+            if(cascadeSelection != null)
+            {
+                relationsMetadata.Where(x => CascadeCompare(x.CascadeConfiguration, cascadeSelection));
+            } 
 
             if (relations.Any())
             {
                 relationsMetadata = relationsMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1,r2) => r1).ToArray();
-                relatopnsShipManyMetadata = relatopnsShipManyMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
             }
+            relationQuery.AddRange(
+                relationsMetadata
+                .Select(relationshipMeta =>
+                {
+                    var rel = new Relationship()
+                    {
+                        SchemaName = relationshipMeta.SchemaName,
+                        PrimaryEntityRole = primaryEntityRole
+                    };
+                    var query = new QueryExpression()
+                    {
+                        EntityName =
+                            primaryEntityRole == EntityRole.Referenced
+                            ? relationshipMeta.ReferencingEntity
+                            : relationshipMeta.ReferencedEntity,
+                        ColumnSet = new ColumnSet(true)
+                    };
+                    return new KeyValuePair<Relationship, QueryBase>(rel, query);
+                }));
+
 
             foreach (var relationshipMeta in relationsMetadata)
             {
-                var query = new QueryExpression(
-                    primaryEntityRole == EntityRole.Referenced
-                    ? relationshipMeta.ReferencingEntity
-                    : relationshipMeta.ReferencedEntity)
-                {
-                    ColumnSet = new ColumnSet(true)
-                };
-                relationQuery.Add(new Relationship() { SchemaName = relationshipMeta.SchemaName, PrimaryEntityRole = primaryEntityRole }, query);
             }
 
-            foreach (var relationshipMeta in relatopnsShipManyMetadata)
+            if (cascadeSelection == null)
             {
-                var query = new QueryExpression(relationshipMeta.IntersectEntityName)
+                var relationShipManyMetadata = metadata.ManyToManyRelationships;
+                if (relations.Any())
                 {
-                    ColumnSet = new ColumnSet(true)
-                };
-                relationQuery.Add(new Relationship() { SchemaName = relationshipMeta.SchemaName }, query);
+                    relationShipManyMetadata = relationShipManyMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
+                }
+                relationQuery.AddRange(relationShipManyMetadata
+                    .Select(relationshipMeta =>
+                    {
+                        var rel = new Relationship() { SchemaName = relationshipMeta.SchemaName };
+                        var query = new QueryExpression(relationshipMeta.IntersectEntityName)
+                        {
+                            ColumnSet = new ColumnSet(true)
+                        };
+                        return new KeyValuePair<Relationship, QueryBase>(rel, query);
+                    }));
             }
+
             AddRelatedEntities(entity, relationQuery, userRef);
             return entity;
         }
