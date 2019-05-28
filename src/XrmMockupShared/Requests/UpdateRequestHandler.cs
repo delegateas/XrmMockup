@@ -93,7 +93,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             updEntity.Attributes
-                .Where(x => x.Value is string && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
                 .ToList()
                 .ForEach(x => updEntity[x.Key] = null);
 

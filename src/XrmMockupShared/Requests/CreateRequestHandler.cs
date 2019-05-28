@@ -44,7 +44,7 @@ namespace DG.Tools.XrmMockup {
                 //        throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
                 //            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
                 //    }
-                //} 
+                //}
 
                 //foreach(var attr in references)
                 //{
@@ -165,7 +165,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             clonedEntity.Attributes
-                .Where(x => x.Value is string && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
                 .ToList()
                 .ForEach(x => clonedEntity[x.Key] = null);
 
