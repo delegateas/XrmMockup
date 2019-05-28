@@ -340,7 +340,8 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef)
+        //TODO: update to also take in cascading filtering on Assign, Delete, Merge, reparent, rollup
+        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef, params Relationship[] relations)
         {
             var entity = db.GetEntityOrNull(reference);
             if (entity == null)
@@ -361,6 +362,13 @@ namespace DG.Tools.XrmMockup
                 primaryEntityRole == EntityRole.Referenced 
                 ? metadata.OneToManyRelationships 
                 : metadata.ManyToOneRelationships;
+            var relatopnsShipManyMetadata = metadata.ManyToManyRelationships;
+
+            if (relations.Any())
+            {
+                relationsMetadata = relationsMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1,r2) => r1).ToArray();
+                relatopnsShipManyMetadata = relatopnsShipManyMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
+            }
 
             foreach (var relationshipMeta in relationsMetadata)
             {
@@ -374,7 +382,7 @@ namespace DG.Tools.XrmMockup
                 relationQuery.Add(new Relationship() { SchemaName = relationshipMeta.SchemaName, PrimaryEntityRole = primaryEntityRole }, query);
             }
 
-            foreach (var relationshipMeta in metadata.ManyToManyRelationships)
+            foreach (var relationshipMeta in relatopnsShipManyMetadata)
             {
                 var query = new QueryExpression(relationshipMeta.IntersectEntityName)
                 {

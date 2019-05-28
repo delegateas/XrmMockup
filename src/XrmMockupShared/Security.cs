@@ -247,9 +247,9 @@ namespace DG.Tools.XrmMockup
         internal HashSet<SecurityRole> GetSecurityRoles(EntityReference caller)
         {
             var securityRoles = new HashSet<SecurityRole>();
-            var callerEntity = Core.GetDbEntityWithRelatedEntities(caller, EntityRole.Referenced, Core.AdminUserRef);
-            if (callerEntity == null) return securityRoles;
             var relationship = caller.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
+            var callerEntity = Core.GetDbEntityWithRelatedEntities(caller, EntityRole.Referenced, Core.AdminUserRef, null, relationship);
+            if (callerEntity == null) return securityRoles;
             var roles = callerEntity.RelatedEntities.ContainsKey(relationship) ? callerEntity.RelatedEntities[relationship] : new EntityCollection();
             foreach (var role in roles.Entities)
             {
