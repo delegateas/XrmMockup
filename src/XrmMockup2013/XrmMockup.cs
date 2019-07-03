@@ -7,7 +7,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("XrmMockup13Test")]
 namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for mocking a crm 2013 instance

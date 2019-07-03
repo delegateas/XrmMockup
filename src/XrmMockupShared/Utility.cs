@@ -115,6 +115,7 @@ namespace DG.Tools.XrmMockup
                     }
                 }
 
+                // Can't this be optimized to not go through all attributes in the entity?
                 HashSet<string> keep = new HashSet<string>(colsToKeep.Columns);
                 foreach (var attr in attributes)
                 {

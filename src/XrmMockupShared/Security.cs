@@ -10,8 +10,12 @@ using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
+    using AccessDepthRight = Dictionary<AccessRights, PrivilegeDepth>;
+    using Privileges = Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>;
+
     internal class Security
     {
+
         private static Guid SYSTEMADMIN_ROLE_TEMPLATE = new Guid("627090ff-40a3-4053-8790-584edc5be201");
         private Core Core;
         private MetadataSkeleton Metadata;
@@ -19,6 +23,7 @@ namespace DG.Tools.XrmMockup
         private Dictionary<Guid, SecurityRole> SecurityRoles;
         private Dictionary<Guid, Guid> SecurityRoleMapping;
         private Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>> Shares;
+        private Dictionary<Guid, Privileges> PrinciplePrivilages = new Dictionary<Guid, Privileges>();
 
         internal Security(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles)
         {
@@ -216,15 +221,122 @@ namespace DG.Tools.XrmMockup
             InitializeSecurityRoles(db);
         }
 
-        internal void SetSecurityRole(EntityReference entRef, Guid[] securityRoles)
+        private AccessDepthRight JoinAccess(AccessDepthRight adr1, AccessDepthRight adr2)
         {
-            if (securityRoles.Any(s => !SecurityRoles.ContainsKey(s)))
+            var newAdr = adr1.ToDictionary(x => x.Key, x => x.Value);
+            var intersect = adr1.Keys.Intersect(adr2.Keys);
+            foreach(var access in intersect)
+            {
+                var d1 = adr1[access];
+                var d2 = adr2[access];
+                newAdr.Remove(access);
+                newAdr.Add(access, (PrivilegeDepth) Math.Max(((int) d1), ((int) d2)));
+            }
+
+            foreach (var access in adr2.Keys.Except(intersect))
+            {
+                newAdr.Add(access, adr2[access]);
+            }
+
+            return newAdr;
+        }
+
+        private Privileges JoinPrivileges(Privileges privilege1, Dictionary<string, Dictionary<AccessRights, RolePrivilege>> privileges2)
+        {
+            Privileges privilage2Modified = privileges2.Select(x =>
+                new KeyValuePair<string, AccessDepthRight>(
+                    x.Key,
+                    x.Value.Select(y =>
+                        new KeyValuePair<AccessRights, PrivilegeDepth>(y.Key, y.Value.PrivilegeDepth))
+                        .ToDictionary(v => v.Key, v => v.Value)))
+                .ToDictionary(v => v.Key, v => v.Value);
+
+            return JoinPrivileges(privilege1, privilage2Modified);
+        }
+
+        private Privileges JoinPrivileges(Privileges privilege1, Privileges privilege2)
+        {
+            var newPriv = privilege1.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            var intersection = privilege1.Keys.Intersect(privilege2.Keys);
+            foreach(var logicalName in intersection)
+            {
+                var a1 = privilege1[logicalName];
+                var a2 = privilege2[logicalName];
+                var aJoined = JoinAccess(a1, a2);
+                newPriv.Remove(logicalName);
+                newPriv.Add(logicalName, aJoined);
+            }
+            foreach (var logicalName in privilege2.Keys.Except(intersection))
+            {
+                newPriv.Add(logicalName, privilege2[logicalName]);
+            }
+            return newPriv;
+        }
+
+        internal void AddPrinciplePrivileges(Guid principleId, Privileges privileges)
+        {
+            var currentPrivileges = new Privileges();
+            if (PrinciplePrivilages.ContainsKey(principleId))
+            {
+                currentPrivileges = PrinciplePrivilages[principleId];
+            }
+
+            // Combine users current privilege with the securityRoles
+            currentPrivileges = JoinPrivileges(currentPrivileges, privileges);
+
+            // Update the principles privileges;
+            if (PrinciplePrivilages.ContainsKey(principleId))
+            {
+                PrinciplePrivilages.Remove(principleId);
+            }
+            PrinciplePrivilages.Add(principleId, currentPrivileges);
+        } 
+
+        private void AddPrinciplePrivlieges(Guid principleId, Guid[] roles)
+        {
+            if (!roles.Any())
+            {
+                return;
+            }
+
+            // Get users current privilgees
+            var currentPrivileges = new Privileges();
+            if (PrinciplePrivilages.ContainsKey(principleId))
+            {
+                currentPrivileges = PrinciplePrivilages[principleId];
+            }
+
+            // Combine users current privilege with the securityRoles
+            foreach (var roleId in roles)
+            {
+                var securityRolePrivilages = SecurityRoles[roleId].Privileges;
+
+                currentPrivileges = JoinPrivileges(currentPrivileges, securityRolePrivilages);
+            }
+
+            // Update the principles privileges;
+            if (PrinciplePrivilages.ContainsKey(principleId))
+            {
+                PrinciplePrivilages.Remove(principleId);
+            }
+            PrinciplePrivilages.Add(principleId, currentPrivileges);
+        }
+
+        internal void SetSecurityRole(EntityReference entRef, Guid[] secRoles)
+        {
+            if (!secRoles.Any())
+            {
+                return;
+            }
+
+            AddPrinciplePrivlieges(entRef.Id, secRoles);
+            if (secRoles.Any(s => !SecurityRoles.ContainsKey(s)))
             {
                 throw new MockupException($"Unknown security role");
             }
             var user = Core.GetDbRow(entRef).ToEntity();
             var relationship = entRef.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
-            var roles = securityRoles
+            var roles = secRoles
                 .Select(sr => SecurityRoleMapping.Where(srm => srm.Value == sr).Select(srm => srm.Key))
                 .Select(roleGuids =>
                     Core.GetDbTable("role")
@@ -242,6 +354,15 @@ namespace DG.Tools.XrmMockup
                 Relationship = relationship,
                 Target = entRef
             }, Core.AdminUserRef);
+        }
+
+        internal Privileges GetUserPrivilages(EntityReference caller)
+        {
+            if (!PrinciplePrivilages.Keys.Contains(caller.Id))
+            {
+                return null;
+            }
+            return PrinciplePrivilages[caller.Id];
         }
 
         internal HashSet<SecurityRole> GetSecurityRoles(EntityReference caller)
@@ -314,15 +435,26 @@ namespace DG.Tools.XrmMockup
         internal bool HasCallerPermission(Entity entity, AccessRights access, EntityReference caller)
         {
             // finds all callers securityroles which grant access permission to the entity
-            var callerRoles = GetSecurityRoles(caller)?
-                .Where(r =>
-                    r.Privileges.ContainsKey(entity.LogicalName) &&
-                    r.Privileges[entity.LogicalName].ContainsKey(access));
+            //var callerRoles = GetSecurityRoles(caller)?
+            //    .Where(r =>
+            //        r.Privileges.ContainsKey(entity.LogicalName) &&
+            //        r.Privileges[entity.LogicalName].ContainsKey(access));
 
-            if (callerRoles == null || callerRoles.Count() == 0) return false;
+            //if (callerRoles == null || callerRoles.Count() == 0) return false;
+            var privilages = GetUserPrivilages(caller);
 
+            if (privilages == null)
+                return false;
+
+            if (!privilages.ContainsKey(entity.LogicalName))
+                return false;
+
+            if (!privilages[entity.LogicalName].ContainsKey(access))
+                return false;
+
+            var maxRole  = privilages[entity.LogicalName][access];
             // Finds the securityrole with the maximum privilegeDepth
-            var maxRole = callerRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
+            //var maxRole = callerRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
 
             // if max privelege depth is global, then caller can access all entities
             if (maxRole == PrivilegeDepth.Global) return true;
@@ -423,11 +555,13 @@ namespace DG.Tools.XrmMockup
 
         public Security Clone()
         {
-            return new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList())
+            var s =  new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList())
             {
                 SecurityRoleMapping = this.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value),
                 Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value))
             };
+            s.PrinciplePrivilages = this.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            return s;
         }
     }
 }

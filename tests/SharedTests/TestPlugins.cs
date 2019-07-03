@@ -14,6 +14,7 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 namespace DG.XrmMockupTest {
     [TestClass]
     public class TestPlugins : UnitTestBase {
+
         [TestMethod]
         public void TestImages() {
             using (var context = new Xrm(orgAdminUIService)) {

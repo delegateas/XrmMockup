@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Web.Script.Serialization;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("XrmMockup11Test")]
 namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for mocking a crm 2011 instance

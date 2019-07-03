@@ -694,6 +694,11 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        internal void AddPrivileges(EntityReference entRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
+        {
+            security.AddPrinciplePrivileges(entRef.Id, privileges);
+        }
+
         internal void SetSecurityRoles(EntityReference entRef, Guid[] securityRoles)
         {
             security.SetSecurityRole(entRef, securityRoles);

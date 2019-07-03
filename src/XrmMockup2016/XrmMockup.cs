@@ -10,8 +10,9 @@ using System.Web.Script.Serialization;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 
-
+[assembly: InternalsVisibleTo("XrmMockup16Test")]
 namespace DG.Tools.XrmMockup {
     /// <summary>
     /// A class for mocking a crm 2016 instance

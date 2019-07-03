@@ -8,8 +8,11 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
+using System.Runtime.CompilerServices;
 
-namespace DG.Tools.XrmMockup {
+namespace DG.Tools.XrmMockup
+{
+    using Privileges = Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>;
 
     /// <summary>
     /// A Mockup of a CRM instance
@@ -395,6 +398,15 @@ namespace DG.Tools.XrmMockup {
         {
             Core.RegisterAdditionalPlugins(basePluginTypes, scope);
         }
-    }
 
+        /// <summary>
+        /// Add entity privileges to the given principle ontop of any existing privileges and security roles
+        /// </summary>
+        /// <param name="principleRef">principle user or team</param>
+        /// <param name="privileges">a dictionary of entities where each entity contains a dictionary over access rights and privilege depth</param>
+        internal void AddPrivileges(EntityReference principleRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
+        {
+            Core.AddPrivileges(principleRef, privileges);
+        }
+    }
 }

@@ -26,13 +26,7 @@ namespace DG.Tools.XrmMockup {
             {
                 queryExpr = Utility.QueryByAttributeToQueryExpression(queryByAttr);
             }
-
-            //if (!security.HasPermission(queryExpr.EntityName, AccessRights.ReadAccess, userRef))
-            //{
-            //    throw new FaultException($"Trying to query entity '{queryExpr.EntityName}'" +
-            //        $", but the calling user with id '{userRef.Id}' does not have Read access");
-            //}
-
+            FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
             var rows = db.GetDBEntityRows(queryExpr.EntityName);
@@ -47,8 +41,9 @@ namespace DG.Tools.XrmMockup {
 
                     if (queryExpr.LinkEntities.Count > 0) {
                         foreach (var linkEntity in queryExpr.LinkEntities) {
+                            var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
                             collection.Entities.AddRange(
-                                GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db)
+                                alliasedValues
                                 .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                         }
                     } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
@@ -131,9 +126,9 @@ namespace DG.Tools.XrmMockup {
                             var subEntities = new List<Entity>();
                             foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
-                                subEntities.AddRange(
-                                    GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db)
+                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db);
+                                subEntities.AddRange(alliasedLinkValues
                                         .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
                             collection.AddRange(subEntities);
@@ -165,5 +160,61 @@ namespace DG.Tools.XrmMockup {
             entity.Attributes.Clear();
             entity.Attributes.AddRange(clone.Attributes);
         }
+
+        private void FillAliasIfEmpty(QueryExpression expression)
+        {
+            if (expression.LinkEntities.Count == 0)
+                return;
+
+            int depth = 1;
+            foreach (var le in expression.LinkEntities)
+            {
+                FillAliasIfEmpty(le, ref depth);
+            }
+        }
+
+        private void FillAliasIfEmpty(LinkEntity linkEntity, ref int linkCount)
+        {
+            if(linkEntity.EntityAlias == null)
+            {
+                linkEntity.EntityAlias = $"{linkEntity.LinkToEntityName}{linkCount}";
+                linkCount++;
+            }
+#if !(XRM_MOCKUP_2011)
+            if (linkEntity.LinkCriteria != null)
+            {
+                FillEntityNameIfEmpty(linkEntity.LinkCriteria, linkEntity.EntityAlias);
+            }
+#endif
+            if (linkEntity.LinkEntities.Count > 0)
+            {
+                foreach (var le in linkEntity.LinkEntities)
+                {
+                    FillAliasIfEmpty(le, ref linkCount);
+                }
+            }
+        }
+#if !(XRM_MOCKUP_2011)
+        private void FillEntityNameIfEmpty(FilterExpression filter, string alias)
+        {
+            foreach (var cond in filter.Conditions)
+            {
+                FillEntityNameIfEmpty(cond, alias);
+            }
+            foreach (var subFilter in filter.Filters)
+            {
+                FillEntityNameIfEmpty(subFilter, alias);
+            }
+        }
+
+        private void FillEntityNameIfEmpty(ConditionExpression condition, string alias)
+        {
+            if (condition.EntityName != null)
+            {
+                return;
+            }
+            condition.EntityName = alias;
+        }
+#endif
     }
 }

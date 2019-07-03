@@ -13,6 +13,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesDelete.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesWrite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
