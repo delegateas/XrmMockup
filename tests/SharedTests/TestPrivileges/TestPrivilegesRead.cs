@@ -54,7 +54,11 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
-            catch (Exception){}
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
+            catch (Exception) { }
 
             // Add account read privilege with basic level
             crm.AddPrivileges(
@@ -92,9 +96,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
 
             // Add account read privilege with deep level
             crm.AddPrivileges(
@@ -111,9 +117,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
 
             // Add account read privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -129,9 +137,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
         }
 
         /// <summary>
@@ -155,7 +165,11 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
+            catch (Exception) { }
 
             // Add account read privilege with basic level
             crm.AddPrivileges(
@@ -174,7 +188,11 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
+            catch (Exception) { }
 
             // Add account read privilege with local level
             crm.AddPrivileges(
@@ -212,9 +230,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
 
             // Add account read privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -230,9 +250,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
         }
 
         [TestMethod]
@@ -253,6 +275,10 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
             catch (Exception) { }
 
             // Add account read privilege with basic level
@@ -272,6 +298,10 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
             catch (Exception) { }
 
             // Add account read privilege with local level
@@ -289,6 +319,10 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
+                Assert.Fail("User should not be able to read");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to read");
             }
             catch (Exception) { }
@@ -328,9 +362,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to read");
+            }
         }
 
         [TestMethod]
@@ -349,6 +385,10 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
+                Assert.Fail("User should not be able to read");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to read");
             }
             catch (Exception) { }
@@ -370,6 +410,10 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
             catch (Exception) { }
 
             // Add account read privilege with local level
@@ -389,6 +433,10 @@ namespace DG.XrmMockupTest
                 var account = Account.Retrieve(userOrg, accId);
                 Assert.Fail("User should not be able to read");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to read");
+            }
             catch (Exception) { }
 
             // Add account read privilege with deep level
@@ -406,6 +454,10 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
+                Assert.Fail("User should not be able to read");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to read");
             }
             catch (Exception) { }

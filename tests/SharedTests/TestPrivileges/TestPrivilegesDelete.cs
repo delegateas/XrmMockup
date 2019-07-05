@@ -41,11 +41,7 @@ namespace DG.XrmMockupTest
         {
             // add account to database
             var accId = Guid.NewGuid();
-            crm.PopulateWith(new Account(accId)
-            {
-                Name = "Account",
-                OwnerId = UserBULvl11.ToEntityReference(),
-            });
+            AddAccountToDatabase(accId, UserBULvl11.ToEntityReference());
 
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
 
@@ -55,7 +51,11 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
-            catch (Exception){}
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (Exception) { }
 
             // Add account delete privilege with basic level
             crm.AddPrivileges(
@@ -78,6 +78,9 @@ namespace DG.XrmMockupTest
                 Assert.Fail("User should be able to delete");
             }
 
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl11.ToEntityReference());
+
             // Add account delete privilege with local level
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
@@ -93,9 +96,14 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
+
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl11.ToEntityReference());
 
             // Add account delete privilege with deep level
             crm.AddPrivileges(
@@ -112,9 +120,14 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
+
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl11.ToEntityReference());
 
             // Add account delete privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -130,9 +143,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
         }
 
         /// <summary>
@@ -143,11 +158,7 @@ namespace DG.XrmMockupTest
         {
             // add account to database
             var accId = Guid.NewGuid();
-            crm.PopulateWith(new Account(accId)
-            {
-                Name = "Account",
-                OwnerId = UserBULvl12.ToEntityReference(),
-            });
+            AddAccountToDatabase(accId, UserBULvl12.ToEntityReference());
 
             // test delete account without privilege
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
@@ -156,7 +167,11 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (Exception) { }
 
             // Add account delete privilege with basic level
             crm.AddPrivileges(
@@ -175,7 +190,11 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (Exception) { }
 
             // Add account delete privilege with local level
             crm.AddPrivileges(
@@ -198,6 +217,9 @@ namespace DG.XrmMockupTest
                 Assert.Fail("User should be able to delete");
             }
 
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl12.ToEntityReference());
+
             // Add account delete privilege with deep level
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
@@ -213,9 +235,14 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
+
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl12.ToEntityReference());
 
             // Add account delete privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -231,27 +258,29 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
         }
 
         [TestMethod]
-        public void TesDeleteBUChildLevel()
+        public void TestDeleteBUChildLevel()
         {
             // add account to database
             var accId = Guid.NewGuid();
-            crm.PopulateWith(new Account(accId)
-            {
-                Name = "Account",
-                OwnerId = UserBULvl2.ToEntityReference(),
-            });
+            AddAccountToDatabase(accId, UserBULvl2.ToEntityReference());
 
             // test delete account without privilege
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
@@ -273,6 +302,10 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
             catch (Exception) { }
 
             // Add account delete privilege with local level
@@ -290,6 +323,10 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
@@ -315,6 +352,9 @@ namespace DG.XrmMockupTest
                 Assert.Fail("User should be able to delete");
             }
 
+            // Add account to database
+            AddAccountToDatabase(accId, UserBULvl2.ToEntityReference());
+
             // Add account delete privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
@@ -329,9 +369,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                Assert.Fail("User should not be able to delete");
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to delete");
+            }
         }
 
         [TestMethod]
@@ -339,17 +381,17 @@ namespace DG.XrmMockupTest
         {
             // add account to database
             var accId = Guid.NewGuid();
-            crm.PopulateWith(new Account(accId)
-            {
-                Name = "Account",
-                OwnerId = UserBURoot.ToEntityReference(),
-            });
+            AddAccountToDatabase(accId, UserBURoot.ToEntityReference());
 
             // test delete account without privilege
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
@@ -371,6 +413,10 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
             catch (Exception) { }
 
             // Add account delete privilege with local level
@@ -390,6 +436,10 @@ namespace DG.XrmMockupTest
                 userOrg.Delete(Account.EntityLogicalName, accId);
                 Assert.Fail("User should not be able to delete");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to delete");
+            }
             catch (Exception) { }
 
             // Add account delete privilege with deep level
@@ -407,6 +457,10 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
+                Assert.Fail("User should not be able to delete");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
@@ -430,6 +484,15 @@ namespace DG.XrmMockupTest
             {
                 Assert.Fail("User should be able to delete");
             }
+        }
+
+        private void AddAccountToDatabase(Guid accId, EntityReference owner)
+        {
+            crm.PopulateWith(new Account(accId)
+            {
+                Name = "Account",
+                OwnerId = owner,
+            });
         }
     }
 }

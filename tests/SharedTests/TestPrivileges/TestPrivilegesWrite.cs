@@ -55,7 +55,11 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
-            catch (Exception){}
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
+            catch (Exception) { }
 
             // Add account write privilege with basic level
             crm.AddPrivileges(
@@ -71,9 +75,9 @@ namespace DG.XrmMockupTest
             // try write account with basic privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                userOrg.Update(new Account(accId) { Name = "Account Updated basic" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated", account.Name);
+                Assert.AreEqual("Account Updated basic", account.Name);
             }
             catch (Exception)
             {
@@ -94,10 +98,14 @@ namespace DG.XrmMockupTest
             // try write account with local privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated local" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated local", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
 
             // Add account write privilege with deep level
             crm.AddPrivileges(
@@ -113,10 +121,14 @@ namespace DG.XrmMockupTest
             // try write account with deep privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated local" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated local", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
 
             // Add account write privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -131,10 +143,14 @@ namespace DG.XrmMockupTest
             // try write account with global privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated global" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated global", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
         }
 
         /// <summary>
@@ -158,7 +174,11 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
+            catch (Exception) { }
 
             // Add account write privilege with basic level
             crm.AddPrivileges(
@@ -177,7 +197,11 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
-            catch (Exception){ }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
+            catch (Exception) { }
 
             // Add account write privilege with local level
             crm.AddPrivileges(
@@ -193,9 +217,9 @@ namespace DG.XrmMockupTest
             // try write account with local privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                userOrg.Update(new Account(accId) { Name = "Account Updated local" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated", account.Name);
+                Assert.AreEqual("Account Updated local", account.Name);
             }
             catch (Exception)
             {
@@ -216,10 +240,14 @@ namespace DG.XrmMockupTest
             // try write account with deep privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated deep" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated deep", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
 
             // Add account write privilege with global level
             crm.AddPrivileges(UserBULvl11.ToEntityReference(),
@@ -234,10 +262,14 @@ namespace DG.XrmMockupTest
             // try write account with global privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated global" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated global", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
         }
 
         [TestMethod]
@@ -258,6 +290,10 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
             catch (Exception) { }
 
             // Add account write privilege with basic level
@@ -275,6 +311,10 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                Assert.Fail("User should not be able to write");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to write");
             }
             catch (Exception) { }
@@ -296,6 +336,10 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
             catch (Exception) { }
 
             // Add account write privilege with deep level
@@ -312,9 +356,9 @@ namespace DG.XrmMockupTest
             // try write account with deep privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                userOrg.Update(new Account(accId) { Name = "Account Updated deep" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated", account.Name);
+                Assert.AreEqual("Account Updated deep", account.Name);
             }
             catch (Exception)
             {
@@ -334,10 +378,14 @@ namespace DG.XrmMockupTest
             // try write account with global privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                userOrg.Update(new Account(accId) { Name = "Account Updated global" });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual("Account Updated global", account.Name);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to write");
+            }
         }
 
         [TestMethod]
@@ -358,6 +406,10 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
             catch (Exception) { }
 
             // Add account write privilege with basic level
@@ -375,6 +427,10 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                Assert.Fail("User should not be able to write");
+            }
+            catch (AssertFailedException)
+            {
                 Assert.Fail("User should not be able to write");
             }
             catch (Exception) { }
@@ -396,6 +452,10 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
             catch (Exception) { }
 
             // Add account write privilege with deep level
@@ -415,6 +475,10 @@ namespace DG.XrmMockupTest
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
                 Assert.Fail("User should not be able to write");
             }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to write");
+            }
             catch (Exception) { }
 
             // Add account write privilege with global level
@@ -430,9 +494,9 @@ namespace DG.XrmMockupTest
             // try write account with global privilege
             try
             {
-                userOrg.Update(new Account(accId) { Name = "Account Updated" });
+                userOrg.Update(new Account(accId) { Name = "Account Updated global" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated", account.Name);
+                Assert.AreEqual("Account Updated global", account.Name);
             }
             catch (Exception)
             {
