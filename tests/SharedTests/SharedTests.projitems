@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesDelete.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppend.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesWrite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
@@ -34,7 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestMetadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestMoney.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestOrganizationService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestPermissions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPermissions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPlugins.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestReferences.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieve.cs" />
@@ -42,7 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestServiceRoles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSecurityRoles.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestSharing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestSharing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSnapshot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestStates.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSettings.cs" />
