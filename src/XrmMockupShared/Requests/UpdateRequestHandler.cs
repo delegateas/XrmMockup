@@ -19,6 +19,7 @@ namespace DG.Tools.XrmMockup {
             var settings = MockupExecutionContext.GetSettings(request);
 
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
+            var entity = request.Target;
             var row = db.GetDbRow(entRef);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
@@ -46,9 +47,37 @@ namespace DG.Tools.XrmMockup {
             //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
             var xrmEntity = row.ToEntity();
 
-            if (!security.HasPermission(row.ToEntity(), AccessRights.WriteAccess, userRef)) {
+            if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef)) {
                 throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity");
+            }
+
+            var references = entity.Attributes
+                .Where(x => x.Value is EntityReference && x.Key != "ownerid")
+                .ToArray();
+
+            if (references.Any())
+            {
+                if (!security.HasPermission(xrmEntity, AccessRights.AppendAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' with references" +
+                        $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                }
+            }
+
+            foreach (var attr in references)
+            {
+                var reference = attr.Value as EntityReference;
+                if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                        $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                }
+                if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                        $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                }
             }
 
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
