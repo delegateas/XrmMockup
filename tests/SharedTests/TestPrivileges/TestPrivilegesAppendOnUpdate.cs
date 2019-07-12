@@ -13,7 +13,7 @@ using Microsoft.Xrm.Sdk;
 namespace DG.XrmMockupTest
 {
     [TestClass]
-    public class TestPrivilegesAppend : UnitTestBase
+    public class TestPrivilegesAppendOnUpdate : UnitTestBase
     {
         SystemUser UserBURoot;
         SystemUser UserBULvl11;
@@ -31,6 +31,23 @@ namespace DG.XrmMockupTest
             UserBULvl11 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl11@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1) }) as SystemUser;
             UserBULvl12 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl12@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1) }) as SystemUser;
             UserBULvl2 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl2@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel2) }) as SystemUser;
+
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
+                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
+                        }
+                    },
+                    { Contact.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
+                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
+                        }
+                    }
+                });
         }
 
         /// <summary>
@@ -66,14 +83,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -100,14 +109,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Local },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -134,14 +135,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Deep },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -167,14 +160,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -224,14 +209,6 @@ namespace DG.XrmMockupTest
                     { "account",
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -255,14 +232,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Local },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -289,14 +258,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Deep },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -322,14 +283,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -376,14 +329,6 @@ namespace DG.XrmMockupTest
                     { "account",
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -407,14 +352,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Local },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -438,14 +375,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Deep },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -468,14 +397,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -522,14 +443,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -553,14 +466,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Local },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -584,14 +489,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Deep },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
@@ -614,14 +511,6 @@ namespace DG.XrmMockupTest
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
-                            { AccessRights.WriteAccess, PrivilegeDepth.Global },
-                        }
-                    },
-                    { Contact.EntityLogicalName,
-                        new Dictionary<AccessRights, PrivilegeDepth>() {
-                            { AccessRights.AppendToAccess, PrivilegeDepth.Global },
-                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
                         }
                     }
                 });
