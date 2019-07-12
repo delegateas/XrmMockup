@@ -23,6 +23,9 @@ namespace DG.XrmMockupTest
             User = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "test@privileges", BusinessUnitId = crm.RootBusinessUnit }) as SystemUser;
         }
 
+        /// <summary>
+        /// Test user create account on basic level
+        /// </summary>
         [TestMethod]
         public void TestCreateUserLevel()
         {

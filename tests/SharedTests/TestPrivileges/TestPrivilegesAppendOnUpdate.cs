@@ -206,7 +206,7 @@ namespace DG.XrmMockupTest
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
-                    { "account",
+                    { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
                         }
@@ -300,6 +300,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user append on deep level
+        /// </summary>
         [TestMethod]
         public void TestAppendOnUpdateBUChildLevel()
         {
@@ -326,7 +329,7 @@ namespace DG.XrmMockupTest
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
-                    { "account",
+                    { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.AppendAccess, PrivilegeDepth.Basic },
                         }
@@ -414,6 +417,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user append on global level
+        /// </summary>
         [TestMethod]
         public void TestAppendOnUpdateGlobalLevel()
         {

@@ -34,7 +34,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user read on basic level
+        /// Test user read account on basic level
         /// </summary>
         [TestMethod]
         public void TestReadUserLevel()
@@ -145,7 +145,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user read on local level
+        /// Test user read account on local level
         /// </summary>
         [TestMethod]
         public void TestReadBULevel()
@@ -257,6 +257,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user read account on deep level
+        /// </summary>
         [TestMethod]
         public void TestReadBUChildLevel()
         {
@@ -369,6 +372,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user read account on global level
+        /// </summary>
         [TestMethod]
         public void TestReadGlobalLevel()
         {

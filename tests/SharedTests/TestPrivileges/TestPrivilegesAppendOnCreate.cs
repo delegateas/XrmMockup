@@ -49,6 +49,10 @@ namespace DG.XrmMockupTest
                         }
                     }
                 });
+
+            AddGlobalCreateAccessOnAccount(UserBURoot.ToEntityReference());
+            AddGlobalCreateAccessOnAccount(UserBULvl12.ToEntityReference());
+            AddGlobalCreateAccessOnAccount(UserBULvl2.ToEntityReference());
         }
 
         /// <summary>
@@ -190,6 +194,436 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user append on local level
+        /// </summary>
+        [TestMethod]
+        public void TestAppendOnCreateBULevel()
+        {
+            // contact to database
+            var contactId = Guid.NewGuid();
+            AddContactToDatabase(contactId, UserBULvl12.ToEntityReference());
+
+            var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
+
+            // test append account without privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account non",
+                    OwnerId = UserBULvl12.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with basic level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Basic },
+                        }
+                    },
+                });
+
+            // try append account with basic privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account basic",
+                    OwnerId = UserBULvl12.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with local level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Local },
+                        }
+                    },
+                });
+
+            // try append account with local privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account local",
+                    OwnerId = UserBULvl12.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account local", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+
+            // Add account append privilege with deep level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Deep },
+                        }
+                    },
+                });
+
+            // try append account with deep privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account deep",
+                    OwnerId = UserBULvl12.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account deep", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+
+            // Add account append privilege with global level
+            crm.AddPrivileges(UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Global },
+                        }
+                    },
+                });
+
+            // try append account with global privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account global",
+                    OwnerId = UserBULvl12.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account global", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+        }
+
+        /// <summary>
+        /// Test user append on deep level
+        /// </summary>
+        [TestMethod]
+        public void TestAppendOnCreateBUChildlevel()
+        {
+            // contact to database
+            var contactId = Guid.NewGuid();
+            AddContactToDatabase(contactId, UserBULvl12.ToEntityReference());
+
+            var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
+
+            // test append account without privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account non",
+                    OwnerId = UserBULvl2.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with basic level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Basic },
+                        }
+                    },
+                });
+
+            // try append account with basic privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account basic",
+                    OwnerId = UserBULvl2.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with local level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Local },
+                        }
+                    },
+                });
+
+            // try append account with local privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account local",
+                    OwnerId = UserBULvl2.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with deep level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Deep },
+                        }
+                    },
+                });
+
+            // try append account with deep privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account deep",
+                    OwnerId = UserBULvl2.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account deep", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+
+            // Add account append privilege with global level
+            crm.AddPrivileges(UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Global },
+                        }
+                    },
+                });
+
+            // try append account with global privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account global",
+                    OwnerId = UserBULvl2.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account global", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+        }
+
+        /// <summary>
+        /// Test user append on global level
+        /// </summary>
+        [TestMethod]
+        public void TestAppendOnCreateGlobalLevel()
+        {
+            // contact to database
+            var contactId = Guid.NewGuid();
+            AddContactToDatabase(contactId, UserBURoot.ToEntityReference());
+
+            var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
+
+            // test append account without privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account non",
+                    OwnerId = UserBURoot.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with basic level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Basic },
+                        }
+                    },
+                });
+
+            // try append account with basic privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account basic",
+                    OwnerId = UserBURoot.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with local level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Local },
+                        }
+                    },
+                });
+
+            // try append account with local privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account local",
+                    OwnerId = UserBURoot.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with deep level
+            crm.AddPrivileges(
+                UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Deep },
+                        }
+                    },
+                });
+
+            // try append account with deep privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account deep",
+                    OwnerId = UserBURoot.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.Fail("User should not be able to append");
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail("User should not be able to append");
+            }
+            catch (Exception) { }
+
+            // Add account append privilege with global level
+            crm.AddPrivileges(UserBULvl11.ToEntityReference(),
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.AppendAccess, PrivilegeDepth.Global },
+                        }
+                    },
+                });
+
+            // try append account with global privilege
+            try
+            {
+                var accId = userOrg.Create(new Account()
+                {
+                    Name = "Account global",
+                    OwnerId = UserBURoot.ToEntityReference(),
+                    PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
+                });
+                var account = Account.Retrieve(orgAdminService, accId);
+                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.AreEqual("Account global", account.Name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail("User should be able to append");
+            }
+        }
+
         private void AddContactToDatabase(Guid contactId, EntityReference owner)
         {
             crm.PopulateWith(new Contact(contactId)
@@ -198,6 +632,20 @@ namespace DG.XrmMockupTest
                 LastName = "test",
                 OwnerId = owner,
             });
+        }
+
+        private void AddGlobalCreateAccessOnAccount(EntityReference user)
+        {
+            crm.AddPrivileges(
+                user,
+                new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
+                    { Account.EntityLogicalName,
+                        new Dictionary<AccessRights, PrivilegeDepth>() {
+                            { AccessRights.CreateAccess, PrivilegeDepth.Global },
+                            { AccessRights.ReadAccess, PrivilegeDepth.Global },
+                        }
+                    }
+                });
         }
     }
 }

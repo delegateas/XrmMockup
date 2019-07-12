@@ -34,7 +34,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user write on basic level
+        /// Test user write account on basic level
         /// </summary>
         [TestMethod]
         public void TestWriteUserLevel()
@@ -154,7 +154,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user write on local level
+        /// Test user write account on local level
         /// </summary>
         [TestMethod]
         public void TestWriteBULevel()
@@ -184,7 +184,7 @@ namespace DG.XrmMockupTest
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
-                    { "account",
+                    { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.WriteAccess, PrivilegeDepth.Basic },
                         }
@@ -272,6 +272,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user write account on deep level
+        /// </summary>
         [TestMethod]
         public void TestWriteBUChildLevel()
         {
@@ -300,7 +303,7 @@ namespace DG.XrmMockupTest
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
-                    { "account",
+                    { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.WriteAccess, PrivilegeDepth.Basic },
                         }
@@ -388,6 +391,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user write account on global level
+        /// </summary>
         [TestMethod]
         public void TestWriteGlobalLevel()
         {
@@ -416,7 +422,7 @@ namespace DG.XrmMockupTest
             crm.AddPrivileges(
                 UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
-                    { "account",
+                    { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.WriteAccess, PrivilegeDepth.Basic },
                         }

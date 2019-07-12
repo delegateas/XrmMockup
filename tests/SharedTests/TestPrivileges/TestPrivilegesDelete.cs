@@ -34,7 +34,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user delete on basic level
+        /// Test user delete account on basic level
         /// </summary>
         [TestMethod]
         public void TestDeleteUserLevel()
@@ -151,7 +151,7 @@ namespace DG.XrmMockupTest
         }
 
         /// <summary>
-        /// Test user delete on local level
+        /// Test user delete account on local level
         /// </summary>
         [TestMethod]
         public void TestDeleteBULevel()
@@ -265,6 +265,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user delete account on deep level
+        /// </summary>
         [TestMethod]
         public void TestDeleteBUChildLevel()
         {
@@ -376,6 +379,9 @@ namespace DG.XrmMockupTest
             }
         }
 
+        /// <summary>
+        /// Test user delete account on global level
+        /// </summary>
         [TestMethod]
         public void TestDeleteGlobalLevel()
         {
