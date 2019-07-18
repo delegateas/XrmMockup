@@ -221,6 +221,15 @@ namespace DG.Tools.XrmMockup
             InitializeSecurityRoles(db);
         }
 
+        internal Privileges GetPrincipalPrivilege(Guid principleId)
+        {
+            if (!PrinciplePrivilages.Keys.Contains(principleId))
+            {
+                return null;
+            }
+            return PrinciplePrivilages[principleId];
+        }
+
         private AccessDepthRight JoinAccess(AccessDepthRight adr1, AccessDepthRight adr2)
         {
             var newAdr = adr1.ToDictionary(x => x.Key, x => x.Value);
@@ -275,6 +284,7 @@ namespace DG.Tools.XrmMockup
 
         internal void AddPrinciplePrivileges(Guid principleId, Privileges privileges)
         {
+            // TODO: Handle basic privilege of the user does not have access yet.
             var currentPrivileges = new Privileges();
             if (PrinciplePrivilages.ContainsKey(principleId))
             {
@@ -356,15 +366,6 @@ namespace DG.Tools.XrmMockup
             }, Core.AdminUserRef);
         }
 
-        internal Privileges GetUserPrivilages(EntityReference caller)
-        {
-            if (!PrinciplePrivilages.Keys.Contains(caller.Id))
-            {
-                return null;
-            }
-            return PrinciplePrivilages[caller.Id];
-        }
-
         internal HashSet<SecurityRole> GetSecurityRoles(EntityReference caller)
         {
             var securityRoles = new HashSet<SecurityRole>();
@@ -434,14 +435,7 @@ namespace DG.Tools.XrmMockup
 
         internal bool HasCallerPermission(Entity entity, AccessRights access, EntityReference caller)
         {
-            // finds all callers securityroles which grant access permission to the entity
-            //var callerRoles = GetSecurityRoles(caller)?
-            //    .Where(r =>
-            //        r.Privileges.ContainsKey(entity.LogicalName) &&
-            //        r.Privileges[entity.LogicalName].ContainsKey(access));
-
-            //if (callerRoles == null || callerRoles.Count() == 0) return false;
-            var privilages = GetUserPrivilages(caller);
+            var privilages = GetPrincipalPrivilege(caller.Id);
 
             if (privilages == null)
                 return false;
@@ -453,8 +447,6 @@ namespace DG.Tools.XrmMockup
                 return false;
 
             var maxRole  = privilages[entity.LogicalName][access];
-            // Finds the securityrole with the maximum privilegeDepth
-            //var maxRole = callerRoles.Max(r => r.Privileges[entity.LogicalName][access].PrivilegeDepth);
 
             // if max privelege depth is global, then caller can access all entities
             if (maxRole == PrivilegeDepth.Global) return true;
@@ -497,21 +489,6 @@ namespace DG.Tools.XrmMockup
             return (Shares.ContainsKey(entityRef) &&
                 Shares[entityRef].ContainsKey(caller) &&
                 Shares[entityRef][caller].HasFlag(access));
-        }
-
-        internal bool HasPermission(string logicalName, AccessRights access, EntityReference caller)
-        {
-            if (!SecurityRoles.Any(s => s.Value.Privileges.Any(p => p.Key == logicalName)))
-            {
-                // system has no security roles for this entity. Is a case with linkentities which have no security roles
-                return true;
-            }
-            if (caller.Id == Core.AdminUserRef.Id) return true;
-
-            var callerRoles = GetSecurityRoles(caller)?.Where(r =>
-               r.Privileges.ContainsKey(logicalName) &&
-               r.Privileges[logicalName].ContainsKey(access));
-            return callerRoles != null && callerRoles.Count() > 0;
         }
 
         internal bool HasPermission(EntityReference entityReference, AccessRights access, EntityReference caller)

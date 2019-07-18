@@ -694,6 +694,11 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        internal Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> GetPrivilege(Guid principleId)
+        {
+            return security.GetPrincipalPrivilege(principleId);
+        }
+
         internal void AddPrivileges(EntityReference entRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
         {
             security.AddPrinciplePrivileges(entRef.Id, privileges);
@@ -702,6 +707,11 @@ namespace DG.Tools.XrmMockup
         internal void SetSecurityRoles(EntityReference entRef, Guid[] securityRoles)
         {
             security.SetSecurityRole(entRef, securityRoles);
+        }
+
+        internal bool HasPermission(EntityReference entityRef, AccessRights access, EntityReference principleRef)
+        {
+            return security.HasPermission(entityRef, access, principleRef);
         }
 
         private OrganizationResponse ExecuteAction(OrganizationRequest request)

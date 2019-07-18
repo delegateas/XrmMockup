@@ -400,10 +400,32 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
+        /// Returns the privilege of the given principle
+        /// </summary>
+        /// <param name="principleId">Guid of user or team</param>
+        /// <returns>A dictionary of entities where each entity contains a dictionary over access rights and privilege depth for the given principle</returns>
+        public Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> GetPrivilege(Guid principleId)
+        {
+            return Core.GetPrivilege(principleId);
+        }
+        
+        /// <summary>
+        /// Checks if a principle has the given access right to an entity
+        /// </summary>
+        /// <param name="entityRef">Entity to check against</param>
+        /// <param name="access">Access to check with</param>
+        /// <param name="principleRef">User or team</param>
+        /// <returns>If the given principle has permission to 'access' the entity</returns>
+        public bool HasPermission(EntityReference entityRef, AccessRights access, EntityReference principleRef)
+        {
+            return Core.HasPermission(entityRef, access, principleRef);
+        }
+
+        /// <summary>
         /// Add entity privileges to the given principle ontop of any existing privileges and security roles
         /// </summary>
-        /// <param name="principleRef">principle user or team</param>
-        /// <param name="privileges">a dictionary of entities where each entity contains a dictionary over access rights and privilege depth</param>
+        /// <param name="principleRef">EntityReference of a user or team</param>
+        /// <param name="privileges">A dictionary of entities where each entity contains a dictionary over access rights and privilege depth</param>
         internal void AddPrivileges(EntityReference principleRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
         {
             Core.AddPrivileges(principleRef, privileges);

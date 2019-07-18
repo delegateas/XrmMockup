@@ -142,9 +142,5 @@ namespace DG.Tools.XrmMockup {
             MockupExecutionContext.SetSettings(request, settings);
             return (T)core.Execute(request, userRef ?? core.AdminUserRef, pluginContext);
         }
-
     }
-
-
-
 }
