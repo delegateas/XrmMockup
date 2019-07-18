@@ -1,3 +1,18 @@
+### 0.13.0-beta - 18 July 2019
+* XrmMockup is now back to include the changes introduced after 0.9.10
+* Refactoring of the latest pull request to ensure that XrmMockup performance is not affected
+* Fix issue in Retrieve Multiple request unable to handle missing entity alias on linked-entity and entity name on linked-entity filter criterias
+* Re-added privilege check for Append and Append-To on create and update. This feature can be toggled of if necessary  
+* Refactor internal check for user and team privilege
+* Added new method `GetPrivilege` for retriving the privilege for a given user or team
+* Added new method `HasPermission` that checks if a user or team has a given access to a record
+
+### 0.12.0-beta - 10 April 2019
+* Reverted to a stable version based on 0.9.10. Releases after 0.9.10 introduced severe performance degradation with a factor of 3-4 slower tests.
+* Releases also introduced bugs and invalid CRM logic. Will work on reimplementing the changes added in later version, but will require time to ensure quality.
+* Please use version between 0.9.10 and 0.12.0 if needed.
+* added changes from release 0.11.1
+
 ### 0.11.1-beta - 01 April 2019
 * Fixed a bug in calculated fields which expected caluclated fields based on lookup fields to always have a value.
 * Added a new optional flag "BigBang" that simulates the entire universe.

@@ -34,7 +34,7 @@ namespace DG.Tools.XrmMockup {
                     throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
                         $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
                 }
-                if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck == true)
+                if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
                 {
                     var references = clonedEntity.Attributes
                         .Where(x => x.Value is EntityReference && x.Key != "ownerid")
