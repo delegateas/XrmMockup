@@ -39,6 +39,10 @@ namespace DG.Tools.XrmMockup
         /// Overwrites the path to the directory containing metadata files. Default is '../../Metadata/'.
         /// </summary>
         public string MetadataDirectoryPath { get; set; }
+        /// <summary>
+        /// Flag for if Append And Append To privilege should be check on create and update. Default is true
+        /// </summary>
+        public bool? AppendAndAppendToPrivilegeCheck { get; set; }
     }
 
     public struct Env {

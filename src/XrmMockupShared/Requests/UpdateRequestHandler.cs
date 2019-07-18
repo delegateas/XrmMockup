@@ -52,31 +52,34 @@ namespace DG.Tools.XrmMockup {
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity");
             }
 
-            var references = entity.Attributes
-                .Where(x => x.Value is EntityReference && x.Key != "ownerid")
-                .ToArray();
-
-            if (references.Any())
+            if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
             {
-                if (!security.HasPermission(xrmEntity, AccessRights.AppendAccess, userRef))
-                {
-                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' with references" +
-                        $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
-                }
-            }
+                var references = entity.Attributes
+                    .Where(x => x.Value is EntityReference && x.Key != "ownerid")
+                    .ToArray();
 
-            foreach (var attr in references)
-            {
-                var reference = attr.Value as EntityReference;
-                if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                if (references.Any())
                 {
-                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    if (!security.HasPermission(xrmEntity, AccessRights.AppendAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' with references" +
+                            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                    }
                 }
-                if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+
+                foreach (var attr in references)
                 {
-                    throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    var reference = attr.Value as EntityReference;
+                    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                    }
                 }
             }
 

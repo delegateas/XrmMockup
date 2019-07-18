@@ -802,6 +802,11 @@ namespace DG.Tools.XrmMockup
             pluginManager.DisabelRegisteredPlugins(include);
         }
 
+        internal XrmMockupSettings GetMockupSettings()
+        {
+            return settings;
+        }
+
         internal void RegisterAdditionalPlugins(IEnumerable<Type> basePluginTypes, PluginRegistrationScope scope)
         {
             foreach (var type in basePluginTypes)
