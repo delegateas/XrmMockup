@@ -77,13 +77,14 @@ namespace DG.Tools.XrmMockup
 
             if (incidentState.Value == 2)
             {
-                throw new FaultException($"incident With Id = {incidentRef.Id} is allready cancelled  and connot be closed");
+                throw new FaultException($"incident With Id = {incidentRef.Id} is allready cancelled and connot be closed");
             }
 
-            incident["statecode"] = 1;
-            incident["statuscode"] = request.Status;
-
-            db.Update(incident);
+            var setStaterequest = new SetStateRequest();
+            setStaterequest.EntityMoniker = incidentRef;
+            setStaterequest.State = new OptionSetValue(1);
+            setStaterequest.Status = request.Status;
+            core.Execute(setStaterequest, userRef);
 
             var incidentResolution = db.GetDbRowOrNull(request.IncidentResolution.ToEntityReference());
 
