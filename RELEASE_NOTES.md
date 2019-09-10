@@ -1,3 +1,6 @@
+### 0.13.1-beta - 10 September 2019
+* Fixed an issue where CloseIncident request did not trigger plugins listening on update or set state of incident
+
 ### 0.13.0-beta - 18 July 2019
 * XrmMockup is now back to include the changes introduced after 0.9.10
 * Refactoring of the latest pull request to ensure that XrmMockup performance is not affected
