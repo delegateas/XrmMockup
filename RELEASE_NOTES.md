@@ -1,3 +1,6 @@
+### 0.13.3-beta - 12 November 2019
+* Added TotalRecordCount to RetrieveMultipleResponse
+
 ### 0.13.1-beta - 10 September 2019
 * Fixed an issue where CloseIncident request did not trigger plugins listening on update or set state of incident
 
