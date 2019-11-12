@@ -790,5 +790,41 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(account.Id, queryNotA.AccountId);
             }
         }
+
+        [TestMethod]
+        public void RetrieveMultipleTotalRecordCount()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression("account")
+                {
+                    ColumnSet = new ColumnSet(true),
+                    PageInfo = new PagingInfo() { ReturnTotalRecordCount = true }
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+
+                Assert.AreEqual(true, query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(4, res.TotalRecordCount);
+            }
+        }
+
+        [TestMethod]
+        public void RetrieveMultipleTotalRecordCountDefault()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression("account")
+                {
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+
+                Assert.AreEqual(false, query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(-1, res.TotalRecordCount);
+            }
+        }
+
     }
 }
