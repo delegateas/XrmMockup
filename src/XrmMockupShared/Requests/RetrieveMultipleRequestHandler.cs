@@ -99,8 +99,13 @@ namespace DG.Tools.XrmMockup {
                 }
                 colToReturn = filteredEntities;
             }
-            
+
+            // According to docs, should return -1 if ReturnTotalRecordCount set to false
+            colToReturn.TotalRecordCount = queryExpr.PageInfo.ReturnTotalRecordCount ? colToReturn.Entities.Count : -1;
+
+
             var resp = new RetrieveMultipleResponse();
+
             resp.Results["EntityCollection"] = colToReturn;
             return resp;
         }
