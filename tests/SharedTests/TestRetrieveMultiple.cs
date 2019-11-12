@@ -809,5 +809,22 @@ namespace DG.XrmMockupTest {
             }
         }
 
+        [TestMethod]
+        public void RetrieveMultipleTotalRecordCountDefault()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression("account")
+                {
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+
+                Assert.AreEqual(false, query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(-1, res.TotalRecordCount);
+            }
+        }
+
     }
 }
