@@ -576,7 +576,11 @@ namespace DG.Tools.XrmMockup
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    
+                    
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    //workflowManager.StageAsync()
+                    //workFlowManager.TriggerSync();
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
@@ -585,6 +589,7 @@ namespace DG.Tools.XrmMockup
             if (parentPluginContext == null)
             {
                 pluginManager.TriggerAsyncWaitingJobs();
+                //workflowManager.TriggerSync();
             }
 
             return response;

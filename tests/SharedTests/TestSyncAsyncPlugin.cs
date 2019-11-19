@@ -179,6 +179,6 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
         
-        //KAN ASYNC PLUGIN KALDE SYNC PLUGIN
+        //KAN ASYNC PLUGIN KALDE SYNC PLUGIN?? If so -> TEST
     }
 }
