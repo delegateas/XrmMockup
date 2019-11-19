@@ -53,7 +53,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestSyncAndAsyncPluginSucceedsWhenSyncAppliesFirst()
         {
-            //OrderOfPluginDeclaration -> Register ASync first, then Sync 
+            //OrderOfPluginDeclaration -> Register Sync first, then ASync 
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(SyncPostOperationNameUpdate),
                 typeof(ASyncNameUpdate));
@@ -89,8 +89,8 @@ namespace DG.XrmMockupTest
         {
             //OrderOfPluginDeclaration -> Register ASync first, then Sync 
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
-                typeof(Sync1WithExecutionOrder),
-                typeof(Sync2WithExecutionOrder));
+                typeof(Sync2WithExecutionOrder),
+                typeof(Sync1WithExecutionOrder));
 
             string oldFirstName = "Something";
             string newFirstName = oldFirstName + ", Sync1" + ", Sync2";
@@ -114,14 +114,48 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
 
+
+        //Sync Should trigger first regardless of execution order
         [TestMethod]
-        public void TestSyncPluginCallsSyncAndAsyncPluginNoExecutionOrder()
+        public void TestTwoSyncAndAsyncWithLowerExecutionOrderSucceedsWhenSyncsTriggerFirst()
+        {
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+               typeof(Sync2WithExecutionOrder),
+               typeof(ASyncWithExecutionOrder),
+               typeof(Sync1WithExecutionOrder));
+
+            string oldFirstName = "Something";
+            string newFirstName = oldFirstName + ", Sync1" + ", Sync2" + ", Async";
+
+            var personel = new Contact()
+            {
+                FirstName = oldFirstName
+            };
+
+            var personelId = orgAdminService.Create(personel);
+
+            var personelUpd = new Contact(personelId)
+            {
+                EMailAddress1 = "something@test.dk"
+            };
+
+            orgAdminService.Update(personelUpd);
+
+            var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
+
+            Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
+        }
+
+
+
+        [TestMethod]
+        public void TestSyncPluginCallsSyncAndAsyncPluginWithExecutionOrder()
         {
             //Sync plugin calls another Sync and Async plugin. Sync executes first.
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Sync1PostOperation),
-                typeof(Sync2PostOperation),
-                typeof(ASyncNameUpdateCopy));
+                typeof(ASyncNameUpdateCopy),
+                typeof(Sync2PostOperation));
 
             string oldFirstName = "Something";
             string newFirstName = oldFirstName + ", Sync" + ", Sync" + ", ASync";
@@ -144,12 +178,7 @@ namespace DG.XrmMockupTest
 
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
-
-        [TestMethod]
-        public void TestSyncPluginCallsSyncAndAsyncPluginWithExecutionOrder()
-        {
-            //Sync plugin calls another Sync2 plugin with EO(3) and Async plugin with EO(2). Succeeds when Async executes before Sync2 
-
-        }
+        
+        //KAN ASYNC PLUGIN KALDE SYNC PLUGIN
     }
 }

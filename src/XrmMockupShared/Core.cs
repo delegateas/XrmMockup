@@ -576,11 +576,17 @@ namespace DG.Tools.XrmMockup
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerAsyncWaitingJobs();
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
+
+            //When first (last) Sync has been executed we Trigger the Async jobs.
+            if (parentPluginContext == null)
+            {
+                pluginManager.TriggerAsyncWaitingJobs();
+            }
+
             return response;
         }
 

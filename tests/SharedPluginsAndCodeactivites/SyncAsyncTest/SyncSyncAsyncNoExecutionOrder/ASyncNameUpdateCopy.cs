@@ -13,7 +13,9 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 ExecutePostOperationPluginAsyncCopy)
-                .AddFilteredAttributes(x => x.EMailAddress1);
+                .SetExecutionMode(ExecutionMode.Asynchronous)
+                .SetExecutionOrder(1)
+                .AddFilteredAttributes(x => x.EMailAddress2);
         }
 
         protected void ExecutePostOperationPluginAsyncCopy(LocalPluginContext localContext)
