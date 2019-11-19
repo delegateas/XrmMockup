@@ -13,10 +13,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\ExecutionOrder\Sync1WithExecutionOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\OrderOfPluginDeclaration\ASyncNameUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\OrderOfPluginDeclaration\SyncPostOperationNameUpdate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\ASyncNameUpdateCopy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPlugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\PluginsSyncThenAsyncThenSync\AsyncPostOperation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\PluginsSyncThenAsyncThenSync\Sync2PostOperation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\PluginsSyncThenAsyncThenSync\Sync1PostOperation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\Sync2NameUpdate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\Sync1NameUpdateTriggerEmail2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCurrencyBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountChainPostPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountPostImagePlugin.cs" />
@@ -29,6 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)SyncAsyncTest\PluginsSyncThenAsyncThenSync\" />
+    <Folder Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncWithExecutionOrder\" />
   </ItemGroup>
 </Project>

@@ -84,7 +84,6 @@ namespace DG.XrmMockupTest
          * Plugin with lowest executionOrder should execute first. If no order given, Sync
          * executes before Async. 
          */
-
         [TestMethod]
         public void TestTwoSyncPluginsLowestExecutionOrderExecutesFirst()
         {
@@ -122,7 +121,7 @@ namespace DG.XrmMockupTest
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Sync1PostOperation),
                 typeof(Sync2PostOperation),
-                typeof(AsyncPostOperation));
+                typeof(ASyncNameUpdateCopy));
 
             string oldFirstName = "Something";
             string newFirstName = oldFirstName + ", Sync" + ", Sync" + ", ASync";

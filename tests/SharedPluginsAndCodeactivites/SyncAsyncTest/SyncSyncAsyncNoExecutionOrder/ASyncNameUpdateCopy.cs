@@ -4,20 +4,19 @@
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-    public class AsyncPostOperation : TestPlugin
+    public class ASyncNameUpdateCopy : TestPlugin
     {
-        public AsyncPostOperation()
-            : base(typeof(AsyncPostOperation))
+        public ASyncNameUpdateCopy()
+            : base(typeof(ASyncNameUpdateCopy))
         {
             RegisterPluginStep<Contact>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
-                ExecuteAccountPostOperationPluginAsync)
-                .AddFilteredAttributes(x => x.EMailAddress1)
-                .SetExecutionMode(ExecutionMode.Asynchronous);
+                ExecutePostOperationPluginAsyncCopy)
+                .AddFilteredAttributes(x => x.EMailAddress1);
         }
 
-        protected void ExecuteAccountPostOperationPluginAsync(LocalPluginContext localContext)
+        protected void ExecutePostOperationPluginAsyncCopy(LocalPluginContext localContext)
         {
             if (localContext == null)
             {

@@ -13,7 +13,8 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 ExecutePostOperationPluginAsync)
-                .AddFilteredAttributes(x => x.EMailAddress1);
+                .AddFilteredAttributes(x => x.EMailAddress1)
+                .SetExecutionMode(ExecutionMode.Asynchronous);
         }
 
         protected void ExecutePostOperationPluginAsync(LocalPluginContext localContext)

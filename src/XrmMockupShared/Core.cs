@@ -574,12 +574,13 @@ namespace DG.Tools.XrmMockup
                 if (eventOp.HasValue)
                 {
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerAsyncWaitingJobs();
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
-
             return response;
         }
 
