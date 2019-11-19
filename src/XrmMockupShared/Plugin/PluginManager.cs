@@ -383,7 +383,7 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-            private void AddPostImageAttributesToEntity(Entity entity, Entity preImage, Entity postImage)
+            private Entity AddPostImageAttributesToEntity(Entity entity, Entity preImage, Entity postImage)
             {
                 if (operation == EventOperation.Update && stage == ExecutionStage.PostOperation)
                 {
@@ -391,21 +391,23 @@ namespace DG.Tools.XrmMockup {
                     entity = entity.CloneEntity();
                     entity.Attributes.AddRange(shadowAddedAttributes);
                 }
+                return entity;
             }
 
             private bool FilteredAttributesMatches(Entity entity)
             {
-                bool foundAttr = true;
-                if (operation == EventOperation.Update && attributes.Count > 0)
+                if (operation != EventOperation.Update || attributes.Count == 0)
                 {
-                    foundAttr = false;
-                    foreach (var attr in entity.Attributes)
+                    return true;
+                }
+                
+                bool foundAttr = false;
+                foreach (var attr in entity.Attributes)
+                {
+                    if (attributes.Contains(attr.Key))
                     {
-                        if (attributes.Contains(attr.Key))
-                        {
-                            foundAttr = true;
-                            break;
-                        }
+                        foundAttr = true;
+                        break;
                     }
                 }
                 return foundAttr;
@@ -421,7 +423,7 @@ namespace DG.Tools.XrmMockup {
                 }
 
                 CheckInfiniteLoop(pluginContext);
-                AddPostImageAttributesToEntity(entity,preImage,postImage);
+                entity = AddPostImageAttributesToEntity(entity,preImage,postImage);
                 CheckSpecialRequest();
 
                 if (FilteredAttributesMatches(entity))

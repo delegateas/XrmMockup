@@ -591,7 +591,6 @@ namespace DG.Tools.XrmMockup
                 pluginManager.TriggerAsyncWaitingJobs();
                 //workflowManager.TriggerSync();
             }
-
             return response;
         }
 
@@ -876,5 +875,4 @@ namespace DG.Tools.XrmMockup
             security.ResetEnvironment(db);
         }
     }
-
 }
