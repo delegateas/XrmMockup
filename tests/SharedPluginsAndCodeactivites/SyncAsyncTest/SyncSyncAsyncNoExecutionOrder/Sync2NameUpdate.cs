@@ -13,7 +13,6 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 ExecuteAccountPostOperationPluginSync2)
-                .SetExecutionOrder(2)
                 .AddFilteredAttributes(x => x.EMailAddress2);
         }
 

@@ -87,7 +87,6 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestTwoSyncPluginsLowestExecutionOrderExecutesFirst()
         {
-            //OrderOfPluginDeclaration -> Register ASync first, then Sync 
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Sync2WithExecutionOrder),
                 typeof(Sync1WithExecutionOrder));
@@ -149,7 +148,7 @@ namespace DG.XrmMockupTest
 
 
         [TestMethod]
-        public void TestSyncPluginCallsSyncAndAsyncPluginWithExecutionOrder()
+        public void TestSyncPluginCallsSyncAndAsyncPlugNoExecutionOrder()
         {
             //Sync plugin calls another Sync and Async plugin. Sync executes first.
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
@@ -178,7 +177,5 @@ namespace DG.XrmMockupTest
 
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
-        
-        //KAN ASYNC PLUGIN KALDE SYNC PLUGIN?? If so -> TEST
     }
 }

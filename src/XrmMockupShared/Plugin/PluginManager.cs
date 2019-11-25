@@ -246,7 +246,7 @@ namespace DG.Tools.XrmMockup {
 
                 if (pendingPlugin != null)
                 {
-                    pendingPlugin.executeAction();
+                    pendingPlugin.ExecuteAction();
                 }                
             }
         }
@@ -271,7 +271,7 @@ namespace DG.Tools.XrmMockup {
                 this.provider = provider;
             }
 
-            public void executeAction()
+            public void ExecuteAction()
             {
                 action(provider);
             }
@@ -444,7 +444,6 @@ namespace DG.Tools.XrmMockup {
                 }
                 thisPluginContext.PrimaryEntityName = logicalName;
 
-                //Should this code be here?
                 foreach (var image in this.images)
                 {
                     var type = (ImageType)image.Item3;

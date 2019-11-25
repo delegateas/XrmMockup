@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -578,9 +577,14 @@ namespace DG.Tools.XrmMockup
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     
                     
+
                     workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    //workflowManager.StageAsync()
-                    //workFlowManager.TriggerSync();
+                    
+                    postImage = TryRetrieve(primaryRef);
+
+                    workflowManager.TriggerAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    
+                    //workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
@@ -589,7 +593,7 @@ namespace DG.Tools.XrmMockup
             if (parentPluginContext == null)
             {
                 pluginManager.TriggerAsyncWaitingJobs();
-                //workflowManager.TriggerSync();
+                //workflowManager.TriggerAsyncWaitingWorkflows(postImage,this);
             }
             return response;
         }

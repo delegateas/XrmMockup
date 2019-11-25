@@ -29,7 +29,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncWithExecutionOrder\" />
-  </ItemGroup>
 </Project>
