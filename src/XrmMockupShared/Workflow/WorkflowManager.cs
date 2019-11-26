@@ -27,7 +27,7 @@ namespace DG.Tools.XrmMockup {
 
 
         //Added
-        private Queue<WorkflowExecutionProvider> pendingAsyncWorkflows;
+        private Queue<WorkflowExecutionContext> pendingAsyncWorkflows;
 
         public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata) {
             this.metadata = metadata;
@@ -40,9 +40,8 @@ namespace DG.Tools.XrmMockup {
             codeActivityTriggers = new Dictionary<string, CodeActivity>();
             parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
 
-
             //Added
-            pendingAsyncWorkflows = new Queue<WorkflowExecutionProvider>();
+            pendingAsyncWorkflows = new Queue<WorkflowExecutionContext>();
 
             if (!workflows.All(e => e.LogicalName == "workflow")) {
                 throw new MockupException("Trying to parse workflow, but found a non workflow entity");
@@ -85,8 +84,9 @@ namespace DG.Tools.XrmMockup {
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-            //Parallel.ForEach(asynchronousWorkflows, (x => ExecuteIfMatch(x, operation, stage, entity,
-            //        preImage, postImage, pluginContext, crm)));
+            /*Parallel.ForEach(asynchronousWorkflows, (x => ExecuteIfMatch(x, operation, stage, entity,
+                    preImage, postImage, pluginContext, crm)));*/
+
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
                     preImage, postImage, pluginContext, core)));
         }
@@ -94,37 +94,37 @@ namespace DG.Tools.XrmMockup {
         public void TriggerSync(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            //Parallel.ForEach(asynchronousWorkflows, (x => ExecuteIfMatch(x, operation, stage, entity,
-            //        preImage, postImage, pluginContext, crm)));
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
                     preImage, postImage, pluginContext, core)));
         }
 
-        public void TriggerAsync(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+
+        public void TriggerAsync(Core core)
         {
-            // fetch changes performed by sync
+            /*// fetch changes performed by sync
             asynchronousWorkflows.ForEach(x => ExecuteIfMatch(x, operation, stage, entity,
-                    preImage, postImage, pluginContext, core));
+                    preImage, postImage, pluginContext, core));*/
+
+            while (pendingAsyncWorkflows.Count > 0)
+            {
+                var workflowContext = pendingAsyncWorkflows.Dequeue();
+                
+                Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
+
+                var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
+
+                if (execution.Variables["Wait"] != null)
+                {
+                    waitingWorkflows.Add(execution.Variables["Wait"] as WaitInfo);
+                }
+            }
         }
 
         public void StageAsync(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            //asynchronousWorkflows.ForEach(x => pendingAsyncWorkflows.Enqueue(ToWorkFlowExecutionContext(x,pluginContext)));
-        }
-
-        public void TriggerAsyncWaitingWorkflows(Entity primaryEntity, Core core)
-        {
-            while (pendingAsyncWorkflows.Count > 0)
-            {
-                var pendingWorkflow = pendingAsyncWorkflows.Dequeue();
-
-                if (pendingWorkflow != null)
-                {
-                    //ExecuteWorkflow(pendingWorkflow.parsedWorkflow, primaryEntity, pendingWorkflow.pluginContext, core);
-                }
-            }
+            asynchronousWorkflows.ForEach(x => StageIfMatch(x, operation, stage, entity,
+                    preImage, postImage, pluginContext, core));
         }
 
         internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
@@ -144,41 +144,103 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        public class WorkflowExecutionProvider
+        public class WorkflowExecutionContext
         {
-            public Action<MockupServiceProviderAndFactory> action;
-            public MockupServiceProviderAndFactory provider;
+            public WorkflowTree workflow;
+            public PluginContext pluginContext;
+            // primaryRef
+            public EntityReference primaryRef;
 
-            public WorkflowExecutionProvider(Action<MockupServiceProviderAndFactory> action, MockupServiceProviderAndFactory provider)
-            {
-                this.action = action;
-                this.provider = provider;
-            }
 
-            public void ExecuteAction()
+            public WorkflowExecutionContext(WorkflowTree workflow,PluginContext pluginContext, EntityReference primaryRef)
             {
-                action(provider);
+                this.workflow = workflow;
+                this.pluginContext = pluginContext;
+                this.primaryRef = primaryRef;
             }
         }
+
+        private void checkInfiniteRecursion(PluginContext pluginContext)
+        {
+            if (pluginContext.Depth > 8)
+            {
+                throw new FaultException(
+                    "This workflow job was canceled because the workflow that started it included an infinite loop." +
+                    " Correct the workflow logic and try again.");
+            }
+        }
+
+        private void StageIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
+            object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        {
+            if (workflow.LogicalName != "workflow") return;
+            var entity = entityObject as Entity;
+            var entityRef = entityObject as EntityReference;
+
+            var guid = entity?.Id ?? entityRef.Id;
+            var logicalName = entity?.LogicalName ?? entityRef.LogicalName;
+
+            if (workflow.GetAttributeValue<string>("primaryentity") != "" && workflow.GetAttributeValue<string>("primaryentity") != logicalName) return;
+
+            checkInfiniteRecursion(pluginContext);
+
+            var isCreate = operation == EventOperation.Create;
+            var isUpdate = operation == EventOperation.Update;
+            var isDelete = operation == EventOperation.Delete;
+
+            if (!isCreate && !isUpdate && !isDelete) return;
+
+            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return;
+            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return;
+            var triggerFields = new HashSet<string>();
+            if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
+            {
+                foreach (var field in workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(','))
+                {
+                    triggerFields.Add(field);
+                }
+            }
+            if (isUpdate && (
+                workflow.GetAttributeValue<string>("triggeronupdateattributelist") == null ||
+                workflow.GetAttributeValue<string>("triggeronupdateattributelist") == "" ||
+                !entity.Attributes.Any(a => workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(',').Any(f => a.Key == f)))) return;
+
+            var thisStage = isCreate ? workflow.GetOptionSetValue<workflow_stage>("createstage") :
+                (isDelete ? workflow.GetOptionSetValue<workflow_stage>("deletestage") : workflow.GetOptionSetValue<workflow_stage>("updatestage"));
+            if (thisStage == null)
+            {
+                thisStage = workflow_stage.Postoperation;
+            }
+
+            if ((int)thisStage != (int)stage) return;
+            // Create the plugin context
+            var thisPluginContext = pluginContext.Clone();
+            thisPluginContext.Mode = ((int)workflow.GetOptionSetValue<Workflow_Mode>("mode") + 1) % 2;
+            thisPluginContext.Stage = thisStage.HasValue ? (int)thisStage : (int)workflow_stage.Postoperation;
+            thisPluginContext.PrimaryEntityId = guid;
+            thisPluginContext.PrimaryEntityName = logicalName;
+
+            var parsedWorkflow = ParseWorkflow(workflow);
+            if (parsedWorkflow == null) return;
+
+            pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
+
+        }
         
-    private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
+        private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             if (workflow.LogicalName != "workflow") return;
             var entity = entityObject as Entity;
             var entityRef = entityObject as EntityReference;
 
-            var guid = (entity != null) ? entity.Id : entityRef.Id;
-            var logicalName = (entity != null) ? entity.LogicalName : entityRef.LogicalName;
+            var guid = entity?.Id ?? entityRef.Id;
+            var logicalName = entity?.LogicalName ?? entityRef.LogicalName;
 
 
             if (workflow.GetAttributeValue<string>("primaryentity") != "" && workflow.GetAttributeValue<string>("primaryentity") != logicalName) return;
 
-            if (pluginContext.Depth > 8) {
-                throw new FaultException(
-                    "This workflow job was canceled because the workflow that started it included an infinite loop." +
-                    " Correct the workflow logic and try again.");
-            }
+            checkInfiniteRecursion(pluginContext);
 
             var isCreate = operation == EventOperation.Create;
             var isUpdate = operation == EventOperation.Update;
@@ -225,7 +287,6 @@ namespace DG.Tools.XrmMockup {
             if (postExecution.Variables["Wait"] != null) {
                 waitingWorkflows.Add(postExecution.Variables["Wait"] as WaitInfo);
             }
-
         }
 
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
@@ -246,12 +307,10 @@ namespace DG.Tools.XrmMockup {
             } catch (Exception) {
                 Console.WriteLine($"Tried to parse workflow with name '{workflow.Attributes["name"]}' but failed");
             }
-
             return null;
         }
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
-
 #if XRM_MOCKUP_2011
                asynchronousWorkflows.Add(workflow);
 #else
