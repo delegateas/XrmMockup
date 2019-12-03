@@ -22,6 +22,10 @@ namespace DG.XrmMockupTest
         string oldAccountName;
         string newAccountName;
 
+
+        /* EmailAddress1 update triggers Async workflow and a Sync workflow, that triggers another sync workflow. 
+         * Should be applied in order Sync1 Sync2 Async
+         */
         [TestMethod]
         public void SyncAndAsyncWorkflowSucceedsWhenSyncAppliesFirst()
         {
@@ -52,36 +56,37 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
-
+        /* EmailAddress1 update triggers Async workflow and a Sync workflow, that triggers another sync workflow. 
+         * Only Sync3 should apply */
         [TestMethod]
-        public void Sync3Sync1TriggersSync2SucceedsWhenOnlySync3Applies()
+        public void Sync3AndSync1TriggerSync2SucceedsWhenSync3AppliesFirst()
         {
-            /* Create Sync1 and Sync3 plugins + workflows that trigger on account email address 1 update.
-             * They append their type to account name and sync1 edits emailaddress 2
-             * which triggers Sync2, that also appends type to account name*/
-
-            throw new NotImplementedException();
-
-            oldAccountName = "Test";
-            newAccountName = oldAccountName + "Sync3";
-
-            account = new Account()
+            using (var context = new Xrm(orgAdminUIService))
             {
-                Name = oldAccountName,
-            };
-            var accountId = orgAdminService.Create(account);
+                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestNameUpdateSync1.xml"));
+                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestNameUpdateSync2.xml"));
+                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestNameUpdateSync3.xml"));
 
-            var accountUpd = new Account(accountId)
-            {
-                EMailAddress1 = "trigger@valid.dk"
-            };
+                oldAccountName = "Test";
+                newAccountName = oldAccountName + "Sync3";
 
-            orgAdminService.Update(accountUpd);
+                account = new Account()
+                {
+                    Name = oldAccountName,
+                };
+                var accountId = orgAdminService.Create(account);
 
-            var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
+                var accountUpd = new Account(accountId)
+                {
+                    EMailAddress1 = "trigger@valid.dk"
+                };
 
-            Assert.AreEqual(newAccountName, retrievedAccount.Name);
+                orgAdminService.Update(accountUpd);
 
+                var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
+
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
+            }
         }
     }
 }

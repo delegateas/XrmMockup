@@ -170,6 +170,17 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
+        private PluginContext createPluginContext(PluginContext pluginContext, Entity workflow, workflow_stage? thisStage, Guid guid, string logicalName)
+        {
+            var thisPluginContext = pluginContext.Clone();
+            thisPluginContext.Mode = ((int)workflow.GetOptionSetValue<Workflow_Mode>("mode") + 1) % 2;
+            thisPluginContext.Stage = thisStage.HasValue ? (int)thisStage : (int)workflow_stage.Postoperation;
+            thisPluginContext.PrimaryEntityId = guid;
+            thisPluginContext.PrimaryEntityName = logicalName;
+
+            return thisPluginContext;
+        }
+
         private void StageIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
@@ -189,7 +200,6 @@ namespace DG.Tools.XrmMockup {
             var isDelete = operation == EventOperation.Delete;
 
             if (!isCreate && !isUpdate && !isDelete) return;
-
             if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return;
             if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return;
             var triggerFields = new HashSet<string>();
@@ -214,11 +224,7 @@ namespace DG.Tools.XrmMockup {
 
             if ((int)thisStage != (int)stage) return;
             // Create the plugin context
-            var thisPluginContext = pluginContext.Clone();
-            thisPluginContext.Mode = ((int)workflow.GetOptionSetValue<Workflow_Mode>("mode") + 1) % 2;
-            thisPluginContext.Stage = thisStage.HasValue ? (int)thisStage : (int)workflow_stage.Postoperation;
-            thisPluginContext.PrimaryEntityId = guid;
-            thisPluginContext.PrimaryEntityName = logicalName;
+            var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
 
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
@@ -226,6 +232,8 @@ namespace DG.Tools.XrmMockup {
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
 
         }
+
+       
         
         private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
@@ -269,12 +277,8 @@ namespace DG.Tools.XrmMockup {
 
             if ((int)thisStage != (int)stage) return;
             // Create the plugin context
-            var thisPluginContext = pluginContext.Clone();
-            thisPluginContext.Mode = ((int)workflow.GetOptionSetValue<Workflow_Mode>("mode") + 1) % 2;
-            thisPluginContext.Stage = thisStage.HasValue ? (int)thisStage : (int)workflow_stage.Postoperation;
-            thisPluginContext.PrimaryEntityId = guid;
-            thisPluginContext.PrimaryEntityName = logicalName;
-            
+            var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
+
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
             WorkflowTree postExecution = null; 

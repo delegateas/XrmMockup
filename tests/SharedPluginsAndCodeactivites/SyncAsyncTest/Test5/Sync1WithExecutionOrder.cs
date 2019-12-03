@@ -7,7 +7,7 @@
     public class Sync1WithExecutionOrder : TestPlugin
     {
         public Sync1WithExecutionOrder()
-            : base(typeof(Sync1PostOperation))
+            : base(typeof(Sync1WithExecutionOrder))
         {
             RegisterPluginStep<Contact>(
                 EventOperation.Update,

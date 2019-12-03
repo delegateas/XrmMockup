@@ -4,19 +4,20 @@
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-    public class Sync2PostOperation : TestPlugin
+    public class Test4PluginASync : TestPlugin
     {
-        public Sync2PostOperation()
-            : base(typeof(Sync2PostOperation))
+        public Test4PluginASync()
+            : base(typeof(Test4PluginASync))
         {
             RegisterPluginStep<Contact>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
-                ExecuteAccountPostOperationPluginSync2)
-                .AddFilteredAttributes(x => x.EMailAddress2);
+                Async2NameUpdate)
+                .AddFilteredAttributes(x => x.EMailAddress1)
+                .SetExecutionMode(ExecutionMode.Asynchronous);
         }
 
-        protected void ExecuteAccountPostOperationPluginSync2(LocalPluginContext localContext)
+        protected void Async2NameUpdate(LocalPluginContext localContext)
         {
             if (localContext == null)
             {
@@ -29,11 +30,10 @@
 
             var personelUpd = new Contact(personel.Id)
             {
-                FirstName = personel.FirstName + ", Sync",
+                FirstName = personel.FirstName + "ASync2",
             };
 
             service.Update(personelUpd);
-
         }
     }
 }

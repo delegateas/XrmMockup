@@ -9,15 +9,21 @@
     <Import_RootNamespace>SharedPluginsAndCodeactivites</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\ExecutionOrder\Sync2WithExecutionOrder - Copy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\ExecutionOrder\ASyncWithExecutionOrder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\ExecutionOrder\Sync1WithExecutionOrder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\OrderOfPluginDeclaration\ASyncNameUpdate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\OrderOfPluginDeclaration\SyncPostOperationNameUpdate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\ASyncNameUpdateCopy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync2WithExecutionOrder - Copy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\AsyncWithExecutionOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync1WithExecutionOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test4\Test4PluginAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test4\Test4PluginSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test2\Test2Plugin1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test2\Test2Plugin2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test1\Test1Plugin2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test1\Test1Plugin1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test6\Test6Plugin2Async.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test3\Test3Plugin2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test3\Test3Plugin1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPlugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\Sync2NameUpdate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\SyncSyncAsyncNoExecutionOrder\Sync1NameUpdateTriggerEmail2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test6\Test6plugin3Sync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test6\Test6Plugin1Sync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCurrencyBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountChainPostPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountPostImagePlugin.cs" />
