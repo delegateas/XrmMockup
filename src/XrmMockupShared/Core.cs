@@ -577,7 +577,6 @@ namespace DG.Tools.XrmMockup
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     
                     workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    
                     workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
 

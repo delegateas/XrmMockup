@@ -4,22 +4,22 @@
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-    public class Test1Plugin2 : TestPlugin
+    public class Test8Plugin1 : TestPlugin
     {
-        public Test1Plugin2()
-            : base(typeof(Test1Plugin2))
+        public Test8Plugin1()
+            : base(typeof(Test8Plugin1))
         {
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
-                Sync2NameUpdate)
-                .AddImage(ImageType.PostImage, x => x.Name)
+                Sync1NameAndEmailAddress2Update)
+                .AddImage(ImageType.PostImage,(x => x.Name))
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionMode(ExecutionMode.Synchronous)
-                .SetExecutionOrder(2);
+                .SetExecutionOrder(1);
         }
 
-        protected void Sync2NameUpdate(LocalPluginContext localContext)
+        protected void Sync1NameAndEmailAddress2Update(LocalPluginContext localContext)
         {
             if (localContext == null)
             {
@@ -28,12 +28,12 @@
 
             var service = localContext.OrganizationService;
 
-            //var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, x => x.Name);
             var account = GetPostImage<Account>(localContext, "PostImage");
 
             var accountUpd = new Account(account.Id)
             {
-                Name = account.Name + "Sync2"
+                Name = account.Name + "Sync1",
+                EMailAddress2 = account.EMailAddress2
             };
             service.Update(accountUpd);
         }

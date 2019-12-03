@@ -12,13 +12,14 @@
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
-                ASync2NameUpdateSync)
+                ASync2NameUpdate)
+                .AddImage(ImageType.PostImage, x => x.Name)
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionMode(ExecutionMode.Asynchronous)
                 .SetExecutionOrder(2);
         }
 
-        protected void ASync2NameUpdateSync(LocalPluginContext localContext)
+        protected void ASync2NameUpdate(LocalPluginContext localContext)
         {
             if (localContext == null)
             {
@@ -27,7 +28,8 @@
 
             var service = localContext.OrganizationService;
 
-            var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, x => x.Name);
+            //var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, x => x.Name);
+            var account = GetPostImage<Account>(localContext, "PostImage");
 
             var accountUpd = new Account(account.Id)
             {

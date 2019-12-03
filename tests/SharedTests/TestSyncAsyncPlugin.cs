@@ -23,12 +23,11 @@ namespace DG.XrmMockupTest
         Contact personel;
         string oldFirstName;
         string newFirstName;
+
+
         /*-------------------------------- Order of plugin declaration --------------------------
          * Registration order of plugins should not interfere with execution. Sync should
          * always execute before Async. */
-
-
-
         [TestMethod]
         public void Test4ASyncAndSyncPluginFailsWhenAsyncAppliesFirst()
         {
@@ -155,7 +154,7 @@ namespace DG.XrmMockupTest
 
 
         [TestMethod]
-        public void TestSyncPluginCallsSyncAndAsyncPlugNoExecutionOrder()
+        public void Test6SyncPluginCallsSyncAndAsyncPlugNoExecutionOrder()
         {
             //Sync plugin calls another Sync and Async plugin. Sync executes first.
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
@@ -185,7 +184,7 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
 
-        //--------------------------------------------------------- new Tests ------------------------------------------------
+        //--------------------------------------------- TESTS USING POSTIMAGE IN PLUGINS --------------------------------------------
 
         [TestMethod]
         public void Test1Sync1Sync2PostPluginSucceedsWhenOnlySync2Applies()
@@ -217,10 +216,9 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        public void Test2ASync1ASync2SucceedsWhenOnlyASync2Applies()
+        public void Test2ASync1ASync2PostPluginSucceedsWhenOnlyASync2Applies()
         {
             /* Same as previous but with Async plugins*/
-
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Test2Plugin1),
                 typeof(Test2Plugin2));
@@ -247,7 +245,7 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        public void Test3Sync1AndAsync2SucceedsWhenOnlyAsync2Applies()
+        public void Test3Sync1AndAsync2PostPluginSucceedsWhenOnlyAsync2Applies()
         {
             /* Sync and Async trigger of same emailAddress1 update - Only Async applies Since it is executed last and does not use the postimage of the sync Operation */
 
@@ -277,10 +275,45 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        public void Test3Sync1TriggersAsync2Sync3SucceedsWhenSync1AndAsync2Applies()
+        public void Test7Sync1TriggersAsync2Sync3PostPluginSucceedsWhenSync1AndAsync2Applies()
         {
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+                typeof(Test7Plugin1),
+                typeof(Test7Plugin2),
+                typeof(Test7Plugin3));
+
             oldAccountName = "Test";
             newAccountName = oldAccountName + "Sync1ASync2";
+
+            account = new Account()
+            {
+                Name = oldAccountName,
+            };
+            var accountId = orgAdminService.Create(account);
+
+            var accountUpd = new Account(accountId)
+            {
+                EMailAddress1 = "trigger@valid.dk"
+            };
+
+            orgAdminService.Update(accountUpd);
+
+            var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
+
+            Assert.AreEqual(newAccountName, retrievedAccount.Name);
+        }
+
+
+        [TestMethod]
+        public void Test8Async2Sync1TriggersSync3SucceedsWhenAsync2Applies()
+        {
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+                typeof(Test8Plugin1),
+                typeof(Test8Plugin2),
+                typeof(Test8Plugin3));
+
+            oldAccountName = "Test";
+            newAccountName = oldAccountName + "ASync2";
 
             account = new Account()
             {
