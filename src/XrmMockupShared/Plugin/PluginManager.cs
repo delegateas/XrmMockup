@@ -317,7 +317,8 @@ namespace DG.Tools.XrmMockup {
             {
                 return order;
             }
-        
+
+            // Saves "execution" for Async plugins to be executed after sync plugins.
             public PluginExecutionProvider ToPluginExecution(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
             {
                 var entity = entityObject as Entity;

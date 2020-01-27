@@ -582,7 +582,7 @@ namespace DG.Tools.XrmMockup
                     workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
 
-                //When first Sync has been executed we trigger the Async jobs.
+                //When last Sync has been executed we trigger the Async jobs.
                 if (parentPluginContext == null)
                 {
                     pluginManager.TriggerAsyncWaitingJobs();

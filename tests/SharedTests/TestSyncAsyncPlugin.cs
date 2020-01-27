@@ -24,6 +24,9 @@ namespace DG.XrmMockupTest
         string oldFirstName;
         string newFirstName;
 
+        /* Tests for Sync and Async plugins. Relevant plugins are found in folder "SyncAsyncTest" */
+
+
 
         /*-------------------------------- Order of plugin declaration --------------------------
          * Registration order of plugins should not interfere with execution. Sync should
@@ -184,7 +187,7 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
 
-        //--------------------------------------------- TESTS USING POSTIMAGE IN PLUGINS --------------------------------------------
+        //--------------------------------------------- Test plugin execution order --------------------------------------------
 
         [TestMethod]
         public void Test1Sync1Sync2PostPluginSucceedsWhenOnlySync2Applies()
@@ -332,29 +335,5 @@ namespace DG.XrmMockupTest
 
             Assert.AreEqual(newAccountName, retrievedAccount.Name);
         }
-
-        /*[TestMethod]
-        public void Test4Sync1TriggersSync2ASync3SucceedsWhenSync1AndAsync3Applies()
-        {
-            oldAccountName = "Test";
-            newAccountName = oldAccountName + "Async3";
-
-            account = new Account()
-            {
-                Name = oldAccountName,
-            };
-            var accountId = orgAdminService.Create(account);
-
-            var accountUpd = new Account(accountId)
-            {
-                EMailAddress1 = "trigger@valid.dk"
-            };
-
-            orgAdminService.Update(accountUpd);
-
-            var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
-
-            Assert.AreEqual(newAccountName, retrievedAccount.Name);
-        }*/
     }
 }
