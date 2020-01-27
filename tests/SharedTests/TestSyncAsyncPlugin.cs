@@ -24,7 +24,7 @@ namespace DG.XrmMockupTest
         string oldFirstName;
         string newFirstName;
 
-        /* Tests for Sync and Async plugins. Relevant plugins are found in folder "SyncAsyncTest" */
+        /* Tests for Sync and Async plugins. Relevant plugins can be found in folder "SyncAsyncTest" */
 
 
 

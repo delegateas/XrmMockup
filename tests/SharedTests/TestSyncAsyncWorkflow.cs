@@ -1,4 +1,4 @@
-﻿#if !(XRM_MOCKUP_TEST_2011)
+﻿#if !(XRM_MOCKUP_TEST_2011) && !(XRM_MOCKUP_TEST_2013) && !(XRM_MOCKUP_TEST_2015) && !(XRM_MOCKUP_TEST_2016)
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace DG.XrmMockupTest
         string newAccountName;
 
 
-        /*Tests concerning execution of synchronous and asynchronous workflows. All tests are found in the folder "TestSyncAsyncWorkflows"*/
+        /*Tests concerning execution of synchronous and asynchronous workflows. All workflows can be found in the folder "TestSyncAsyncWorkflows"*/
         [TestMethod]
         public void Test1Async2Sync1TriggerSync3SuccedsWhenAllApplies()
         {
