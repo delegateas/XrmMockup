@@ -25,8 +25,6 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<string, CodeActivity> codeActivityTriggers;
         private Dictionary<Guid, WorkflowTree> parsedWorkflows;
 
-
-        //Added
         private Queue<WorkflowExecutionContext> pendingAsyncWorkflows;
 
         public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata) {
@@ -40,7 +38,6 @@ namespace DG.Tools.XrmMockup {
             codeActivityTriggers = new Dictionary<string, CodeActivity>();
             parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
 
-            //Added
             pendingAsyncWorkflows = new Queue<WorkflowExecutionContext>();
 
             if (!workflows.All(e => e.LogicalName == "workflow")) {
@@ -70,7 +67,6 @@ namespace DG.Tools.XrmMockup {
                 #endif
             }
         }
-
 
         /// <summary>
         /// Trigger all plugin steps which match the given parameters.
@@ -105,10 +101,14 @@ namespace DG.Tools.XrmMockup {
             asynchronousWorkflows.ForEach(x => ExecuteIfMatch(x, operation, stage, entity,
                     preImage, postImage, pluginContext, core));*/
 
+
+            //Fetch changes performed by Sync workflows and execute pending Async
+
             while (pendingAsyncWorkflows.Count > 0)
             {
                 var workflowContext = pendingAsyncWorkflows.Dequeue();
-                
+
+
                 Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
 
                 var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
@@ -144,13 +144,13 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
+
+        //Save context for Asynchronous workflows.
         public class WorkflowExecutionContext
         {
             public WorkflowTree workflow;
             public PluginContext pluginContext;
-            // primaryRef
             public EntityReference primaryRef;
-
 
             public WorkflowExecutionContext(WorkflowTree workflow,PluginContext pluginContext, EntityReference primaryRef)
             {
@@ -223,18 +223,16 @@ namespace DG.Tools.XrmMockup {
             }
 
             if ((int)thisStage != (int)stage) return;
-            // Create the plugin context
+
             var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
 
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
 
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
-
         }
 
-       
-        
+
         private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
@@ -276,16 +274,17 @@ namespace DG.Tools.XrmMockup {
             }
 
             if ((int)thisStage != (int)stage) return;
-            // Create the plugin context
+
             var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
 
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
+
             WorkflowTree postExecution = null; 
             if (thisStage == workflow_stage.Preoperation) {
-                postExecution = ExecuteWorkflow(parsedWorkflow, preImage, thisPluginContext, core);
+                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext, core);
             } else {
-                postExecution = ExecuteWorkflow(parsedWorkflow, postImage, thisPluginContext, core);
+                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext, core);
             }
 
             if (postExecution.Variables["Wait"] != null) {
@@ -313,6 +312,7 @@ namespace DG.Tools.XrmMockup {
             }
             return null;
         }
+
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
 #if XRM_MOCKUP_2011

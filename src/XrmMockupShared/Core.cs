@@ -565,11 +565,13 @@ namespace DG.Tools.XrmMockup
 
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
-
+            
             // Post-operation
             if (settings.TriggerProcesses && entityInfo != null)
             {
+
                 postImage = TryRetrieve(primaryRef);
+
                 if (eventOp.HasValue)
                 {
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
@@ -580,7 +582,7 @@ namespace DG.Tools.XrmMockup
                     workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
 
-                //When first (last) Sync has been executed we Trigger the Async jobs.
+                //When first Sync has been executed we trigger the Async jobs.
                 if (parentPluginContext == null)
                 {
                     pluginManager.TriggerAsyncWaitingJobs();
@@ -588,8 +590,6 @@ namespace DG.Tools.XrmMockup
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
-
-            
             return response;
         }
 

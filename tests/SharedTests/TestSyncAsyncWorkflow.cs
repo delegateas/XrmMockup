@@ -130,6 +130,8 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
+                crm.DisableRegisteredPlugins(true);
+
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync1.xml"));
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync2.xml"));
 
@@ -164,7 +166,7 @@ namespace DG.XrmMockupTest
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test3", "Test3WorkflowASync2.xml"));
 
                 oldAccountName = "Test";
-                newAccountName = oldAccountName + "ASync1ASync2";
+                newAccountName = oldAccountName + "ASync1" + "ASync2";
 
                 account = new Account()
                 {
@@ -194,7 +196,7 @@ namespace DG.XrmMockupTest
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test4", "Test4WorkflowSync1.xml"));
 
                 oldAccountName = "Test";
-                newAccountName = oldAccountName + "Sync1ASync2";
+                newAccountName = oldAccountName + "Sync1" + "ASync2";
 
                 account = new Account()
                 {
@@ -225,7 +227,7 @@ namespace DG.XrmMockupTest
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test5", "Test5WorkflowSync3.xml"));
 
                 oldAccountName = "Test";
-                newAccountName = oldAccountName + "Sync1Async2";
+                newAccountName = oldAccountName + "Sync3" + "Async2";
 
                 account = new Account()
                 {
@@ -256,7 +258,7 @@ namespace DG.XrmMockupTest
                 crm.AddWorkflow(Path.Combine("../../", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test6", "Test6WorkflowASync3.xml"));
 
                 oldAccountName = "Test";
-                newAccountName = oldAccountName + "Sync1ASync2ASync3";
+                newAccountName = oldAccountName + "Sync1" + "ASync2" + "ASync3";
 
                 account = new Account()
                 {
