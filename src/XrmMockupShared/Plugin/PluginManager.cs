@@ -35,6 +35,7 @@ namespace DG.Tools.XrmMockup {
         private List<MockupPlugin> systemPlugins = new List<MockupPlugin>
         {
             //new SystemPlugins.ContactDefaultValues()
+            new SystemPlugins.UpdateInactiveIncident()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
@@ -44,7 +45,7 @@ namespace DG.Tools.XrmMockup {
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
-            RegisterSystemPlugins(registeredSystemPlugins);
+            RegisterSystemPlugins(registeredSystemPlugins, metadata);
         }
 
         private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
@@ -142,7 +143,7 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, Dictionary<string, EntityMetadata> metadata)
         {
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
             var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
@@ -157,7 +158,7 @@ namespace DG.Tools.XrmMockup {
                 {
                     var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
                     var stage = (ExecutionStage)stepConfig.Item1.Item2;
-                    var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, new Dictionary<string, EntityMetadata>());
+                    var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
 
                     AddTrigger(operation, stage, trigger, register);
                 }
