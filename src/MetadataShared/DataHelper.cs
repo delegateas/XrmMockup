@@ -230,8 +230,6 @@ namespace DG.Tools.XrmMockup.Metadata
             return service.RetrieveMultiple(query).Entities;
         }
 
-        
-
 
         private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
         {
@@ -314,17 +312,36 @@ namespace DG.Tools.XrmMockup.Metadata
             return logicalNames;
         }
 
-        internal IEnumerable<Entity> GetWorkflows() {
+        internal List<Guid> GetSolutionIds(string solutions)
+        {
+            if (solutions == null) return new List<Guid>();
+
+            var solutionNames = solutions.Split(',');
+            var query = new QueryExpression("solution")
+            {
+                ColumnSet = new ColumnSet(),
+                Criteria = new FilterExpression()
+            };
+            query.Criteria.AddCondition(new ConditionExpression("uniquename", ConditionOperator.In, solutionNames));
+
+
+            return service.RetrieveMultiple(query).Entities
+                .Select(e => e.Id).ToList();
+        }
+
+        internal IEnumerable<Entity> GetWorkflows(List<Guid> solutionIds) {
             var query = new QueryExpression("workflow") {
                 ColumnSet = new ColumnSet(true),
                 Criteria = new FilterExpression()
             };
+            
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 1);
+            query.Criteria.AddCondition(new ConditionExpression("solutionid", ConditionOperator.In, solutionIds));
 
             var category = new FilterExpression(LogicalOperator.Or);
             category.AddCondition("category", ConditionOperator.Equal, 0);
             category.AddCondition("category", ConditionOperator.Equal, 3);
-
+                       
             query.Criteria.AddFilter(category);
             query.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
 

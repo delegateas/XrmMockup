@@ -77,7 +77,9 @@ namespace DG.Tools.XrmMockup.Metadata {
                 serializer.WriteObject(stream, skeleton);
             }
 
-            foreach (var workflow in generator.GetWorkflows()) {
+            var solutionIds = generator.GetSolutionIds(ParsedArgs[Arguments.Solutions]);
+
+            foreach (var workflow in generator.GetWorkflows(solutionIds)) {
                 var safeName = ToSafeName(workflow.GetAttributeValue<string>("name"));
                 using (var stream = new FileStream($"{workflowsLocation}/{safeName}.xml", FileMode.Create)) {
                     workflowSerializer.WriteObject(stream, workflow);
@@ -106,6 +108,8 @@ namespace DG.Tools.XrmMockup.Metadata {
                 file.WriteLine("}");
             }
         }
+
+        
 
         private static bool StartsWithNumber(string str) {
             return str.Length > 0 && str[0] >= '0' && str[0] <= '9';
