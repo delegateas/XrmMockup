@@ -45,6 +45,7 @@ namespace DG.Tools.XrmMockup.Metadata {
                 ParsedArgs[Arguments.AuthProvider],
                 ParsedArgs[Arguments.Domain]
             );
+
             Console.WriteLine("Generation of metadata files started");
             var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies));
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
@@ -77,14 +78,13 @@ namespace DG.Tools.XrmMockup.Metadata {
                 serializer.WriteObject(stream, skeleton);
             }
 
-            var solutionIds = generator.GetSolutionIds(ParsedArgs[Arguments.Solutions]);
-
-            foreach (var workflow in generator.GetWorkflows(solutionIds)) {
+            foreach (var workflow in generator.GetWorkflows()) {
                 var safeName = ToSafeName(workflow.GetAttributeValue<string>("name"));
                 using (var stream = new FileStream($"{workflowsLocation}/{safeName}.xml", FileMode.Create)) {
                     workflowSerializer.WriteObject(stream, workflow);
                 }
             }
+
             var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id);
             foreach (var securityRole in securityRoles) {
                 var safeName = ToSafeName(securityRole.Value.Name);
@@ -108,8 +108,6 @@ namespace DG.Tools.XrmMockup.Metadata {
                 file.WriteLine("}");
             }
         }
-
-        
 
         private static bool StartsWithNumber(string str) {
             return str.Length > 0 && str[0] >= '0' && str[0] <= '9';
