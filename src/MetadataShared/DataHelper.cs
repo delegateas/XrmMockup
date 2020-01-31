@@ -312,6 +312,8 @@ namespace DG.Tools.XrmMockup.Metadata
             return logicalNames;
         }
 
+        //The solutionid for Workflowentities points to the active solution  
+        //By getting the workflows from the active solution all the workflows from the targeted solution are included.
         internal Guid? GetActiveSolution()
         {
             var query = new QueryExpression("solution")
@@ -320,8 +322,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 Criteria = new FilterExpression()
             };
             query.Criteria.AddCondition(new ConditionExpression("uniquename", ConditionOperator.Equal, "active"));
-
-            
 
             return service.RetrieveMultiple(query).Entities
                 .Select(e => e.Id).FirstOrDefault();
