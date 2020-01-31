@@ -230,8 +230,6 @@ namespace DG.Tools.XrmMockup.Metadata
             return service.RetrieveMultiple(query).Entities;
         }
 
-        
-
 
         private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
         {
@@ -256,7 +254,7 @@ namespace DG.Tools.XrmMockup.Metadata
                         { "solutionid", solution.Id },
                         { "componenttype", 1 }};
                 var columns = new string[] { "solutionid", "objectid", "componenttype" };
-                return GetEntities("solutioncomponent", columns, filter).Select(component => (Guid)component["objectid"]);
+                return GetEntities("solutioncomponent", columns, filter).Select(component => (Guid) component["objectid"]);
         }
 
         private bool NeedActivityParty(IEnumerable<EntityMetadata> metadata) {
@@ -314,19 +312,39 @@ namespace DG.Tools.XrmMockup.Metadata
             return logicalNames;
         }
 
+        //The solutionid for Workflowentities points to the active solution  
+        //By getting the workflows from the active solution all the workflows from the targeted solution are included.
+        internal Guid? GetActiveSolution()
+        {
+            var query = new QueryExpression("solution")
+            {
+                ColumnSet = new ColumnSet(),
+                Criteria = new FilterExpression()
+            };
+            query.Criteria.AddCondition(new ConditionExpression("uniquename", ConditionOperator.Equal, "active"));
+
+            return service.RetrieveMultiple(query).Entities
+                .Select(e => e.Id).FirstOrDefault();
+        }
+
         internal IEnumerable<Entity> GetWorkflows() {
+            var activeSolutionId = GetActiveSolution();
+
             var query = new QueryExpression("workflow") {
                 ColumnSet = new ColumnSet(true),
                 Criteria = new FilterExpression()
             };
+
+            if (!activeSolutionId.HasValue) return new List<Entity>();
+
+            query.Criteria.AddCondition("solutionid", ConditionOperator.Equal, activeSolutionId);
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 1);
 
             var category = new FilterExpression(LogicalOperator.Or);
             category.AddCondition("category", ConditionOperator.Equal, 0);
             category.AddCondition("category", ConditionOperator.Equal, 3);
-
+                       
             query.Criteria.AddFilter(category);
-            query.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
 
             return service.RetrieveMultiple(query).Entities
                 .Select(e => e.ToEntity<Entity>());
