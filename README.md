@@ -17,8 +17,3 @@ Find more in-depth information and examples in the [wiki](https://github.com/del
 * Automatically executes plugins and workflows during requests which trigger them.
 * Enforces the security model of CRM, thus allowing you to test your security roles and business unit setup.
 * Enables changing the time of the internal clock of XrmMockup during tests, which enables testing of time-based events (i.e waiting workflows or other time-sensitive business logic).
-
-
-## Still in beta
-
-This project is still in beta, so beware that breaking changes may occur more frequently, as we continue to develop XrmMockup and its usage.
