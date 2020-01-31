@@ -282,7 +282,6 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestTypeConvertingEntityToString()
         {
-            //crm.DisableRegisteredPlugins(true);s
             crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
             var service = crm.GetAdminService();
             var acc = new Account

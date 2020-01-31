@@ -79,10 +79,8 @@ namespace DG.Tools.XrmMockup {
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
         public void Trigger(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-            /*Parallel.ForEach(asynchronousWorkflows, (x => ExecuteIfMatch(x, operation, stage, entity,
-                    preImage, postImage, pluginContext, crm)));*/
-
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) 
+        {    
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
                     preImage, postImage, pluginContext, core)));
         }
@@ -97,13 +95,6 @@ namespace DG.Tools.XrmMockup {
 
         public void TriggerAsync(Core core)
         {
-            /*// fetch changes performed by sync
-            asynchronousWorkflows.ForEach(x => ExecuteIfMatch(x, operation, stage, entity,
-                    preImage, postImage, pluginContext, core));*/
-
-
-            //Fetch changes performed by Sync workflows and execute pending Async
-
             while (pendingAsyncWorkflows.Count > 0)
             {
                 var workflowContext = pendingAsyncWorkflows.Dequeue();
@@ -143,7 +134,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
         }
-
 
         //Save context for Asynchronous workflows.
         public class WorkflowExecutionContext
@@ -231,7 +221,6 @@ namespace DG.Tools.XrmMockup {
 
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
         }
-
 
         private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {

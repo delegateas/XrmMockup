@@ -10,6 +10,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Runtime.ExceptionServices;
+using XrmMockupShared.Plugin;
 
 namespace DG.Tools.XrmMockup {
 
@@ -262,25 +263,8 @@ namespace DG.Tools.XrmMockup {
             registeredSystemPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
-        public class PluginExecutionProvider
-        {
-            public Action<MockupServiceProviderAndFactory> action;
-            public MockupServiceProviderAndFactory provider;
-
-            public PluginExecutionProvider(Action<MockupServiceProviderAndFactory> action, MockupServiceProviderAndFactory provider)
-            {
-                this.action = action;
-                this.provider = provider;
-            }
-
-            public void ExecuteAction()
-            {
-                action(provider);
-            }
-        }
-
         internal class PluginTrigger : IComparable<PluginTrigger> {
-            public Action<MockupServiceProviderAndFactory> pluginExecute; // execute 
+            public Action<MockupServiceProviderAndFactory> pluginExecute;
 
             string entityName;
             EventOperation operation;
