@@ -61,8 +61,11 @@ namespace DG.XrmMockupTest {
                 };
                 acc.Id = orgAdminUIService.Create(acc);
 
-                acc.MarketCap = 20m;
-                orgAdminUIService.Update(acc);
+                var accUpd = new Account(acc.Id)
+                {
+                    MarketCap = 20m
+                };
+                orgAdminUIService.Update(accUpd);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.AreEqual(acc.Name + "UpdateBase", retrieved.Name);

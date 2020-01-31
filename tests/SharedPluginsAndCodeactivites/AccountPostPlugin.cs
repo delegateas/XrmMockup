@@ -39,10 +39,6 @@ namespace DG.Some.Namespace {
                 Subject = "Some other lead " + rand.Next(0, 1000),
                 ParentAccountId = new Account(localContext.PluginExecutionContext.PrimaryEntityId).ToEntityReference()
             });
-
-
-
-
         }
     }
 }

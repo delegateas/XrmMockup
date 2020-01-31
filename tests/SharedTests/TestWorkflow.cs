@@ -79,7 +79,7 @@ namespace DG.XrmMockupTest {
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.IsNull(retrieved.Name);
-
+                
                 acc.Name = "Some name";
                 orgAdminUIService.Update(acc);
 

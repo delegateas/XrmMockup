@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -566,20 +565,31 @@ namespace DG.Tools.XrmMockup
 
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
-
+            
             // Post-operation
             if (settings.TriggerProcesses && entityInfo != null)
             {
+
                 postImage = TryRetrieve(primaryRef);
+
                 if (eventOp.HasValue)
                 {
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.Trigger(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    
+                    workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                }
+
+                //When last Sync has been executed we trigger the Async jobs.
+                if (parentPluginContext == null)
+                {
+                    pluginManager.TriggerAsyncWaitingJobs();
+                    workflowManager.TriggerAsync(this);
                 }
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
-
             return response;
         }
 
@@ -785,6 +795,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
+
         private Entity TryRetrieve(EntityReference reference)
         {
             return db.GetEntityOrNull(reference)?.CloneEntity();
@@ -864,5 +875,4 @@ namespace DG.Tools.XrmMockup
             security.ResetEnvironment(db);
         }
     }
-
 }
