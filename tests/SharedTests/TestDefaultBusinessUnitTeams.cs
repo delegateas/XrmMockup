@@ -47,9 +47,8 @@ namespace DG.XrmMockupTest
 
         private void CheckTeamAttributes(Team fetchedTeam, BusinessUnit businessUnit)
         {
-            businessUnit = orgAdminService.Retrieve(LogicalNames.BusinessUnit,
-                                                    businessUnit.Id,
-                                                    new ColumnSet(true));
+            businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
+
             Assert.AreEqual(businessUnit.Name, fetchedTeam.Name);
             Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
             Assert.AreEqual(true, fetchedTeam.IsDefault);

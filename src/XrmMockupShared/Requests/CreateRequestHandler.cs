@@ -185,7 +185,8 @@ namespace DG.Tools.XrmMockup {
             db.Add(clonedEntity);
 
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {
-                CreateTeamForBusinessUnit(clonedEntity, userRef);
+                security.AddRolesForBusinessUnit(db, clonedEntity.ToEntityReference());
+                CreateDefaultTeamForBusinessUnit(clonedEntity, userRef);
             }
 
             if (entity.RelatedEntities.Count > 0) {
@@ -211,7 +212,7 @@ namespace DG.Tools.XrmMockup {
             return resp;
         }
 
-        private void CreateTeamForBusinessUnit(Entity clonedEntity, EntityReference userRef)
+        private void CreateDefaultTeamForBusinessUnit(Entity clonedEntity, EntityReference userRef)
         {
             var team = new Entity("team");
             team["name"] = clonedEntity.Attributes["name"];
@@ -227,9 +228,6 @@ namespace DG.Tools.XrmMockup {
             };
             req.Parameters[MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
             core.Execute(req, userRef);
-
-
-            security.AddRolesForBusinessUnit(db, clonedEntity.ToEntityReference());
         }
     }
 }
