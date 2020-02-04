@@ -185,7 +185,7 @@ namespace DG.Tools.XrmMockup {
             db.Add(clonedEntity);
 
             if (clonedEntity.LogicalName == LogicalNames.BusinessUnit) {
-                security.AddRolesForBusinessUnit(db, clonedEntity.ToEntityReference());
+                CreateTeamForBusinessUnit(clonedEntity, userRef);
             }
 
             if (entity.RelatedEntities.Count > 0) {
@@ -209,6 +209,27 @@ namespace DG.Tools.XrmMockup {
             }
             resp.Results.Add("id", clonedEntity.Id);
             return resp;
+        }
+
+        private void CreateTeamForBusinessUnit(Entity clonedEntity, EntityReference userRef)
+        {
+            var team = new Entity("team");
+            team["name"] = clonedEntity.Attributes["name"];
+            team["teamtype"] = new OptionSetValue(0);
+            team["isdefault"] = true;
+            team["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
+            team["administratorid"] = userRef;
+            team["businessunitid"] = clonedEntity.ToEntityReference();
+
+            var req = new CreateRequest()
+            {
+                Target = team
+            };
+            req.Parameters[MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
+            core.Execute(req, userRef);
+
+
+            security.AddRolesForBusinessUnit(db, clonedEntity.ToEntityReference());
         }
     }
 }

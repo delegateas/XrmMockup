@@ -1,9 +1,6 @@
-﻿using DG.Tools.XrmMockup;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
@@ -15,32 +12,54 @@ namespace DG.Tools.XrmMockup.SystemPlugins
         internal DefaultBusinessUnitTeams() : base(typeof(DefaultBusinessUnitTeams))
         {
             RegisterPluginStep("businessunit",
-                PluginEventOperation.Create,
+                PluginEventOperation.Update,
                 PluginExecutionStage.PostOperation,
-                Execute);
+                Update);
+        }
+
+        private void Update(LocalPluginContext localContext)
+        {
+            HandleServices(localContext);
+
+            var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
+            var oldBusinessUnit = localContext.PluginExecutionContext.PreEntityImages;
+
+            // var teamQuery = new QueryExpression
+            // {
+            //     EntityName = "team",
+            //     Criteria = new FilterExpression
+            //     {
+            //         Conditions = {
+            //             new ConditionExpression
+            //             {
+            //                 AttributeName = "isdefualt",
+            //                 Operator = ConditionOperator.Equal,
+            //                 Values = {true}
+            //             }
+            //         }
+            //     }
+            // };
+            
+            var teamQuery = new QueryExpression
+            {
+                EntityName = "team"
+            };
+
+            var teams = orgService.RetrieveMultiple(teamQuery).Entities;
+            
+            //var retrievedTeam = orgService.
 
         }
 
-        private void Execute(LocalPluginContext locatContext)
+        private void HandleServices(LocalPluginContext localContext)
         {
-            if (locatContext == null)
+            if (localContext == null)
             {
                 throw new ArgumentNullException("localContext");
             }
 
-            orgAdminService = locatContext.OrganizationAdminService;
-            orgService = locatContext.OrganizationService;
-            /* When creating a business unit, we have to create a corresponding team, with the same name
-             */
-
-            var retrievedTarget = orgService.Retrieve("businessunit", locatContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
-
-            var team = new Entity("team");
-            team["name"] = retrievedTarget.GetAttributeValue<string>("name");
-            team["businessunitid"] = retrievedTarget.ToEntityReference();
-
-            var businessUnitTeam = orgAdminService.Create(team);
-
+            orgAdminService = localContext.OrganizationAdminService;
+            orgService = localContext.OrganizationService;
         }
     }
 }
