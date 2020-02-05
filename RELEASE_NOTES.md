@@ -1,3 +1,9 @@
+### 1.0.0 - 31 January 2020
+* It's happening!
+* Inactive incidents can no longer be modified
+* Fixed error with execution-ordering of sync and async plugins and workflows
+* Excluded most standard workflows when generating metadata
+
 ### 0.13.3-beta - 12 November 2019
 * Added TotalRecordCount to RetrieveMultipleResponse
 
