@@ -45,19 +45,6 @@ namespace DG.XrmMockupTest
             }
         }
 
-        private void CheckTeamAttributes(Team fetchedTeam, BusinessUnit businessUnit)
-        {
-            businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
-
-            Assert.AreEqual(businessUnit.Name, fetchedTeam.Name);
-            Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
-            Assert.AreEqual(true, fetchedTeam.IsDefault);
-            Assert.AreEqual("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
-                fetchedTeam.Description);
-            Assert.AreEqual(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
-            Assert.AreEqual(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
-        }
-
         [TestMethod]
         public void UpdateBusinessUnit()
         {
@@ -73,6 +60,19 @@ namespace DG.XrmMockupTest
 
                 Assert.IsNotNull(fetchedTeam);
             }
+        }
+
+        private void CheckTeamAttributes(Team fetchedTeam, BusinessUnit businessUnit)
+        {
+            businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
+
+            Assert.AreEqual(businessUnit.Name, fetchedTeam.Name);
+            Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
+            Assert.AreEqual(true, fetchedTeam.IsDefault);
+            Assert.AreEqual("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
+                fetchedTeam.Description);
+            Assert.AreEqual(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
+            Assert.AreEqual(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
         }
     }
 }

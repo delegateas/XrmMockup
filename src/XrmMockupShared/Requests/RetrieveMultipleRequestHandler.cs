@@ -26,6 +26,12 @@ namespace DG.Tools.XrmMockup {
             {
                 queryExpr = Utility.QueryByAttributeToQueryExpression(queryByAttr);
             }
+
+            if (queryExpr.EntityName == null)
+            {
+                throw new FaultException("The 'RetrieveMultiple' method does not support entities of type 'none'");
+            }
+
             FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
