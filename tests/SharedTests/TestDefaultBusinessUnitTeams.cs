@@ -38,16 +38,7 @@ namespace DG.XrmMockupTest
         {
             businessUnit1.Id = orgAdminService.Create(businessUnit1);
 
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                var fetchedTeam = context.TeamSet
-                    .Where(x => x.BusinessUnitId.Id == businessUnit1.Id)
-                    .Where(x => x.Name == businessUnit1.Name)
-                    .FirstOrDefault();
-
-                Assert.IsNotNull(fetchedTeam);
-                CheckTeamAttributes(fetchedTeam, businessUnit1);
-            }
+            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit1);
         }
 
         [TestMethod]
@@ -56,39 +47,16 @@ namespace DG.XrmMockupTest
             businessUnit2.Name = "A new business unit name";
             orgAdminService.Update(businessUnit2);
 
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                var fetchedTeam = context.TeamSet
-                    .Where(x => x.BusinessUnitId.Id == businessUnit2.Id)
-                    .Where(x => x.Name == businessUnit2.Name)
-                    .FirstOrDefault();
-
-                Assert.IsNotNull(fetchedTeam, "The Business Unit default team");
-                CheckTeamAttributes(fetchedTeam, businessUnit2);
-            }
+            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit2);
         }
 
         [TestMethod]
         public void DeleteBusinessUnit()
         {
-            // Retrieve team, to use as reference
-            Team fetchedTeam;
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                fetchedTeam = context.TeamSet
-                    .Where(x => x.BusinessUnitId.Id == businessUnit3.Id)
-                    .Where(x => x.Name == businessUnit3.Name)
-                    .FirstOrDefault();
+            var fetchedTeam = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit3);
 
-                Assert.IsNotNull(fetchedTeam);
-                CheckTeamAttributes(fetchedTeam, businessUnit3);
-            }
-
-            // delete business unit
             orgAdminService.Delete("businessunit", businessUnit3.Id);
-
-
-            // see if team still exist
+            
             try
             {
                 var fetchedTeamAfterDeletion = orgAdminService.Retrieve("team", fetchedTeam.Id, new ColumnSet(true));
@@ -99,7 +67,23 @@ namespace DG.XrmMockupTest
                     e.Message, "Error message doesn't match expected error message, maybe a different error is thrown?");
                 return;
             }
-            Assert.Fail("Error when trying to fetch deleted team isn't thrown.");
+            Assert.Fail("Exception when trying to fetch deleted team isn't thrown.");
+        }
+
+        private Team RetrieveBusinessUnitDefaultTeamAndCheckAttributes(BusinessUnit businessUnit)
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var fetchedTeam = context.TeamSet
+                    .Where(x => x.BusinessUnitId.Id == businessUnit.Id)
+                    .Where(x => x.Name == businessUnit.Name)
+                    .FirstOrDefault();
+
+                Assert.IsNotNull(fetchedTeam);
+                CheckTeamAttributes(fetchedTeam, businessUnit);
+
+                return fetchedTeam;
+            }
         }
 
         private void CheckTeamAttributes(Team fetchedTeam, BusinessUnit businessUnit)
