@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
+using System.ServiceModel;
 using System.Web.WebSockets;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
@@ -16,6 +17,22 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                 PluginEventOperation.Update,
                 PluginExecutionStage.PostOperation,
                 Update);
+
+            RegisterPluginStep("businessunit",
+                PluginEventOperation.Delete,
+                PluginExecutionStage.PreOperation,
+                Delete);
+        }
+
+        private void Delete(LocalPluginContext localContext)
+        {
+            HandleServices(localContext);
+
+            var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
+
+            var team = GetBusinessUnitDefaultTeam(retrievedBusinessUnit.Id);
+
+            orgService.Delete("team", team.Id);
         }
 
         private void Update(LocalPluginContext localContext)
@@ -23,26 +40,15 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             HandleServices(localContext);
 
             var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
-            var oldBusinessUnit = localContext.PluginExecutionContext.PreEntityImages;
-
-            var teamQuery = new QueryExpression("team");
-            teamQuery.ColumnSet = new ColumnSet();
-            teamQuery.Criteria.AddCondition("isdefault", ConditionOperator.Equal, true);
-            teamQuery.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, retrievedBusinessUnit.Id);
-
-
-            var teams = orgService.RetrieveMultiple(teamQuery).Entities;
+            
+            var team = GetBusinessUnitDefaultTeam(retrievedBusinessUnit.Id);
 
             var newTeam = new Entity("team");
             newTeam["name"] = retrievedBusinessUnit.Attributes["name"];
-            newTeam["teamid"] = teams[0].Id;
-            newTeam.Id = teams[0].Id;
+            newTeam["teamid"] = team.Id;
+            newTeam.Id = team.Id;
 
-            
             orgService.Update(newTeam);
-            
-            //var retrievedTeam = orgService.
-
         }
 
         private void HandleServices(LocalPluginContext localContext)
@@ -54,6 +60,24 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
             orgAdminService = localContext.OrganizationAdminService;
             orgService = localContext.OrganizationService;
+        }
+
+        private Entity GetBusinessUnitDefaultTeam(Guid businessUnitGuid)
+        {
+            var teamQuery = new QueryExpression("team");
+            teamQuery.ColumnSet = new ColumnSet();
+            teamQuery.Criteria.AddCondition("isdefault", ConditionOperator.Equal, true);
+            teamQuery.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, businessUnitGuid);
+
+            var retrievedTeams = orgService.RetrieveMultiple(teamQuery);
+
+            if (retrievedTeams.Entities.Count > 1)
+            {
+                throw new FaultException("There cannot be more than one default business unit team!");
+                //TODO: @Magnus, er dette korrekt?
+            }
+
+            return orgService.RetrieveMultiple(teamQuery).Entities[0];
         }
     }
 }
