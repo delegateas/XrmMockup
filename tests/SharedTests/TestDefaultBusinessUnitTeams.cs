@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 using System.Collections.Generic;
+using System.ServiceModel.Security;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace DG.XrmMockupTest
@@ -15,6 +16,7 @@ namespace DG.XrmMockupTest
     {
         BusinessUnit businessUnit1;
         BusinessUnit businessUnit2;
+        BusinessUnit businessUnit3;
 
 
         [TestInitialize]
@@ -26,6 +28,9 @@ namespace DG.XrmMockupTest
 
             businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
             businessUnit2.Id = orgAdminService.Create(businessUnit2);
+
+            businessUnit3 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 3" };
+            businessUnit3.Id = orgAdminService.Create(businessUnit3);
         }
 
         [TestMethod]
@@ -58,8 +63,43 @@ namespace DG.XrmMockupTest
                     .Where(x => x.Name == businessUnit2.Name)
                     .FirstOrDefault();
 
-                Assert.IsNotNull(fetchedTeam);
+                Assert.IsNotNull(fetchedTeam, "The Business Unit default team");
+                CheckTeamAttributes(fetchedTeam, businessUnit2);
             }
+        }
+
+        [TestMethod]
+        public void DeleteBusinessUnit()
+        {
+            // Retrieve team, to use as reference
+            Team fetchedTeam;
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                fetchedTeam = context.TeamSet
+                    .Where(x => x.BusinessUnitId.Id == businessUnit3.Id)
+                    .Where(x => x.Name == businessUnit3.Name)
+                    .FirstOrDefault();
+
+                Assert.IsNotNull(fetchedTeam);
+                CheckTeamAttributes(fetchedTeam, businessUnit3);
+            }
+
+            // delete business unit
+            orgAdminService.Delete("businessunit", businessUnit3.Id);
+
+
+            // see if team still exist
+            try
+            {
+                var fetchedTeamAfterDeletion = orgAdminService.Retrieve("team", fetchedTeam.Id, new ColumnSet(true));
+            }
+            catch (FaultException e)
+            {
+                Assert.AreEqual($"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
+                    e.Message, "Error message doesn't match expected error message, maybe a different error is thrown?");
+                return;
+            }
+            Assert.Fail("Error when trying to fetch deleted team isn't thrown.");
         }
 
         private void CheckTeamAttributes(Team fetchedTeam, BusinessUnit businessUnit)
