@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
+using System.Linq;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 
@@ -25,55 +26,43 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
             RegisterPluginStep(LogicalNames.SystemUser,
                 PluginEventOperation.Update,
-                PluginExecutionStage.PreOperation,
-                UpdatePreOperation);
-
-            RegisterPluginStep(LogicalNames.SystemUser,
-                PluginEventOperation.Update,
                 PluginExecutionStage.PostOperation,
-                UpdatePostOperation);
-        }
-
-        private void UpdatePostOperation(LocalPluginContext localContext)
-        {
-            HandleServices(localContext);
-
-            if (IsBusinessUnitIdChanged(localContext))
-            {
-                AddMember(localContext);
-            }
+                UpdatePreOperation)
+                .AddImage(PluginImageType.PreImage);
         }
 
         private void UpdatePreOperation(LocalPluginContext localContext)
         {
             HandleServices(localContext);
 
-            if (IsBusinessUnitIdChanged(localContext))
+            var preSystemUser = localContext.PluginExecutionContext.PreEntityImages.First().Value;
+            var postSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId,
+                new ColumnSet("businessunitid"));
+
+            if (postSystemUser.Attributes["businessunitid"] != preSystemUser.Attributes["businessunitid"])
             {
-                RemoveMember(localContext);
+                RemoveMember(preSystemUser);
+                AddMember(localContext);
             }
         }
-
-        private bool IsBusinessUnitIdChanged(LocalPluginContext localContext)
-        {
-            var targetEntity = (localContext.PluginExecutionContext.InputParameters["Target"] as Entity);
-
-            return targetEntity.Attributes.Contains("businessunitid");
-        }
-
 
         private void RemoveMember(LocalPluginContext localContext)
         {
             HandleServices(localContext);
 
             var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
-            
-            var team = GetBusinessUnitDefaultTeam(retrievedSystemUser);
+
+            RemoveMember(retrievedSystemUser);
+        }
+
+        private void RemoveMember(Entity systemUser)
+        {
+            var team = GetBusinessUnitDefaultTeam(systemUser);
 
             var request = new RemoveMembersTeamRequest
             {
                 TeamId = team.Id,
-                MemberIds = new[] {retrievedSystemUser.Id}
+                MemberIds = new[] { systemUser.Id }
             };
 
             orgService.Execute(request);
@@ -84,13 +73,13 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             HandleServices(localContext);
 
             var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
-            
+
             var team = GetBusinessUnitDefaultTeam(retrievedSystemUser);
 
             var request = new AddMembersTeamRequest
             {
                 TeamId = team.Id,
-                MemberIds = new[] {retrievedSystemUser.Id}
+                MemberIds = new[] { retrievedSystemUser.Id }
             };
 
             orgService.Execute(request);
