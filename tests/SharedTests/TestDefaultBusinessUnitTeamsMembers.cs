@@ -70,6 +70,7 @@ namespace DG.XrmMockupTest
             var retrievedUser = orgAdminService.Retrieve("systemuser", user2.Id, new ColumnSet("businessunitid"));
 
             retrievedUser.Attributes["businessunitid"] = businessUnit4.ToEntityReference();
+            // retrievedUser.Attributes["name"] = "Just changed the name ;)";
 
             orgAdminService.Update(retrievedUser);
 

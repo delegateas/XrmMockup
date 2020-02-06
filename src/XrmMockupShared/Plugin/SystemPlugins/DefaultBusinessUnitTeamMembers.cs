@@ -56,7 +56,9 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
         private bool IsBusinessUnitIdChanged(LocalPluginContext localContext)
         {
-            return true;
+            var targetEntity = (localContext.PluginExecutionContext.InputParameters["Target"] as Entity);
+
+            return targetEntity.Attributes.Contains("businessunitid");
         }
 
 
