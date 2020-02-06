@@ -21,6 +21,7 @@ namespace DG.XrmMockupTest {
         public void TestSharingAccess() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var otherUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles._000TestingRole);
                 var sharingUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);

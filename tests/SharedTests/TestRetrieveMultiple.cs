@@ -196,6 +196,7 @@ namespace DG.XrmMockupTest {
                 Assert.IsNotNull(rootBu.Id);
 
                 var anotherBusinessUnit = new BusinessUnit();
+                anotherBusinessUnit["name"] = "Business unit name";
                 anotherBusinessUnit.Id = orgAdminUIService.Create(anotherBusinessUnit);
 
                 var user = crm.CreateUser(orgAdminUIService, anotherBusinessUnit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;

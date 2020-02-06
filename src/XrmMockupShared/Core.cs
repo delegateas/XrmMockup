@@ -11,6 +11,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System.Reflection;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
+using System.Web.WebSockets;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using DG.Tools.XrmMockup.Database;
@@ -125,6 +126,15 @@ namespace DG.Tools.XrmMockup
             this.db.Add(rootBu, false);
             this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
+            // Setup default team for root business unit
+            var defaultTeam = new Entity(LogicalNames.Team);
+            defaultTeam["name"] = rootBu.Attributes["name"];
+            defaultTeam["teamtype"] = new OptionSetValue(0);
+            defaultTeam["isdefault"] = true;
+            defaultTeam["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
+            defaultTeam["businessunitid"] = rootBu.ToEntityReference();
+            this.db.Add(defaultTeam);
+
             // Setup admin user
             var admin = new Entity(LogicalNames.SystemUser)
             {
@@ -136,6 +146,12 @@ namespace DG.Tools.XrmMockup
             admin["lastname"] = "SYSTEM";
             admin["businessunitid"] = RootBusinessUnitRef;
             this.db.Add(admin);
+
+            // Adding admin user to root business unit default team
+            var teamMembership = new Entity(LogicalNames.TeamMembership);
+            teamMembership["teamid"] = defaultTeam.Id;
+            teamMembership["systemuserid"] = admin.Id;
+            this.db.Add(teamMembership);
         }
 
         private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
