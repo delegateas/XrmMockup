@@ -1,12 +1,9 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
-using System.Collections.Generic;
-using System.ServiceModel.Security;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace DG.XrmMockupTest

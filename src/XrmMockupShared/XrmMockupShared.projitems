@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginExecutionProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\MockupPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeamMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\UpdateInactiveIncident.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />

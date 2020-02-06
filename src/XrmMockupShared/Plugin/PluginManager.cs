@@ -37,7 +37,8 @@ namespace DG.Tools.XrmMockup {
         {
             //new SystemPlugins.ContactDefaultValues()
             new SystemPlugins.UpdateInactiveIncident(),
-            new SystemPlugins.DefaultBusinessUnitTeams()
+            new SystemPlugins.DefaultBusinessUnitTeams(),
+            new SystemPlugins.DefaultBusinessUnitTeamMembers()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)

@@ -2,7 +2,6 @@
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.ServiceModel;
-using System.Web.WebSockets;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
