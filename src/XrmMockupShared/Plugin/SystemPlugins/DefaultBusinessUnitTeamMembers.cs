@@ -9,8 +9,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 {
     internal class DefaultBusinessUnitTeamMembers : MockupPlugin
     {
-        IOrganizationService orgAdminService;
-        IOrganizationService orgService;
+        private IOrganizationService _orgService;
 
         internal DefaultBusinessUnitTeamMembers() : base(typeof(DefaultBusinessUnitTeams))
         {
@@ -36,7 +35,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             HandleServices(localContext);
 
             var preSystemUser = localContext.PluginExecutionContext.PreEntityImages.First().Value;
-            var postSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId,
+            var postSystemUser = _orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId,
                 new ColumnSet("businessunitid"));
 
             if (postSystemUser.Attributes["businessunitid"] != preSystemUser.Attributes["businessunitid"])
@@ -50,7 +49,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
         {
             HandleServices(localContext);
 
-            var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
+            var retrievedSystemUser = _orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
 
             RemoveMember(retrievedSystemUser);
         }
@@ -65,14 +64,14 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                 MemberIds = new[] { systemUser.Id }
             };
 
-            orgService.Execute(request);
+            _orgService.Execute(request);
         }
 
         private void AddMember(LocalPluginContext localContext)
         {
             HandleServices(localContext);
 
-            var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
+            var retrievedSystemUser = _orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
 
             var team = GetBusinessUnitDefaultTeam(retrievedSystemUser);
 
@@ -82,7 +81,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                 MemberIds = new[] { retrievedSystemUser.Id }
             };
 
-            orgService.Execute(request);
+            _orgService.Execute(request);
         }
 
 
@@ -93,8 +92,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                 throw new ArgumentNullException("localContext");
             }
 
-            orgAdminService = localContext.OrganizationAdminService;
-            orgService = localContext.OrganizationService;
+            _orgService = localContext.OrganizationService;
         }
 
         private Entity GetBusinessUnitDefaultTeam(Entity retrievedSystemUser)
@@ -106,14 +104,14 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             teamQuery.Criteria.AddCondition("isdefault", ConditionOperator.Equal, true);
             teamQuery.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, businessUnitReference.Id);
 
-            var retrievedTeams = orgService.RetrieveMultiple(teamQuery);
+            var retrievedTeams = _orgService.RetrieveMultiple(teamQuery);
 
             if (retrievedTeams.Entities.Count > 1)
             {
                 throw new FaultException("There cannot be more than one default business unit team!");
             }
 
-            return orgService.RetrieveMultiple(teamQuery).Entities[0];
+            return _orgService.RetrieveMultiple(teamQuery).Entities[0];
         }
     }
 }

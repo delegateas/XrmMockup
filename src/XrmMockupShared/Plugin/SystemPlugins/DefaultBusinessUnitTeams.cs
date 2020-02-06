@@ -7,8 +7,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 {
     internal class DefaultBusinessUnitTeams : MockupPlugin
     {
-        IOrganizationService orgAdminService;
-        IOrganizationService orgService;
+        private IOrganizationService _orgService;
 
         internal DefaultBusinessUnitTeams() : base(typeof(DefaultBusinessUnitTeams))
         {
@@ -27,18 +26,18 @@ namespace DG.Tools.XrmMockup.SystemPlugins
         {
             HandleServices(localContext);
 
-            var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
+            var retrievedBusinessUnit = _orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
 
             var team = GetBusinessUnitDefaultTeam(retrievedBusinessUnit.Id);
 
-            orgService.Delete("team", team.Id);
+            _orgService.Delete("team", team.Id);
         }
 
         private void Update(LocalPluginContext localContext)
         {
             HandleServices(localContext);
 
-            var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
+            var retrievedBusinessUnit = _orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
             
             var team = GetBusinessUnitDefaultTeam(retrievedBusinessUnit.Id);
 
@@ -47,7 +46,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             newTeam["teamid"] = team.Id;
             newTeam.Id = team.Id;
 
-            orgService.Update(newTeam);
+            _orgService.Update(newTeam);
         }
 
         private void HandleServices(LocalPluginContext localContext)
@@ -57,8 +56,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                 throw new ArgumentNullException("localContext");
             }
 
-            orgAdminService = localContext.OrganizationAdminService;
-            orgService = localContext.OrganizationService;
+            _orgService = localContext.OrganizationService;
         }
 
         private Entity GetBusinessUnitDefaultTeam(Guid businessUnitGuid)
@@ -68,15 +66,14 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             teamQuery.Criteria.AddCondition("isdefault", ConditionOperator.Equal, true);
             teamQuery.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, businessUnitGuid);
 
-            var retrievedTeams = orgService.RetrieveMultiple(teamQuery);
+            var retrievedTeams = _orgService.RetrieveMultiple(teamQuery);
 
             if (retrievedTeams.Entities.Count > 1)
             {
                 throw new FaultException("There cannot be more than one default business unit team!");
-                //TODO: @Magnus, er dette korrekt?
             }
 
-            return orgService.RetrieveMultiple(teamQuery).Entities[0];
+            return _orgService.RetrieveMultiple(teamQuery).Entities[0];
         }
     }
 }

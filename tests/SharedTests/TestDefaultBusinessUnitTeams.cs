@@ -11,52 +11,51 @@ namespace DG.XrmMockupTest
     [TestClass]
     public class TestDefaultBusinessUnitTeams : UnitTestBase
     {
-        BusinessUnit businessUnit1;
-        BusinessUnit businessUnit2;
-        BusinessUnit businessUnit3;
-
+        private BusinessUnit _businessUnit1;
+        private BusinessUnit _businessUnit2;
+        private BusinessUnit _businessUnit3;
 
         [TestInitialize]
         public void Initialize()
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
             
-            businessUnit1 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 1" };
+            _businessUnit1 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 1" };
 
-            businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
-            businessUnit2.Id = orgAdminService.Create(businessUnit2);
+            _businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
+            _businessUnit2.Id = orgAdminService.Create(_businessUnit2);
 
-            businessUnit3 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 3" };
-            businessUnit3.Id = orgAdminService.Create(businessUnit3);
+            _businessUnit3 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 3" };
+            _businessUnit3.Id = orgAdminService.Create(_businessUnit3);
         }
 
         [TestMethod]
         public void CreateBusinessUnit()
         {
-            businessUnit1.Id = orgAdminService.Create(businessUnit1);
+            _businessUnit1.Id = orgAdminService.Create(_businessUnit1);
 
-            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit1);
+            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit1);
         }
 
         [TestMethod]
         public void UpdateBusinessUnit()
         {
-            businessUnit2.Name = "A new business unit name";
-            orgAdminService.Update(businessUnit2);
+            _businessUnit2.Name = "A new business unit name";
+            orgAdminService.Update(_businessUnit2);
 
-            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit2);
+            RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit2);
         }
 
         [TestMethod]
         public void DeleteBusinessUnit()
         {
-            var fetchedTeam = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit3);
+            var fetchedTeam = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit3);
 
-            orgAdminService.Delete("businessunit", businessUnit3.Id);
+            orgAdminService.Delete("businessunit", _businessUnit3.Id);
             
             try
             {
-                var fetchedTeamAfterDeletion = orgAdminService.Retrieve("team", fetchedTeam.Id, new ColumnSet(true));
+                orgAdminService.Retrieve("team", fetchedTeam.Id, new ColumnSet(true));
             }
             catch (FaultException e)
             {

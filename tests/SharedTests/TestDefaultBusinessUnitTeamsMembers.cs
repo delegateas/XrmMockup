@@ -10,38 +10,38 @@ namespace DG.XrmMockupTest
     [TestClass]
     public class TestDefaultBusinessUnitTeamMembers : UnitTestBase
     {
-        BusinessUnit businessUnit1;
-        BusinessUnit businessUnit2;
-        BusinessUnit businessUnit3;
-        BusinessUnit businessUnit4;
-        private SystemUser user1;
-        private SystemUser user2;
+        private BusinessUnit _businessUnit1;
+        private BusinessUnit _businessUnit2;
+        private BusinessUnit _businessUnit3;
+        private   BusinessUnit _businessUnit4;
+        private SystemUser _user1;
+        private  SystemUser _user2;
 
         [TestInitialize]
         public void Initialize()
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
 
-            businessUnit1 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 1" };
-            businessUnit1.Id = orgAdminService.Create(businessUnit1);
+            _businessUnit1 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 1" };
+            _businessUnit1.Id = orgAdminService.Create(_businessUnit1);
             
-            businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
-            businessUnit2.Id = orgAdminService.Create(businessUnit2);
-            user1 = crm.CreateUser(orgAdminService, businessUnit2.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
+            _businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
+            _businessUnit2.Id = orgAdminService.Create(_businessUnit2);
+            _user1 = crm.CreateUser(orgAdminService, _businessUnit2.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
 
-            businessUnit3 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 3" };
-            businessUnit3.Id = orgAdminService.Create(businessUnit3);
-            businessUnit4 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 4" };
-            businessUnit4.Id = orgAdminService.Create(businessUnit4);
-            user2 = crm.CreateUser(orgAdminService, businessUnit3.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
+            _businessUnit3 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 3" };
+            _businessUnit3.Id = orgAdminService.Create(_businessUnit3);
+            _businessUnit4 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 4" };
+            _businessUnit4.Id = orgAdminService.Create(_businessUnit4);
+            _user2 = crm.CreateUser(orgAdminService, _businessUnit3.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
         }
 
         [TestMethod]
         public void AddMembersToBusinessUnit()
         {
-            var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit1);
+            var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit1);
 
-            SystemUser user11 = crm.CreateUser(orgAdminService, businessUnit1.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
+            crm.CreateUser(orgAdminService, _businessUnit1.ToEntityReference(), SecurityRoles.SystemCustomizer);
 
             using (var context = new Xrm(orgAdminService))
             {
@@ -53,9 +53,9 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void RemoveMemberFromBusinessUnit()
         {
-            var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit2);
+            var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit2);
 
-            orgAdminService.Delete("systemuser", user1.Id);
+            orgAdminService.Delete("systemuser", _user1.Id);
 
             using (var context = new Xrm(orgAdminService))
             {
@@ -67,15 +67,15 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void MoveMemberFromBUOneToBUTwo()
         {
-            var retrievedUser = orgAdminService.Retrieve("systemuser", user2.Id, new ColumnSet("businessunitid"));
+            var retrievedUser = orgAdminService.Retrieve("systemuser", _user2.Id, new ColumnSet("businessunitid"));
 
-            retrievedUser.Attributes["businessunitid"] = businessUnit4.ToEntityReference();
+            retrievedUser.Attributes["businessunitid"] = _businessUnit4.ToEntityReference();
             // retrievedUser.Attributes["name"] = "Just changed the name ;)";
 
             orgAdminService.Update(retrievedUser);
 
-            var team3 = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit3);
-            var team4 = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(businessUnit4);
+            var team3 = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit3);
+            var team4 = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit4);
 
             using (var context = new Xrm(orgAdminService))
             {
