@@ -1,4 +1,6 @@
 ﻿group crm365 
 	Microsoft.CrmSdk.CoreAssemblies
-	Microsoft.IdentityModel
+	Microsoft.CrmSdk.Deployment
+	Microsoft.CrmSdk.XrmTooling.CoreAssembly
+	Microsoft.IdentityModel.Clients.ActiveDirectory
 	Microsoft.CrmSdk.Workflow

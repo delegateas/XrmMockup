@@ -43,5 +43,9 @@ group crm2016
 
 group crm365
   source https://nuget.org/api/v2
-  nuget Microsoft.CrmSdk.CoreAssemblies ~> 8.2
-  nuget Microsoft.CrmSdk.Workflow >= 8.2
+  nuget Microsoft.CrmSdk.CoreAssemblies >= 9
+  nuget Microsoft.CrmSdk.Workflow >= 9
+  nuget Microsoft.CrmSdk.Deployment >= 9
+  nuget Microsoft.CrmSdk.XrmTooling.CoreAssembly >= 9
+  nuget Microsoft.IdentityModel.Clients.ActiveDirectory ~> 3.19.8
+

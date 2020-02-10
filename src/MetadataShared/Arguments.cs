@@ -67,7 +67,31 @@ namespace DG.Tools.XrmMockup.Metadata
             Name = "fetchFromAssemblies",
             Abbreviations = new string[] { "fa" }
         };
-        
+
+        public static ArgumentDescription Method = new ArgumentDescription()
+        {
+            Name = "method",
+            Abbreviations = new string[] { }
+        };
+
+        public static ArgumentDescription ClientId = new ArgumentDescription()
+        {
+            Name = "mfaAppId",
+            Abbreviations = new string[] { }
+        };
+
+        public static ArgumentDescription ReturnUrl = new ArgumentDescription()
+        {
+            Name = "mfaReturnUrl",
+            Abbreviations = new string[] { }
+        };
+
+        public static ArgumentDescription ClientSecret = new ArgumentDescription()
+        {
+            Name = "mfaClientSecret",
+            Abbreviations = new string[] { }
+        };
+
         public static ArgumentDescription[] ArgList = new ArgumentDescription[] {
             Url,
             Username,
@@ -78,7 +102,11 @@ namespace DG.Tools.XrmMockup.Metadata
             Solutions,
             OutDir,
             UnitTestProjectPath,
-            fetchFromAssemblies
+            fetchFromAssemblies,
+            Method,
+            ClientId,
+            ReturnUrl,
+            ClientSecret
         };
     }
 }
