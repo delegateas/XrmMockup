@@ -1,3 +1,7 @@
+### 1.1.0 - 11 February 2020
+* Added better description when no default status reason exists
+* Added support for client secret
+
 ### 1.0.0 - 31 January 2020
 * It's happening!
 * Inactive incidents can no longer be modified

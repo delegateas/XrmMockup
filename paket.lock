@@ -675,10 +675,10 @@ NUGET
 GROUP crm365
 NUGET
   remote: https://www.nuget.org/api/v2
-    Microsoft.CrmSdk.CoreAssemblies (9.0.2.22)
-    Microsoft.CrmSdk.Deployment (9.0.2.22)
+    Microsoft.CrmSdk.CoreAssemblies (9.0.2.23)
+    Microsoft.CrmSdk.Deployment (9.0.2.23)
       Microsoft.CrmSdk.CoreAssemblies (>= 9.0.2) - restriction: >= net462
-    Microsoft.CrmSdk.Workflow (9.0.2.22)
+    Microsoft.CrmSdk.Workflow (9.0.2.23)
       Microsoft.CrmSdk.CoreAssemblies (>= 9.0.2) - restriction: >= net462
     Microsoft.CrmSdk.XrmTooling.CoreAssembly (9.1.0.37)
       Microsoft.CrmSdk.CoreAssemblies (>= 9.0.2.21) - restriction: >= net462
