@@ -13,7 +13,8 @@ using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Text;
 
-namespace WorkflowExecuter {
+namespace WorkflowExecuter
+{
     [Serializable]
     [KnownType(typeof(CreateVariable))]
     [KnownType(typeof(SelectFirstNonNull))]
@@ -41,7 +42,8 @@ namespace WorkflowExecuter {
     [KnownType(typeof(ConvertType))]
     [KnownType(typeof(Assign))]
     [KnownType(typeof(SendEmail))]
-    internal class WorkflowTree {
+    internal class WorkflowTree
+    {
         [DataMember]
         public IWorkflowNode StartActivity;
         [DataMember]
@@ -79,13 +81,15 @@ namespace WorkflowExecuter {
         public WorkflowTree(IWorkflowNode StartActivity) : this(StartActivity, false, false, new HashSet<string>(),
             workflow_runas.CallingUser, Workflow_Scope.User, workflow_stage.Postoperation, workflow_stage.Postoperation,
             workflow_stage.Postoperation, Workflow_Mode.Realtime, null, "", new Dictionary<string, CodeActivity>(),
-            new List<WorkflowArgument>(), new List<WorkflowArgument>()) { }
+            new List<WorkflowArgument>(), new List<WorkflowArgument>())
+        { }
 
         public WorkflowTree(IWorkflowNode StartActivity, bool? TriggerOnCreate, bool? TriggerOnDelete,
             HashSet<string> TriggerFieldsChange, workflow_runas? RunAs, Workflow_Scope? Scope,
             workflow_stage? CreateStage, workflow_stage? UpdateStage, workflow_stage? DeleteStage, Workflow_Mode? Mode,
             Guid? Owner, string PrimaryEntityLogicalname, Dictionary<string, CodeActivity> CodeActivites,
-            List<WorkflowArgument> Input, List<WorkflowArgument> Output) {
+            List<WorkflowArgument> Input, List<WorkflowArgument> Output)
+        {
             this.Variables = new Dictionary<string, object>();
             this.StartActivity = StartActivity;
             this.TriggerOnCreate = TriggerOnCreate;
@@ -104,16 +108,19 @@ namespace WorkflowExecuter {
             this.Output = Output;
         }
 
-        public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset, 
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            if (primaryEntity.Id == Guid.Empty) {
+        public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset,
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (primaryEntity.Id == Guid.Empty)
+            {
                 throw new WorkflowException("The primary entity must have an id");
             }
             Reset();
             Variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
             Variables["ExecutionTime"] = DateTime.Now.Add(timeOffset);
             var transactioncurrencyid = "transactioncurrencyid";
-            if (primaryEntity.Attributes.ContainsKey(transactioncurrencyid)) {
+            if (primaryEntity.Attributes.ContainsKey(transactioncurrencyid))
+            {
                 var currencyRef = primaryEntity.GetAttributeValue<EntityReference>(transactioncurrencyid);
                 var exchangerate = "exchangerate";
                 var currency = orgService.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(exchangerate));
@@ -123,7 +130,8 @@ namespace WorkflowExecuter {
             return this;
         }
 
-        internal void Reset() {
+        internal void Reset()
+        {
             Variables["True"] = true;
             Variables["False"] = false;
             Variables["ExchangeRate"] = null;
@@ -132,20 +140,23 @@ namespace WorkflowExecuter {
             Variables["Wait"] = null;
         }
 
-        internal void HardReset() {
+        internal void HardReset()
+        {
             Variables = new Dictionary<string, object>();
             Reset();
         }
     }
 
 
-    internal class WaitInfo {
+    internal class WaitInfo
+    {
         public ActivityList Element { get; private set; }
         public int ElementIndex { get; private set; }
         public Dictionary<string, object> VariablesInstance { get; private set; }
         public EntityReference PrimaryEntity { get; private set; }
 
-        public WaitInfo(ActivityList Element, int ElementIndex, Dictionary<string, object> VariablesInstance, EntityReference PrimaryEntity) {
+        public WaitInfo(ActivityList Element, int ElementIndex, Dictionary<string, object> VariablesInstance, EntityReference PrimaryEntity)
+        {
             this.Element = Element;
             this.ElementIndex = ElementIndex;
             this.VariablesInstance = VariablesInstance;
@@ -155,7 +166,8 @@ namespace WorkflowExecuter {
 
 
     [DataContract]
-    public class WorkflowArgument {
+    public class WorkflowArgument
+    {
         public enum DirectionType { Input, Output };
         [DataMember]
         public string Name { get; private set; }
@@ -170,7 +182,8 @@ namespace WorkflowExecuter {
         [DataMember]
         public string EntityLogicalName { get; private set; }
 
-        public WorkflowArgument(string Name, bool Required, bool IsTarget, string Description, DirectionType Direction, string EntityLogicalName) {
+        public WorkflowArgument(string Name, bool Required, bool IsTarget, string Description, DirectionType Direction, string EntityLogicalName)
+        {
             this.Name = Name;
             this.Required = Required;
             this.IsTarget = IsTarget;
@@ -182,12 +195,14 @@ namespace WorkflowExecuter {
     }
 
 
-    public interface IWorkflowNode {
+    public interface IWorkflowNode
+    {
         void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace);
     }
 
     [DataContract]
-    internal class CreateVariable : IWorkflowNode {
+    internal class CreateVariable : IWorkflowNode
+    {
         [DataMember]
         public object[][] Parameters { get; private set; }
         [DataMember]
@@ -195,19 +210,23 @@ namespace WorkflowExecuter {
         [DataMember]
         public string VariableName { get; private set; }
 
-        public CreateVariable(object[][] Parameters, string TargetType, string VariableName) {
+        public CreateVariable(object[][] Parameters, string TargetType, string VariableName)
+        {
             this.Parameters = Parameters;
             this.TargetType = TargetType;
             this.VariableName = VariableName;
         }
 
-        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, 
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            switch (TargetType) {
+        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            switch (TargetType)
+            {
                 case "String":
                     variables[VariableName] = ((string)Parameters[0][1]).Contains("(Arguments)") ? variables[(string)Parameters[0][1]] : (string)Parameters[0][1];
                     break;
-                case "Boolean": {
+                case "Boolean":
+                    {
                         var value = ((string)Parameters[0][1]).ToLower();
                         variables[VariableName] = value == "1" || value == "true" ? true : false;
                     }
@@ -228,49 +247,68 @@ namespace WorkflowExecuter {
                     variables[VariableName] = new Money(decimal.Parse((string)Parameters[0][1]));
                     break;
                 case "EntityReference":
-                    if (Parameters[0].Count() == 5 && ((string)Parameters[0][0]).Contains("EntityReference")) {
+                    if (Parameters[0].Count() == 5 && ((string)Parameters[0][0]).Contains("EntityReference"))
+                    {
                         var entRef = new EntityReference((string)Parameters[0][1], (Guid)variables[(string)Parameters[0][3]]);
                         entRef.Name = (string)Parameters[0][2];
                         variables[VariableName] = entRef;
-                    } else if (Parameters[0].Count() == 3 && ((string)Parameters[0][0]).Contains("EntityReference")) {
-                        if (!variables.ContainsKey((string)Parameters[0][1])) {
+                    }
+                    else if (Parameters[0].Count() == 3 && ((string)Parameters[0][0]).Contains("EntityReference"))
+                    {
+                        if (!variables.ContainsKey((string)Parameters[0][1]))
+                        {
                             throw new WorkflowException($"The variable '{(string)Parameters[0][1]}' has not been initialized");
                         }
 
                         variables[VariableName] = variables[(string)Parameters[0][1]];
-                    } else if (Parameters[0].Count() == 3 && ((string)Parameters[0][0]).Contains("Guid")) {
+                    }
+                    else if (Parameters[0].Count() == 3 && ((string)Parameters[0][0]).Contains("Guid"))
+                    {
                         variables[VariableName] = new Guid((string)Parameters[0][1]);
                     }
                     break;
-                case "DateTime": {
+                case "DateTime":
+                    {
                         var value = (string)Parameters[0][1];
-                        if (int.TryParse(value, out int result)) {
+                        if (int.TryParse(value, out int result))
+                        {
                             variables[VariableName] = result;
-                        } else {
+                        }
+                        else
+                        {
                             variables[VariableName] = DateTime.Parse(value);
                         }
                     }
                     break;
-                case "[System.DateTime.MinValue]": {
+                case "[System.DateTime.MinValue]":
+                    {
                         variables[VariableName] = DateTime.MinValue;
                     }
                     break;
-                case "Object": {
-                        if (Parameters[0][1] as string == "[System.DateTime.MinValue]") {
+                case "Object":
+                    {
+                        if (Parameters[0][1] as string == "[System.DateTime.MinValue]")
+                        {
                             variables[VariableName] = DateTime.MinValue;
-                        } else if (Parameters[0][1] as string == "[System.DateTime.MaxValue]") {
+                        }
+                        else if (Parameters[0][1] as string == "[System.DateTime.MaxValue]")
+                        {
                             variables[VariableName] = DateTime.MaxValue;
-                        } else {
+                        }
+                        else
+                        {
                             variables[VariableName] = null;
                         }
                     }
                     break;
-                case "XrmTimeSpan": {
+                case "XrmTimeSpan":
+                    {
                         var param = Parameters[0].Select(s => int.Parse(s as string)).ToArray();
                         variables[VariableName] = new XrmTimeSpan(param[4], param[3], param[0], param[1], param[2]);
                     }
                     break;
-                case "EntityCollection": {
+                case "EntityCollection":
+                    {
                         var variablesInstance = variables;
                         var entities = Parameters[0].Skip(1)
                             .Select(v => variablesInstance[(string)v] as EntityReference)
@@ -286,33 +324,41 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Persist : IWorkflowNode {
-        public Persist() {
+    internal class Persist : IWorkflowNode
+    {
+        public Persist()
+        {
         }
 
-        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, 
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+        public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             variables["Wait"] = null;
         }
     }
 
     [DataContract]
-    internal class SelectFirstNonNull : IWorkflowNode {
+    internal class SelectFirstNonNull : IWorkflowNode
+    {
         [DataMember]
         public string[] Parameters { get; private set; }
         [DataMember]
         public string VariableName { get; private set; }
 
-        public SelectFirstNonNull(string[] Parameters, string VariableName) {
+        public SelectFirstNonNull(string[] Parameters, string VariableName)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             object value = null;
-            foreach (var param in Parameters) {
-                if (variables.ContainsKey(param) && variables[param] != null) {
+            foreach (var param in Parameters)
+            {
+                if (variables.ContainsKey(param) && variables[param] != null)
+                {
                     value = variables[param];
                     break;
                 }
@@ -324,7 +370,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Arithmetic : IWorkflowNode {
+    internal class Arithmetic : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -334,7 +381,8 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Method { get; private set; }
 
-        public Arithmetic(string[][] Parameters, string TargetType, string VariableName, string Method) {
+        public Arithmetic(string[][] Parameters, string TargetType, string VariableName, string Method)
+        {
             this.Parameters = Parameters;
             this.TargetType = TargetType;
             this.VariableName = VariableName;
@@ -342,27 +390,32 @@ namespace WorkflowExecuter {
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var var1 = variables[Parameters[0][0]];
             var var2 = variables[Parameters[0][1]];
             var variablesInstance = variables;
 
-            if (TargetType == null) {
+            if (TargetType == null)
+            {
                 var nonNull = Parameters[0].Select(v => variablesInstance[v]).FirstOrDefault(v => v != null);
-                if (nonNull == null) {
+                if (nonNull == null)
+                {
                     variables[VariableName] = null;
                     return;
                 }
                 TargetType = nonNull.GetType().Name;
             }
 
-            if (TargetType == "String" && Method == "Add") {
+            if (TargetType == "String" && Method == "Add")
+            {
                 var strings = Parameters[0].Select(v => variablesInstance[v] as string);
                 variables[VariableName] = String.Concat(strings);
                 return;
             }
 
-            if (TargetType == "EntityCollection" && Method == "Add") {
+            if (TargetType == "EntityCollection" && Method == "Add")
+            {
                 var entities = Parameters[0]
                     .Select(v => variablesInstance[v] as EntityReference)
                     .Where(r => r != null)
@@ -371,19 +424,24 @@ namespace WorkflowExecuter {
                 return;
             }
 
-            if (var1 == null || var2 == null) {
+            if (var1 == null || var2 == null)
+            {
                 variables[VariableName] = null;
                 return;
             }
 
-            if (TargetType == "DateTime") {
-                if (var2 is XrmTimeSpan) {
-                    if (Method == "Add") {
+            if (TargetType == "DateTime")
+            {
+                if (var2 is XrmTimeSpan)
+                {
+                    if (Method == "Add")
+                    {
                         variables[VariableName] = ((DateTime)var1).AddXrmTimeSpan((XrmTimeSpan)var2);
                         return;
                     }
 
-                    if (Method == "Subtract") {
+                    if (Method == "Subtract")
+                    {
                         variables[VariableName] = ((DateTime)var1).SubtractXrmTimeSpan((XrmTimeSpan)var2);
                         return;
                     }
@@ -394,7 +452,8 @@ namespace WorkflowExecuter {
             decimal? dec1 = null;
             decimal? dec2 = null;
 
-            switch (TargetType) {
+            switch (TargetType)
+            {
                 case "Money":
                     dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
                     dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
@@ -411,12 +470,14 @@ namespace WorkflowExecuter {
                     break;
             }
 
-            if (!dec1.HasValue || !dec2.HasValue) {
+            if (!dec1.HasValue || !dec2.HasValue)
+            {
                 throw new NotImplementedException($"Unknown target type '{TargetType}'");
             }
 
             decimal? result = null;
-            switch (Method) {
+            switch (Method)
+            {
                 case "Multiply":
                     result = dec1 * dec2;
                     break;
@@ -433,11 +494,13 @@ namespace WorkflowExecuter {
                     break;
             }
 
-            if (!result.HasValue) {
+            if (!result.HasValue)
+            {
                 throw new NotImplementedException($"Unknown arithmetic method '{Method}'");
             }
 
-            switch (TargetType) {
+            switch (TargetType)
+            {
                 case "Money":
                     variables[VariableName] = new Money(result.Value);
                     break;
@@ -454,7 +517,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Aggregate : IWorkflowNode {
+    internal class Aggregate : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -462,41 +526,53 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Method { get; private set; }
 
-        public Aggregate(string[][] Parameters, string VariableName, string Method) {
+        public Aggregate(string[][] Parameters, string VariableName, string Method)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
             this.Method = Method;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var parameterKey = Parameters[0][0];
             var parameters = variables[parameterKey] as IEnumerable<object>;
             var paramType = parameters.FirstOrDefault();
             var variablesInstance = variables;
 
-            if (paramType == null) {
+            if (paramType == null)
+            {
                 variables[VariableName] = null;
                 return;
             }
 
             IEnumerable<decimal> comparableParameters = null;
-            if (paramType is int) {
+            if (paramType is int)
+            {
                 comparableParameters = parameters.Select(p => (decimal)p);
-            } else if (paramType is Money) {
+            }
+            else if (paramType is Money)
+            {
                 comparableParameters = parameters.Select(p => (p as Money).Value);
-            } else if (paramType is decimal) {
+            }
+            else if (paramType is decimal)
+            {
                 comparableParameters = parameters.Select(p => (decimal)p);
-            } else if (paramType is DateTime) {
+            }
+            else if (paramType is DateTime)
+            {
                 comparableParameters = parameters.Select(p => (decimal)((DateTime)p).Ticks);
             }
 
-            if (comparableParameters == null) {
+            if (comparableParameters == null)
+            {
                 throw new NotImplementedException($"Unknown type when aggregating '{paramType}'");
             }
 
             decimal? result = null;
-            switch (Method) {
+            switch (Method)
+            {
                 case "Maximum":
                     result = comparableParameters.Max();
                     break;
@@ -513,17 +589,25 @@ namespace WorkflowExecuter {
                     break;
             }
 
-            if (!result.HasValue) {
+            if (!result.HasValue)
+            {
                 throw new NotImplementedException($"Unknown aggregate method '{Method}'");
             }
 
-            if (paramType is int) {
+            if (paramType is int)
+            {
                 variables[VariableName] = (int)result.Value;
-            } else if (paramType is Money) {
+            }
+            else if (paramType is Money)
+            {
                 variables[VariableName] = new Money(result.Value);
-            } else if (paramType is decimal) {
+            }
+            else if (paramType is decimal)
+            {
                 variables[VariableName] = result.Value;
-            } else if (paramType is DateTime) {
+            }
+            else if (paramType is DateTime)
+            {
                 variables[VariableName] = new DateTime((long)result.Value);
             }
         }
@@ -531,19 +615,22 @@ namespace WorkflowExecuter {
 
 
     [DataContract]
-    internal class Concat : IWorkflowNode {
+    internal class Concat : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
         public string VariableName { get; private set; }
 
-        public Concat(string[][] Parameters, string VariableName) {
+        public Concat(string[][] Parameters, string VariableName)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var variablesInstance = variables;
             var strings = Parameters[0].Select(p => (string)variablesInstance[p]).ToArray();
             variables[VariableName] = string.Concat(strings);
@@ -551,7 +638,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class AddTime : IWorkflowNode {
+    internal class AddTime : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -559,18 +647,22 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Amount { get; private set; }
 
-        public AddTime(string[][] Parameters, string VariableName, string Amount) {
+        public AddTime(string[][] Parameters, string VariableName, string Amount)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
             this.Amount = Amount;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var toAdd = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
-            if (toAdd.HasValue && date.HasValue) {
-                switch (Amount) {
+            if (toAdd.HasValue && date.HasValue)
+            {
+                switch (Amount)
+                {
                     case "AddDays":
                         variables[VariableName] = date.Value.AddDays(toAdd.Value);
                         break;
@@ -587,14 +679,17 @@ namespace WorkflowExecuter {
                         variables[VariableName] = date.Value.AddYears(toAdd.Value);
                         break;
                 }
-            } else {
+            }
+            else
+            {
                 variables[VariableName] = null;
             }
         }
     }
 
     [DataContract]
-    internal class SubtractTime : IWorkflowNode {
+    internal class SubtractTime : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -602,18 +697,22 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Amount { get; private set; }
 
-        public SubtractTime(string[][] Parameters, string VariableName, string Amount) {
+        public SubtractTime(string[][] Parameters, string VariableName, string Amount)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
             this.Amount = Amount;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var toSubtract = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
-            if (toSubtract.HasValue && date.HasValue) {
-                switch (Amount) {
+            if (toSubtract.HasValue && date.HasValue)
+            {
+                switch (Amount)
+                {
                     case "SubtractDays":
                         variables[VariableName] = date.Value.AddDays(-toSubtract.Value);
                         break;
@@ -630,14 +729,17 @@ namespace WorkflowExecuter {
                         variables[VariableName] = date.Value.AddYears(-toSubtract.Value);
                         break;
                 }
-            } else {
+            }
+            else
+            {
                 variables[VariableName] = null;
             }
         }
     }
 
     [DataContract]
-    internal class DiffInTime : IWorkflowNode {
+    internal class DiffInTime : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -645,19 +747,23 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Amount { get; private set; }
 
-        public DiffInTime(string[][] Parameters, string VariableName, string Amount) {
+        public DiffInTime(string[][] Parameters, string VariableName, string Amount)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
             this.Amount = Amount;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var date1 = variables[Parameters[0][0]] as DateTime?;
             var date2 = variables[Parameters[0][1]] as DateTime?;
-            if (date1.HasValue && date2.HasValue) {
+            if (date1.HasValue && date2.HasValue)
+            {
                 var timespan = date1.Value.Subtract(date2.Value);
-                switch (Amount) {
+                switch (Amount)
+                {
                     case "DiffInDays":
                         variables[VariableName] = timespan.Days;
                         break;
@@ -677,14 +783,17 @@ namespace WorkflowExecuter {
                         variables[VariableName] = Utility.GetDiffYears(date1.Value, date2.Value);
                         break;
                 }
-            } else {
+            }
+            else
+            {
                 variables[VariableName] = null;
             }
         }
     }
 
     [DataContract]
-    internal class Trim : IWorkflowNode {
+    internal class Trim : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
@@ -692,17 +801,20 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Method { get; private set; }
 
-        public Trim(string[][] Parameters, string VariableName, string Method) {
+        public Trim(string[][] Parameters, string VariableName, string Method)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
             this.Method = Method;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var word = (string)variables[Parameters[0][0]];
             var trimLength = int.Parse((string)variables[Parameters[0][1]]);
-            switch (Method) {
+            switch (Method)
+            {
                 case "TrimLeft":
                     variables[VariableName] = word.Substring(trimLength);
                     break;
@@ -716,63 +828,75 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class RetrieveLastExecutionTime : IWorkflowNode {
+    internal class RetrieveLastExecutionTime : IWorkflowNode
+    {
         [DataMember]
         public string VariableName { get; private set; }
 
-        public RetrieveLastExecutionTime(string VariableName) {
+        public RetrieveLastExecutionTime(string VariableName)
+        {
             this.VariableName = VariableName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             variables[VariableName] = variables["ExecutionTime"];
         }
     }
 
     [DataContract]
-    internal class RetrieveCurrentTime : IWorkflowNode {
+    internal class RetrieveCurrentTime : IWorkflowNode
+    {
         [DataMember]
         public string VariableName { get; private set; }
 
-        public RetrieveCurrentTime(string VariableName) {
+        public RetrieveCurrentTime(string VariableName)
+        {
             this.VariableName = VariableName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             variables[VariableName] = DateTime.Now.Add(timeOffset);
         }
     }
 
     [DataContract]
-    internal class CustomOperationArguments : IWorkflowNode {
+    internal class CustomOperationArguments : IWorkflowNode
+    {
         [DataMember]
         public string[][] Parameters { get; private set; }
         [DataMember]
         public string VariableName { get; private set; }
 
-        public CustomOperationArguments(string[][] Parameters, string VariableName) {
+        public CustomOperationArguments(string[][] Parameters, string VariableName)
+        {
             this.Parameters = Parameters;
             this.VariableName = VariableName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var variableName = "{" + Parameters[0][0] + "(Arguments)}";
             variables[VariableName] = variables.ContainsKey(variableName) ? variables[variableName] : null;
         }
     }
 
     [DataContract]
-    internal class Skip : IWorkflowNode {
+    internal class Skip : IWorkflowNode
+    {
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
         }
     }
 
     [DataContract]
-    internal class GetEntityProperty : IWorkflowNode {
+    internal class GetEntityProperty : IWorkflowNode
+    {
         [DataMember]
         public string Attribute { get; private set; }
         [DataMember]
@@ -784,7 +908,8 @@ namespace WorkflowExecuter {
         [DataMember]
         public string TargetType { get; private set; }
 
-        public GetEntityProperty(string Attribute, string EntityId, string EntityLogicalName, string VariableName, string TargetType) {
+        public GetEntityProperty(string Attribute, string EntityId, string EntityLogicalName, string VariableName, string TargetType)
+        {
             this.Attribute = Attribute;
             this.EntityId = EntityId;
             this.EntityLogicalName = EntityLogicalName;
@@ -793,13 +918,16 @@ namespace WorkflowExecuter {
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             Entity entity = null;
-            if (EntityId.Contains("related_")) {
+            if (EntityId.Contains("related_"))
+            {
                 var regex = new Regex(@"_.+#");
                 var relatedAttr = regex.Match(EntityId).Value.TrimEdge();
                 var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
-                if (!primaryEntity.Attributes.ContainsKey(relatedAttr)) {
+                if (!primaryEntity.Attributes.ContainsKey(relatedAttr))
+                {
                     variables[VariableName] = null;
                     return;
                 }
@@ -811,7 +939,9 @@ namespace WorkflowExecuter {
                 }
                 entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
 
-            } else {
+            }
+            else
+            {
                 entity = variables.ContainsKey(EntityId) ? variables[EntityId] as Entity : null;
             }
 
@@ -821,7 +951,8 @@ namespace WorkflowExecuter {
                 return;
             }
 
-            if (entity.LogicalName != EntityLogicalName) {
+            if (entity.LogicalName != EntityLogicalName)
+            {
                 variables[VariableName] = null;
                 return;
             }
@@ -832,12 +963,14 @@ namespace WorkflowExecuter {
                 return;
             }
 
-            if (!entity.Attributes.ContainsKey(Attribute)) {
+            if (!entity.Attributes.ContainsKey(Attribute))
+            {
                 variables[VariableName] = null;
                 return;
             }
             var attr = entity.Attributes[Attribute];
-            if (TargetType == "EntityReference") {
+            if (TargetType == "EntityReference")
+            {
                 if (attr is Guid)
                 {
                     attr = new EntityReference(EntityLogicalName, (Guid)attr);
@@ -855,7 +988,7 @@ namespace WorkflowExecuter {
                 }
                 else if (attr is bool)
                 {
-                    attr = Util.GetBooleanLabel(entity.LogicalName, Attribute, (bool) attr, orgService);
+                    attr = Util.GetBooleanLabel(entity.LogicalName, Attribute, (bool)attr, orgService);
                 }
                 else if (attr is EntityReference)
                 {
@@ -869,7 +1002,7 @@ namespace WorkflowExecuter {
                 else if (attr is int)
                 {
                     // TODO: should respect user format preferences
-                    attr = $"{((int) attr):N0}";
+                    attr = $"{((int)attr):N0}";
                 }
                 else if (attr != null && !(attr is string))
                 {
@@ -881,7 +1014,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ConditionExp : IWorkflowNode {
+    internal class ConditionExp : IWorkflowNode
+    {
         [DataMember]
         public ConditionOperator Operator { get; private set; }
         [DataMember]
@@ -891,9 +1025,10 @@ namespace WorkflowExecuter {
         [DataMember]
         public string ReturnName { get; private set; }
 
-        
 
-        public ConditionExp(string Operator, string[] Parameters, string Operand, string ReturnName) {
+
+        public ConditionExp(string Operator, string[] Parameters, string Operand, string ReturnName)
+        {
             this.Operator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), Operator);
             this.Parameters = Parameters;
             this.Operand = Operand;
@@ -901,17 +1036,20 @@ namespace WorkflowExecuter {
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var operand = variables[Operand];
             var variablesInstance = variables;
             var parameters = Parameters != null && Parameters.Count() == 1 ? Parameters[0].Split(',').Select(p => variablesInstance[p.Trim()]).ToArray() : null;
 
-            if (Operator != ConditionOperator.NotNull && Operator != ConditionOperator.Null && (operand == null || parameters == null)) {
+            if (Operator != ConditionOperator.NotNull && Operator != ConditionOperator.Null && (operand == null || parameters == null))
+            {
                 variables[ReturnName] = null;
                 return;
             }
 
-            switch (Operator) {
+            switch (Operator)
+            {
                 case ConditionOperator.Equal:
                     variables[ReturnName] = operand.Equals(parameters[0]);
                     break;
@@ -927,7 +1065,7 @@ namespace WorkflowExecuter {
                 case ConditionOperator.DoesNotBeginWith:
                     variables[ReturnName] = !((string)operand).StartsWith((string)parameters[0]);
                     break;
-                    
+
                 case ConditionOperator.EndsWith:
                     variables[ReturnName] = ((string)operand).EndsWith((string)parameters[0]);
                     break;
@@ -956,7 +1094,7 @@ namespace WorkflowExecuter {
                     variables[ReturnName] = parameters.Any(x => x.Equals(operand));
                     break;
 
-                case ConditionOperator.NotIn: 
+                case ConditionOperator.NotIn:
                     variables[ReturnName] = !parameters.Any(x => x.Equals(operand));
                     break;
 
@@ -978,29 +1116,39 @@ namespace WorkflowExecuter {
                 case ConditionOperator.LessEqual:
                     decimal? comparableOperand = null;
                     decimal? comparableParameter = null;
-                    if (parameters[0] == null) {
+                    if (parameters[0] == null)
+                    {
                         variables[ReturnName] = false;
                         break;
                     }
-                    if (parameters[0] is int) {
+                    if (parameters[0] is int)
+                    {
                         comparableOperand = (int)operand;
                         comparableParameter = (int)parameters[0];
-                    } else if (parameters[0] is Money) {
+                    }
+                    else if (parameters[0] is Money)
+                    {
                         comparableOperand = (operand as Money).Value;
                         comparableParameter = (parameters[0] as Money).Value;
-                    } else if (parameters[0] is decimal) {
+                    }
+                    else if (parameters[0] is decimal)
+                    {
                         comparableOperand = (decimal)operand;
                         comparableParameter = (decimal)parameters[0];
-                    } else if (parameters[0] is DateTime) {
+                    }
+                    else if (parameters[0] is DateTime)
+                    {
                         comparableOperand = ((DateTime)operand).Ticks;
                         comparableParameter = ((DateTime)parameters[0]).Ticks;
                     }
 
-                    if (comparableParameter == null) {
+                    if (comparableParameter == null)
+                    {
                         throw new NotImplementedException($"Unknown type when trying to compare");
                     }
 
-                    switch (Operator) {
+                    switch (Operator)
+                    {
                         case ConditionOperator.GreaterThan:
                             variables[ReturnName] = comparableOperand > comparableParameter;
                             break;
@@ -1023,7 +1171,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Condition : IWorkflowNode {
+    internal class Condition : IWorkflowNode
+    {
         [DataMember]
         public string GuardId { get; private set; }
         [DataMember]
@@ -1031,24 +1180,30 @@ namespace WorkflowExecuter {
         [DataMember]
         public IWorkflowNode Otherwise { get; internal set; }
 
-        public Condition(string GuardId, IWorkflowNode Then, IWorkflowNode Otherwise) {
+        public Condition(string GuardId, IWorkflowNode Then, IWorkflowNode Otherwise)
+        {
             this.GuardId = GuardId;
             this.Then = Then;
             this.Otherwise = Otherwise;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            if (variables[GuardId] != null && (bool)variables[GuardId]) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (variables[GuardId] != null && (bool)variables[GuardId])
+            {
                 Then.Execute(ref variables, timeOffset, orgService, factory, trace);
-            } else {
+            }
+            else
+            {
                 Otherwise.Execute(ref variables, timeOffset, orgService, factory, trace);
             }
         }
     }
 
     [DataContract]
-    internal class LogicalComparison : IWorkflowNode {
+    internal class LogicalComparison : IWorkflowNode
+    {
         [DataMember]
         public LogicalOperator Operator { get; private set; }
         [DataMember]
@@ -1058,7 +1213,8 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Result { get; private set; }
 
-        public LogicalComparison(string Operator, string LeftOperand, string RightOperand, string Result) {
+        public LogicalComparison(string Operator, string LeftOperand, string RightOperand, string Result)
+        {
             this.Operator = (LogicalOperator)Enum.Parse(typeof(LogicalOperator), Operator);
             this.LeftOperand = LeftOperand;
             this.RightOperand = RightOperand;
@@ -1066,16 +1222,19 @@ namespace WorkflowExecuter {
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var left = (bool?)variables[LeftOperand];
             var right = (bool?)variables[RightOperand];
 
-            if (!left.HasValue || !right.HasValue) {
+            if (!left.HasValue || !right.HasValue)
+            {
                 variables[Result] = null;
                 return;
             }
 
-            switch (Operator) {
+            switch (Operator)
+            {
                 case LogicalOperator.Or:
                     variables[Result] = left.Value || right.Value;
                     break;
@@ -1089,28 +1248,34 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Assign : IWorkflowNode {
+    internal class Assign : IWorkflowNode
+    {
         [DataMember]
         public string To { get; private set; }
         [DataMember]
         public string Value { get; private set; }
 
-        public Assign(string To, string Value) {
+        public Assign(string To, string Value)
+        {
             this.To = To;
             this.Value = Value;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var comparaters = new string[] { "<", "<=", "==", ">=", ">" };
-            if (comparaters.Any(c => Value.Contains(c))) {
+            if (comparaters.Any(c => Value.Contains(c)))
+            {
                 var comparater = comparaters.First(c => Value.Contains(c));
                 var sides = Value.Split(new[] { comparater }, StringSplitOptions.None).Select(s => s.Trim()).ToArray();
                 var left = sides[0].ToCorrectType(variables, timeOffset);
                 var right = sides[1].ToCorrectType(variables, timeOffset);
-                if (left is DateTime && right is DateTime) {
+                if (left is DateTime && right is DateTime)
+                {
                     var comparison = ((DateTime)left).CompareTo((DateTime)right);
-                    switch (comparater) {
+                    switch (comparater)
+                    {
                         case "<":
                             variables[To] = comparison < 0;
                             break;
@@ -1133,26 +1298,31 @@ namespace WorkflowExecuter {
                 throw new NotImplementedException("Unknown type when assigning with a value containing comparaters");
             }
 
-            if (Value.Contains(".Id")) {
+            if (Value.Contains(".Id"))
+            {
                 var toEntity = variables[To.Replace(".Id", "")] as Entity;
                 var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
                 toEntity.Id = valueEntity.Id;
                 return;
             }
 
-            if (Value.Contains("CreatedEntities(") && Value.Contains("#Temp") && variables.ContainsKey(To)) {
+            if (Value.Contains("CreatedEntities(") && Value.Contains("#Temp") && variables.ContainsKey(To))
+            {
                 var tmp = variables[Value] as Entity;
                 var to = variables[To] as Entity;
-                foreach (var attr in tmp.Attributes) {
+                foreach (var attr in tmp.Attributes)
+                {
                     to.Attributes[attr.Key] = attr.Value;
                 }
                 return;
             }
 
-            if (Value.Contains(".VisualBasic.IIf(")) {
+            if (Value.Contains(".VisualBasic.IIf("))
+            {
                 var regex = new Regex(@"\(.+\)");
                 var parameters = regex.Match(Value).Value.TrimEdge().Split(',').Select(s => s.Trim()).ToArray();
-                if (parameters[0].Contains(".VisualBasic.IsNothing(")) {
+                if (parameters[0].Contains(".VisualBasic.IsNothing("))
+                {
                     var variable = regex.Match(parameters[0]).Value.TrimEdge();
                     variables[To] = !variables.ContainsKey(variable) || variables[variable] == null ?
                         parameters[1].ToCorrectType(variables, timeOffset) : parameters[2].ToCorrectType(variables, timeOffset);
@@ -1166,27 +1336,32 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class Postpone : IWorkflowNode {
+    internal class Postpone : IWorkflowNode
+    {
         [DataMember]
         public string BlockExecution { get; private set; }
         [DataMember]
         public string PostponeUntil { get; private set; }
 
-        public Postpone(string BlockExecution, string PostponeUntil) {
+        public Postpone(string BlockExecution, string PostponeUntil)
+        {
             this.BlockExecution = BlockExecution;
             this.PostponeUntil = PostponeUntil;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            if (BlockExecution == "True") {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (BlockExecution == "True")
+            {
                 variables["Wait"] = null;
             }
         }
     }
 
     [DataContract]
-    internal class ConvertType : IWorkflowNode {
+    internal class ConvertType : IWorkflowNode
+    {
         [DataMember]
         public string Input { get; private set; }
         [DataMember]
@@ -1194,18 +1369,29 @@ namespace WorkflowExecuter {
         [DataMember]
         public string Result { get; private set; }
 
-        public ConvertType(string Input, string Type, string Result) {
+        public ConvertType(string Input, string Type, string Result)
+        {
             this.Input = Input;
             this.Type = Type;
             this.Result = Result;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
 
-            switch (Type) {
+            if (!variables.ContainsKey(Input))
+            {
+                variables.Add(Input, null); 
+                variables.Add(Result, null); 
+                return;
+            }
+
+            switch (Type)
+            {
                 case "EntityReference":
-                    if (variables[Input] is EntityReference) {
+                    if (variables[Input] is EntityReference)
+                    {
                         variables[Result] = variables[Input];
                         break;
                     }
@@ -1228,7 +1414,8 @@ namespace WorkflowExecuter {
 
 
     [DataContract]
-    internal class SetEntityProperty : IWorkflowNode {
+    internal class SetEntityProperty : IWorkflowNode
+    {
         [DataMember]
         public string Attribute { get; private set; }
         [DataMember]
@@ -1236,20 +1423,24 @@ namespace WorkflowExecuter {
         [DataMember]
         public string VariableId { get; private set; }
 
-        public SetEntityProperty(string Attribute, string ParametersId, string VariableId) {
+        public SetEntityProperty(string Attribute, string ParametersId, string VariableId)
+        {
             this.Attribute = Attribute;
             this.EntityId = ParametersId;
             this.VariableId = VariableId;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            if (!variables.ContainsKey(VariableId)) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (!variables.ContainsKey(VariableId))
+            {
                 Console.WriteLine($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
                 variables[VariableId] = null;
             }
             var attr = variables[VariableId];
-            if (attr is Money) {
+            if (attr is Money)
+            {
                 var exchangeRate = variables["ExchangeRate"] as decimal?;
                 var amount = (attr as Money).Value * exchangeRate.GetValueOrDefault(1.0m);
                 attr = new Money(amount);
@@ -1259,27 +1450,32 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SetAttributeValue : IWorkflowNode {
+    internal class SetAttributeValue : IWorkflowNode
+    {
         [DataMember]
         public string VariableId { get; private set; }
         [DataMember]
         public string EntityName { get; private set; }
 
-        public SetAttributeValue(string VariableId, string EntityName) {
+        public SetAttributeValue(string VariableId, string EntityName)
+        {
             this.VariableId = VariableId;
             this.EntityName = EntityName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var relatedlinked = "relatedlinked";
-            if (VariableId.Contains(relatedlinked)) {
+            if (VariableId.Contains(relatedlinked))
+            {
                 var reg = new Regex(@"\([^#]*\#");
                 variables[relatedlinked + "_" + EntityName] = reg.Match(VariableId).Value.Replace("\"", "").Replace(relatedlinked + "_", "").TrimEdge();
                 return;
             }
 
-            if (!variables.ContainsKey(VariableId)) {
+            if (!variables.ContainsKey(VariableId))
+            {
                 throw new WorkflowException($"The variable with id '{VariableId}' before being set, check the workflow has the correct format.");
             }
 
@@ -1290,7 +1486,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class CreateEntity : IWorkflowNode {
+    internal class CreateEntity : IWorkflowNode
+    {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
@@ -1298,14 +1495,16 @@ namespace WorkflowExecuter {
         [DataMember]
         public string EntityName { get; private set; }
 
-        public CreateEntity(string EntityId, string VariableId, string EntityName) {
+        public CreateEntity(string EntityId, string VariableId, string EntityName)
+        {
             this.EntityId = EntityId;
             this.VariableId = VariableId;
             this.EntityName = EntityName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var entity = variables[VariableId] as Entity;
             entity.Id = EntityId == null ? Guid.NewGuid() : new Guid(EntityId);
             entity[entity.LogicalName + "id"] = entity.Id;
@@ -1314,43 +1513,51 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class UpdateEntity : IWorkflowNode {
+    internal class UpdateEntity : IWorkflowNode
+    {
         [DataMember]
         public string VariableId { get; private set; }
         [DataMember]
         public string EntityName { get; private set; }
 
-        public UpdateEntity(string VariableId, string EntityName) {
+        public UpdateEntity(string VariableId, string EntityName)
+        {
             this.VariableId = VariableId;
             this.EntityName = EntityName;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             orgService.Update(variables[VariableId] as Entity);
         }
     }
 
     [DataContract]
-    internal class AssignEntity : IWorkflowNode {
+    internal class AssignEntity : IWorkflowNode
+    {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
         public string OwnerId { get; private set; }
 
-        public AssignEntity(string EntityId, string OwnerId) {
+        public AssignEntity(string EntityId, string OwnerId)
+        {
             this.EntityId = EntityId;
             this.OwnerId = OwnerId;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            if (!variables.ContainsKey(OwnerId)) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            if (!variables.ContainsKey(OwnerId))
+            {
                 throw new WorkflowException($"There is no variable with the id '{OwnerId}'");
             }
             var entity = variables[EntityId] as Entity;
             var assignee = variables[OwnerId] as EntityReference;
-            var req = new AssignRequest() {
+            var req = new AssignRequest()
+            {
                 Target = entity.ToEntityReference(),
                 Assignee = assignee
             };
@@ -1360,7 +1567,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class SetState : IWorkflowNode {
+    internal class SetState : IWorkflowNode
+    {
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
@@ -1372,7 +1580,8 @@ namespace WorkflowExecuter {
         [DataMember]
         public OptionSetValue StatusCode { get; private set; }
 
-        public SetState(string EntityKey, string EntityIdKey, string EntityName, OptionSetValue StateCode, OptionSetValue StatusCode) {
+        public SetState(string EntityKey, string EntityIdKey, string EntityName, OptionSetValue StateCode, OptionSetValue StatusCode)
+        {
             this.EntityId = EntityKey;
             this.EntityIdKey = EntityIdKey;
             this.EntityName = EntityName;
@@ -1381,9 +1590,11 @@ namespace WorkflowExecuter {
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var entity = variables[EntityId] as Entity;
-            if (entity.LogicalName != EntityName) {
+            if (entity.LogicalName != EntityName)
+            {
                 throw new WorkflowException($"primary entity has logicalname '{entity.LogicalName}' instead of '{EntityName}'");
             }
 
@@ -1396,23 +1607,29 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class ActivityList : IWorkflowNode {
+    internal class ActivityList : IWorkflowNode
+    {
         [DataMember]
         public IWorkflowNode[] Activities { get; private set; }
 
-        public ActivityList(IWorkflowNode[] Activities) {
+        public ActivityList(IWorkflowNode[] Activities)
+        {
             this.Activities = Activities;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             Execute(0, ref variables, timeOffset, orgService, factory, trace);
         }
 
         public void Execute(int loopStart, ref Dictionary<string, object> variables, TimeSpan timeOffset,
-             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
-            for (int i = loopStart; i < Activities.Length; i++) {
-                if (Activities[i] is WaitStart) {
+             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
+            for (int i = loopStart; i < Activities.Length; i++)
+            {
+                if (Activities[i] is WaitStart)
+                {
                     var primaryEntityreference = (variables["InputEntities(\"primaryEntity\")"] as Entity).ToEntityReference();
                     variables["Wait"] = new WaitInfo(this, i, new Dictionary<string, object>(variables), primaryEntityreference);
                 }
@@ -1422,31 +1639,37 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class WaitStart : IWorkflowNode {
+    internal class WaitStart : IWorkflowNode
+    {
         public WaitStart() { }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
 
         }
     }
 
     [DataContract]
-    internal class TerminateWorkflow : IWorkflowNode {
+    internal class TerminateWorkflow : IWorkflowNode
+    {
         [DataMember]
         public OperationStatus status { get; private set; }
         [DataMember]
         public string messageId { get; private set; }
 
-        public TerminateWorkflow(OperationStatus status, string messageId) {
+        public TerminateWorkflow(OperationStatus status, string messageId)
+        {
             this.status = status;
             this.messageId = messageId;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var sb = new StringBuilder($"Workflow exited with status '{status}'");
-            if (variables[messageId] != null && (variables[messageId] as string != "")) {
+            if (variables[messageId] != null && (variables[messageId] as string != ""))
+            {
                 sb.Append($", the reason was '{variables[messageId]}'");
             }
             if (status == OperationStatus.Canceled)
@@ -1461,7 +1684,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class RollUp : IWorkflowNode {
+    internal class RollUp : IWorkflowNode
+    {
         [DataMember]
         public string HierarchicalRelationshipName { get; private set; }
         [DataMember]
@@ -1475,7 +1699,8 @@ namespace WorkflowExecuter {
         private string FilterResult;
 
         public RollUp(string hierarchicalRelationshipName, string filterResult, string aggregateResult,
-            List<IWorkflowNode> filter, List<IWorkflowNode> aggregation) {
+            List<IWorkflowNode> filter, List<IWorkflowNode> aggregation)
+        {
             this.HierarchicalRelationshipName = hierarchicalRelationshipName;
             this.FilterResult = filterResult;
             this.AggregateResult = aggregateResult;
@@ -1486,18 +1711,22 @@ namespace WorkflowExecuter {
 
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var primaryEntityKey = "InputEntities(\"primaryEntity\")";
             var relation = Filter.First(x => x is SetAttributeValue) as SetAttributeValue;
             relation.Execute(ref variables, timeOffset, orgService, factory, trace);
             var relatedEntities = Util.GetRelatedEntities(relation.EntityName, variables, orgService);
-            foreach (var entity in relatedEntities) {
+            foreach (var entity in relatedEntities)
+            {
                 var tmpVariables = variables;
                 tmpVariables[primaryEntityKey] = entity;
-                foreach (var node in Filter) {
+                foreach (var node in Filter)
+                {
                     node.Execute(ref tmpVariables, timeOffset, null, factory, trace);
                 }
-                if (FilterResult == null || (bool)tmpVariables[FilterResult]) {
+                if (FilterResult == null || (bool)tmpVariables[FilterResult])
+                {
                     Filtered.Add(entity);
                 }
             }
@@ -1505,9 +1734,11 @@ namespace WorkflowExecuter {
             var relatedField = (Aggregation[0] as GetEntityProperty).Attribute;
             var filteredLocation = (Aggregation[0] as GetEntityProperty).VariableName;
 
-            if (Filtered.Any(e => e.Attributes.ContainsKey(relatedField) && e.Attributes[relatedField] is Money)) {
+            if (Filtered.Any(e => e.Attributes.ContainsKey(relatedField) && e.Attributes[relatedField] is Money))
+            {
                 var targetExchangeRate = (decimal?)variables["ExchangeRate"];
-                if (!targetExchangeRate.HasValue) {
+                if (!targetExchangeRate.HasValue)
+                {
                     var primary = variables[primaryEntityKey] as Entity;
                     throw new WorkflowException($"Entity with logicalname '{primary.LogicalName}' and id '{primary.Id}'" +
                         " has no transactioncurrency. Make sure to update your metadata.");
@@ -1518,7 +1749,9 @@ namespace WorkflowExecuter {
                     Filtered.Where(e => e.Attributes.ContainsKey(relatedField))
                     .Select(e => new Money(
                         (e.Attributes[relatedField] as Money).Value * (targetExchangeRate.Value / (decimal)e.Attributes[exchangerate])));
-            } else {
+            }
+            else
+            {
                 variables[filteredLocation] = Filtered.Select(e => e.Attributes.ContainsKey(relatedField) ? e.Attributes[relatedField] : null).ToList();
             }
 
@@ -1527,7 +1760,8 @@ namespace WorkflowExecuter {
     }
 
     [DataContract]
-    internal class CallCodeActivity : IWorkflowNode {
+    internal class CallCodeActivity : IWorkflowNode
+    {
         [DataMember]
         public string CodeActivityName;
         [DataMember]
@@ -1536,17 +1770,19 @@ namespace WorkflowExecuter {
         public Dictionary<string, string> outArguments;
 
 
-        public CallCodeActivity(string CodeActivityName, Dictionary<string, string> inArguments, Dictionary<string, string> outArguments) {
+        public CallCodeActivity(string CodeActivityName, Dictionary<string, string> inArguments, Dictionary<string, string> outArguments)
+        {
             this.CodeActivityName = CodeActivityName;
             this.inArguments = inArguments;
             this.outArguments = outArguments;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace) {
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+        {
             var variablesInstance = variables;
-            var arguments = this.inArguments.Where(arg => !outArguments.ContainsKey(arg.Value)).ToDictionary(arg => arg.Key,
-                arg => (outArguments.ContainsKey(arg.Value) ? null : variablesInstance[arg.Value]));
+            var arguments = this.inArguments.Where(arg => !outArguments.ContainsKey(arg.Value) && variablesInstance[arg.Value] != null)
+                .ToDictionary(arg => arg.Key, arg => (outArguments.ContainsKey(arg.Value) ? null : variablesInstance[arg.Value]));
 
             var codeActivities = variables["CodeActivites"] as Dictionary<string, CodeActivity>;
             var codeActivity = codeActivities[CodeActivityName];
@@ -1559,11 +1795,13 @@ namespace WorkflowExecuter {
             invoker.Extensions.Add(workflowContext);
             invoker.Extensions.Add(factory);
             var variablesPostExecution = invoker.Invoke(arguments);
-            foreach (var outArg in outArguments) {
+            foreach (var outArg in outArguments)
+            {
                 variables[outArg.Key] = variablesPostExecution[outArg.Value];
             }
 
-            foreach (var outArg in outArguments.Where(arg => variablesPostExecution[arg.Value] is EntityReference)) {
+            foreach (var outArg in outArguments.Where(arg => variablesPostExecution[arg.Value] is EntityReference))
+            {
                 var reference = variablesPostExecution[outArg.Value] as EntityReference;
                 var retrieved = orgService.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
                 var regex = new Regex(@"[\w]+(?=_)");
@@ -1601,9 +1839,11 @@ namespace WorkflowExecuter {
         }
     }
 
-    static class Util {
+    static class Util
+    {
         public static DataCollection<Entity> GetRelatedEntities(string relatedEntityName, Dictionary<string, object> variables,
-            IOrganizationService orgService) {
+            IOrganizationService orgService)
+        {
             var primaryEntityKey = "InputEntities(\"primaryEntity\")";
             var relatedlinked = "relatedlinked";
             QueryExpression query = new QueryExpression();
@@ -1656,9 +1896,11 @@ namespace WorkflowExecuter {
             return option.Label.UserLocalizedLabel.Label;
         }
 
-        public static XrmWorkflowContext GetDefaultContext() {
+        public static XrmWorkflowContext GetDefaultContext()
+        {
             var userId = Guid.NewGuid();
-            return new XrmWorkflowContext() {
+            return new XrmWorkflowContext()
+            {
                 Depth = 1,
                 IsExecutingOffline = false,
                 MessageName = "Create",
