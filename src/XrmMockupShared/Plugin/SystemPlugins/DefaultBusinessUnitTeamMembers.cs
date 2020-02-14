@@ -30,7 +30,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
         private void UpdatePreOperation(LocalPluginContext localContext)
         {
-            IOrganizationService orgService = localContext.OrganizationService;
+            var orgService = localContext.OrganizationService;
 
             var preSystemUser = localContext.PluginExecutionContext.PreEntityImages.First().Value;
             var postSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId,
@@ -43,18 +43,9 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             }
         }
 
-        private void RemoveMember(LocalPluginContext localContext)
-        {
-            IOrganizationService orgService = localContext.OrganizationService;
-
-            var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
-
-            RemoveMember(orgService, retrievedSystemUser);
-        }
-
         private void AddMember(LocalPluginContext localContext)
         {
-            IOrganizationService orgService = localContext.OrganizationService;
+            var orgService = localContext.OrganizationService;
 
             var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
 
@@ -67,6 +58,15 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             };
 
             orgService.Execute(request);
+        }
+
+        private void RemoveMember(LocalPluginContext localContext)
+        {
+            var orgService = localContext.OrganizationService;
+
+            var retrievedSystemUser = orgService.Retrieve("systemuser", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("businessunitid"));
+
+            RemoveMember(orgService, retrievedSystemUser);
         }
 
         private void RemoveMember(IOrganizationService orgService, Entity systemUser)

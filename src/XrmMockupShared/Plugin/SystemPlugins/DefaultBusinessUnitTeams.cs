@@ -22,7 +22,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
         private void Delete(LocalPluginContext localContext)
         {
-            IOrganizationService orgService = localContext.OrganizationService;
+            var orgService = localContext.OrganizationService;
 
             var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
 
@@ -33,7 +33,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
         private void Update(LocalPluginContext localContext)
         {
-            IOrganizationService orgService = localContext.OrganizationService;
+            var orgService = localContext.OrganizationService;
 
             var retrievedBusinessUnit = orgService.Retrieve("businessunit", localContext.PluginExecutionContext.PrimaryEntityId, new ColumnSet("name"));
 
@@ -41,7 +41,6 @@ namespace DG.Tools.XrmMockup.SystemPlugins
 
             var newTeam = new Entity("team");
             newTeam["name"] = retrievedBusinessUnit.Attributes["name"];
-            newTeam["teamid"] = team.Id;
             newTeam.Id = team.Id;
 
             orgService.Update(newTeam);
