@@ -1640,7 +1640,7 @@ namespace WorkflowExecuter
                 }
             }
 
-            for (int i = loopStart; i < Activities.Length; i++)
+            for (var i = loopStart; i < Activities.Length; i++)
             {
                 if (Activities[i] is WaitStart)
                 {
