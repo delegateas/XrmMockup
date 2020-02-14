@@ -1382,8 +1382,8 @@ namespace WorkflowExecuter
 
             if (!variables.ContainsKey(Input))
             {
-                variables.Add(Input, null); 
-                variables.Add(Result, null); 
+                variables.Add(Input, null);
+                variables.Add(Result, null);
                 return;
             }
 
@@ -1610,11 +1610,17 @@ namespace WorkflowExecuter
     internal class ActivityList : IWorkflowNode
     {
         [DataMember]
+        public List<string> VariableNames { get; private set; }
+
+        [DataMember]
         public IWorkflowNode[] Activities { get; private set; }
 
-        public ActivityList(IWorkflowNode[] Activities)
+        public ActivityList(IWorkflowNode[] Activities) : this(Activities, new List<string>()) { }
+
+        public ActivityList(IWorkflowNode[] Activities, List<string> variableNames)
         {
             this.Activities = Activities;
+            this.VariableNames = variableNames;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
@@ -1626,6 +1632,14 @@ namespace WorkflowExecuter
         public void Execute(int loopStart, ref Dictionary<string, object> variables, TimeSpan timeOffset,
              IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            foreach (var variableName in VariableNames)
+            {
+                if (!variables.ContainsKey(variableName))
+                {
+                    variables.Add(variableName, null);
+                }
+            }
+
             for (int i = loopStart; i < Activities.Length; i++)
             {
                 if (Activities[i] is WaitStart)
@@ -1914,6 +1928,4 @@ namespace WorkflowExecuter
             };
         }
     }
-
-
 }
