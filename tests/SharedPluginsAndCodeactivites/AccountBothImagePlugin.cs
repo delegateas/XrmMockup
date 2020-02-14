@@ -4,9 +4,9 @@ using DG.Some.Namespace;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk.Query;
 
+#if !XRM_MOCKUP_PLUGIN_2011
 namespace DG.Delegate.TSTOnboarding.Plugins
 {
-
     public class AccountBothImagePlugin : PluginNonDaxif
     {
         /*
@@ -55,3 +55,4 @@ namespace DG.Delegate.TSTOnboarding.Plugins
         }
     }
 }
+#endif

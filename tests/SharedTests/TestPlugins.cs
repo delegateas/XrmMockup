@@ -16,7 +16,7 @@ namespace DG.XrmMockupTest
     [TestClass]
     public class TestPlugins : UnitTestBase
     {
-
+#if !XRM_MOCKUP_TEST_2011
         [TestMethod]
         public void TestImages()
         {
@@ -33,6 +33,7 @@ namespace DG.XrmMockupTest
 
             orgAdminUIService.Delete(Account.EntityLogicalName, createdAccount.Id);
         }
+#endif
 
         [TestMethod]
         public void TestPluginTrigger()
@@ -63,7 +64,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-
+#if !XRM_MOCKUP_TEST_2011
         [TestMethod]
         public void TestUpdateBase()
         {
@@ -85,5 +86,6 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(acc.Name + "UpdateBase", retrieved.Name);
             }
         }
+#endif
     }
 }
