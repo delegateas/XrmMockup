@@ -9,6 +9,7 @@
     <Import_RootNamespace>SharedPluginsAndCodeactivites</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync2WithExecutionOrder - Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\AsyncWithExecutionOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync1WithExecutionOrder.cs" />

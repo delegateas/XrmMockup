@@ -11,25 +11,34 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestPlugins : UnitTestBase {
+    public class TestPlugins : UnitTestBase
+    {
 
         [TestMethod]
-        public void TestImages() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestImages()
+        {
+            // Testing that plugins not registered with DAXIF still have access to pre and post images during update.
+            var createdAccount = new Account()
+            {
+                Name = "ChangeMePlease"
+            };
+            createdAccount.Id = orgAdminUIService.Create(createdAccount);
 
-                var guid = orgAdminUIService.Create(new Account() { });
+            orgAdminService.Update(createdAccount);
+            var retrievedAccount = Account.Retrieve(orgAdminService, createdAccount.Id, x => x.Name);
+            Assert.AreEqual("NameIsModified", retrievedAccount.Name, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
 
-                orgAdminUIService.Delete(Account.EntityLogicalName, guid);
-
-
-            }
+            orgAdminUIService.Delete(Account.EntityLogicalName, createdAccount.Id);
         }
 
         [TestMethod]
-        public void TestPluginTrigger() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestPluginTrigger()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var acc = new Account();
                 orgAdminUIService.Create(acc);
 
@@ -40,8 +49,10 @@ namespace DG.XrmMockupTest {
 
         [TestMethod]
         [ExpectedException(typeof(FaultException))]
-        public void TestPluginChain() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestPluginChain()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var acc = new Account();
                 var accid = orgAdminUIService.Create(acc);
 
@@ -54,9 +65,12 @@ namespace DG.XrmMockupTest {
 
 
         [TestMethod]
-        public void TestUpdateBase() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var acc = new Account {
+        public void TestUpdateBase()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var acc = new Account
+                {
                     Name = "Some"
                 };
                 acc.Id = orgAdminUIService.Create(acc);
