@@ -181,27 +181,7 @@ namespace DG.Tools.XrmMockup
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
-
-            //TODO: Talk with Magnus about this, keep implementing it as a plugin instead!
-/*            if (entity.LogicalName == LogicalNames.BusinessUnit)
-            {
-                // When a BU us updated, we get here. Now we want to update the team too. We must first find the team, then we can update it.
-                var teamQuery = new QueryExpression("team");
-                teamQuery.ColumnSet = new ColumnSet(true);
-                teamQuery.Criteria.AddCondition("isdefault", ConditionOperator.Equal, true);
-                teamQuery.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, entity.Id);
-
-                // var response = core.Execute(teamQuery, userRef);
-
-                var teamRequest = new OrganizationRequest();
-                
-                
-
-                var response = core.Execute(teamRequest, userRef);
-                // var teams = orgService.RetrieveMultiple(teamQuery).Entities;
-            }*/
-
-
+            
             if (Utility.Activities.Contains(xrmEntity.LogicalName))
             {
                 xrmEntity["activitytypecode"] = Utility.ActivityTypeCode[xrmEntity.LogicalName];

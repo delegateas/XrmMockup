@@ -1079,6 +1079,18 @@ namespace DG.Tools.XrmMockup
 
             return ret;
         }
+
+        public static Entity CreateDefaultTeam(Entity rootBusinessUnit)
+        {
+            var defaultTeam = new Entity(LogicalNames.Team);
+            defaultTeam["name"] = rootBusinessUnit.Attributes["name"];
+            defaultTeam["teamtype"] = new OptionSetValue(0);
+            defaultTeam["isdefault"] = true;
+            defaultTeam["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
+            defaultTeam["businessunitid"] = rootBusinessUnit.ToEntityReference();
+
+            return defaultTeam;
+        }
     }
 
     internal class LogicalNames

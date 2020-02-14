@@ -112,28 +112,37 @@ namespace DG.Tools.XrmMockup
                 {
                     var defaultStateStatus = metadata.DefaultStateStatus[clonedEntity.LogicalName];
                     if (!clonedEntity.Attributes.ContainsKey("statecode") &&
-                        !clonedEntity.Attributes.ContainsKey("statuscode")) {
+                        !clonedEntity.Attributes.ContainsKey("statuscode"))
+                    {
                         clonedEntity["statecode"] = new OptionSetValue(defaultState);
                         clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                    } else {
+                    }
+                    else
+                    {
                         var statusmeta =
                             (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata)
                             ?.OptionSet.Options
                             .Cast<StatusOptionMetadata>()
                             .FirstOrDefault(o => o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
                         if (clonedEntity.LogicalName != "opportunityclose" && // is allowed to be created inactive 
-                            ((clonedEntity.Attributes.ContainsKey("statecode") && 
+                            ((clonedEntity.Attributes.ContainsKey("statecode") &&
                             clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
-                            (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState))) {
+                            (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState)))
+                        {
                             clonedEntity["statecode"] = new OptionSetValue(defaultState);
                             clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                        } else if (!clonedEntity.Contains("statecode") || clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null) {
+                        }
+                        else if (!clonedEntity.Contains("statecode") || clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
+                        {
                             clonedEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
-                        } else if (!clonedEntity.Contains("statuscode") || clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null) {
+                        }
+                        else if (!clonedEntity.Contains("statuscode") || clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
+                        {
                             clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                        }   
+                        }
                     }
-                } catch (KeyNotFoundException)
+                }
+                catch (KeyNotFoundException)
                 {
                     throw new KeyNotFoundException($"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
                         $"This might be due to unsaved default status reason changes. Please update, save, and publish the relevant status reason field on {clonedEntity.LogicalName} and generate new metadata");
@@ -272,17 +281,9 @@ namespace DG.Tools.XrmMockup
 
         private void CreateDefaultTeamForBusinessUnit(Entity clonedEntity, EntityReference userRef)
         {
-            var team = new Entity("team");
-            team["name"] = clonedEntity.Attributes["name"];
-            team["teamtype"] = new OptionSetValue(0);
-            team["isdefault"] = true;
-            team["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
-            team["administratorid"] = userRef;
-            team["businessunitid"] = clonedEntity.ToEntityReference();
-
             var req = new CreateRequest()
             {
-                Target = team
+                Target = Utility.CreateDefaultTeam(clonedEntity)
             };
             req.Parameters[MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
             core.Execute(req, userRef);

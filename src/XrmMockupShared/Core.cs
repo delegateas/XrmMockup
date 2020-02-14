@@ -127,12 +127,7 @@ namespace DG.Tools.XrmMockup
             this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
             // Setup default team for root business unit
-            var defaultTeam = new Entity(LogicalNames.Team);
-            defaultTeam["name"] = rootBu.Attributes["name"];
-            defaultTeam["teamtype"] = new OptionSetValue(0);
-            defaultTeam["isdefault"] = true;
-            defaultTeam["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
-            defaultTeam["businessunitid"] = rootBu.ToEntityReference();
+            var defaultTeam = Utility.CreateDefaultTeam(rootBu);
             this.db.Add(defaultTeam);
 
             // Setup admin user
