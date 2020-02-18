@@ -380,11 +380,11 @@ namespace DG.Tools.XrmMockup
             return securityRoles;
         }
 
-        private bool HasOwnerTeamAccess(EntityReference owner, EntityReference caller)
+        private bool IsMemberOfTeam(EntityReference team, EntityReference user)
         {
             return Core.GetDbTable(LogicalNames.TeamMembership)
                 .Select(x => x.ToEntity())
-                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id && tm.GetAttributeValue<Guid>("teamid") == owner.Id)
+                .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == user.Id && tm.GetAttributeValue<Guid>("teamid") == team.Id)
                 .Any();
         }
 
@@ -417,13 +417,13 @@ namespace DG.Tools.XrmMockup
 
             var owner = entity.GetAttributeValue<EntityReference>("ownerid");
 
-            // Check owner access rights
-            if (owner.LogicalName == LogicalNames.Team && HasOwnerTeamAccess(owner, caller))
+            // Check if owner is a team, and if user is member of that team, then check access for that team
+            if (owner.LogicalName == LogicalNames.Team && IsMemberOfTeam(owner, caller))
             {
-                return true;
+                return HasPermission(entity, access, owner);
             }
 
-            // Check if teams have access
+            // Check if any teams that the user is a member of have access 
             var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
             .Select(x => x.ToEntity())
             .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
