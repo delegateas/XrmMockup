@@ -1,3 +1,6 @@
+### 1.1.1 - 18 February 2020
+* Fix a bug with team security where members of an owner team had full access to any records the team owned
+
 ### 1.1.0 - 11 February 2020
 * Added better description when no default status reason exists
 * Added support for client secret
