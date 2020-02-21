@@ -58,11 +58,6 @@
     <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.dll" />
     <Content Include="Daxif\bin\SolutionPackager.exe" />
     <Content Include="Daxif\GenerateXrmMockupMetadata.fsx" />
-    <Content Include="Daxif\GenerateCSharpContext.fsx" />
-    <Content Include="Daxif\Playground.fsx" />
-    <Content Include="Daxif\PluginSyncDev.fsx" />
-    <Content Include="Daxif\WorkflowSyncDev.fsx" />
-    <Content Include="Daxif\_Config.fsx" />
     <Content Include="XrmContext\FSharp.Core.dll" />
     <Content Include="XrmContext\Microsoft.Crm.Sdk.Proxy.dll" />
     <Content Include="XrmContext\Microsoft.IdentityModel.dll" />
@@ -72,6 +67,11 @@
     <Content Include="XrmContext\XrmContext.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Daxif\GenerateCSharpContext.fsx" />
+    <None Include="Daxif\Playground.fsx" />
+    <None Include="Daxif\PluginSyncDev.fsx" />
+    <None Include="Daxif\WorkflowSyncDev.fsx" />
+    <None Include="Daxif\_Config.fsx" />
     <None Include="packages.config" />
     <None Include="XrmContext\Run.ps1" />
     <None Include="XrmContext\XrmContext.exe.config" />
