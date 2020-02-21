@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnCreate .cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendOnCreate.cs" />
@@ -25,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />

@@ -24,6 +24,7 @@ namespace DG.XrmMockupTest {
                 orgUser.Id = orgAdminUIService.Create(orgUser);
 
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 1";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var scheduler = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Scheduler);
@@ -54,6 +55,7 @@ namespace DG.XrmMockupTest {
         public void TestAssignSecurityUser() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 2";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var orgUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var service = crm.CreateOrganizationService(orgUser.Id);
@@ -84,6 +86,7 @@ namespace DG.XrmMockupTest {
         public void TestAssignSecurityTeam() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 3";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var orgUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var service = crm.CreateOrganizationService(orgUser.Id);
@@ -114,6 +117,7 @@ namespace DG.XrmMockupTest {
         public void TestUpdateSecurity() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 4";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var orgUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var service = crm.CreateOrganizationService(orgUser.Id);
@@ -143,6 +147,7 @@ namespace DG.XrmMockupTest {
         public void TestDeleteSecurity() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 5";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var orgUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var service = crm.CreateOrganizationService(orgUser.Id);
@@ -169,6 +174,7 @@ namespace DG.XrmMockupTest {
         public void TestParentChangeCascading() {
             using (var context = new Xrm(orgAdminUIService)) {
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 6";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
                 var parentUser = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Scheduler);
                 var service = crm.CreateOrganizationService(parentUser.Id);

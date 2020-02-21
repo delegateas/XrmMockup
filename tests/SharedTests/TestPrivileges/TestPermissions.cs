@@ -24,6 +24,7 @@ namespace DG.XrmMockupTest
         public void TestPermissionWhenThroughTeam()
         {
             var businessunit = new BusinessUnit();
+            businessunit["name"] = "Business unit name";
             businessunit.Id = orgAdminUIService.Create(businessunit);
             // Create a user which does not have read access to Contact
             var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.Cannotreadcontact);

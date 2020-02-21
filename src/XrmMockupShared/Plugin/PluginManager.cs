@@ -35,8 +35,9 @@ namespace DG.Tools.XrmMockup {
         // List of SystemPlugins to execute
         private List<MockupPlugin> systemPlugins = new List<MockupPlugin>
         {
-            //new SystemPlugins.ContactDefaultValues()
-            new SystemPlugins.UpdateInactiveIncident()
+            new SystemPlugins.UpdateInactiveIncident(),
+            new SystemPlugins.DefaultBusinessUnitTeams(),
+            new SystemPlugins.DefaultBusinessUnitTeamMembers()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)

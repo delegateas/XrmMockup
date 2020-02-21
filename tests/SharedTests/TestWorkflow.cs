@@ -102,6 +102,7 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 1";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService, 
@@ -127,6 +128,7 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 2";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService,
