@@ -1,3 +1,8 @@
+### 1.2.0 - 21 February 2020
+* Default teams are now added and managed in relation to businessunits.
+* Custom workflows with optional parameters will now correctly be passed null values form workflows.
+* The metadata generator will now fetch plugin images from selected solutions instead of a hard-coded solution.
+
 ### 1.1.1 - 18 February 2020
 * Fix a bug with team security where members of an owner team had full access to any records the team owned
 * Fixed a bug with XrmMockup365 when it was installed on projects without the tooling connector
