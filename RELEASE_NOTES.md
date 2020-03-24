@@ -1,3 +1,6 @@
+### 1.2.1 - 24 March 2020
+*  Added new method `AddSecurityRolesToPrinciple` for adding  security roles to a user or a team
+
 ### 1.2.0 - 21 February 2020
 * Default teams are now added and managed in relation to businessunits.
 * Custom workflows with optional parameters will now correctly be passed null values form workflows.
