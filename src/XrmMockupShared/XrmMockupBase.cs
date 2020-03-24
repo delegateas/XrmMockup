@@ -317,10 +317,20 @@ namespace DG.Tools.XrmMockup
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
             team["teamtype"] = new OptionSetValue(0);
-            team.Id = service.Create(team);
+                team.Id = service.Create(team);
             Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
 
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
+        }
+
+        /// <summary>
+        /// Adds security roles to a given user or team
+        /// </summary>
+        /// <param name="priniple">User or Team</param>
+        /// <param name="securityRoles">List of security role guids</param>
+        public void AddSecurityRolesToPrinciple(EntityReference priniple, params Guid[] securityRoles)
+        {
+            Core.SetSecurityRoles(priniple, securityRoles);
         }
 
         /// <summary>
