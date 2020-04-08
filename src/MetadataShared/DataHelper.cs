@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
 
 namespace DG.Tools.XrmMockup.Metadata
 {
