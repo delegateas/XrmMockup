@@ -409,7 +409,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 ColumnSet = new ColumnSet("parentrootroleid", "name", "roleid", "roletemplateid", "businessunitid")
             };
             var rolelist = QueryPaging(roleQuery);
-
             // Joins
             // rpr <- roleprivileges left outer join roles
             var roleprivilegeLOJrole =
@@ -436,6 +435,9 @@ namespace DG.Tools.XrmMockup.Metadata
 
             // Role generation
             var roles = new Dictionary<Guid, SecurityRole>();
+
+            entities = entities.Where(arg => arg.rpr != null);
+
             foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid")))
             {
                 var entityName = (string)e.pp.privilegeOTC["objecttypecode"];
