@@ -1,3 +1,6 @@
+### 1.2.2 - 08 April 2020
+* Fixed generation error due to orphaned roleprivilege
+
 ### 1.2.1 - 24 March 2020
 *  Added new method `AddSecurityRolesToPrinciple` for adding  security roles to a user or a team
 
