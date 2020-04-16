@@ -9,6 +9,9 @@
     <Import_RootNamespace>MetadataSkeleton</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)FlowActions\FlowAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FlowActions\InitializeVariable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParseFlowTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetadataSkeleton.cs" />
   </ItemGroup>
 </Project>

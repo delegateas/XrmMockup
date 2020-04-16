@@ -55,6 +55,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Metadata\Flows\WOODY-SumvrdierpLager-72178DFA-FB6C-EA11-A811-000D3AB4DF6C.json" />
+    <None Include="Metadata\Flows\WOODY-TriggerupdatepLagernrLagerlinjendrersig-85924889-AA6D-EA11-A811-000D3AB4DF6C.json" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,8 @@
 ﻿using DG.Tools;
+using MetadataSkeleton;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -8,24 +10,31 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 
-namespace DG.Tools.XrmMockup.Metadata {
-    class Program {
+namespace DG.Tools.XrmMockup.Metadata
+{
+    class Program
+    {
 
         public static ArgumentParser ParsedArgs;
 
         static List<string> listOfAssemblies = new List<string>();
 
-        private static Assembly ResolveXrmAssemblies(object sender, ResolveEventArgs args) {
-            if (listOfAssemblies.Contains(args.Name)) {
+        private static Assembly ResolveXrmAssemblies(object sender, ResolveEventArgs args)
+        {
+            if (listOfAssemblies.Contains(args.Name))
+            {
                 return null;
             }
-            try {
+            try
+            {
                 listOfAssemblies.Add(args.Name);
                 return AssemblyGetter.GetAssemblyFromName(args.Name);
             }
-            finally {
+            finally
+            {
                 listOfAssemblies.Remove(args.Name);
             }
         }
@@ -34,10 +43,25 @@ namespace DG.Tools.XrmMockup.Metadata {
         {
             ParsedArgs = new ArgumentParser(Arguments.ArgList, args);
             AppDomain.CurrentDomain.AssemblyResolve += ResolveXrmAssemblies;
-            GenerateMetadata();
+            //GenerateMetadata();
+            ParseFlow();
         }
 
-        static void GenerateMetadata() {
+        static void ParseFlow()
+        {
+            var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
+            var flowsLocation = Path.Combine(outputLocation, "Flows");
+            foreach (var file in Directory.GetFiles(flowsLocation))
+            {
+                var json = File.ReadAllText(file);
+                var bla = JsonConvert.DeserializeObject<ParseFlow>(json);
+                var l = 2;
+            }
+
+        }
+
+        static void GenerateMetadata()
+        {
             var auth = new AuthHelper(
                 ParsedArgs[Arguments.Url],
                 ParsedArgs[Arguments.Username],
@@ -66,33 +90,40 @@ namespace DG.Tools.XrmMockup.Metadata {
             Console.WriteLine("Deleting old files");
 
             Directory.CreateDirectory(workflowsLocation);
-            foreach (var file in Directory.EnumerateFiles(workflowsLocation, "*.xml")) {
+            foreach (var file in Directory.EnumerateFiles(workflowsLocation, "*.xml"))
+            {
                 File.Delete(Path.Combine(workflowsLocation, file));
             }
 
             Directory.CreateDirectory(securityLocation);
-            foreach (var file in Directory.EnumerateFiles(securityLocation, "*.xml")) {
+            foreach (var file in Directory.EnumerateFiles(securityLocation, "*.xml"))
+            {
                 File.Delete(Path.Combine(securityLocation, file));
             }
 
             Console.WriteLine("Writing files");
 
             Directory.CreateDirectory(outputLocation);
-            using (var stream = new FileStream(outputLocation + "/Metadata.xml", FileMode.Create)) {
+            using (var stream = new FileStream(outputLocation + "/Metadata.xml", FileMode.Create))
+            {
                 serializer.WriteObject(stream, skeleton);
             }
 
-            foreach (var workflow in generator.GetWorkflows()) {
+            foreach (var workflow in generator.GetWorkflows())
+            {
                 var safeName = ToSafeName(workflow.GetAttributeValue<string>("name"));
-                using (var stream = new FileStream($"{workflowsLocation}/{safeName}.xml", FileMode.Create)) {
+                using (var stream = new FileStream($"{workflowsLocation}/{safeName}.xml", FileMode.Create))
+                {
                     workflowSerializer.WriteObject(stream, workflow);
                 }
             }
 
             var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id);
-            foreach (var securityRole in securityRoles) {
+            foreach (var securityRole in securityRoles)
+            {
                 var safeName = ToSafeName(securityRole.Value.Name);
-                using (var stream = new FileStream($"{securityLocation}/{safeName}.xml", FileMode.Create)) {
+                using (var stream = new FileStream($"{securityLocation}/{safeName}.xml", FileMode.Create))
+                {
                     securitySerializer.WriteObject(stream, securityRole.Value);
                 }
             }
@@ -100,12 +131,14 @@ namespace DG.Tools.XrmMockup.Metadata {
             // Write to TypeDeclarations file
             var typedefFile = Path.Combine(outputLocation, "TypeDeclarations.cs");
 
-            using (var file = new StreamWriter(typedefFile, false)) {
+            using (var file = new StreamWriter(typedefFile, false))
+            {
                 file.WriteLine("using System;");
                 file.WriteLine("");
                 file.WriteLine("namespace DG.Tools.XrmMockup {");
                 file.WriteLine("\tpublic struct SecurityRoles {");
-                foreach (var securityRole in securityRoles.OrderBy(x => x.Value.Name)) {
+                foreach (var securityRole in securityRoles.OrderBy(x => x.Value.Name))
+                {
                     file.WriteLine($"\t\tpublic static Guid {ToSafeName(securityRole.Value.Name)} = new Guid(\"{securityRole.Key}\");");
                 }
                 file.WriteLine("\t}");
@@ -113,16 +146,20 @@ namespace DG.Tools.XrmMockup.Metadata {
             }
         }
 
-        private static bool StartsWithNumber(string str) {
+        private static bool StartsWithNumber(string str)
+        {
             return str.Length > 0 && str[0] >= '0' && str[0] <= '9';
         }
 
-        private static string ToSafeName(string str) {
+        private static string ToSafeName(string str)
+        {
             var compressed = Regex.Replace(str, @"[^\w]", "");
-            if (StartsWithNumber(compressed)) {
+            if (StartsWithNumber(compressed))
+            {
                 return $"_{compressed}";
             }
-            if (String.IsNullOrWhiteSpace(compressed)) {
+            if (String.IsNullOrWhiteSpace(compressed))
+            {
                 return "_EmptyString";
             }
             return compressed;

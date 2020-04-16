@@ -1,0 +1,305 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "impersonation": {
+        },
+        "runtimeSource": "embedded",
+        "connection": {
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {
+          },
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {
+          },
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "LagerId_Value": {
+                  "type": "string",
+                  "description": "Enter initial value",
+                  "x-ms-powerflows-param-ispartial": false
+                }
+              },
+              "required": [
+                "LagerId_Value"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "LagerId": {
+          "runAfter": {
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "LagerId",
+                "type": "string",
+                "value": "@{triggerBody()['LagerId_Value']}"
+              }
+            ]
+          }
+        },
+        "Hent_leverancer": {
+          "runAfter": {
+            "Hent_lagerlinjer": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            },
+            "parameters": {
+              "entityName": "hofor_leverances",
+              "$filter": "_hofor_lager_value eq '@{variables('LagerId')}' and statuscode eq 281300007"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Hent_lagerlinjer": {
+          "runAfter": {
+            "Sum_omkostning": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            },
+            "parameters": {
+              "entityName": "hofor_lagerlinjers",
+              "$filter": "_hofor_lager_value eq '@{variables('LagerId')}' and statuscode eq 1"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Sum_mængde": {
+          "runAfter": {
+            "LagerId": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Sum mængde",
+                "type": "float",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Sum_brændværdi": {
+          "runAfter": {
+            "Sum_mængde": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Sum brændværdi",
+                "type": "float",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Respond_to_a_PowerApp_or_flow": {
+          "runAfter": {
+            "Update_a_record": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "sum_mængde": "@{variables('Sum mængde')}",
+              "sum_brændværdi": "@{variables('Sum brændværdi')}"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sum_mængde": {
+                  "title": "Sum mængde",
+                  "x-ms-dynamically-added": true,
+                  "type": "number"
+                },
+                "sum_brændværdi": {
+                  "title": "Sum brændværdi",
+                  "x-ms-dynamically-added": true,
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "Loop_leverancer": {
+          "foreach": "@outputs('Hent_leverancer')?['body/value']",
+          "actions": {
+            "Increment_mængde_leverance": {
+              "runAfter": {
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum mængde",
+                "value": "@if(contains(item(),'hofor_aktueltmestkorrektmaengdevaerdi'),item()['hofor_aktueltmestkorrektmaengdevaerdi'],0.0)"
+              }
+            },
+            "Increment_brændværdi_leverance": {
+              "runAfter": {
+                "Increment_mængde_leverance": [
+                  "Succeeded"
+                ]
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum brændværdi",
+                "value": "@if(and(contains(item(),'hofor_braendvaerdigjtons'),contains(item(),'hofor_aktueltmestkorrektmaengdevaerdi')),mul(item()['hofor_braendvaerdigjtons'],item()['hofor_aktueltmestkorrektmaengdevaerdi']),if(and(contains(item(),'hofor_forventetbraendvrdigjtons'),contains(item(),'hofor_aktueltmestkorrektmaengdevaerdi')),mul(item()['hofor_forventetbraendvrdigjtons'],item()['hofor_aktueltmestkorrektmaengdevaerdi']),0.0))"
+              }
+            },
+            "Increment_omkostning_leverance": {
+              "runAfter": {
+                "Increment_brændværdi_leverance": [
+                  "Succeeded"
+                ]
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum omkostning",
+                "value": "@if(contains(item(),'hofor_leveranceomkostning'),item()['hofor_leveranceomkostning'],0.0)"
+              }
+            }
+          },
+          "runAfter": {
+            "Hent_leverancer": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Loop_lagerlinjer": {
+          "foreach": "@outputs('Hent_lagerlinjer')?['body/value']",
+          "actions": {
+            "Increment_mængde_lagerlinje": {
+              "runAfter": {
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum mængde",
+                "value": "@if(contains(item(), 'hofor_maengdetons'), item()['hofor_maengdetons'], 0.0)"
+              }
+            },
+            "Increment_brændværdi_lagerlinje": {
+              "runAfter": {
+                "Increment_mængde_lagerlinje": [
+                  "Succeeded"
+                ]
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum brændværdi",
+                "value": "@if(contains(item(), 'hofor_braendvaerditotalprleverancegj'), item()['hofor_braendvaerditotalprleverancegj'], 0.0)"
+              }
+            },
+            "Increment_omkostning_lagerlinje": {
+              "runAfter": {
+                "Increment_brændværdi_lagerlinje": [
+                  "Succeeded"
+                ]
+              },
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "Sum omkostning",
+                "value": "@if(contains(item(), 'hofor_leveranceomkostningtotaldkk'), item()['hofor_leveranceomkostningtotaldkk'], 0.0)"
+              }
+            }
+          },
+          "runAfter": {
+            "Loop_leverancer": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Sum_omkostning": {
+          "runAfter": {
+            "Sum_brændværdi": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Sum omkostning",
+                "type": "float",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Update_a_record": {
+          "runAfter": {
+            "Loop_lagerlinjer": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "UpdateRecord"
+            },
+            "parameters": {
+              "entityName": "hofor_lagers",
+              "recordId": "@variables('LagerId')",
+              "item/hofor_lagertotalbraendvaerdi": "@variables('Sum brændværdi')",
+              "item/hofor_lagertotaliton": "@variables('Sum mængde')",
+              "item/hofor_lagertotalomkostning": "@variables('Sum omkostning')"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "outputs": {
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}
