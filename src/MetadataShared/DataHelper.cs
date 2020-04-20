@@ -433,10 +433,17 @@ namespace DG.Tools.XrmMockup.Metadata
                 from rpr in res.DefaultIfEmpty()
                 select new { pp, rpr };
 
+            // Removing null entities
+            entities = entities
+                .Where(arg => arg.rpr != null && arg.pp != null)
+                .Where(arg => arg.rpr.role != null && arg.rpr.roleprivilege != null && arg.pp.privilegeOTC != null && arg.pp.privilege != null)
+                .Where(arg =>
+                    arg.pp.privilegeOTC.Attributes.ContainsKey("objecttypecode") &&
+                    arg.rpr.roleprivilege.Attributes.ContainsKey("roleid") &&
+                    arg.rpr.role.Attributes.ContainsKey("name"));
+
             // Role generation
             var roles = new Dictionary<Guid, SecurityRole>();
-
-            entities = entities.Where(arg => arg.rpr != null);
 
             foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid")))
             {
