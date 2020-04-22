@@ -1,3 +1,6 @@
+### 1.2.3 - 22 April 2020
+* Fixed additional errors with orphaned security
+
 ### 1.2.2 - 08 April 2020
 * Fixed generation error due to orphaned roleprivilege
 
