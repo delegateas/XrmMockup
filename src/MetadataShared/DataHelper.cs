@@ -436,9 +436,13 @@ namespace DG.Tools.XrmMockup.Metadata
             // Role generation
             var roles = new Dictionary<Guid, SecurityRole>();
 
-            entities = entities.Where(arg => arg.rpr != null);
+            var validSecurityRoles = entities.Where(e =>
+                e.pp?.privilege != null &&
+                (e.pp?.privilegeOTC?.Contains("objecttypecode")).GetValueOrDefault() &&
+                (e.rpr?.roleprivilege?.Contains("roleid")).GetValueOrDefault() &&
+                (e.rpr?.role?.Contains("name")).GetValueOrDefault());
 
-            foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid")))
+            foreach (var e in validSecurityRoles)
             {
                 var entityName = (string)e.pp.privilegeOTC["objecttypecode"];
                 if (entityName == "none") continue;
