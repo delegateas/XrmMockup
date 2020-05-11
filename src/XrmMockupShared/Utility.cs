@@ -938,7 +938,6 @@ namespace DG.Tools.XrmMockup
             pointer["actualend"] = entity.GetAttributeValue<DateTime>("actualend");
             pointer["actualstart"] = entity.GetAttributeValue<DateTime>("actualstart");
             pointer["description"] = entity.GetAttributeValue<string>("description");
-            pointer["deliveryprioritycode"] = entity.GetAttributeValue<OptionSetValue>("deliveryprioritycode");
             pointer["isbilled"] = entity.GetAttributeValue<bool>("isbilled");
             pointer["isregularactivity"] = entity.GetAttributeValue<bool>("isregularactivity");
             pointer["isworkflowcreated"] = entity.GetAttributeValue<bool>("isworkflowcreated");
@@ -946,8 +945,12 @@ namespace DG.Tools.XrmMockup
             pointer["scheduleddurationminutes"] = entity.GetAttributeValue<int>("scheduleddurationminutes");
             pointer["scheduledend"] = entity.GetAttributeValue<DateTime>("scheduledend");
             pointer["scheduledstart"] = entity.GetAttributeValue<DateTime>("scheduledstart");
-            pointer["senton"] = entity.GetAttributeValue<DateTime>("senton");
             pointer["subject"] = entity.GetAttributeValue<string>("subject");
+#if !(XRM_MOCKUP_2011)
+            pointer["senton"] = entity.GetAttributeValue<DateTime>("senton");
+            pointer["deliveryprioritycode"] = entity.GetAttributeValue<OptionSetValue>("deliveryprioritycode");
+#endif
+
 
             switch (entity.GetAttributeValue<OptionSetValue>("statecode").Value)
             {
@@ -1084,7 +1087,9 @@ namespace DG.Tools.XrmMockup
         {
             var defaultTeam = new Entity(LogicalNames.Team);
             defaultTeam["name"] = rootBusinessUnit.Attributes["name"];
+#if !(XRM_MOCKUP_2011)
             defaultTeam["teamtype"] = new OptionSetValue(0);
+#endif
             defaultTeam["isdefault"] = true;
             defaultTeam["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
             defaultTeam["administratorid"] = useReference;
