@@ -1,3 +1,6 @@
+### 1.2.4 - 11 May 2020
+* Fixed an issue in 2011 where default teams would fail to create
+
 ### 1.2.3 - 22 April 2020
 * Fixed additional errors with orphaned security
 
