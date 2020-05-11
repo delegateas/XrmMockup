@@ -49,16 +49,28 @@ namespace DG.XrmMockupTest
             businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
             businessUnit2.Id = orgAdminService.Create(businessUnit2);
 
-            team1 = new Team { Name = "Team 1", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team1 = new Team { Name = "Team 1", BusinessUnitId = businessUnit1.ToEntityReference() };
+#if !(XRM_MOCKUP_2011)
+            team1.TeamType = Team_TeamType.Owner;
+#endif
             team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
-            team2 = new Team { Name = "Team 2", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team2 = new Team { Name = "Team 2", BusinessUnitId = businessUnit1.ToEntityReference() };
+#if !(XRM_MOCKUP_2011)
+            team2.TeamType = Team_TeamType.Owner;
+#endif
             team2 = crm.CreateTeam(orgAdminService, team2, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
-            team3 = new Team { Name = "Team 3", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team3 = new Team { Name = "Team 3", BusinessUnitId = businessUnit1.ToEntityReference() };
+#if !(XRM_MOCKUP_2011)
+            team3.TeamType = Team_TeamType.Owner;
+#endif
             team3 = crm.CreateTeam(orgAdminService, team3, SecurityRoles.SystemAdministrator).ToEntity<Team>();
 
-            team4 = new Team { Name = "Team 4", BusinessUnitId = businessUnit1.ToEntityReference(), TeamType = Team_TeamType.Owner };
+            team4 = new Team { Name = "Team 4", BusinessUnitId = businessUnit1.ToEntityReference() };
+#if !(XRM_MOCKUP_2011)
+            team4.TeamType = Team_TeamType.Owner;
+#endif
             team4 = crm.CreateTeam(orgAdminService, team4, SecurityRoles.SystemAdministrator).ToEntity<Team>();
 
             // SystemCustomizer - read account - user level, write account - user level
@@ -89,7 +101,9 @@ namespace DG.XrmMockupTest
             {
                 var fetchedTeam = context.TeamSet.FirstOrDefault(x => x.Id == team.Id);
                 Assert.IsNotNull(fetchedTeam);
+#if !(XRM_MOCKUP_2011)
                 Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
+#endif
             }
         }
 
@@ -150,7 +164,7 @@ namespace DG.XrmMockupTest
         }
 
 
-        #region Positive Tests
+#region Positive Tests
         //A User can see there own Account
         [TestMethod]
         public void UserCanReadOwn()
@@ -191,9 +205,9 @@ namespace DG.XrmMockupTest
             crm.AddUsersToTeam(team1.ToEntityReference(), user12.ToEntityReference());
             Assert.IsTrue(CanRead(user12, account1));
         }
-        #endregion
+#endregion
 
-        #region Negative Tests
+#region Negative Tests
         //A User can't see the account beloning to different officies
         [TestMethod]
         public void UserCantReadOtherUnit()
@@ -252,7 +266,7 @@ namespace DG.XrmMockupTest
             Assert.IsFalse(CanRead(user12, account2));
         }
 
-        #endregion
+#endregion
         public bool CanRead(SystemUser user, EntityReference account)
         {
             try
