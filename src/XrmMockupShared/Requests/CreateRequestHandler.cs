@@ -30,129 +30,22 @@ namespace DG.Tools.XrmMockup
             clonedEntity.Attributes = new AttributeCollection();
             clonedEntity.Attributes.AddRange(validAttributes);
 
-            if (userRef != null && userRef.Id != Guid.Empty)
-            {
-                if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
-                {
-                    throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
-                }
-                if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
-                {
-                    var references = clonedEntity.Attributes
-                        .Where(x => x.Value is EntityReference && x.Key != "ownerid")
-                        .ToArray();
-
-                    if (references.Any())
-                    {
-                        if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
-                        {
-                            throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
-                                $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
-                        }
-                    }
-
-                    foreach (var attr in references)
-                    {
-                        var reference = attr.Value as EntityReference;
-                        if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
-                        {
-                            throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                        }
-                        if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
-                        {
-                            throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                        }
-                    }
-                }
-            }
+            SecurityChecks(userRef, clonedEntity, entity, settings);
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {
                 throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
             }
 
-            var transactioncurrencyId = "transactioncurrencyid";
-            var exchangerate = "exchangerate";
-            if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) &&
-                Utility.IsValidAttribute(transactioncurrencyId, entityMetadata) &&
-                entityMetadata.Attributes.Any(m => m is MoneyAttributeMetadata) &&
-                (settings.ServiceRole == MockupServiceSettings.Role.UI ||
-                (settings.ServiceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
-                    attr => entityMetadata.Attributes.Where(a => a is MoneyAttributeMetadata).Any(m => m.LogicalName == attr.Key)))))
-            {
-                var user = db.GetEntityOrNull(userRef);
-                if (user.Attributes.ContainsKey(transactioncurrencyId))
-                {
-                    clonedEntity.Attributes[transactioncurrencyId] = user[transactioncurrencyId];
-                }
-                else
-                {
-                    clonedEntity.Attributes[transactioncurrencyId] = Utility.GetBaseCurrency(metadata);
-                }
-            }
+            HandleCurrency(userRef, clonedEntity, entityMetadata, settings);
 
-            if (!clonedEntity.Attributes.ContainsKey(exchangerate) &&
-                Utility.IsValidAttribute(exchangerate, entityMetadata) &&
-                clonedEntity.Attributes.ContainsKey(transactioncurrencyId))
-            {
-                var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
-                var currency = db.GetEntityOrNull(currencyId);
-                clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
-                Utility.HandleCurrencies(metadata, db, clonedEntity);
-            }
-
-            if (Utility.IsValidAttribute("statecode", entityMetadata) &&
-                Utility.IsValidAttribute("statuscode", entityMetadata))
-            {
-                var defaultState = 0;
-                try
-                {
-                    var defaultStateStatus = metadata.DefaultStateStatus[clonedEntity.LogicalName];
-                    if (!clonedEntity.Attributes.ContainsKey("statecode") &&
-                        !clonedEntity.Attributes.ContainsKey("statuscode"))
-                    {
-                        clonedEntity["statecode"] = new OptionSetValue(defaultState);
-                        clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                    }
-                    else
-                    {
-                        var statusmeta =
-                            (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata)
-                            ?.OptionSet.Options
-                            .Cast<StatusOptionMetadata>()
-                            .FirstOrDefault(o => o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
-                        if (clonedEntity.LogicalName != "opportunityclose" && // is allowed to be created inactive 
-                            ((clonedEntity.Attributes.ContainsKey("statecode") &&
-                            clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
-                            (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState)))
-                        {
-                            clonedEntity["statecode"] = new OptionSetValue(defaultState);
-                            clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                        }
-                        else if (!clonedEntity.Contains("statecode") || clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
-                        {
-                            clonedEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
-                        }
-                        else if (!clonedEntity.Contains("statuscode") || clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
-                        {
-                            clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
-                        }
-                    }
-                }
-                catch (KeyNotFoundException)
-                {
-                    throw new KeyNotFoundException($"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
-                        $"This might be due to unsaved default status reason changes. Please update, save, and publish the relevant status reason field on {clonedEntity.LogicalName} and generate new metadata");
-                }
-            }
+            HandleStateAndStatus(entityMetadata, clonedEntity);
 
             if (Utility.IsValidAttribute("createdon", entityMetadata))
             {
                 clonedEntity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
             }
+
             if (Utility.IsValidAttribute("createdby", entityMetadata))
             {
                 clonedEntity["createdby"] = userRef;
@@ -237,6 +130,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
+
                     foreach (var relatedEntity in relatedEntities.Value.Entities)
                     {
                         var req = new CreateRequest()
@@ -256,6 +150,136 @@ namespace DG.Tools.XrmMockup
             }
             resp.Results.Add("id", clonedEntity.Id);
             return resp;
+        }
+
+        private void HandleCurrency(EntityReference userRef, Entity clonedEntity, EntityMetadata entityMetadata,
+            MockupServiceSettings settings)
+        {
+            var transactioncurrencyId = "transactioncurrencyid";
+            var exchangerate = "exchangerate";
+
+            if (!clonedEntity.Attributes.ContainsKey(transactioncurrencyId) &&
+                Utility.IsValidAttribute(transactioncurrencyId, entityMetadata) &&
+                entityMetadata.Attributes.Any(m => m is MoneyAttributeMetadata) &&
+                (settings.ServiceRole == MockupServiceSettings.Role.UI ||
+                 (settings.ServiceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
+                     attr => entityMetadata.Attributes.Where(a => a is MoneyAttributeMetadata)
+                         .Any(m => m.LogicalName == attr.Key)))))
+            {
+                var user = db.GetEntityOrNull(userRef);
+                if (user.Attributes.ContainsKey(transactioncurrencyId))
+                {
+                    clonedEntity.Attributes[transactioncurrencyId] = user[transactioncurrencyId];
+                }
+                else
+                {
+                    clonedEntity.Attributes[transactioncurrencyId] = Utility.GetBaseCurrency(metadata);
+                }
+            }
+
+            if (clonedEntity.Attributes.ContainsKey(exchangerate) ||
+                !Utility.IsValidAttribute(exchangerate, entityMetadata) ||
+                !clonedEntity.Attributes.ContainsKey(transactioncurrencyId)) return;
+            
+            var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
+            var currency = db.GetEntityOrNull(currencyId);
+            clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
+            Utility.HandleCurrencies(metadata, db, clonedEntity);
+        }
+
+        private void HandleStateAndStatus(EntityMetadata entityMetadata, Entity clonedEntity)
+        {
+            if (!Utility.IsValidAttribute("statecode", entityMetadata) ||
+                !Utility.IsValidAttribute("statuscode", entityMetadata)) return;
+            
+            var defaultState = 0;
+            try
+            {
+                var defaultStateStatus = metadata.DefaultStateStatus[clonedEntity.LogicalName];
+                if (!clonedEntity.Attributes.ContainsKey("statecode") &&
+                    !clonedEntity.Attributes.ContainsKey("statuscode"))
+                {
+                    clonedEntity["statecode"] = new OptionSetValue(defaultState);
+                    clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                }
+                else
+                {
+                    var statusmeta =
+                        (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as
+                            StatusAttributeMetadata)
+                        ?.OptionSet.Options
+                        .Cast<StatusOptionMetadata>()
+                        .FirstOrDefault(o =>
+                            o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
+                    if (clonedEntity.LogicalName != "opportunityclose" && // is allowed to be created inactive 
+                        ((clonedEntity.Attributes.ContainsKey("statecode") &&
+                          clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
+                         (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState)))
+                    {
+                        clonedEntity["statecode"] = new OptionSetValue(defaultState);
+                        clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                    }
+                    else if (!clonedEntity.Contains("statecode") ||
+                             clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
+                    {
+                        clonedEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
+                    }
+                    else if (!clonedEntity.Contains("statuscode") ||
+                             clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
+                    {
+                        clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
+                    }
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException(
+                    $"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
+                    $"This might be due to unsaved default status reason changes. Please update, save, and publish the relevant status reason field on {clonedEntity.LogicalName} and generate new metadata");
+            }
+        }
+
+        private void SecurityChecks(EntityReference userRef, Entity clonedEntity, Entity entity, MockupServiceSettings settings)
+        {
+            if (userRef == null || userRef.Id == Guid.Empty) return;
+            
+            if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
+            {
+                throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                                         $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
+            }
+
+            if (!core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true)) return;
+            
+            var references = clonedEntity.Attributes
+                .Where(x => x.Value is EntityReference && x.Key != "ownerid")
+                .ToArray();
+
+            if (references.Any())
+            {
+                if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
+                                             $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                }
+            }
+
+            foreach (var attr in references)
+            {
+                var reference = attr.Value as EntityReference;
+                if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                    !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                                             $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                }
+
+                if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                {
+                    throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
+                                             $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                }
+            }
         }
 
         private void CheckBusinessUnitAttributes(Entity clonedEntity, MockupServiceSettings settings)
@@ -281,11 +305,15 @@ namespace DG.Tools.XrmMockup
 
         private void CreateDefaultTeamForBusinessUnit(Entity clonedEntity, EntityReference userRef)
         {
-            var req = new CreateRequest()
+            var req = new CreateRequest
             {
-                Target = Utility.CreateDefaultTeam(clonedEntity, userRef)
+                Target = Utility.CreateDefaultTeam(clonedEntity, userRef),
+                Parameters =
+                {
+                    [MockupExecutionContext.Key] =
+                        new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK)
+                }
             };
-            req.Parameters[MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
             core.Execute(req, userRef);
         }
     }
