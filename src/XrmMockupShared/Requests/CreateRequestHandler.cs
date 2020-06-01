@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 
@@ -14,7 +14,10 @@ namespace DG.Tools.XrmMockup
 {
     internal class CreateRequestHandler : RequestHandler
     {
-        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") { }
+        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core,
+            db, metadata, security, "Create")
+        {
+        }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -34,10 +37,13 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {
-                throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
+                throw new FaultException(
+                    $"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
             }
 
             HandleCurrency(userRef, clonedEntity, entityMetadata, settings);
+
+            HandleAutoNumberAttributes(clonedEntity, entityMetadata);
 
             HandleStateAndStatus(entityMetadata, clonedEntity);
 
@@ -63,6 +69,7 @@ namespace DG.Tools.XrmMockup
             {
                 owner = clonedEntity.GetAttributeValue<EntityReference>("ownerid");
             }
+
             Utility.SetOwner(db, security, metadata, clonedEntity, owner);
 
             if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
@@ -76,7 +83,8 @@ namespace DG.Tools.XrmMockup
                 CheckBusinessUnitAttributes(clonedEntity, settings);
             }
 
-            foreach (var attr in entityMetadata.Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList())
+            foreach (var attr in entityMetadata.Attributes
+                .Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList())
             {
                 if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName))
                 {
@@ -85,21 +93,24 @@ namespace DG.Tools.XrmMockup
             }
 
             foreach (var attr in entityMetadata.Attributes.Where(a =>
-                (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList())
+                (a as PicklistAttributeMetadata)?.DefaultFormValue != null &&
+                (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList())
             {
                 if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName))
                 {
-                    clonedEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
+                    clonedEntity[attr.LogicalName] =
+                        new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
                 }
             }
 
-            if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser)
+            if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead ||
+                clonedEntity.LogicalName == LogicalNames.SystemUser)
             {
                 Utility.SetFullName(metadata, clonedEntity);
             }
 
             clonedEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
                 .ToList()
                 .ForEach(x => clonedEntity[x.Key] = null);
 
@@ -126,9 +137,11 @@ namespace DG.Tools.XrmMockup
             {
                 foreach (var relatedEntities in entity.RelatedEntities)
                 {
-                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata, relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
+                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata,
+                        relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
                     {
-                        throw new FaultException($"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
+                        throw new FaultException(
+                            $"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
 
                     foreach (var relatedEntity in relatedEntities.Value.Entities)
@@ -139,17 +152,84 @@ namespace DG.Tools.XrmMockup
                         };
                         core.Execute(req, userRef);
                     }
+
                     var associateReq = new AssociateRequest
                     {
                         Target = entity.ToEntityReference(),
                         Relationship = relatedEntities.Key,
-                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities.Select(e => e.ToEntityReference()).ToList())
+                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities
+                            .Select(e => e.ToEntityReference()).ToList())
                     };
                     core.Execute(associateReq, userRef);
                 }
             }
+
             resp.Results.Add("id", clonedEntity.Id);
             return resp;
+        }
+
+        private void HandleAutoNumberAttributes(Entity clonedEntity, EntityMetadata entityMetadata)
+        {
+#if XRM_MOCKUP_365
+            foreach (var metadataAttribute in entityMetadata.Attributes)
+            {
+                if (string.IsNullOrEmpty(metadataAttribute.AutoNumberFormat)) continue;
+
+                var autoNumberFormat = metadataAttribute.AutoNumberFormat;
+
+                var autoValue = autoNumberFormat;
+
+                var formats = Regex.Matches(autoNumberFormat, @"{(.+?)}");
+
+                foreach (Match format in formats)
+                {
+                    autoValue = autoValue.Replace(format.Value, DetermineValue(format.Value, metadataAttribute));
+                }
+
+                clonedEntity.Attributes[metadataAttribute.LogicalName] = autoValue;
+            }
+#endif
+        }
+
+        private string DetermineValue(string format, AttributeMetadata metadataAttribute)
+        {
+            if (format.Contains("SEQNUM"))
+            {
+                var currentNumber = 1000L; // Default value for AutoNumber seed
+                var key = metadataAttribute.EntityLogicalName + metadataAttribute.LogicalName;
+                if (core.autoNumberValues.ContainsKey(key))
+                {
+                    currentNumber = core.autoNumberValues[key];
+                }
+
+                core.autoNumberValues[key] = currentNumber + 1;
+
+                return currentNumber.ToString($"D{format[8]}");
+            }
+
+            if (format.Contains("RANDSTRING"))
+            {
+                var rand = new Random();
+                const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                var length = (int) char.GetNumericValue(format[12]);
+                var randomString = "";
+
+                for (var i = 0; i < length; i++)
+                {
+                    randomString += characters[rand.Next(characters.Length)] + "";
+                }
+
+                return randomString;
+            }
+
+            if (format.Contains("DATETIMEUTC"))
+            {
+                var datetime = DateTime.Now;
+                var datetimeFormat = Regex.Match(format, @":(.+?)}");
+                return datetime.ToString(datetimeFormat.Groups[1].Value);
+            }
+
+            return "";
         }
 
         private void HandleCurrency(EntityReference userRef, Entity clonedEntity, EntityMetadata entityMetadata,
@@ -180,7 +260,7 @@ namespace DG.Tools.XrmMockup
             if (clonedEntity.Attributes.ContainsKey(exchangerate) ||
                 !Utility.IsValidAttribute(exchangerate, entityMetadata) ||
                 !clonedEntity.Attributes.ContainsKey(transactioncurrencyId)) return;
-            
+
             var currencyId = clonedEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
             var currency = db.GetEntityOrNull(currencyId);
             clonedEntity.Attributes[exchangerate] = currency["exchangerate"];
@@ -191,7 +271,7 @@ namespace DG.Tools.XrmMockup
         {
             if (!Utility.IsValidAttribute("statecode", entityMetadata) ||
                 !Utility.IsValidAttribute("statuscode", entityMetadata)) return;
-            
+
             var defaultState = 0;
             try
             {
@@ -239,10 +319,11 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        private void SecurityChecks(EntityReference userRef, Entity clonedEntity, Entity entity, MockupServiceSettings settings)
+        private void SecurityChecks(EntityReference userRef, Entity clonedEntity, Entity entity,
+            MockupServiceSettings settings)
         {
             if (userRef == null || userRef.Id == Guid.Empty) return;
-            
+
             if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
             {
                 throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
@@ -250,7 +331,7 @@ namespace DG.Tools.XrmMockup
             }
 
             if (!core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true)) return;
-            
+
             var references = clonedEntity.Attributes
                 .Where(x => x.Value is EntityReference && x.Key != "ownerid")
                 .ToArray();

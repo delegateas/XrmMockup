@@ -101,6 +101,8 @@
     <None Include="Daxif\GenerateCSharpContext.fsx" />
     <None Include="Daxif\Playground.fsx" />
     <None Include="Daxif\PluginSyncDev.fsx" />
+    <None Include="Daxif\PublishAllArg.fsx" />
+    <None Include="Daxif\ViewExtender.fsx" />
     <None Include="Daxif\WorkflowSyncDev.fsx" />
     <None Include="Daxif\_Config.fsx" />
     <None Include="packages.config" />

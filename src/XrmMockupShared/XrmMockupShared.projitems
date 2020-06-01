@@ -27,6 +27,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrievePrincipalAccessRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveAttributeRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\GetNextAutoNumberValueRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\SetAutoNumberSeedRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\WhoAmIRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Security.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Domain.cs" />
