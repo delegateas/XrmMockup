@@ -151,8 +151,8 @@ namespace DG.XrmMockupTest
 
             var resp = orgAdminService.Execute(request) as GetNextAutoNumberValueResponse;
 
-            Assert.AreEqual(seedValue + 1, resp.NextAutoNumberValue);
-            Assert.AreEqual(seedValue + 1, resp.Results["NextAutoNumberValue"]);
+            Assert.AreEqual(seedValue, resp.NextAutoNumberValue);
+            Assert.AreEqual(seedValue, resp.Results["NextAutoNumberValue"]);
         }
 
         [TestMethod]
@@ -195,6 +195,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestGetAutoNumberSeedBase()
         {
+            crm.ResetEnvironment();
             var getAutoNumberSeedRequest1 = new GetAutoNumberSeedRequest
             {
                 EntityName = dg_autonumberentity.EntityLogicalName,
@@ -214,10 +215,7 @@ namespace DG.XrmMockupTest
                 EntityName = dg_autonumberentity.EntityLogicalName,
                 AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
             };
-
-            var response1 = orgAdminService.Execute(getAutoNumberSeedRequest1) as GetAutoNumberSeedResponse;
-
-            Assert.AreEqual(1000L, response1?.AutoNumberSeedValue, "Default seed isn't as expected");
+            orgAdminService.Execute(getAutoNumberSeedRequest1);
 
             const long seedValue = 123456L;
             orgAdminService.Execute(new SetAutoNumberSeedRequest
@@ -241,6 +239,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestGetAutoNumberSeedBaseCreateRecords()
         {
+            crm.ResetEnvironment();
             var getAutoNumberSeedRequest1 = new GetAutoNumberSeedRequest
             {
                 EntityName = dg_autonumberentity.EntityLogicalName,

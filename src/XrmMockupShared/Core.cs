@@ -947,6 +947,8 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
+            AutoNumberSeeds = new Dictionary<string, long>();
+            AutoNumberValues = new Dictionary<string, long>();
         }
     }
 }

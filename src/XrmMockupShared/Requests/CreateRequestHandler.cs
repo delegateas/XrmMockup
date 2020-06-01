@@ -209,14 +209,13 @@ namespace DG.Tools.XrmMockup
 
             if (format.Contains("RANDSTRING"))
             {
-                var rand = new Random();
                 const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                 var length = (int) char.GetNumericValue(format[12]);
                 var randomString = "";
 
                 for (var i = 0; i < length; i++)
                 {
-                    randomString += characters[rand.Next(characters.Length)] + "";
+                    randomString += characters[Utility.GetNextRandomNumber(characters.Length)] + "";
                 }
 
                 return randomString;
