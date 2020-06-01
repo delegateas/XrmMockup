@@ -183,7 +183,7 @@ namespace DG.Tools.XrmMockup
 
                 foreach (Match format in formats)
                 {
-                    autoValue = autoValue.Replace(format.Value, DetermineValue(format.Value, metadataAttribute));
+                    autoValue = autoValue.Replace(format.Value, DetermineAutoNumberValue(format.Value, metadataAttribute));
                 }
 
                 clonedEntity.Attributes[metadataAttribute.LogicalName] = autoValue;
@@ -191,18 +191,18 @@ namespace DG.Tools.XrmMockup
 #endif
         }
 
-        private string DetermineValue(string format, AttributeMetadata metadataAttribute)
+        private string DetermineAutoNumberValue(string format, AttributeMetadata metadataAttribute)
         {
             if (format.Contains("SEQNUM"))
             {
-                var currentNumber = 1000L; // Default value for AutoNumber seed
+                var currentNumber = 1000L; // Default value for Auto Number seed
                 var key = metadataAttribute.EntityLogicalName + metadataAttribute.LogicalName;
-                if (core.autoNumberValues.ContainsKey(key))
+                if (core.AutoNumberValues.ContainsKey(key))
                 {
-                    currentNumber = core.autoNumberValues[key];
+                    currentNumber = core.AutoNumberValues[key];
                 }
 
-                core.autoNumberValues[key] = currentNumber + 1;
+                core.AutoNumberValues[key] = currentNumber + 1;
 
                 return currentNumber.ToString($"D{format[8]}");
             }

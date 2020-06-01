@@ -192,6 +192,78 @@ namespace DG.XrmMockupTest
             }
         }
 
+        [TestMethod]
+        public void TestGetAutoNumberSeedBase()
+        {
+            var getAutoNumberSeedRequest1 = new GetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
+            };
+
+            var response1 = orgAdminService.Execute(getAutoNumberSeedRequest1) as GetAutoNumberSeedResponse;
+
+            Assert.AreEqual(1000L, response1?.AutoNumberSeedValue, "Default seed isn't as expected");
+        }
+
+        [TestMethod]
+        public void TestGetAutoNumberSeedUpdateSeed()
+        {
+            var getAutoNumberSeedRequest1 = new GetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
+            };
+
+            var response1 = orgAdminService.Execute(getAutoNumberSeedRequest1) as GetAutoNumberSeedResponse;
+
+            Assert.AreEqual(1000L, response1?.AutoNumberSeedValue, "Default seed isn't as expected");
+
+            const long seedValue = 123456L;
+            orgAdminService.Execute(new SetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower(),
+                Value = seedValue
+            });
+
+            var getAutoNumberSeedRequest2 = new GetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
+            };
+
+            var response2 = orgAdminService.Execute(getAutoNumberSeedRequest2) as GetAutoNumberSeedResponse;
+
+            Assert.AreEqual(seedValue, response2?.AutoNumberSeedValue, "Default seed isn't as expected");
+        }
+
+        [TestMethod]
+        public void TestGetAutoNumberSeedBaseCreateRecords()
+        {
+            var getAutoNumberSeedRequest1 = new GetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
+            };
+
+            var response1 = orgAdminService.Execute(getAutoNumberSeedRequest1) as GetAutoNumberSeedResponse;
+
+            Assert.AreEqual(1000L, response1?.AutoNumberSeedValue, "Default seed isn't as expected");
+
+            CreateAutoNumberEntity();
+
+            var getAutoNumberSeedRequest2 = new GetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower()
+            };
+
+            var response2 = orgAdminService.Execute(getAutoNumberSeedRequest2) as GetAutoNumberSeedResponse;
+
+            Assert.AreEqual(1000L, response2?.AutoNumberSeedValue, "Default seed isn't as expected");
+        }
+
         private dg_autonumberentity CreateAutoNumberEntity()
         {
             var autoNumberEntity = new dg_autonumberentity();

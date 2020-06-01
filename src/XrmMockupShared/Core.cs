@@ -61,7 +61,8 @@ namespace DG.Tools.XrmMockup
 
         public List<RequestHandler> RequestHandlers;
 
-        public Dictionary<string, long> autoNumberValues = new Dictionary<string, long>();
+        public Dictionary<string, long> AutoNumberValues = new Dictionary<string, long>();
+        public Dictionary<string, long> AutoNumberSeeds = new Dictionary<string, long>();
 
         /// <summary>
         /// Organization id for the Mockup instance
@@ -183,8 +184,11 @@ namespace DG.Tools.XrmMockup
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             new UpsertRequestHandler(this, db, metadata, security),
+#endif
+#if XRM_MOCKUP_365
             new SetAutoNumberSeedRequestHandler(this, db, metadata, security),
             new GetNextAutoNumberValueRequestHandler(this, db, metadata, security),
+            new GetAutoNumberSeedRequestHandler(this, db, metadata, security),
 #endif
             new RetrieveAttributeRequestHandler(this, db, metadata, security),
             new WhoAmIRequestHandler(this, db, metadata, security),

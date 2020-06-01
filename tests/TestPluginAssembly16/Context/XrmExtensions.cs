@@ -63,33 +63,6 @@ namespace DG.XrmContext
             }
         }
 
-        protected IEnumerable<T> GetOptionSetCollectionValue<T>(string attributeName) where T : struct, IComparable, IConvertible, IFormattable
-        {
-            var optionSetCollection = GetAttributeValue<OptionSetValueCollection>(attributeName);
-            if (optionSetCollection != null && optionSetCollection.Count != 0)
-            {
-                return optionSetCollection
-                    .Select(osv => (T)Enum.ToObject(typeof(T), osv.Value))
-                    .ToArray();
-            }
-            return null;
-        }
-
-        protected void SetOptionSetCollectionValue<T>(string attributeName, params T[] value)
-        {
-            if (value != null && value.Any())
-            {
-                var arr = value
-                    .Select(v => new OptionSetValue((int)(object)v))
-                    .ToArray();
-                SetAttributeValue(attributeName, new OptionSetValueCollection(arr));
-            }
-            else
-            {
-                SetAttributeValue(attributeName, null);
-            }
-        }
-
         protected decimal? GetMoneyValue(string attributeName)
         {
             var money = GetAttributeValue<Money>(attributeName);
@@ -183,28 +156,6 @@ namespace DG.XrmContext
                 return null;
             }
         }
-        public static string GetColumnName<T>(Expression<Func<T, object>> lambda) where T : Entity
-        {
-            MemberExpression body = lambda.Body as MemberExpression;
-
-            if (body == null)
-            {
-                UnaryExpression ubody = (UnaryExpression)lambda.Body;
-                body = ubody.Operand as MemberExpression;
-            }
-
-            if (body.Member.CustomAttributes != null)
-            {
-                var customAttributes = body.Member.GetCustomAttributesData();
-                var neededAttribute = customAttributes.FirstOrDefault(x => x.AttributeType == typeof(AttributeLogicalNameAttribute));
-                if (neededAttribute != null)
-                {
-                    return neededAttribute.ConstructorArguments.FirstOrDefault().Value.ToString();
-                }
-            }
-
-            return body.Member.Name;
-        }
 
         public static T Retrieve<T>(IOrganizationService service, Guid id, params Expression<Func<T, object>>[] attributes) where T : Entity
         {
@@ -286,7 +237,7 @@ namespace DG.XrmContext
 
         public U Load<T, U>(T entity, Expression<Func<T, U>> loaderFunc) where T : Entity
         {
-            LoadProperty(entity, XrmExtensions.GetAttributeLogicalName(loaderFunc));
+            LoadProperty(entity, XrmExtensions.GetMemberName(loaderFunc));
             return loaderFunc.Compile().Invoke(entity);
         }
 
@@ -358,38 +309,30 @@ namespace DG.XrmContext
         {
             if (attributes == null) return new ColumnSet();
             if (attributes.Length == 0) return new ColumnSet(true);
-            return new ColumnSet(attributes.Select(a => GetAttributeLogicalName(a).ToLower()).ToArray());
+            return new ColumnSet(attributes.Select(a => GetMemberName(a).ToLower()).ToArray());
         }
 
-        public static string GetAttributeLogicalName<T, U>(Expression<Func<T, U>> lambda)
+        public static string GetMemberName<T, U>(Expression<Func<T, U>> lambda)
         {
             MemberExpression body = lambda.Body as MemberExpression;
-
             if (body == null)
             {
                 UnaryExpression ubody = (UnaryExpression)lambda.Body;
                 body = ubody.Operand as MemberExpression;
             }
-
-            var attributelogicalName = body.Member.GetCustomAttributes(false)
-                .Where(x => x is AttributeLogicalNameAttribute)
-                .FirstOrDefault() as AttributeLogicalNameAttribute;
-
-            if (attributelogicalName == null)
-                return body.Member.Name;
-            return attributelogicalName.LogicalName;
+            return body.Member.Name;
         }
 
         public static bool ContainsAttributes<T>(this T entity, params Expression<Func<T, object>>[] attrGetters) where T : Entity
         {
             if (attrGetters == null) return true;
-            return attrGetters.Select(a => GetAttributeLogicalName(a).ToLower()).All(a => entity.Contains(a));
+            return attrGetters.Select(a => GetMemberName(a).ToLower()).All(a => entity.Contains(a));
         }
 
         public static bool RemoveAttributes<T>(this T entity, params Expression<Func<T, object>>[] attrGetters) where T : Entity
         {
             if (attrGetters == null) return false;
-            return attrGetters.Select(a => GetAttributeLogicalName(a).ToLower()).Any(a => entity.Attributes.Remove(a));
+            return attrGetters.Select(a => GetMemberName(a).ToLower()).Any(a => entity.Attributes.Remove(a));
         }
     }
 }
