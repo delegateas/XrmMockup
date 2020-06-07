@@ -93,7 +93,7 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        public void TestSetAutoNumberSeedRequestException()
+        public void TestSetAutoNumberSeedRequestNotAnAutoNumberAttrException()
         {
             const long value = 99;
             var request1 = new SetAutoNumberSeedRequest
@@ -129,6 +129,46 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(
                     $"Attribute {request2.AttributeName} of entity {request2.EntityName} is not an Auto Number attribute. Please confirm the inputs " +
                     "for Attribute and Entity correctly map to an Auto Number attribute.", exp.Message);
+            }
+
+            var request3 = new SetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_name),
+                Value = value
+            };
+            try
+            {
+                orgAdminService.Execute(request3);
+            }
+            catch (FaultException exp)
+            {
+                Assert.AreEqual(
+                    $"Attribute {request3.AttributeName} of entity {request3.EntityName} is not an Auto Number attribute. Please confirm the inputs " +
+                    "for Attribute and Entity correctly map to an Auto Number attribute.", exp.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestSetAutoNumberSeedRequestNegativeValueException()
+        {
+            const long value = -99;
+            var request = new SetAutoNumberSeedRequest
+            {
+                EntityName = dg_autonumberentity.EntityLogicalName,
+                AttributeName = nameof(dg_autonumberentity.dg_sequentialnumber).ToLower(),
+                Value = value
+            };
+
+            try
+            {
+                orgAdminService.Execute(request);
+            }
+            catch (FaultException exp)
+            {
+                Assert.AreEqual(
+                    $"Cannot set Auto Number seed for attribute {request.AttributeName} of entity {request.EntityName} with value {request.Value} as it is less than 0.",
+                    exp.Message);
             }
         }
 
@@ -277,7 +317,8 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(5, sections[1].Length);
             Assert.AreEqual(6, sections[2].Length);
             Assert.AreEqual(14, sections[3].Length);
-            DateTime.TryParseExact(sections[3], "yyyyMMddhhmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parseDateTime);
+            DateTime.TryParseExact(sections[3], "yyyyMMddhhmmss", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out var parseDateTime);
             Assert.IsNotNull(parseDateTime);
         }
 

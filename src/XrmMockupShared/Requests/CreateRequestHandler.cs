@@ -196,7 +196,8 @@ namespace DG.Tools.XrmMockup
             if (format.Contains("SEQNUM"))
             {
                 var currentNumber = 1000L; // Default value for Auto Number seed
-                var key = metadataAttribute.EntityLogicalName + metadataAttribute.LogicalName;
+                var key = new Tuple<string, string>(metadataAttribute.EntityLogicalName, metadataAttribute.LogicalName);
+
                 if (core.AutoNumberValues.ContainsKey(key))
                 {
                     currentNumber = core.AutoNumberValues[key];

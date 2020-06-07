@@ -61,8 +61,8 @@ namespace DG.Tools.XrmMockup
 
         public List<RequestHandler> RequestHandlers;
 
-        public Dictionary<string, long> AutoNumberValues = new Dictionary<string, long>();
-        public Dictionary<string, long> AutoNumberSeeds = new Dictionary<string, long>();
+        public Dictionary<Tuple<string, string>, long> AutoNumberValues = new Dictionary<Tuple<string, string>, long>();
+        public Dictionary<Tuple<string, string>, long> AutoNumberSeeds = new Dictionary<Tuple<string, string>, long>();
 
         /// <summary>
         /// Organization id for the Mockup instance
@@ -947,8 +947,8 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
-            AutoNumberSeeds = new Dictionary<string, long>();
-            AutoNumberValues = new Dictionary<string, long>();
+            AutoNumberSeeds = new Dictionary<Tuple<string,string>, long>();
+            AutoNumberValues = new Dictionary<Tuple<string,string>, long>();
         }
     }
 }

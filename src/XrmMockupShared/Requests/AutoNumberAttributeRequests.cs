@@ -1,4 +1,5 @@
 ﻿#if XRM_MOCKUP_365
+using System;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Crm.Sdk.Messages;
 using DG.Tools.XrmMockup.Database;
@@ -20,10 +21,15 @@ namespace DG.Tools.XrmMockup
         {
             var helper = new AutoNumberAttributeHelperMethods();
             var request = MakeRequest<SetAutoNumberSeedRequest>(orgRequest);
-
+            
+            if (request.Value < 0)
+            {
+                throw new FaultException(
+                    $"Cannot set Auto Number seed for attribute {request.AttributeName} of entity {request.EntityName} with value {request.Value} as it is less than 0.");
+            }
             helper.CheckAutoAttributeMetadata(metadata, request.EntityName, request.AttributeName);
 
-            var key = request.EntityName + request.AttributeName;
+            var key = new Tuple<string, string>(request.EntityName, request.AttributeName);
             core.AutoNumberValues[key] = request.Value;
             core.AutoNumberSeeds[key] = request.Value;
 
@@ -50,8 +56,8 @@ namespace DG.Tools.XrmMockup
 
             helper.CheckAutoAttributeMetadata(metadata, request.EntityName, request.AttributeName);
 
-            var key = request.EntityName + request.AttributeName;
-            var nextValue = 1000L;
+            var key = new Tuple<string, string>(request.EntityName, request.AttributeName);
+            var nextValue = helper.DefaultSeed;
             if (core.AutoNumberValues.ContainsKey(key))
             {
                 nextValue = core.AutoNumberValues[key];
@@ -86,8 +92,8 @@ namespace DG.Tools.XrmMockup
 
             helper.CheckAutoAttributeMetadata(metadata, request.EntityName, request.AttributeName);
 
-            var key = request.EntityName + request.AttributeName;
-            var seedValue = 1000L;
+            var key = new Tuple<string, string>(request.EntityName, request.AttributeName);
+            var seedValue = helper.DefaultSeed;
             if (core.AutoNumberSeeds.ContainsKey(key))
             {
                 seedValue = core.AutoNumberSeeds[key];
@@ -110,6 +116,8 @@ namespace DG.Tools.XrmMockup
 
     internal class AutoNumberAttributeHelperMethods
     {
+        public long DefaultSeed = 1000L;
+
         public void CheckAutoAttributeMetadata(MetadataSkeleton metadata, string entityName, string attributeName)
         {
             var metadataExist = metadata.EntityMetadata.TryGetValue(entityName, out var entityMetadata);
