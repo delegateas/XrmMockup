@@ -21,6 +21,7 @@ crmNamesWithVersions
    extraArguments = [
     "deprecatedprefix", "ZZ_"
     "sdkVersion", sdkVersion
+    "lm", "\u2714\uFE0F: checkmark"
     ])
 )
 
