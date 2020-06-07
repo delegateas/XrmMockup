@@ -170,7 +170,7 @@ namespace DG.Tools.XrmMockup
 
         private void HandleAutoNumberAttributes(Entity clonedEntity, EntityMetadata entityMetadata)
         {
-#if XRM_MOCKUP_365
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             foreach (var metadataAttribute in entityMetadata.Attributes)
             {
                 if (string.IsNullOrEmpty(metadataAttribute.AutoNumberFormat)) continue;

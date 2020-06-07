@@ -185,7 +185,7 @@ namespace DG.Tools.XrmMockup
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             new UpsertRequestHandler(this, db, metadata, security),
 #endif
-#if XRM_MOCKUP_365
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             new SetAutoNumberSeedRequestHandler(this, db, metadata, security),
             new GetNextAutoNumberValueRequestHandler(this, db, metadata, security),
             new GetAutoNumberSeedRequestHandler(this, db, metadata, security),
