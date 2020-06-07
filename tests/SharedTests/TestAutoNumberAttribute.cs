@@ -263,6 +263,24 @@ namespace DG.XrmMockupTest
             Assert.AreEqual(1000L, response2?.AutoNumberSeedValue, "Default seed isn't as expected");
         }
 
+        [TestMethod]
+        public void TestMultiFormatAttribute()
+        {
+            var autoNumberEntity = CreateAutoNumberEntity();
+            Assert.IsNotNull(autoNumberEntity.dg_AutoNumberingCombi);
+
+            Assert.AreEqual(31, autoNumberEntity.dg_AutoNumberingCombi.Length, "Length isn't as expected");
+
+            var sections = autoNumberEntity.dg_AutoNumberingCombi.Split('-');
+            Assert.AreEqual(4, sections.Length, "Number sections doesn't match expected.");
+            Assert.AreEqual("WID", sections[0]);
+            Assert.AreEqual(5, sections[1].Length);
+            Assert.AreEqual(6, sections[2].Length);
+            Assert.AreEqual(14, sections[3].Length);
+            DateTime.TryParseExact(sections[3], "yyyyMMddhhmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parseDateTime);
+            Assert.IsNotNull(parseDateTime);
+        }
+
         private dg_autonumberentity CreateAutoNumberEntity()
         {
             var autoNumberEntity = new dg_autonumberentity();
