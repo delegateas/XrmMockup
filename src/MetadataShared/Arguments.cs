@@ -92,6 +92,12 @@ namespace DG.Tools.XrmMockup.Metadata
             Abbreviations = new string[] { }
         };
 
+        public static ArgumentDescription ConnectionString = new ArgumentDescription()
+        {
+            Name = "connectionString",
+            Abbreviations = new string[] { }
+        };
+
         public static ArgumentDescription[] ArgList = new ArgumentDescription[] {
             Url,
             Username,
@@ -106,7 +112,8 @@ namespace DG.Tools.XrmMockup.Metadata
             Method,
             ClientId,
             ReturnUrl,
-            ClientSecret
+            ClientSecret,
+            ConnectionString
         };
     }
 }

@@ -47,7 +47,8 @@ namespace DG.Tools.XrmMockup.Metadata {
                 ParsedArgs[Arguments.Method],
                 ParsedArgs[Arguments.ClientId],
                 ParsedArgs[Arguments.ReturnUrl],
-                ParsedArgs[Arguments.ClientSecret]
+                ParsedArgs[Arguments.ClientSecret],
+                ParsedArgs[Arguments.ConnectionString]
             );
 
             Console.WriteLine("Generation of metadata files started");

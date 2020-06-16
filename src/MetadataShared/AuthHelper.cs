@@ -15,7 +15,8 @@ namespace DG.Tools.XrmMockup.Metadata
     {
         Proxy,
         OAuth,
-        ClientSecret
+        ClientSecret,
+        ConnectionString
     }
 
     internal class AuthHelper
@@ -29,6 +30,7 @@ namespace DG.Tools.XrmMockup.Metadata
         private string clientId;
         private string returnUrl;
         private string clientSecret;
+        private string connectionString;
 
         public AuthHelper(
             string url,
@@ -39,7 +41,8 @@ namespace DG.Tools.XrmMockup.Metadata
             ConnectionType method = ConnectionType.Proxy,
             string clientId = null,
             string returnUrl = null,
-            string clientSecret = null)
+            string clientSecret = null,
+            string connectionString = null)
         {
             this.url = url;
             this.username = username;
@@ -50,6 +53,7 @@ namespace DG.Tools.XrmMockup.Metadata
             this.clientId = clientId;
             this.returnUrl = returnUrl;
             this.clientSecret = clientSecret;
+            this.connectionString = connectionString;
         }
 
         public AuthHelper(
@@ -61,8 +65,9 @@ namespace DG.Tools.XrmMockup.Metadata
             string method = "Proxy",
             string clientId = null,
             string returnUrl = null,
-            string clientSecret = null)
-            : this(url, username, password, ToProviderType(provider), domain, ToConnectionType(method), clientId, returnUrl, clientSecret)
+            string clientSecret = null,
+            string connectionString = null)
+            : this(url, username, password, ToProviderType(provider), domain, ToConnectionType(method), clientId, returnUrl, clientSecret, connectionString)
         {
         }
 
@@ -148,6 +153,23 @@ namespace DG.Tools.XrmMockup.Metadata
                         {
                             throw new Exception($"Client could not authenticate. If the application user was just created, it might take a while before it is available.\n{client.LastCrmError}");
                         }
+                        return client;
+                    }
+
+                case ConnectionType.ConnectionString:
+                    {
+                        if (this.connectionString == null)
+                        {
+                            throw new Exception("Ensure connection string is specified when using connection method ConnectionString");
+                        }
+
+                        var client = new CrmServiceClient(this.connectionString);
+
+                        if (!client.IsReady)
+                        {
+                            throw new Exception($"Client could not authenticate. If the application user was just created, it might take a while before it is available.\n{client.LastCrmError}");
+                        }
+
                         return client;
                     }
 #endif
