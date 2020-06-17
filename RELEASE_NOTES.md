@@ -1,3 +1,6 @@
+### 1.2.5 - 17 June 2020
+* Added Connection String Authentication method
+
 ### 1.2.4 - 11 May 2020
 * Fixed an issue in 2011 where default teams would fail to create
 
