@@ -165,6 +165,12 @@ namespace DG.Tools.XrmMockup
                 clonedEntity["modifiedby"] = clonedEntity["createdby"];
             }
 
+            //the created on and by fields need to go back out on the entity so they are available to post-operation plugins
+            entity["createdon"] = clonedEntity["createdon"];
+            entity["modifiedon"] = clonedEntity["modifiedon"];
+            entity["createdby"] = new EntityReference(userRef.LogicalName, userRef.Id);
+            entity["modifiedby"] = new EntityReference(userRef.LogicalName, userRef.Id);
+
             var owner = userRef;
             if (clonedEntity.Attributes.ContainsKey("ownerid"))
             {
