@@ -8,12 +8,6 @@ namespace DG.Some.Namespace
 {
     public class ContactIPluginDirectImplementation : IPlugin
     {
-
-        public ContactIPluginDirectImplementation()
-        {
-          
-        }
-
         public void Execute(IServiceProvider serviceProvider)
         {
             ITracingService tracer = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
@@ -26,11 +20,6 @@ namespace DG.Some.Namespace
             {
                 contact.FirstName = "NameIsModified";
             }
-            
-
-
         }
-
-      
     }
 }

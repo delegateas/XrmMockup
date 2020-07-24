@@ -53,11 +53,7 @@ namespace DG.XrmMockupTest {
         }
 
         public static void InitializeMockup(TestContext context) {
-
-
             var metadataDirectory = "../../Metadata/";
-           // if (settings.MetadataDirectoryPath != null)
-            //    metadataDirectory = settings.MetadataDirectoryPath;
             MetadataSkeleton metadata = Utility.GetMetadata(metadataDirectory);
 
             var item = new MetaPlugin();
@@ -70,7 +66,7 @@ namespace DG.XrmMockupTest {
 
             var settings = new XrmMockupSettings {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
-               // PluginTypes = new Type[] { typeof(ContactIPluginDirectImplementation) },
+                PluginTypes = new Type[] { typeof(ContactIPluginDirectImplementation) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
