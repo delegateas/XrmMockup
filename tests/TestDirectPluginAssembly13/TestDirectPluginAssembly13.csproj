@@ -92,12 +92,12 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Crm.Sdk.Proxy">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net40\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net40\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Xrm.Sdk">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net40\Microsoft.Xrm.Sdk.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net40\Microsoft.Xrm.Sdk.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -133,12 +133,12 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Crm.Sdk.Proxy">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net45\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net45\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Xrm.Sdk">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net45\Microsoft.Xrm.Sdk.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.CoreAssemblies\lib\net45\Microsoft.Xrm.Sdk.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -167,7 +167,7 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Xrm.Sdk.Workflow">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.Workflow\lib\net40\Microsoft.Xrm.Sdk.Workflow.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.Workflow\lib\net40\Microsoft.Xrm.Sdk.Workflow.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -194,7 +194,7 @@
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.Xrm.Sdk.Workflow">
-          <HintPath>..\packages\crm2013\Microsoft.CrmSdk.Workflow\lib\net45\Microsoft.Xrm.Sdk.Workflow.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.CrmSdk.Workflow\lib\net45\Microsoft.Xrm.Sdk.Workflow.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -205,7 +205,7 @@
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1' Or $(TargetFrameworkVersion) == 'v4.7.2' Or $(TargetFrameworkVersion) == 'v4.8')">
       <ItemGroup>
         <Reference Include="microsoft.identitymodel">
-          <HintPath>..\packages\crm2013\Microsoft.IdentityModel\lib\net35\microsoft.identitymodel.dll</HintPath>
+          <HintPath>..\..\packages\crm2013\Microsoft.IdentityModel\lib\net35\microsoft.identitymodel.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
