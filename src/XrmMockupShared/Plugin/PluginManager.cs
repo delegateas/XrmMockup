@@ -75,7 +75,16 @@ namespace DG.Tools.XrmMockup {
             foreach (var pluginType in pluginTypes)
             {
                 if (pluginType == null) continue;
-                RegisterPlugin(pluginType, metadata, plugins, register);
+                Assembly proxyTypeAssembly = pluginType.Assembly;
+
+                foreach (var type in proxyTypeAssembly.GetLoadableTypes())
+                {
+                    if (type.GetInterface("IPlugin") == typeof(IPlugin) && type.BaseType == typeof(Object))
+                    {
+                        RegisterPlugin(type, metadata, plugins, register);
+                    }
+
+                }
             }
             SortAllLists(register);
         }
