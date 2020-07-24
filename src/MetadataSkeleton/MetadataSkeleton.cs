@@ -3,7 +3,6 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace DG.Tools.XrmMockup {
 
@@ -14,10 +13,9 @@ namespace DG.Tools.XrmMockup {
         public Entity RootBusinessUnit;
         public List<MetaPlugin> Plugins;
         public OptionSetMetadataBase[] OptionSets;
-        public Dictionary<string, Dictionary<int, int>> DefaultStateStatus;
+        public Dictionary<string, Dictionary<int,int>> DefaultStateStatus;
     }
 
-    [DebuggerDisplay("{Name}")]
     public class MetaPlugin {
         public string FilteredAttributes;
         public int Mode;

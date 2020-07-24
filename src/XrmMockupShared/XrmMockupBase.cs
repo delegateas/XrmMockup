@@ -40,28 +40,10 @@ namespace DG.Tools.XrmMockup
         /// <summary>
         /// Base currency for the Mockup instance
         /// </summary>
-        public EntityReference BaseCurrency
-        {
-            get
-            {
+        public EntityReference BaseCurrency {
+            get {
                 return Core.baseCurrency;
             }
-        }
-        /// <summary>
-        /// Base currency for the Mockup instance
-        /// </summary>
-        public MetadataSkeleton Metadata
-        {
-            get
-            {
-                return Core.metadata;
-            }
-        }
-
-        public int GetObjectTypeCode(string entityName)
-        {
-            return Core.metadata.EntityMetadata[entityName].ObjectTypeCode.Value;
-
         }
 
 

@@ -52,7 +52,7 @@ namespace DG.Tools.XrmMockup
         private WorkflowManager workflowManager;
         private Security security;
         private XrmMockupSettings settings;
-        public MetadataSkeleton metadata;
+        private MetadataSkeleton metadata;
         private XrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
@@ -131,13 +131,11 @@ namespace DG.Tools.XrmMockup
             {
                 Id = Guid.NewGuid()
             };
-            
             this.AdminUserRef = admin.ToEntityReference();
 
             admin["firstname"] = "";
             admin["lastname"] = "SYSTEM";
             admin["businessunitid"] = RootBusinessUnitRef;
-            admin["islicensed"] = true;
             this.db.Add(admin);
 
             // Setup default team for root business unit
@@ -153,7 +151,6 @@ namespace DG.Tools.XrmMockup
 
         private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
                 new CreateRequestHandler(this, db, metadata, security),
-                new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
                 new UpdateRequestHandler(this, db, metadata, security),
                 new RetrieveMultipleRequestHandler(this, db, metadata, security),
                 new RetrieveRequestHandler(this, db, metadata, security),
@@ -167,7 +164,6 @@ namespace DG.Tools.XrmMockup
                 new FetchXmlToQueryExpressionRequestHandler(this, db, metadata, security),
                 new ExecuteMultipleRequestHandler(this, db, metadata, security),
                 new RetrieveEntityRequestHandler(this, db, metadata, security),
-                new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
                 new RetrieveRelationshipRequestHandler(this, db, metadata, security),
                 new GrantAccessRequestHandler(this, db, metadata, security),
                 new ModifyAccessRequestHandler(this, db, metadata, security),

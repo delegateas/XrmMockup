@@ -110,7 +110,6 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-
         internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true) {
             DbRow currentDbRow = null;
 
@@ -172,34 +171,19 @@ namespace DG.Tools.XrmMockup.Database {
 
         #region GetOrNull
         internal DbRow GetDbRowOrNull(EntityReference reference) {
-
-            if (HasRow(reference))
-            {
+            try {
                 return GetDbRow(reference);
-            }
-            else
-            {
+            } catch (Exception) {
                 return null;
             }
-
-            //try {
-            //return GetDbRow(reference);
-            //} catch (Exception) {
-            //return null;
-            //}
         }
 
         internal Entity GetEntityOrNull(EntityReference reference) {
-
-            if (HasRow(reference))
-            {
+            try {
                 return GetEntity(reference);
-            }
-            else
-            {
+            } catch (Exception) {
                 return null;
             }
-
         }
         #endregion
 

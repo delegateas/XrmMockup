@@ -51,7 +51,6 @@
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="paket.references" />
   </ItemGroup>
