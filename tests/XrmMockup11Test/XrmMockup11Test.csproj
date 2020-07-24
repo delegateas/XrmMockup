@@ -111,6 +111,10 @@
       <Project>{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}</Project>
       <Name>XrmMockup2011</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestDirectPluginAssembly11\TestDirectPluginAssembly11.csproj">
+      <Project>{e55d59dc-dbdb-49c4-aa1f-ee02d607f5c7}</Project>
+      <Name>TestDirectPluginAssembly11</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestPluginAssembly11\TestPluginAssembly11.csproj">
       <Project>{40554299-9809-470a-a04a-7829d6f4db70}</Project>
       <Name>TestPluginAssembly11</Name>

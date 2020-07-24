@@ -62,7 +62,7 @@
       <Project>{8d6b46f6-d7bd-480d-9d63-3b00285079dd}</Project>
       <Name>XrmMockup365</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\TestDirectPluginAssembly365\TestDirectPluginAssembly365.csproj">
+    <ProjectReference Include="..\TestDirectPluginAssembly365\TestDirectPluginAssembly365.csproj">
       <Project>{ca4b31bf-b769-47d5-abe0-6cfceda47769}</Project>
       <Name>TestDirectPluginAssembly365</Name>
     </ProjectReference>

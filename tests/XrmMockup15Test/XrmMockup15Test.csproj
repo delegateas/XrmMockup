@@ -59,6 +59,10 @@
       <Project>{65e375a9-fbc7-4264-a3fd-059f4770942e}</Project>
       <Name>XrmMockup2015</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestDirectPluginAssembly15\TestDirectPluginAssembly15.csproj">
+      <Project>{84719bcc-f9a5-4a32-ac28-31d330703bc0}</Project>
+      <Name>TestDirectPluginAssembly15</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestPluginAssembly15\TestPluginAssembly15.csproj">
       <Project>{130fe820-97d0-4369-837c-7aaf6ef58dce}</Project>
       <Name>TestPluginAssembly15</Name>

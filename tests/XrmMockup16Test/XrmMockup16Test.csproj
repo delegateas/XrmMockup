@@ -65,6 +65,10 @@
       <Project>{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}</Project>
       <Name>XrmMockup2016</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestDirectPluginAssembly16\TestDirectPluginAssembly16.csproj">
+      <Project>{056c073b-1bba-4d11-9006-cc6443c4e681}</Project>
+      <Name>TestDirectPluginAssembly16</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestPluginAssembly16\TestPluginAssembly16.csproj">
       <Project>{3a74d109-c538-4df5-b277-cc39fface93f}</Project>
       <Name>TestPluginAssembly16</Name>

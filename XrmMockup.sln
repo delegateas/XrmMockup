@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.36
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
 	ProjectSection(SolutionItems) = preProject
@@ -80,12 +80,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{D375A019-3229-4D24-955B-06248D1D12F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly365", "TestDirectPluginAssembly365\TestDirectPluginAssembly365.csproj", "{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly13", "tests\TestDirectPluginAssembly13\TestDirectPluginAssembly13.csproj", "{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly15", "tests\TestDirectPluginAssembly15\TestDirectPluginAssembly15.csproj", "{84719BCC-F9A5-4A32-AC28-31D330703BC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly16", "tests\TestDirectPluginAssembly16\TestDirectPluginAssembly16.csproj", "{056C073B-1BBA-4D11-9006-CC6443C4E681}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly365", "tests\TestDirectPluginAssembly365\TestDirectPluginAssembly365.csproj", "{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDirectPluginAssembly11", "tests\TestDirectPluginAssembly11\TestDirectPluginAssembly11.csproj", "{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedDirectPlugins", "tests\SharedDirectPlugins\SharedDirectPlugins.shproj", "{ABE2430E-A924-488D-9469-E7C1695C5873}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{056c073b-1bba-4d11-9006-cc6443c4e681}*SharedItemsImports = 4
 		tests\SharedTests\SharedTests.projitems*{0d9bfa02-4e2d-4229-9256-7d4bf438b917}*SharedItemsImports = 13
 		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{130fe820-97d0-4369-837c-7aaf6ef58dce}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
@@ -110,6 +121,7 @@ Global
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
 		src\XrmMockupShared\XrmMockupShared.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{84719bcc-f9a5-4a32-ac28-31d330703bc0}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
 		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
@@ -118,12 +130,16 @@ Global
 		tests\SharedTests\SharedTests.projitems*{a0c49d15-d911-42ab-b6d3-116ef7f452de}*SharedItemsImports = 4
 		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 4
 		tests\SharedTests\SharedTests.projitems*{a7594771-2b0a-43ed-9335-343598ed1c7d}*SharedItemsImports = 4
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{abe2430e-a924-488d-9469-e7c1695c5873}*SharedItemsImports = 13
 		tests\SharedTests\SharedTests.projitems*{bf19d931-3322-40ac-8e90-98417b1ce132}*SharedItemsImports = 4
 		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 4
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{ca4b31bf-b769-47d5-abe0-6cfceda47769}*SharedItemsImports = 4
 		src\XrmMockupShared\XrmMockupShared.projitems*{d4f99f23-a452-4f6f-abf4-54fc5c792d5a}*SharedItemsImports = 13
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{e55d59dc-dbdb-49c4-aa1f-ee02d607f5c7}*SharedItemsImports = 4
 		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
+		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{fa71e38b-dc18-42a3-9eda-6be1467b55df}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -216,6 +232,26 @@ Global
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84719BCC-F9A5-4A32-AC28-31D330703BC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84719BCC-F9A5-4A32-AC28-31D330703BC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84719BCC-F9A5-4A32-AC28-31D330703BC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84719BCC-F9A5-4A32-AC28-31D330703BC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{056C073B-1BBA-4D11-9006-CC6443C4E681}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{056C073B-1BBA-4D11-9006-CC6443C4E681}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{056C073B-1BBA-4D11-9006-CC6443C4E681}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{056C073B-1BBA-4D11-9006-CC6443C4E681}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -243,5 +279,14 @@ Global
 		{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{54E48688-CE01-4310-90D9-0902E0A51814} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{8D6B46F6-D7BD-480D-9D63-3B00285079DD} = {DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}
+		{FA71E38B-DC18-42A3-9EDA-6BE1467B55DF} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{84719BCC-F9A5-4A32-AC28-31D330703BC0} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{056C073B-1BBA-4D11-9006-CC6443C4E681} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{CA4B31BF-B769-47D5-ABE0-6CFCEDA47769} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{E55D59DC-DBDB-49C4-AA1F-EE02D607F5C7} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{ABE2430E-A924-488D-9469-E7C1695C5873} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E5937758-3E5B-447D-85CB-0C4E9F24C953}
 	EndGlobalSection
 EndGlobal
