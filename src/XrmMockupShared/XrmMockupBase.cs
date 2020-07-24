@@ -61,7 +61,17 @@ namespace DG.Tools.XrmMockup
             var metadataDirectory = "../../Metadata/";
             if (settings.MetadataDirectoryPath != null)
                 metadataDirectory = settings.MetadataDirectoryPath;
-            MetadataSkeleton metadata = Utility.GetMetadata(metadataDirectory);
+
+            MetadataSkeleton metadata;
+
+            if (settings.Metadata == null)
+            {
+                metadata = Utility.GetMetadata(metadataDirectory);
+            }
+            else
+            {
+                metadata = settings.Metadata;
+            }
 
             List<Entity> workflows = Utility.GetWorkflows(metadataDirectory);
             List<SecurityRole> securityRoles = Utility.GetSecurityRoles(metadataDirectory);

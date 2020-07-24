@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
+using System.Security.Policy;
 using System.Text;
 
 namespace DG.Tools.XrmMockup
@@ -14,6 +15,11 @@ namespace DG.Tools.XrmMockup
         /// This is used to locate the assemblies required.
         /// </summary>
         public IEnumerable<Type> BasePluginTypes { get; set; }
+        /// <summary>
+        /// List of types which implement IPlugin directly rather than through a base class
+        /// This are loaded individually.
+        /// </summary>
+        public IEnumerable<Type> PluginTypes { get; set; }
         /// <summary>
         /// List of at least one instance of a CodeActivity in each of your projects that contain CodeActivities. 
         /// This is used to locate the assemblies required to find all CodeActivity.
@@ -43,6 +49,8 @@ namespace DG.Tools.XrmMockup
         /// Flag for if Append And Append To privilege should be check on create and update. Default is true
         /// </summary>
         public bool? AppendAndAppendToPrivilegeCheck { get; set; }
+
+        public MetadataSkeleton Metadata { get; set; }
     }
 
     public struct Env {

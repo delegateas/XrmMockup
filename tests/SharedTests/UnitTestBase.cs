@@ -53,11 +53,28 @@ namespace DG.XrmMockupTest {
         }
 
         public static void InitializeMockup(TestContext context) {
+
+
+            var metadataDirectory = "../../Metadata/";
+           // if (settings.MetadataDirectoryPath != null)
+            //    metadataDirectory = settings.MetadataDirectoryPath;
+            MetadataSkeleton metadata = Utility.GetMetadata(metadataDirectory);
+
+            var item = new MetaPlugin();
+            item.MessageName = "Create";
+            item.PrimaryEntity = "contact";
+            item.Stage = 20;
+            item.AssemblyName = "DG.Some.Namespace.ContactIPluginDirectImplementation";
+
+            metadata.Plugins.Add(item);
+
             var settings = new XrmMockupSettings {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
+               // PluginTypes = new Type[] { typeof(ContactIPluginDirectImplementation) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
+                Metadata = metadata,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
             };
 
@@ -78,10 +95,12 @@ namespace DG.XrmMockupTest {
                 var realDataSettings = new XrmMockupSettings
                 {
                     BasePluginTypes = settings.BasePluginTypes,
+                    PluginTypes = settings.PluginTypes,
                     CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
                     EnableProxyTypes = settings.EnableProxyTypes,
                     IncludeAllWorkflows = settings.IncludeAllWorkflows,
                     ExceptionFreeRequests = settings.ExceptionFreeRequests,
+                    Metadata = settings.Metadata,
                     OnlineEnvironment = new Env
                     {
                         providerType = AuthenticationProviderType.OnlineFederation,

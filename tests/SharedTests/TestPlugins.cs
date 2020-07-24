@@ -34,6 +34,21 @@ namespace DG.XrmMockupTest
             orgAdminUIService.Delete(Account.EntityLogicalName, createdAccount.Id);
         }
 #endif
+        [TestMethod]
+        public void TestDirectIPluginImplementation()
+        {
+            // Testing that plugin which implement IPlugin directly are loaded and called as expected
+            var createdContact = new Contact()
+            {
+                FirstName = "ChangeMePlease"
+            };
+            createdContact.Id = orgAdminUIService.Create(createdContact);
+
+            var retrievedContact = Contact.Retrieve(orgAdminService, createdContact.Id, x => x.FirstName);
+            Assert.AreEqual("NameIsModified", retrievedContact.FirstName, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
+
+            orgAdminUIService.Delete(Contact.EntityLogicalName, createdContact.Id);
+        }
 
         [TestMethod]
         public void TestPluginTrigger()

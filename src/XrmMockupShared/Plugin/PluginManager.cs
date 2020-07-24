@@ -40,13 +40,14 @@ namespace DG.Tools.XrmMockup {
             new SystemPlugins.DefaultBusinessUnitTeamMembers()
         };
 
-        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
+        public PluginManager(IEnumerable<Type> basePluginTypes, IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
             registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
+            RegisterDirectPlugins(pluginTypes, metadata, plugins, registeredPlugins);
             RegisterSystemPlugins(registeredSystemPlugins, metadata);
         }
 
@@ -67,11 +68,24 @@ namespace DG.Tools.XrmMockup {
             SortAllLists(register);
         }
 
+        private void RegisterDirectPlugins(IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        {
+            if (pluginTypes == null) return;
+
+            foreach (var pluginType in pluginTypes)
+            {
+                if (pluginType == null) continue;
+                RegisterPlugin(pluginType, metadata, plugins, register);
+            }
+            SortAllLists(register);
+        }
 
         private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
-            var plugin = Activator.CreateInstance(basePluginType);
+            if (basePluginType.IsAbstract) return;
 
+            var plugin = Activator.CreateInstance(basePluginType);
+            
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
             var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
 
