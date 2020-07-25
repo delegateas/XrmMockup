@@ -35,8 +35,10 @@ namespace DG.Tools.XrmMockup {
 		public static Guid MarketingProfessional = new Guid("3e405cab-c047-e611-80d9-c4346badf080");
 		public static Guid PlaybookManager = new Guid("4178df9e-4ea5-e811-8149-000d3a3a2732");
 		public static Guid PlaybookUser = new Guid("4178df9e-4ea5-e811-8149-000d3a3a2731");
+		public static Guid PowerPlatformDataflowsCommonDataServiceClient = new Guid("9dc97a4d-6a1a-44b4-8276-297b828afebf");
 		public static Guid RelationshipInsightsAdmin = new Guid("016fd16e-7be7-e611-80d6-00155d204901");
 		public static Guid SalesManager = new Guid("cb3d5cab-c047-e611-80d9-c4346badf080");
+		public static Guid SalesTeamMember = new Guid("7e13fe7f-ea02-4a4e-a523-89ed9361961d");
 		public static Guid Salesperson = new Guid("b6495cab-c047-e611-80d9-c4346badf080");
 		public static Guid Samename = new Guid("356fd55d-d69b-e811-a84a-000d3a2a0765");
 		public static Guid ScheduleManager = new Guid("32425cab-c047-e611-80d9-c4346badf080");

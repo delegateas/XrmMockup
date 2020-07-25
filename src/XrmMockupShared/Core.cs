@@ -1,25 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-
 using System.Reflection;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
-using System.Web.WebSockets;
 using Microsoft.Xrm.Sdk.Metadata;
-using WorkflowExecuter;
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk.Client;
 
 namespace DG.Tools.XrmMockup
 {
-
     internal class Snapshot
     {
         public XrmDb db;
@@ -30,8 +23,9 @@ namespace DG.Tools.XrmMockup
         public TimeSpan TimeOffset;
     }
 
-   
-    internal class CascadeSelection {
+
+    internal class CascadeSelection
+    {
         public bool assign = false;
         public bool delete = false;
         public bool merge = false;
@@ -67,6 +61,9 @@ namespace DG.Tools.XrmMockup
 
         public List<RequestHandler> RequestHandlers;
 
+        public Dictionary<Tuple<string, string>, long> AutoNumberValues = new Dictionary<Tuple<string, string>, long>();
+        public Dictionary<Tuple<string, string>, long> AutoNumberSeeds = new Dictionary<Tuple<string, string>, long>();
+
         /// <summary>
         /// Organization id for the Mockup instance
         /// </summary>
@@ -85,7 +82,8 @@ namespace DG.Tools.XrmMockup
         /// <param name="metadata"></param>
         /// <param name="SecurityRoles"></param>
         /// <param name="Workflows"></param>
-        public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows, List<SecurityRole> SecurityRoles)
+        public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows,
+            List<SecurityRole> SecurityRoles)
         {
             this.TimeOffset = new TimeSpan();
             this.settings = Settings;
@@ -98,7 +96,8 @@ namespace DG.Tools.XrmMockup
             this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
-            this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
+            this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
+                Workflows, metadata.EntityMetadata);
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -114,9 +113,11 @@ namespace DG.Tools.XrmMockup
             var currencies = new List<Entity>();
             foreach (var entity in metadata.Currencies)
             {
-                Utility.RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby", "createdonbehalfby");
+                Utility.RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby",
+                    "createdonbehalfby");
                 currencies.Add(entity);
             }
+
             this.db.AddRange(currencies);
 
             // Setup root business unit
@@ -149,43 +150,49 @@ namespace DG.Tools.XrmMockup
             this.db.Add(teamMembership);
         }
 
-        private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
-                new CreateRequestHandler(this, db, metadata, security),
-                new UpdateRequestHandler(this, db, metadata, security),
-                new RetrieveMultipleRequestHandler(this, db, metadata, security),
-                new RetrieveRequestHandler(this, db, metadata, security),
-                new DeleteRequestHandler(this, db, metadata, security),
-                new SetStateRequestHandler(this, db, metadata, security),
-                new AssignRequestHandler(this, db, metadata, security),
-                new AssociateRequestHandler(this, db, metadata, security),
-                new DisassociateRequestHandler(this, db, metadata, security),
-                new MergeRequestHandler(this, db, metadata, security),
-                new RetrieveVersionRequestHandler(this, db, metadata, security),
-                new FetchXmlToQueryExpressionRequestHandler(this, db, metadata, security),
-                new ExecuteMultipleRequestHandler(this, db, metadata, security),
-                new RetrieveEntityRequestHandler(this, db, metadata, security),
-                new RetrieveRelationshipRequestHandler(this, db, metadata, security),
-                new GrantAccessRequestHandler(this, db, metadata, security),
-                new ModifyAccessRequestHandler(this, db, metadata, security),
-                new RevokeAccessRequestHandler(this, db, metadata, security),
-                new WinOpportunityRequestHandler(this, db, metadata, security),
-                new LoseOpportunityRequestHandler(this, db, metadata, security),
-                new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
-                new RetrieveOptionSetRequestHandler(this, db, metadata, security),
-                new RetrieveExchangeRateRequestHandler(this, db, metadata, security),
-                new CloseIncidentRequestHandler(this, db, metadata, security),
-                new AddMembersTeamRequestHandler(this, db, metadata, security),
-                new RemoveMembersTeamRequestHandler(this, db, metadata, security),
+        private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler>
+        {
+            new CreateRequestHandler(this, db, metadata, security),
+            new UpdateRequestHandler(this, db, metadata, security),
+            new RetrieveMultipleRequestHandler(this, db, metadata, security),
+            new RetrieveRequestHandler(this, db, metadata, security),
+            new DeleteRequestHandler(this, db, metadata, security),
+            new SetStateRequestHandler(this, db, metadata, security),
+            new AssignRequestHandler(this, db, metadata, security),
+            new AssociateRequestHandler(this, db, metadata, security),
+            new DisassociateRequestHandler(this, db, metadata, security),
+            new MergeRequestHandler(this, db, metadata, security),
+            new RetrieveVersionRequestHandler(this, db, metadata, security),
+            new FetchXmlToQueryExpressionRequestHandler(this, db, metadata, security),
+            new ExecuteMultipleRequestHandler(this, db, metadata, security),
+            new RetrieveEntityRequestHandler(this, db, metadata, security),
+            new RetrieveRelationshipRequestHandler(this, db, metadata, security),
+            new GrantAccessRequestHandler(this, db, metadata, security),
+            new ModifyAccessRequestHandler(this, db, metadata, security),
+            new RevokeAccessRequestHandler(this, db, metadata, security),
+            new WinOpportunityRequestHandler(this, db, metadata, security),
+            new LoseOpportunityRequestHandler(this, db, metadata, security),
+            new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
+            new RetrieveOptionSetRequestHandler(this, db, metadata, security),
+            new RetrieveExchangeRateRequestHandler(this, db, metadata, security),
+            new CloseIncidentRequestHandler(this, db, metadata, security),
+            new AddMembersTeamRequestHandler(this, db, metadata, security),
+            new RemoveMembersTeamRequestHandler(this, db, metadata, security),
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-                new IsValidStateTransitionRequestHandler(this, db, metadata, security),
-                new CalculateRollupFieldRequestHandler(this, db, metadata, security),
+            new IsValidStateTransitionRequestHandler(this, db, metadata, security),
+            new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-                new UpsertRequestHandler(this, db, metadata, security),
+            new UpsertRequestHandler(this, db, metadata, security),
 #endif
-                new RetrieveAttributeRequestHandler(this, db, metadata, security),
-                new WhoAmIRequestHandler(this, db, metadata, security),
-                new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
+            new SetAutoNumberSeedRequestHandler(this, db, metadata, security),
+            new GetNextAutoNumberValueRequestHandler(this, db, metadata, security),
+            new GetAutoNumberSeedRequestHandler(this, db, metadata, security),
+#endif
+            new RetrieveAttributeRequestHandler(this, db, metadata, security),
+            new WhoAmIRequestHandler(this, db, metadata, security),
+            new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -218,12 +225,14 @@ namespace DG.Tools.XrmMockup
                 if (settings.EnableProxyTypes == true)
                     OnlineProxy.EnableProxyTypes();
             }
+
             return OnlineProxy;
         }
 
         internal IOrganizationService GetWorkflowService()
         {
-            return ServiceFactory.CreateOrganizationService(null, new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
+            return ServiceFactory.CreateOrganizationService(null,
+                new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
         }
 
         internal bool HasType(string entityType)
@@ -235,8 +244,9 @@ namespace DG.Tools.XrmMockup
         {
             if (HasType(entityType))
             {
-                return (Entity)Activator.CreateInstance(entityTypeMap[entityType]);
+                return (Entity) Activator.CreateInstance(entityTypeMap[entityType]);
             }
+
             return null;
         }
 
@@ -273,7 +283,8 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)
+        internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery,
+            EntityReference userRef)
         {
             foreach (var relQuery in relatedEntityQuery)
             {
@@ -281,9 +292,11 @@ namespace DG.Tools.XrmMockup
                 var queryExpr = relQuery.Value as QueryExpression;
                 if (queryExpr == null)
                 {
-                    queryExpr = XmlHandling.FetchXmlToQueryExpression(((FetchExpression)relQuery.Value).Query);
+                    queryExpr = XmlHandling.FetchXmlToQueryExpression(((FetchExpression) relQuery.Value).Query);
                 }
-                var relationshipMetadata = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, queryExpr.EntityName, relationship.SchemaName);
+
+                var relationshipMetadata = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata,
+                    queryExpr.EntityName, relationship.SchemaName);
 
 
                 var oneToMany = relationshipMetadata as OneToManyRelationshipMetadata;
@@ -294,17 +307,21 @@ namespace DG.Tools.XrmMockup
                     if (relationship.PrimaryEntityRole == EntityRole.Referencing)
                     {
                         var entityAttributes = db.GetEntityOrNull(entity.ToEntityReference()).Attributes;
-                        if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) && entityAttributes[oneToMany.ReferencingAttribute] != null)
+                        if (entityAttributes.ContainsKey(oneToMany.ReferencingAttribute) &&
+                            entityAttributes[oneToMany.ReferencingAttribute] != null)
                         {
-                            var referencingGuid = Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
+                            var referencingGuid =
+                                Utility.GetGuidFromReference(entityAttributes[oneToMany.ReferencingAttribute]);
                             queryExpr.Criteria.AddCondition(
-                                new ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal, referencingGuid));
+                                new ConditionExpression(oneToMany.ReferencedAttribute, ConditionOperator.Equal,
+                                    referencingGuid));
                         }
                     }
                     else
                     {
                         queryExpr.Criteria.AddCondition(
-                            new ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
+                            new ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal,
+                                entity.Id));
                     }
                 }
 
@@ -339,9 +356,11 @@ namespace DG.Tools.XrmMockup
                                     new ConditionExpression(null, ConditionOperator.Equal, id));
                             }
                         }
+
                         queryExpr.Criteria = conditions;
                     }
                 }
+
                 var entities = new EntityCollection();
 
                 if ((oneToMany != null || manyToMany != null) && queryExpr.Criteria.Conditions.Count > 0)
@@ -398,7 +417,8 @@ namespace DG.Tools.XrmMockup
         }
 
         //TODO: update to also take in cascading filtering on Assign, Delete, Merge, reparent, rollup
-        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole, EntityReference userRef, CascadeSelection cascadeSelection = null, params Relationship[] relations)
+        internal Entity GetDbEntityWithRelatedEntities(EntityReference reference, EntityRole primaryEntityRole,
+            EntityReference userRef, CascadeSelection cascadeSelection = null, params Relationship[] relations)
         {
             var entity = db.GetEntityOrNull(reference);
             if (entity == null)
@@ -414,40 +434,43 @@ namespace DG.Tools.XrmMockup
                 db.Update(clone);
                 entity = clone;
             }
+
             var relationQuery = new RelationshipQueryCollection();
             var relationsMetadata =
-                primaryEntityRole == EntityRole.Referenced 
-                ? metadata.OneToManyRelationships 
-                : metadata.ManyToOneRelationships;
+                primaryEntityRole == EntityRole.Referenced
+                    ? metadata.OneToManyRelationships
+                    : metadata.ManyToOneRelationships;
 
-            if(cascadeSelection != null)
+            if (cascadeSelection != null)
             {
                 relationsMetadata.Where(x => CascadeCompare(x.CascadeConfiguration, cascadeSelection));
-            } 
+            }
 
             if (relations.Any())
             {
-                relationsMetadata = relationsMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1,r2) => r1).ToArray();
+                relationsMetadata = relationsMetadata
+                    .Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
             }
+
             relationQuery.AddRange(
                 relationsMetadata
-                .Select(relationshipMeta =>
-                {
-                    var rel = new Relationship()
+                    .Select(relationshipMeta =>
                     {
-                        SchemaName = relationshipMeta.SchemaName,
-                        PrimaryEntityRole = primaryEntityRole
-                    };
-                    var query = new QueryExpression()
-                    {
-                        EntityName =
-                            primaryEntityRole == EntityRole.Referenced
-                            ? relationshipMeta.ReferencingEntity
-                            : relationshipMeta.ReferencedEntity,
-                        ColumnSet = new ColumnSet(true)
-                    };
-                    return new KeyValuePair<Relationship, QueryBase>(rel, query);
-                }));
+                        var rel = new Relationship()
+                        {
+                            SchemaName = relationshipMeta.SchemaName,
+                            PrimaryEntityRole = primaryEntityRole
+                        };
+                        var query = new QueryExpression()
+                        {
+                            EntityName =
+                                primaryEntityRole == EntityRole.Referenced
+                                    ? relationshipMeta.ReferencingEntity
+                                    : relationshipMeta.ReferencedEntity,
+                            ColumnSet = new ColumnSet(true)
+                        };
+                        return new KeyValuePair<Relationship, QueryBase>(rel, query);
+                    }));
 
 
             foreach (var relationshipMeta in relationsMetadata)
@@ -459,12 +482,14 @@ namespace DG.Tools.XrmMockup
                 var relationShipManyMetadata = metadata.ManyToManyRelationships;
                 if (relations.Any())
                 {
-                    relationShipManyMetadata = relationShipManyMetadata.Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
+                    relationShipManyMetadata = relationShipManyMetadata
+                        .Join(relations, x => x.SchemaName, y => y.SchemaName, (r1, r2) => r1).ToArray();
                 }
+
                 relationQuery.AddRange(relationShipManyMetadata
                     .Select(relationshipMeta =>
                     {
-                        var rel = new Relationship() { SchemaName = relationshipMeta.SchemaName };
+                        var rel = new Relationship() {SchemaName = relationshipMeta.SchemaName};
                         var query = new QueryExpression(relationshipMeta.IntersectEntityName)
                         {
                             ColumnSet = new ColumnSet(true)
@@ -483,7 +508,7 @@ namespace DG.Tools.XrmMockup
             foreach (var entity in entities)
             {
                 var createHandler = RequestHandlers.Find(x => x is CreateRequestHandler);
-                createHandler.Execute(new CreateRequest { Target = entity }, null);
+                createHandler.Execute(new CreateRequest {Target = entity}, null);
             }
         }
 
@@ -498,7 +523,8 @@ namespace DG.Tools.XrmMockup
             return Execute(request, userRef, null);
         }
 
-        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext)
+        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef,
+            PluginContext parentPluginContext)
         {
             // Setup
             HandleInternalPreOperations(request, userRef);
@@ -526,11 +552,13 @@ namespace DG.Tools.XrmMockup
             {
                 pluginContext.InputParameters[prop.Key] = prop.Value;
             }
+
             if (parentPluginContext != null)
             {
                 pluginContext.ParentContext = parentPluginContext;
                 pluginContext.Depth = parentPluginContext.Depth + 1;
             }
+
             var buRef = GetBusinessUnit(userRef);
             pluginContext.BusinessUnitId = buRef.Id;
 
@@ -542,8 +570,11 @@ namespace DG.Tools.XrmMockup
             // Validation
             if (!settings.SetUnsettableFields && (request is UpdateRequest || request is CreateRequest))
             {
-                var entity = request is UpdateRequest ? (request as UpdateRequest).Target : (request as CreateRequest).Target;
-                Utility.RemoveUnsettableAttributes(request.RequestName, metadata.EntityMetadata.GetMetadata(entity.LogicalName), entity);
+                var entity = request is UpdateRequest
+                    ? (request as UpdateRequest).Target
+                    : (request as CreateRequest).Target;
+                Utility.RemoveUnsettableAttributes(request.RequestName,
+                    metadata.EntityMetadata.GetMetadata(entity.LogicalName), entity);
             }
 
             Entity preImage = null;
@@ -556,41 +587,51 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
-            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
+            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
+            {
                 // System Pre-validation
-                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage,
+                    postImage, pluginContext, this);
                 // Pre-validation
-                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage,
+                    postImage, pluginContext, this);
 
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
                 pluginContext.ParentContext = pluginContext.Clone();
                 pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
-                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage,
+                    pluginContext, this);
+                workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage,
+                    postImage, pluginContext, this);
 
                 // System Pre-operation
-                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage,
+                    postImage, pluginContext, this);
             }
 
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
-            
+
             // Post-operation
             if (settings.TriggerProcesses && entityInfo != null)
             {
-
                 postImage = TryRetrieve(primaryRef);
 
                 if (eventOp.HasValue)
                 {
-                    pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    
-                    workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage,
+                        postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage,
+                        postImage, pluginContext, this);
+                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage,
+                        postImage, pluginContext, this);
+
+                    workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage,
+                        postImage, pluginContext, this);
+                    workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage,
+                        postImage, pluginContext, this);
                 }
 
                 //When last Sync has been executed we trigger the Async jobs.
@@ -599,8 +640,10 @@ namespace DG.Tools.XrmMockup
                     pluginManager.TriggerAsyncWaitingJobs();
                     workflowManager.TriggerAsync(this);
                 }
+
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
+
             return response;
         }
 
@@ -613,6 +656,7 @@ namespace DG.Tools.XrmMockup
                 {
                     entity.Id = Guid.NewGuid();
                 }
+
                 if (entity.GetAttributeValue<EntityReference>("ownerid") == null &&
                     Utility.IsValidAttribute("ownerid", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
                 {
@@ -627,32 +671,41 @@ namespace DG.Tools.XrmMockup
             TriggerWaitingWorkflows();
         }
 
-        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext)
+        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef,
+            PluginContext parentPluginContext)
         {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            if (request is AssignRequest assignRequest) {
+            if (request is AssignRequest assignRequest)
+            {
                 var targetEntity = db.GetEntityOrNull(assignRequest.Target);
-                if (targetEntity.GetAttributeValue<EntityReference>("ownerid") != assignRequest.Assignee) {
-                    var req = new UpdateRequest {
+                if (targetEntity.GetAttributeValue<EntityReference>("ownerid") != assignRequest.Assignee)
+                {
+                    var req = new UpdateRequest
+                    {
                         Target = new Entity(assignRequest.Target.LogicalName, assignRequest.Target.Id)
                     };
                     req.Target.Attributes["ownerid"] = assignRequest.Assignee;
                     Execute(req, userRef, parentPluginContext);
                 }
+
                 return new AssignResponse();
             }
 
-            if (request is SetStateRequest setstateRequest) {
+            if (request is SetStateRequest setstateRequest)
+            {
                 var targetEntity = db.GetEntityOrNull(setstateRequest.EntityMoniker);
                 if (targetEntity.GetAttributeValue<OptionSetValue>("statecode") != setstateRequest.State ||
-                    targetEntity.GetAttributeValue<OptionSetValue>("statuscode") != setstateRequest.Status) {
-                    var req = new UpdateRequest {
+                    targetEntity.GetAttributeValue<OptionSetValue>("statuscode") != setstateRequest.Status)
+                {
+                    var req = new UpdateRequest
+                    {
                         Target = new Entity(setstateRequest.EntityMoniker.LogicalName, setstateRequest.EntityMoniker.Id)
                     };
                     req.Target.Attributes["statecode"] = setstateRequest.State;
                     req.Target.Attributes["statuscode"] = setstateRequest.Status;
                     Execute(req, userRef, parentPluginContext);
                 }
+
                 return new SetStateResponse();
             }
 #endif
@@ -660,6 +713,7 @@ namespace DG.Tools.XrmMockup
             {
                 return ExecuteAction(request);
             }
+
             var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
             if (handler != null)
             {
@@ -671,7 +725,8 @@ namespace DG.Tools.XrmMockup
                 return new OrganizationResponse();
             }
 
-            throw new NotImplementedException($"Execute for the request '{request.RequestName}' has not been implemented yet.");
+            throw new NotImplementedException(
+                $"Execute for the request '{request.RequestName}' has not been implemented yet.");
         }
 
         private string RequestNameToMessageName(string requestName)
@@ -698,7 +753,8 @@ namespace DG.Tools.XrmMockup
         {
             var dbentity = db.GetEntityOrNull(entity.ToEntityReference());
             if (dbentity == null) return false;
-            return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
+            return entity.Attributes.All(a =>
+                dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
         }
 
         internal void PopulateWith(Entity[] entities)
@@ -711,6 +767,7 @@ namespace DG.Tools.XrmMockup
                     entity.Id = id;
                     entity[entity.LogicalName + "id"] = id;
                 }
+
                 db.Add(entity);
             }
         }
@@ -720,7 +777,8 @@ namespace DG.Tools.XrmMockup
             return security.GetPrincipalPrivilege(principleId);
         }
 
-        internal void AddPrivileges(EntityReference entRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
+        internal void AddPrivileges(EntityReference entRef,
+            Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
         {
             security.AddPrinciplePrivileges(entRef.Id, privileges);
         }
@@ -742,7 +800,8 @@ namespace DG.Tools.XrmMockup
             var workflow = workflowManager.ParseWorkflow(action);
             if (workflow.Input.Where(a => a.Required).Any(required => !request.Parameters.ContainsKey(required.Name)))
             {
-                throw new FaultException($"Call to action '{request.RequestName}' but no all required input arguments were provided");
+                throw new FaultException(
+                    $"Call to action '{request.RequestName}' but no all required input arguments were provided");
             }
 
             var entity = db.GetEntityOrNull(request.Parameters["Target"] as EntityReference).CloneEntity();
@@ -781,6 +840,7 @@ namespace DG.Tools.XrmMockup
             {
                 obj = request.Parameters[key];
             }
+
             if (request is WinOpportunityRequest || request is LoseOpportunityRequest)
             {
                 var close = request is WinOpportunityRequest
@@ -803,6 +863,7 @@ namespace DG.Tools.XrmMockup
                     return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
                 }
             }
+
             return null;
         }
 
@@ -816,6 +877,7 @@ namespace DG.Tools.XrmMockup
         {
             return Utility.GetBusinessUnit(db, owner);
         }
+
         #endregion
 
 
@@ -879,11 +941,14 @@ namespace DG.Tools.XrmMockup
             {
                 workflowManager.ResetWorkflows();
             }
+
             pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
+            AutoNumberSeeds = new Dictionary<Tuple<string,string>, long>();
+            AutoNumberValues = new Dictionary<Tuple<string,string>, long>();
         }
     }
 }

@@ -31,11 +31,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Delegate.Daxif, Version=3.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Delegate.Daxif.3.1.0\lib\net45\Delegate.Daxif.dll</HintPath>
+    <Reference Include="Delegate.Daxif, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Delegate.Daxif.4.7.0\lib\net45\Delegate.Daxif.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Crm.Services.Utility, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Delegate.Daxif.3.1.0\lib\net45\Microsoft.Crm.Services.Utility.dll</HintPath>
+      <HintPath>..\packages\Delegate.Daxif.4.7.0\lib\net45\Microsoft.Crm.Services.Utility.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,17 +52,48 @@
   <ItemGroup>
     <Content Include="Daxif\bin\Delegate.Daxif.dll" />
     <Content Include="Daxif\bin\Delegate.Daxif.xml" />
+    <Content Include="Daxif\bin\FSharp.Core.dll" />
+    <Content Include="Daxif\bin\FSharp.Core.xml" />
+    <Content Include="Daxif\bin\Microsoft.ApplicationInsights.dll" />
     <Content Include="Daxif\bin\Microsoft.Crm.Sdk.Proxy.dll" />
+    <Content Include="Daxif\bin\Microsoft.Crm.Sdk.Proxy.xml" />
     <Content Include="Daxif\bin\Microsoft.Crm.Services.Utility.dll" />
+    <Content Include="Daxif\bin\Microsoft.IdentityModel.Clients.ActiveDirectory.dll" />
+    <Content Include="Daxif\bin\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll" />
+    <Content Include="Daxif\bin\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.xml" />
+    <Content Include="Daxif\bin\Microsoft.IdentityModel.Clients.ActiveDirectory.xml" />
     <Content Include="Daxif\bin\Microsoft.IdentityModel.dll" />
+    <Content Include="Daxif\bin\Microsoft.PowerApps.AppInsights.BatchedTelemetry.dll" />
+    <Content Include="Daxif\bin\Microsoft.PowerApps.AppInsights.BatchedTelemetryChannel.dll" />
+    <Content Include="Daxif\bin\Microsoft.Rest.ClientRuntime.dll" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.Deployment.dll" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.Deployment.xml" />
     <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.dll" />
-    <Content Include="Daxif\bin\SolutionPackager.exe" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.Workflow.dll" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.Workflow.xml" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Sdk.xml" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Tooling.Connector.dll" />
+    <Content Include="Daxif\bin\Microsoft.Xrm.Tooling.Connector.xml" />
+    <Content Include="Daxif\bin\Newtonsoft.Json.dll" />
+    <Content Include="Daxif\bin\Newtonsoft.Json.xml" />
+    <Content Include="Daxif\bin\SolutionPackagerLib.dll" />
+    <Content Include="Daxif\bin\System.Diagnostics.DiagnosticSource.dll" />
+    <Content Include="Daxif\bin\System.ValueTuple.dll" />
     <Content Include="Daxif\GenerateXrmMockupMetadata.fsx" />
     <Content Include="XrmContext\FSharp.Core.dll" />
     <Content Include="XrmContext\Microsoft.Crm.Sdk.Proxy.dll" />
-    <Content Include="XrmContext\Microsoft.IdentityModel.dll" />
+    <Content Include="XrmContext\Microsoft.IdentityModel.Clients.ActiveDirectory.dll" />
+    <Content Include="XrmContext\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll" />
+    <Content Include="XrmContext\Microsoft.Rest.ClientRuntime.dll" />
+    <Content Include="XrmContext\Microsoft.Xrm.Sdk.Deployment.dll" />
     <Content Include="XrmContext\Microsoft.Xrm.Sdk.dll" />
-    <Content Include="XrmContext\Run.fsx" />
+    <Content Include="XrmContext\Microsoft.Xrm.Sdk.Workflow.dll" />
+    <Content Include="XrmContext\Microsoft.Xrm.Tooling.Connector.dll" />
+    <Content Include="XrmContext\Newtonsoft.Json.dll" />
+    <Content Include="XrmContext\System.Buffers.dll" />
+    <Content Include="XrmContext\System.Memory.dll" />
+    <Content Include="XrmContext\System.Numerics.Vectors.dll" />
+    <Content Include="XrmContext\System.Runtime.CompilerServices.Unsafe.dll" />
     <Content Include="XrmContext\XrmContext.exe" />
     <Content Include="XrmContext\XrmContext.xml" />
   </ItemGroup>
@@ -70,9 +101,12 @@
     <None Include="Daxif\GenerateCSharpContext.fsx" />
     <None Include="Daxif\Playground.fsx" />
     <None Include="Daxif\PluginSyncDev.fsx" />
+    <None Include="Daxif\PublishAllArg.fsx" />
+    <None Include="Daxif\ViewExtender.fsx" />
     <None Include="Daxif\WorkflowSyncDev.fsx" />
     <None Include="Daxif\_Config.fsx" />
     <None Include="packages.config" />
+    <None Include="XrmContext\Run.fsx" />
     <None Include="XrmContext\Run.ps1" />
     <None Include="XrmContext\XrmContext.exe.config" />
   </ItemGroup>

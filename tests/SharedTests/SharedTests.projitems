@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestAutoNumberAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnCreate .cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendOnCreate.cs" />

@@ -57,22 +57,22 @@
  Use argument and pass it along
 </summary>
 </member>
-<member name="M:DG.XrmContext.InterpretOptionSetMetadata.interpretOptionSet(Microsoft.FSharp.Collections.FSharpSet{System.String},Microsoft.FSharp.Core.FSharpOption{Microsoft.Xrm.Sdk.Metadata.EntityMetadata},Microsoft.Xrm.Sdk.Metadata.EnumAttributeMetadata)">
+<member name="M:DG.XrmContext.InterpretOptionSetMetadata.interpretOptionSet(Microsoft.FSharp.Collections.FSharpSet{System.String},Microsoft.FSharp.Core.FSharpOption{Microsoft.Xrm.Sdk.Metadata.EntityMetadata},Microsoft.Xrm.Sdk.Metadata.EnumAttributeMetadata,Microsoft.FSharp.Core.FSharpOption{System.Tuple{System.String,System.String}[]})">
 <summary>
  Interprets CRM OptionSetMetadata into intermediate type
 </summary>
 </member>
-<member name="M:DG.XrmContext.DataRetrieval.getFullEntityList``1(Microsoft.FSharp.Core.FSharpOption{System.String[]},Microsoft.FSharp.Core.FSharpOption{``0[]},Microsoft.Xrm.Sdk.Client.OrganizationServiceProxy)">
+<member name="M:DG.XrmContext.DataRetrieval.getFullEntityList``1(Microsoft.FSharp.Core.FSharpOption{System.String[]},Microsoft.FSharp.Core.FSharpOption{``0[]},Microsoft.Xrm.Sdk.IOrganizationService)">
 <summary>
  Gets all the entities related to the given solutions and merges with the given entities
 </summary>
 </member>
-<member name="M:DG.XrmContext.DataRetrieval.retrieveCrmData``1(Microsoft.FSharp.Core.FSharpOption{System.String[]},Microsoft.Xrm.Sdk.Client.OrganizationServiceProxy,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0})">
+<member name="M:DG.XrmContext.DataRetrieval.retrieveCrmData(Microsoft.FSharp.Core.FSharpOption{System.String[]},Microsoft.Xrm.Sdk.IOrganizationService)">
 <summary>
  Retrieve all the necessary CRM data
 </summary>
 </member>
-<member name="M:DG.XrmContext.DataRetrieval.retrieveCrmVersion(Microsoft.Xrm.Sdk.Client.OrganizationServiceProxy)">
+<member name="M:DG.XrmContext.DataRetrieval.retrieveCrmVersion(Microsoft.Xrm.Sdk.IOrganizationService)">
 <summary>
  Retrieve version from CRM
 </summary>
@@ -95,11 +95,6 @@
 <member name="M:DG.XrmContext.Setup.toComparableAttr(DG.XrmContext.IntermediateRepresentation.XrmAttribute)">
 <summary>
  Converts a XrmAttribute to a tuple which can be used as a comparable
-</summary>
-</member>
-<member name="M:DG.XrmContext.FileGeneration.createCodeDom(DG.XrmContext.IntermediateRepresentation.InterpretedState)">
-<summary>
- Generates the code represented in the CodeDom object
 </summary>
 </member>
 <member name="M:DG.XrmContext.GenerationMain.generateFromRaw(DG.XrmContext.XcGenerationSettings,DG.XrmContext.RawState)">
