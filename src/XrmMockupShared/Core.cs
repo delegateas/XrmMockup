@@ -585,6 +585,9 @@ namespace DG.Tools.XrmMockup
 
                 if (eventOp.HasValue)
                 {
+                    //copy the createon etc system attributes onto the target so they are available for postoperation processing
+                    CopySystemAttributes(postImage, entityInfo.Item1 as Entity);
+
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
@@ -602,6 +605,27 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
             return response;
+        }
+
+        private void CopySystemAttributes(Entity postImage, Entity item1)
+        {
+
+            if (item1 == null)
+            {
+                return;
+            }
+
+            item1["createdon"] = postImage.GetAttributeValue<DateTime>("createdon");
+            item1["modifiedon"] = postImage.GetAttributeValue<DateTime>("modifiedon");
+            if (postImage.Contains("createdby"))
+            {
+                item1["createdby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("createdby").LogicalName, postImage.GetAttributeValue<EntityReference>("createdby").Id);
+            }
+            if (postImage.Contains("modifiedby"))
+            {
+                item1["modifiedby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("modifiedby").LogicalName, postImage.GetAttributeValue<EntityReference>("modifiedby").Id);
+            }
+
         }
 
         internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef)
