@@ -13,8 +13,6 @@ namespace DG.Some.Namespace {
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute);
-
-            
         }
 
         protected void Execute(LocalPluginContext localContext) {
@@ -32,8 +30,6 @@ namespace DG.Some.Namespace {
                 con.FirstName = "updated";
                 service.Update(con);
             }
-            
-            
         }
     }
 }

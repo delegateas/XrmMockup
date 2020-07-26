@@ -609,7 +609,6 @@ namespace DG.Tools.XrmMockup
 
         private void CopySystemAttributes(Entity postImage, Entity item1)
         {
-
             if (item1 == null)
             {
                 return;
@@ -625,7 +624,6 @@ namespace DG.Tools.XrmMockup
             {
                 item1["modifiedby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("modifiedby").LogicalName, postImage.GetAttributeValue<EntityReference>("modifiedby").Id);
             }
-
         }
 
         internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef)

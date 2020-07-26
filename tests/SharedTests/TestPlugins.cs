@@ -40,7 +40,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var con = new Contact();
                 con.FirstName = "CheckSystemAttributes";
 
