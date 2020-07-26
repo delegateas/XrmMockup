@@ -1,21 +1,21 @@
-﻿
-namespace DG.Some.Namespace {
+﻿namespace DG.Some.Namespace {
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-    public class ContactPostPlugin : Plugin {
-
+    public class ContactPostPlugin : Plugin 
+    {
         public ContactPostPlugin()
-            : base(typeof(ContactPostPlugin)) {
-
+            : base(typeof(ContactPostPlugin)) 
+        {
             RegisterPluginStep<Contact>(
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute);
         }
 
-        protected void Execute(LocalPluginContext localContext) {
+        protected void Execute(LocalPluginContext localContext) 
+        {
             if (localContext == null) {
                 throw new ArgumentNullException("localContext");
             }
