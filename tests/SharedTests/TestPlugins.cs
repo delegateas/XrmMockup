@@ -51,6 +51,22 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
+        public void TestSystemAttributesAddedToTargetForPostOperationStepPlugins()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var con = new Contact();
+                con.FirstName = "CheckSystemAttributes";
+
+                con.Id = orgAdminUIService.Create(con);
+
+                con = Contact.Retrieve(orgAdminService, con.Id, x => x.LastName,x=>x.CreatedOn);
+                Assert.IsTrue(!string.IsNullOrEmpty(con.LastName));
+                Assert.AreEqual(con.CreatedOn.ToString(), con.LastName);
+            }
+        }
+
+        [TestMethod]
         public void TestPluginTrigger()
         {
             using (var context = new Xrm(orgAdminUIService))
