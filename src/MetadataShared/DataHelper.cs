@@ -125,7 +125,7 @@ namespace DG.Tools.XrmMockup.Metadata
 
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
             {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name"),
+                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name","impersonatinguserid"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
@@ -201,6 +201,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
                     PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
+                    ImpersonatingUserId = plugin.Contains("impersonatinguserid") ? plugin.GetAttributeValue<EntityReference>("impersonatinguserid").Id : (Guid?)null,
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
                         .Select(x => new MetaImage

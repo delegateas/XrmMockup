@@ -7,7 +7,7 @@
     using System.ServiceModel;
     using System.Linq.Expressions;
     using Microsoft.Xrm.Sdk;
-
+    
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes

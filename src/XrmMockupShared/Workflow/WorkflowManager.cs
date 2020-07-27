@@ -79,14 +79,14 @@ namespace DG.Tools.XrmMockup {
         /// <param name="postImage"></param>
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
-        public void Trigger(EventOperation operation, ExecutionStage stage,
+        public void Trigger(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) 
         {    
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
                     preImage, postImage, pluginContext, core)));
         }
 
-        public void TriggerSync(EventOperation operation, ExecutionStage stage,
+        public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
@@ -112,7 +112,7 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        public void StageAsync(EventOperation operation, ExecutionStage stage,
+        public void StageAsync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             asynchronousWorkflows.ForEach(x => StageIfMatch(x, operation, stage, entity,
@@ -172,7 +172,7 @@ namespace DG.Tools.XrmMockup {
             return thisPluginContext;
         }
 
-        private void StageIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
+        private void StageIfMatch(Entity workflow, string operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             if (workflow.LogicalName != "workflow") return;
@@ -186,9 +186,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation == EventOperation.Create;
-            var isUpdate = operation == EventOperation.Update;
-            var isDelete = operation == EventOperation.Delete;
+            var isCreate = operation == "Create";
+            var isUpdate = operation == "Update";
+            var isDelete = operation == "Delete";
 
             if (!isCreate && !isUpdate && !isDelete) return;
             if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return;
@@ -223,7 +223,7 @@ namespace DG.Tools.XrmMockup {
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
         }
 
-        private void ExecuteIfMatch(Entity workflow, EventOperation operation, ExecutionStage stage,
+        private void ExecuteIfMatch(Entity workflow, string operation, ExecutionStage stage,
             object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             if (workflow.LogicalName != "workflow") return;
@@ -238,9 +238,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation == EventOperation.Create;
-            var isUpdate = operation == EventOperation.Update;
-            var isDelete = operation == EventOperation.Delete;
+            var isCreate = operation == "Create";
+            var isUpdate = operation == "Update";
+            var isDelete = operation == "Delete";
 
             if (!isCreate && !isUpdate && !isDelete) return;
 

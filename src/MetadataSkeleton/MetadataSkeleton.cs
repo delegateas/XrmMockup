@@ -26,6 +26,7 @@ namespace DG.Tools.XrmMockup {
         public string AssemblyName;
         public string PrimaryEntity;
         public List<MetaImage> Images;
+        public Guid? ImpersonatingUserId;
     }
 
     public class MetaImage
