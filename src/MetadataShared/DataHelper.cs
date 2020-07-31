@@ -130,7 +130,7 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
 
-            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.Inner)
+            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.LeftOuter)
             {
                 Columns = new ColumnSet("primaryobjecttypecode"),
                 EntityAlias = "sdkmessagefilter",
@@ -153,6 +153,9 @@ namespace DG.Tools.XrmMockup.Metadata
             solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions);
             solutionComponentQuery.LinkEntities.Add(solutionQuery);
 
+            QueryExpressionToFetchXmlRequest req = new QueryExpressionToFetchXmlRequest();
+            req.Query = pluginQuery;
+            var resp = service.Execute(req);
 
             var imagesQuery = new QueryExpression
             {
@@ -200,7 +203,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
-                    PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
+                    PrimaryEntity = plugin.Contains("sdkmessagefilter.primaryobjecttypecode") ? plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string : "",
                     ImpersonatingUserId = plugin.Contains("impersonatinguserid") ? plugin.GetAttributeValue<EntityReference>("impersonatinguserid").Id : (Guid?)null,
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
