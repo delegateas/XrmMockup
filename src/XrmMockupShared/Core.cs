@@ -62,6 +62,8 @@ namespace DG.Tools.XrmMockup
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
 
+        private List<string> systemAttributeNames;
+
         public EntityReference AdminUserRef;
         public EntityReference RootBusinessUnitRef;
 
@@ -99,6 +101,8 @@ namespace DG.Tools.XrmMockup
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
+
+            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -614,15 +618,19 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            item1["createdon"] = postImage.GetAttributeValue<DateTime>("createdon");
-            item1["modifiedon"] = postImage.GetAttributeValue<DateTime>("modifiedon");
-            if (postImage.Contains("createdby"))
+            foreach (var systemAttributeName in this.systemAttributeNames)
             {
-                item1["createdby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("createdby").LogicalName, postImage.GetAttributeValue<EntityReference>("createdby").Id);
-            }
-            if (postImage.Contains("modifiedby"))
-            {
-                item1["modifiedby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("modifiedby").LogicalName, postImage.GetAttributeValue<EntityReference>("modifiedby").Id);
+                if (postImage.Contains(systemAttributeName))
+                {
+                    if (postImage[systemAttributeName] is EntityReference)
+                    {
+                        item1[systemAttributeName] = new EntityReference(postImage.GetAttributeValue<EntityReference>(systemAttributeName).LogicalName, postImage.GetAttributeValue<EntityReference>(systemAttributeName).Id);
+                    }
+                    else if (postImage[systemAttributeName] is DateTime)
+                    {
+                        item1[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
+                    }
+                }
             }
         }
 
