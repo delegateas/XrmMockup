@@ -587,6 +587,12 @@ namespace DG.Tools.XrmMockup
 
                 postImage = TryRetrieve(primaryRef);
 
+                // In RetrieveMultipleRequests, the OutputParameters bag contains the entity collection
+                if (request is RetrieveMultipleRequest)
+                {
+                    pluginContext.OutputParameters["BusinessEntityCollection"] = (response as RetrieveMultipleResponse)?.EntityCollection;
+                }
+
                 if (eventOp.HasValue)
                 {
                     //copy the createon etc system attributes onto the target so they are available for postoperation processing
@@ -817,6 +823,34 @@ namespace DG.Tools.XrmMockup
                     ? (request as WinOpportunityRequest).OpportunityClose
                     : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
+            }
+            else if (request is RetrieveMultipleRequest)
+            {
+                var retrieve = request as RetrieveMultipleRequest;
+
+                string entityName = null;
+                switch (retrieve.Query)
+                {
+                    case FetchExpression fe:
+                        var qe = XmlHandling.FetchXmlToQueryExpression(fe.Query);
+                        entityName = qe.EntityName;
+                        break;
+                    case QueryExpression query:
+                        entityName = query.EntityName;
+                        break;
+                    case QueryByAttribute qba:
+                        entityName = qba.EntityName;
+                        break;
+                }
+                
+                if (entityName != null)
+                {
+                    return new Tuple<object, string, Guid>(new EntityReference
+                    {
+                        LogicalName = entityName,
+                        Id = Guid.Empty
+                    }, entityName, Guid.Empty);
+                }
             }
 
             if (obj != null)
