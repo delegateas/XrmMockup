@@ -62,6 +62,8 @@ namespace DG.Tools.XrmMockup
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
 
+        private List<string> systemAttributeNames;
+
         public EntityReference AdminUserRef;
         public EntityReference RootBusinessUnitRef;
 
@@ -99,6 +101,8 @@ namespace DG.Tools.XrmMockup
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
+
+            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -585,6 +589,9 @@ namespace DG.Tools.XrmMockup
 
                 if (eventOp.HasValue)
                 {
+                    //copy the createon etc system attributes onto the target so they are available for postoperation processing
+                    CopySystemAttributes(postImage, entityInfo.Item1 as Entity);
+
                     pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
@@ -602,6 +609,29 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
             return response;
+        }
+
+        private void CopySystemAttributes(Entity postImage, Entity item1)
+        {
+            if (item1 == null)
+            {
+                return;
+            }
+
+            foreach (var systemAttributeName in this.systemAttributeNames)
+            {
+                if (postImage.Contains(systemAttributeName))
+                {
+                    if (postImage[systemAttributeName] is EntityReference)
+                    {
+                        item1[systemAttributeName] = new EntityReference(postImage.GetAttributeValue<EntityReference>(systemAttributeName).LogicalName, postImage.GetAttributeValue<EntityReference>(systemAttributeName).Id);
+                    }
+                    else if (postImage[systemAttributeName] is DateTime)
+                    {
+                        item1[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
+                    }
+                }
+            }
         }
 
         internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef)
