@@ -574,6 +574,8 @@ namespace DG.XrmMockupTest {
             Assert.AreEqual(2, res.Count());
             Assert.IsTrue(res.Any(x => x.Id == lead1.Id));
             Assert.IsTrue(res.Any(x => x.Id == lead2.Id));
+            Assert.IsTrue(res.Any(x => x.Description == "*** TEST VALUE ***"));
+            Assert.IsTrue(res.Any(x => x.Description == null));
         }
 
         [TestMethod]

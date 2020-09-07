@@ -115,7 +115,8 @@ namespace DG.Tools.XrmMockup {
         };
 
 
-        public static EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request) {
+        public static EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request)
+        {
             if (request is RetrieveRequest) return ((RetrieveRequest)request).Target;
             if (request is CreateRequest) return ((CreateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
             if (request is UpdateRequest) return ((UpdateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
@@ -127,6 +128,15 @@ namespace DG.Tools.XrmMockup {
             if (request is MergeRequest) return ((MergeRequest)request).Target;
             if (request is WinOpportunityRequest) return ((WinOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
             if (request is LoseOpportunityRequest) return ((LoseOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
+            if (request is RetrieveMultipleRequest retrieve)
+            {
+                switch (retrieve.Query)
+                {
+                    case FetchExpression fe: return new EntityReference(XmlHandling.FetchXmlToQueryExpression(fe.Query).EntityName, Guid.Empty);
+                    case QueryExpression qe: return new EntityReference(qe.EntityName, Guid.Empty);
+                    case QueryByAttribute qba: return new EntityReference(qba.EntityName, Guid.Empty);
+                }
+            }
 
             return null;
         }

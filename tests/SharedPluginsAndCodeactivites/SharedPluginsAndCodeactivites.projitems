@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AccountPreImagePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountSetStatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountWorkflowActivity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LeadRetrieveMultiplePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
