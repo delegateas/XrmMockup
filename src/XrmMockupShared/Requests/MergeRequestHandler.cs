@@ -17,8 +17,9 @@ namespace DG.Tools.XrmMockup {
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<MergeRequest>(orgRequest);
             var mainEntity = db.GetEntity(request.Target);
+            var casSelection = new CascadeSelection() { merge = true };
             var subordinateReference = new EntityReference { LogicalName = mainEntity.LogicalName, Id = request.SubordinateId };
-            var subordinateEntity = core.GetDbEntityWithRelatedEntities(subordinateReference, EntityRole.Referencing, userRef);
+            var subordinateEntity = core.GetDbEntityWithRelatedEntities(subordinateReference, EntityRole.Referencing, userRef, casSelection);
 
             foreach (var attr in request.UpdateContent.Attributes) {
                 if (attr.Value != null) {

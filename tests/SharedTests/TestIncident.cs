@@ -468,5 +468,79 @@ namespace DG.XrmMockupTest
                 Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
+
+        [TestMethod]
+        public void TestUpdateResolvedIncidentFailsWhenFieldModificationIsNotAllowed()
+        {
+            var incident = new Incident()
+            {
+                Title = "Old Title"
+            };
+            incident.Id = orgAdminService.Create(incident);
+
+            var resolution = new IncidentResolution
+            {
+                Subject = "Case closed",
+                IncidentId = incident.ToEntityReference()
+            };
+
+            var closeRequest = new CloseIncidentRequest()
+            {
+                IncidentResolution = resolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+            orgAdminService.Execute(closeRequest);
+
+            var incidentUpdate = new Incident(incident.Id)
+            {
+                Title = "New Title"
+            };
+
+            try
+            {
+                orgAdminService.Update(incidentUpdate);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOfType(e, typeof(FaultException));
+            }
+
+            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
+            Assert.AreEqual(incident.Title, retrievedIncident.Title);
+        }
+
+        [TestMethod]
+        public void TestUpdateResolvedIncidentSucceedsWhenFieldModificationIsAllowed()
+        {
+            var incident = new Incident()
+            {
+                Title = "Old Title",
+            };
+            incident.Id = orgAdminService.Create(incident);
+
+            var resolution = new IncidentResolution
+            {
+                Subject = "Case closed",
+                IncidentId = incident.ToEntityReference()
+            };
+
+            var closeRequest = new CloseIncidentRequest()
+            {
+                IncidentResolution = resolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+            orgAdminService.Execute(closeRequest);
+
+            var incidentUpdate = new Incident(incident.Id)
+            {
+                StateCode = IncidentState.Active
+            };
+
+            orgAdminService.Update(incidentUpdate);
+
+            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
+            Assert.AreEqual(IncidentState.Active,retrievedIncident.StateCode);
+        }
     }
 }

@@ -1,3 +1,58 @@
+### 1.2.5 - 17 June 2020
+* Added Connection String Authentication method
+
+### 1.2.4 - 11 May 2020
+* Fixed an issue in 2011 where default teams would fail to create
+
+### 1.2.3 - 22 April 2020
+* Fixed additional errors with orphaned security
+
+### 1.2.2 - 08 April 2020
+* Fixed generation error due to orphaned roleprivilege
+
+### 1.2.1 - 24 March 2020
+*  Added new method `AddSecurityRolesToPrinciple` for adding  security roles to a user or a team
+
+### 1.2.0 - 21 February 2020
+* Default teams are now added and managed in relation to businessunits.
+* Custom workflows with optional parameters will now correctly be passed null values form workflows.
+* The metadata generator will now fetch plugin images from selected solutions instead of a hard-coded solution.
+
+### 1.1.1 - 18 February 2020
+* Fix a bug with team security where members of an owner team had full access to any records the team owned
+* Fixed a bug with XrmMockup365 when it was installed on projects without the tooling connector
+
+### 1.1.0 - 11 February 2020
+* Added better description when no default status reason exists
+* Added support for client secret
+
+### 1.0.0 - 31 January 2020
+* It's happening!
+* Inactive incidents can no longer be modified
+* Fixed error with execution-ordering of sync and async plugins and workflows
+* Excluded most standard workflows when generating metadata
+
+### 0.13.3-beta - 12 November 2019
+* Added TotalRecordCount to RetrieveMultipleResponse
+
+### 0.13.1-beta - 10 September 2019
+* Fixed an issue where CloseIncident request did not trigger plugins listening on update or set state of incident
+
+### 0.13.0-beta - 18 July 2019
+* XrmMockup is now back to include the changes introduced after 0.9.10
+* Refactoring of the latest pull request to ensure that XrmMockup performance is not affected
+* Fix issue in Retrieve Multiple request unable to handle missing entity alias on linked-entity and entity name on linked-entity filter criterias
+* Re-added privilege check for Append and Append-To on create and update. This feature can be toggled of if necessary  
+* Refactor internal check for user and team privilege
+* Added new method `GetPrivilege` for retriving the privilege for a given user or team
+* Added new method `HasPermission` that checks if a user or team has a given access to a record
+
+### 0.12.0-beta - 10 April 2019
+* Reverted to a stable version based on 0.9.10. Releases after 0.9.10 introduced severe performance degradation with a factor of 3-4 slower tests.
+* Releases also introduced bugs and invalid CRM logic. Will work on reimplementing the changes added in later version, but will require time to ensure quality.
+* Please use version between 0.9.10 and 0.12.0 if needed.
+* added changes from release 0.11.1
+
 ### 0.11.1-beta - 01 April 2019
 * Fixed a bug in calculated fields which expected caluclated fields based on lookup fields to always have a value.
 * Added a new optional flag "BigBang" that simulates the entire universe.

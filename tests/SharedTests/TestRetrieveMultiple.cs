@@ -196,6 +196,7 @@ namespace DG.XrmMockupTest {
                 Assert.IsNotNull(rootBu.Id);
 
                 var anotherBusinessUnit = new BusinessUnit();
+                anotherBusinessUnit["name"] = "Business unit name";
                 anotherBusinessUnit.Id = orgAdminUIService.Create(anotherBusinessUnit);
 
                 var user = crm.CreateUser(orgAdminUIService, anotherBusinessUnit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;
@@ -636,6 +637,100 @@ namespace DG.XrmMockupTest {
             Assert.AreEqual(leadCount, res.Count());
         }
 
+#if !(XRM_MOCKUP_TEST_2011)
+
+        [TestMethod]
+        public void TestQueryExpressionLinkEntity()
+        {
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("lastname")
+            };
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            query.Criteria = filter;
+
+            var linkEntity = new LinkEntity()
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet("subject"),
+                EntityAlias = "lead"
+            };
+            var linkFilter = new FilterExpression(LogicalOperator.And);
+            linkFilter.AddCondition(new ConditionExpression("lead", "subject", ConditionOperator.Like, "Some%"));
+            linkEntity.LinkCriteria = linkFilter;
+
+            query.LinkEntities.Add(linkEntity);
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+            Assert.AreEqual(2, res.Count());
+        }
+
+
+        [TestMethod]
+        public void TestQueryExpressionLinkEntityNoSetEntityNameAndAlias()
+        {
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("lastname")
+            };
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            query.Criteria = filter;
+
+            var linkEntity = new LinkEntity()
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet("subject"),
+            };
+            var linkFilter = new FilterExpression(LogicalOperator.And);
+            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, "Some%"));
+            linkEntity.LinkCriteria = linkFilter;
+
+            query.LinkEntities.Add(linkEntity);
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+            Assert.AreEqual(2, res.Count());
+        }
+
+        [TestMethod]
+        public void TestQueryExpressionLinkEntityNoSetEntityName()
+        {
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("lastname")
+            };
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            query.Criteria = filter;
+
+            var linkEntity = new LinkEntity()
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet("subject"),
+                EntityAlias = "lead"
+            };
+            var linkFilter = new FilterExpression(LogicalOperator.And);
+            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, "Some%"));
+            linkEntity.LinkCriteria = linkFilter;
+
+            query.LinkEntities.Add(linkEntity);
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+            Assert.AreEqual(2, res.Count());
+        }
+
+#endif
+
         [TestMethod]
         public void RetrieveMultipleWithQueryByAttribute()
         {
@@ -698,5 +793,41 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(account.Id, queryNotA.AccountId);
             }
         }
+
+        [TestMethod]
+        public void RetrieveMultipleTotalRecordCount()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression("account")
+                {
+                    ColumnSet = new ColumnSet(true),
+                    PageInfo = new PagingInfo() { ReturnTotalRecordCount = true }
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+
+                Assert.AreEqual(true, query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(4, res.TotalRecordCount);
+            }
+        }
+
+        [TestMethod]
+        public void RetrieveMultipleTotalRecordCountDefault()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression("account")
+                {
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+
+                Assert.AreEqual(false, query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(-1, res.TotalRecordCount);
+            }
+        }
+
     }
 }

@@ -16,7 +16,8 @@ namespace DG.Tools.XrmMockup {
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<AssignRequest>(orgRequest);
-            var dbEntity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef);
+            var casSelection = new CascadeSelection() { assign = true };
+            var dbEntity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef, casSelection);
             security.CheckAssignPermission(dbEntity, request.Assignee, userRef);
 
             // Cascade

@@ -35,7 +35,6 @@ namespace DG.Some.Namespace {
                   .SetExecutionMode(ExecutionMode.Synchronous)
                   .AddImage(ImageType.PostImage,
                     a => a.ParentAccountId);
-
         }
 
         /// <summary>
@@ -54,7 +53,7 @@ namespace DG.Some.Namespace {
         /// is stored in the context. This means that you should not use global variables in plug-ins.
         /// </remarks>
         protected void ExecuteAccountUpdateErpFigures(LocalPluginContext localContext) {
-          
+
         }
     }
 }

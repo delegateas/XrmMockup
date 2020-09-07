@@ -79,7 +79,7 @@ namespace DG.XrmMockupTest {
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.IsNull(retrieved.Name);
-
+                
                 acc.Name = "Some name";
                 orgAdminUIService.Update(acc);
 
@@ -102,6 +102,7 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 1";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService, 
@@ -127,6 +128,7 @@ namespace DG.XrmMockupTest {
             using (var context = new Xrm(orgAdminUIService)) {
                 crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
+                businessunit["name"] = "business unit name 2";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService,

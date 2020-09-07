@@ -14,7 +14,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\XrmDb.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginExecutionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\MockupPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeamMembers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\UpdateInactiveIncident.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\AddMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveMembersTeamRequestHandler.cs" />

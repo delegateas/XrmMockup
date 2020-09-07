@@ -43,8 +43,14 @@ namespace DG.Tools.XrmMockup.Metadata {
                 ParsedArgs[Arguments.Username],
                 ParsedArgs[Arguments.Password],
                 ParsedArgs[Arguments.AuthProvider],
-                ParsedArgs[Arguments.Domain]
+                ParsedArgs[Arguments.Domain],
+                ParsedArgs[Arguments.Method],
+                ParsedArgs[Arguments.ClientId],
+                ParsedArgs[Arguments.ReturnUrl],
+                ParsedArgs[Arguments.ClientSecret],
+                ParsedArgs[Arguments.ConnectionString]
             );
+
             Console.WriteLine("Generation of metadata files started");
             var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies));
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
@@ -83,6 +89,7 @@ namespace DG.Tools.XrmMockup.Metadata {
                     workflowSerializer.WriteObject(stream, workflow);
                 }
             }
+
             var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id);
             foreach (var securityRole in securityRoles) {
                 var safeName = ToSafeName(securityRole.Value.Name);

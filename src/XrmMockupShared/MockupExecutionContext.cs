@@ -11,7 +11,7 @@ using System.Collections;
 namespace DG.Tools.XrmMockup {
 
     internal static class MockupExecutionContext {
-        private static string Key = "MockupServiceSettings";
+        internal static readonly string Key = "MockupServiceSettings";
         internal static MockupServiceSettings GetSettings(OrganizationRequest request) {
             if (!request.Parameters.ContainsKey(Key) || request.Parameters[Key] == null) {
                 return new MockupServiceSettings();

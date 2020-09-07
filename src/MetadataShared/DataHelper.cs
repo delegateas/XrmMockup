@@ -1,20 +1,18 @@
-﻿using DG.Tools;
-using Microsoft.Crm.Sdk.Messages;
+﻿using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup.Metadata
 {
-    internal class DataHelper {
+    internal class DataHelper
+    {
         internal const string PRIVILEGE = "privilege";
         internal const string ROLEPRIVILEGES = "roleprivileges";
         internal const string ROLE = "role";
@@ -22,35 +20,40 @@ namespace DG.Tools.XrmMockup.Metadata
         internal const string PRIVILEGE_ROLEPRIVILEGE_ALIAS = "privrp";
         internal const string ROLEPRIVILEGE_ROLE_ALIAS = "rpr";
         internal const string PRIVILEGE_POTCH = "privpotch";
-        
+
         private IOrganizationService service;
         private HashSet<string> EntityLogicalNames;
         private string[] SolutionNames;
 
-        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies) {
+        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies)
+        {
             this.service = service;
             this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
             this.EntityLogicalNames = new HashSet<string>();
-            
+
             // Add entites from assemblies
             if (fetchFromAssemblies)
                 this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
 
             // Add default entities
             var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles", "activitypointer" };
-            foreach (var logicalName in defaultEntities) {
+            foreach (var logicalName in defaultEntities)
+            {
                 this.EntityLogicalNames.Add(logicalName);
             }
 
             // Add specified entities
-            if (!String.IsNullOrWhiteSpace(entitiesString)) {
-                foreach (var logicalName in entitiesString.Split(',')) {
+            if (!String.IsNullOrWhiteSpace(entitiesString))
+            {
+                foreach (var logicalName in entitiesString.Split(','))
+                {
                     this.EntityLogicalNames.Add(logicalName.Trim());
                 }
             }
         }
 
-        public MetadataSkeleton GetMetadata(string path) {
+        public MetadataSkeleton GetMetadata(string path)
+        {
             var skeleton = new MetadataSkeleton();
 
             Console.WriteLine($"Getting entity metadata");
@@ -78,8 +81,10 @@ namespace DG.Tools.XrmMockup.Metadata
             return skeleton;
         }
 
-        public OptionSetMetadataBase[] RetrieveAllOptionSets() {
-            var optionSetRequest = new RetrieveAllOptionSetsRequest {
+        public OptionSetMetadataBase[] RetrieveAllOptionSets()
+        {
+            var optionSetRequest = new RetrieveAllOptionSetsRequest
+            {
                 RetrieveAsIfPublished = true
             };
             var results = service.Execute(optionSetRequest) as RetrieveAllOptionSetsResponse;
@@ -97,7 +102,8 @@ namespace DG.Tools.XrmMockup.Metadata
             var relationMetadata = GetRelationMetadata(entitymetadata);
             var entityMetadata = entitymetadata.Concat(relationMetadata);
 
-            if (logicalNamesSet.Contains("activityparty") && NeedActivityParty(entityMetadata)) {
+            if (logicalNamesSet.Contains("activityparty") && NeedActivityParty(entityMetadata))
+            {
                 var resp = (RetrieveEntityResponse)service.Execute(GetEntityMetadataRequest("activityparty"));
                 entityMetadata = entityMetadata.Concat(new EntityMetadata[] { resp.EntityMetadata });
             }
@@ -110,31 +116,37 @@ namespace DG.Tools.XrmMockup.Metadata
             return entityMetadata;
         }
 
-        private List<MetaPlugin> GetPlugins(string[] solutions) {
-            if (solutions == null || solutions.Length == 0) {
+        private List<MetaPlugin> GetPlugins(string[] solutions)
+        {
+            if (solutions == null || solutions.Length == 0)
+            {
                 return new List<MetaPlugin>();
             }
 
-            var pluginQuery = new QueryExpression("sdkmessageprocessingstep") {
+            var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
+            {
                 ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
 
-            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.Inner) {
+            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.Inner)
+            {
                 Columns = new ColumnSet("primaryobjecttypecode"),
                 EntityAlias = "sdkmessagefilter",
                 LinkCriteria = new FilterExpression()
             };
             pluginQuery.LinkEntities.Add(sdkMessageFilterQuery);
 
-            var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner) {
+            var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
+            {
                 Columns = new ColumnSet(),
                 LinkCriteria = new FilterExpression()
             };
             pluginQuery.LinkEntities.Add(solutionComponentQuery);
 
-            var solutionQuery = new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner) {
+            var solutionQuery = new LinkEntity("solutioncomponent", "solution", "solutionid", "solutionid", JoinOperator.Inner)
+            {
                 Columns = new ColumnSet(),
                 LinkCriteria = new FilterExpression()
             };
@@ -162,7 +174,7 @@ namespace DG.Tools.XrmMockup.Metadata
                                         {
                                             Conditions =
                                             {
-                                                new ConditionExpression("uniquename", ConditionOperator.In, new [] { "PwCOrlenFlotaRelease001"})
+                                                new ConditionExpression("uniquename", ConditionOperator.In, solutions)
                                             }
                                         }
                                     }
@@ -177,8 +189,10 @@ namespace DG.Tools.XrmMockup.Metadata
 
             var plugins = new List<MetaPlugin>();
 
-            foreach (var plugin in service.RetrieveMultiple(pluginQuery).Entities) {
-                var metaPlugin = new MetaPlugin() {
+            foreach (var plugin in service.RetrieveMultiple(pluginQuery).Entities)
+            {
+                var metaPlugin = new MetaPlugin()
+                {
                     Name = plugin.GetAttributeValue<string>("name"),
                     Rank = plugin.GetAttributeValue<int>("rank"),
                     FilteredAttributes = plugin.GetAttributeValue<string>("filteringattributes"),
@@ -204,17 +218,21 @@ namespace DG.Tools.XrmMockup.Metadata
             return plugins;
         }
 
-        private List<Entity> GetCurrencies() {
-            var query = new QueryExpression("transactioncurrency") {
+        private List<Entity> GetCurrencies()
+        {
+            var query = new QueryExpression("transactioncurrency")
+            {
                 ColumnSet = new ColumnSet(true)
             };
             return service.RetrieveMultiple(query).Entities
                 .Select(e => e.ToEntity<Entity>()).ToList();
         }
 
-        private Entity GetBaseOrganization() {
+        private Entity GetBaseOrganization()
+        {
             var baseOrganizationId = (service.Execute(new WhoAmIRequest()) as WhoAmIResponse).OrganizationId;
-            var query = new QueryExpression("organization") {
+            var query = new QueryExpression("organization")
+            {
                 ColumnSet = new ColumnSet(true)
             };
             return service.RetrieveMultiple(query).Entities
@@ -223,14 +241,14 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
 
-        internal IEnumerable<Entity> GetBusinessUnits() {
-            var query = new QueryExpression("businessunit") {
+        internal IEnumerable<Entity> GetBusinessUnits()
+        {
+            var query = new QueryExpression("businessunit")
+            {
                 ColumnSet = new ColumnSet(true)
             };
             return service.RetrieveMultiple(query).Entities;
         }
-
-        
 
 
         private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
@@ -251,21 +269,24 @@ namespace DG.Tools.XrmMockup.Metadata
             return relationEntityMetadata;
         }
 
-        private IEnumerable<Guid> GetEntityComponentIds(Entity solution) {
-                var filter = new Dictionary<string, object>() {
+        private IEnumerable<Guid> GetEntityComponentIds(Entity solution)
+        {
+            var filter = new Dictionary<string, object>() {
                         { "solutionid", solution.Id },
                         { "componenttype", 1 }};
-                var columns = new string[] { "solutionid", "objectid", "componenttype" };
-                return GetEntities("solutioncomponent", columns, filter).Select(component => (Guid)component["objectid"]);
+            var columns = new string[] { "solutionid", "objectid", "componenttype" };
+            return GetEntities("solutioncomponent", columns, filter).Select(component => (Guid)component["objectid"]);
         }
 
-        private bool NeedActivityParty(IEnumerable<EntityMetadata> metadata) {
+        private bool NeedActivityParty(IEnumerable<EntityMetadata> metadata)
+        {
             return metadata.Any(entity => entity.Attributes.Any(attribute => attribute.AttributeType == AttributeTypeCode.PartyList));
         }
 
-        private IEnumerable<Entity> GetEntities(string logicalName, string[] columns, Dictionary<string, object> filter) {
+        private IEnumerable<Entity> GetEntities(string logicalName, string[] columns, Dictionary<string, object> filter)
+        {
             var f = new FilterExpression();
-            foreach(var item in filter)
+            foreach (var item in filter)
                 f.AddCondition(item.Key, ConditionOperator.Equal, item.Value);
             var query = new QueryExpression(logicalName);
             if (columns.Count() == 0)
@@ -278,7 +299,8 @@ namespace DG.Tools.XrmMockup.Metadata
                 .Select(e => e.ToEntity<Entity>());
         }
 
-        private IEnumerable<string> FindAllRelationsEntities(HashSet<string> allLogicalNames, IEnumerable<EntityMetadata> metadata) {
+        private IEnumerable<string> FindAllRelationsEntities(HashSet<string> allLogicalNames, IEnumerable<EntityMetadata> metadata)
+        {
             return metadata
                 .SelectMany(md =>
                     md.ManyToManyRelationships
@@ -288,7 +310,8 @@ namespace DG.Tools.XrmMockup.Metadata
                     .Select(m2m => m2m.IntersectEntityName));
         }
 
-        private HashSet<string> GetLogicalNames(AssemblyName[] assemblies) {
+        private HashSet<string> GetLogicalNames(AssemblyName[] assemblies)
+        {
             Console.WriteLine("Retriving logical names from local assemblies");
             var exclude = new string[] { "Microsoft.Xrm.Sdk.dll", "Microsoft.Crm.Sdk.Proxy.dll" };
             var correctAssemblies = assemblies
@@ -297,28 +320,57 @@ namespace DG.Tools.XrmMockup.Metadata
                 .Where(asm => !exclude.Contains(asm.ManifestModule.Name));
 
             var logicalNames = new HashSet<string>();
-            foreach (var asm in correctAssemblies) {
-                try {
-                    foreach (var type in asm.GetTypes()) {
-                        var logicalNameAttribute = 
+            foreach (var asm in correctAssemblies)
+            {
+                try
+                {
+                    foreach (var type in asm.GetTypes())
+                    {
+                        var logicalNameAttribute =
                             type.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "EntityLogicalNameAttribute");
                         var logicalName = logicalNameAttribute?.ConstructorArguments?.FirstOrDefault().Value as string;
 
-                        if (logicalName != null) {
+                        if (logicalName != null)
+                        {
                             logicalNames.Add(logicalName);
                         }
                     }
-                } catch (Exception) {
+                }
+                catch (Exception)
+                {
                 }
             }
             return logicalNames;
         }
 
-        internal IEnumerable<Entity> GetWorkflows() {
-            var query = new QueryExpression("workflow") {
+        //The solutionid for Workflowentities points to the active solution  
+        //By getting the workflows from the active solution all the workflows from the targeted solution are included.
+        internal Guid? GetActiveSolution()
+        {
+            var query = new QueryExpression("solution")
+            {
+                ColumnSet = new ColumnSet(),
+                Criteria = new FilterExpression()
+            };
+            query.Criteria.AddCondition(new ConditionExpression("uniquename", ConditionOperator.Equal, "active"));
+
+            return service.RetrieveMultiple(query).Entities
+                .Select(e => e.Id).FirstOrDefault();
+        }
+
+        internal IEnumerable<Entity> GetWorkflows()
+        {
+            var activeSolutionId = GetActiveSolution();
+
+            var query = new QueryExpression("workflow")
+            {
                 ColumnSet = new ColumnSet(true),
                 Criteria = new FilterExpression()
             };
+
+            if (!activeSolutionId.HasValue) return new List<Entity>();
+
+            query.Criteria.AddCondition("solutionid", ConditionOperator.Equal, activeSolutionId);
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 1);
 
             var category = new FilterExpression(LogicalOperator.Or);
@@ -326,13 +378,13 @@ namespace DG.Tools.XrmMockup.Metadata
             category.AddCondition("category", ConditionOperator.Equal, 3);
 
             query.Criteria.AddFilter(category);
-            query.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
 
             return service.RetrieveMultiple(query).Entities
                 .Select(e => e.ToEntity<Entity>());
         }
 
-        internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId) {
+        internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId)
+        {
             // Queries
             var privQuery = new QueryExpression(PRIVILEGE)
             {
@@ -357,7 +409,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 ColumnSet = new ColumnSet("parentrootroleid", "name", "roleid", "roletemplateid", "businessunitid")
             };
             var rolelist = QueryPaging(roleQuery);
-
             // Joins
             // rpr <- roleprivileges left outer join roles
             var roleprivilegeLOJrole =
@@ -381,30 +432,42 @@ namespace DG.Tools.XrmMockup.Metadata
                 join rpr in roleprivilegeLOJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
                 from rpr in res.DefaultIfEmpty()
                 select new { pp, rpr };
-            
+
             // Role generation
             var roles = new Dictionary<Guid, SecurityRole>();
-            foreach (var e in entities.Where(e => e.rpr.roleprivilege.Attributes.ContainsKey("roleid"))) {  
-                var entityName = (string)e.pp.privilegeOTC["objecttypecode"];  
+
+            var validSecurityRoles = entities.Where(e =>
+                e.pp?.privilege != null &&
+                (e.pp?.privilegeOTC?.Contains("objecttypecode")).GetValueOrDefault() &&
+                (e.rpr?.roleprivilege?.Contains("roleid")).GetValueOrDefault() &&
+                (e.rpr?.role?.Contains("name")).GetValueOrDefault());
+
+            foreach (var e in validSecurityRoles)
+            {
+                var entityName = (string)e.pp.privilegeOTC["objecttypecode"];
                 if (entityName == "none") continue;
-                
+
                 var rp = ToRolePrivilege(e.pp.privilege, e.rpr.roleprivilege);
                 if (rp.AccessRight == AccessRights.None) continue;
-                var roleId = (Guid)e.rpr.roleprivilege["roleid"];   
-                if (!roles.ContainsKey(roleId)) {
-                    roles[roleId] = new SecurityRole() {
-                        Name = (string)e.rpr.role["name"],  
+                var roleId = (Guid)e.rpr.roleprivilege["roleid"];
+                if (!roles.ContainsKey(roleId))
+                {
+                    roles[roleId] = new SecurityRole()
+                    {
+                        Name = (string)e.rpr.role["name"],
                         RoleId = roleId
                     };
 
-                    if (e.rpr.role.Attributes.ContainsKey("roletemplateid")) {     
-                        roles[roleId].RoleTemplateId = ((EntityReference)e.rpr.role["roletemplateid"]).Id; 
+                    if (e.rpr.role.Attributes.ContainsKey("roletemplateid"))
+                    {
+                        roles[roleId].RoleTemplateId = ((EntityReference)e.rpr.role["roletemplateid"]).Id;
                     }
 
                     roles[roleId].Privileges = new Dictionary<string, Dictionary<AccessRights, RolePrivilege>>();
                 }
 
-                if (!roles[roleId].Privileges.ContainsKey(entityName)) {
+                if (!roles[roleId].Privileges.ContainsKey(entityName))
+                {
                     roles[roleId].Privileges.Add(entityName, new Dictionary<AccessRights, RolePrivilege>());
                 }
 
@@ -429,8 +492,10 @@ namespace DG.Tools.XrmMockup.Metadata
             return entities;
         }
 
-        private PrivilegeDepth PrivilegeDepthToEnum(int privilegeDepth) {
-            switch (privilegeDepth) {
+        private PrivilegeDepth PrivilegeDepthToEnum(int privilegeDepth)
+        {
+            switch (privilegeDepth)
+            {
                 case 1: return PrivilegeDepth.Basic;
                 case 2: return PrivilegeDepth.Local;
                 case 4: return PrivilegeDepth.Deep;
@@ -440,8 +505,10 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-        private RolePrivilege ToRolePrivilege(Entity e1, Entity e2) {
-            var rp = new RolePrivilege() {
+        private RolePrivilege ToRolePrivilege(Entity e1, Entity e2)
+        {
+            var rp = new RolePrivilege()
+            {
                 CanBeGlobal = e1.GetAttributeValue<bool>("canbeglobal"),
                 CanBeDeep = e1.GetAttributeValue<bool>("canbedeep"),
                 CanBeLocal = e1.GetAttributeValue<bool>("canbelocal"),
@@ -452,8 +519,10 @@ namespace DG.Tools.XrmMockup.Metadata
             return rp;
 
         }
-        private RetrieveEntityRequest GetEntityMetadataRequest(string logicalName) {
-            var request = new RetrieveEntityRequest() {
+        private RetrieveEntityRequest GetEntityMetadataRequest(string logicalName)
+        {
+            var request = new RetrieveEntityRequest()
+            {
                 LogicalName = logicalName,
                 EntityFilters = EntityFilters.All,
                 RetrieveAsIfPublished = true
@@ -461,8 +530,10 @@ namespace DG.Tools.XrmMockup.Metadata
             return request;
         }
 
-        private RetrieveEntityRequest GetEntityMetadataFromIdRequest(Guid id) {
-            var request = new RetrieveEntityRequest() {
+        private RetrieveEntityRequest GetEntityMetadataFromIdRequest(Guid id)
+        {
+            var request = new RetrieveEntityRequest()
+            {
                 MetadataId = id,
                 EntityFilters = EntityFilters.All,
                 RetrieveAsIfPublished = true
@@ -472,17 +543,20 @@ namespace DG.Tools.XrmMockup.Metadata
 
         private EntityMetadata[] GetEntityMetadataBulk(IEnumerable<OrganizationRequest> requests)
         {
-            var request = new ExecuteMultipleRequest {
+            var request = new ExecuteMultipleRequest
+            {
                 Requests = new OrganizationRequestCollection()
             };
             request.Requests.AddRange(requests);
-            request.Settings = new ExecuteMultipleSettings() {
+            request.Settings = new ExecuteMultipleSettings()
+            {
                 ContinueOnError = false,
                 ReturnResponses = true
             };
 
             var bulkResp = (service.Execute(request) as ExecuteMultipleResponse).Responses;
-            if (bulkResp.Any(resp => resp.Fault != null)) {
+            if (bulkResp.Any(resp => resp.Fault != null))
+            {
                 var resp = bulkResp.First(r => r.Fault != null);
                 var faultedReq = (RetrieveEntityRequest)request.Requests[resp.RequestIndex];
                 throw new FaultException($"Error while retrieving entity metadata for entity {faultedReq.LogicalName}: {resp.Fault.Message}");
@@ -493,10 +567,12 @@ namespace DG.Tools.XrmMockup.Metadata
                 .ToArray();
         }
 
-        private Dictionary<string, Dictionary<int,int>> GetDefaultStateAndStatus() {
-            var dict = new Dictionary<string, Dictionary<int,int>>();
+        private Dictionary<string, Dictionary<int, int>> GetDefaultStateAndStatus()
+        {
+            var dict = new Dictionary<string, Dictionary<int, int>>();
 
-            var query = new QueryExpression("statusmap") {
+            var query = new QueryExpression("statusmap")
+            {
                 ColumnSet = new ColumnSet(true)
             };
             query.PageInfo.PageNumber = 1;
@@ -504,20 +580,24 @@ namespace DG.Tools.XrmMockup.Metadata
             var statusmaps = new List<Entity>();
             var resp = service.RetrieveMultiple(query);
             statusmaps.AddRange(resp.Entities);
-            while (resp.MoreRecords) {
+            while (resp.MoreRecords)
+            {
                 query.PageInfo.PageNumber = query.PageInfo.PageNumber + 1;
                 query.PageInfo.PagingCookie = resp.PagingCookie;
                 resp = service.RetrieveMultiple(query);
                 statusmaps.AddRange(resp.Entities);
             }
 
-            foreach (var e in statusmaps.Where(x => x.GetAttributeValue<bool>("isdefault"))) {
+            foreach (var e in statusmaps.Where(x => x.GetAttributeValue<bool>("isdefault")))
+            {
                 var logicalName = e.GetAttributeValue<string>("objecttypecode");
-                if (!dict.ContainsKey(logicalName)) {
+                if (!dict.ContainsKey(logicalName))
+                {
                     dict.Add(logicalName, new Dictionary<int, int>());
                 }
                 var state = e.GetAttributeValue<int>("state");
-                if (!dict[logicalName].ContainsKey(state)) {
+                if (!dict[logicalName].ContainsKey(state))
+                {
                     dict[logicalName].Add(state, e.GetAttributeValue<int>("status"));
                 }
             }
