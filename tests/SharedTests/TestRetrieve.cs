@@ -13,18 +13,23 @@ using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
 
     [TestClass]
-    public class TestRetrieve : UnitTestBase {
+    public class TestRetrieve : UnitTestBase
+    {
 
         [TestMethod]
-        public void TestReferenceHasPrimaryAttribute() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestReferenceHasPrimaryAttribute()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var id1 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest" });
                 var id2 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest2" });
 
-                var acc1a = new Account(id1) {
+                var acc1a = new Account(id1)
+                {
                     ParentAccountId = new EntityReference(Account.EntityLogicalName, id2)
                 };
                 this.orgAdminUIService.Update(acc1a);
@@ -38,11 +43,14 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestRetrieveHasId() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestRetrieveHasId()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var accountName = "Litware, Inc.";
                 var _accountId = orgAdminUIService.Create(
-                new Account {
+                new Account
+                {
                     Name = accountName,
                     Address1_StateOrProvince = "Colorado"
                 });
@@ -62,15 +70,20 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestRetrieveWithNullColumnset() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestRetrieveWithNullColumnset()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var account = new Account();
                 account.Id = orgAdminUIService.Create(account);
 
-                try {
+                try
+                {
                     orgAdminUIService.Retrieve(Account.EntityLogicalName, account.Id, null);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
@@ -80,25 +93,30 @@ namespace DG.XrmMockupTest {
 
 
         [TestMethod]
-        public void TestRetrieveRelatedEntities() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestRetrieveRelatedEntities()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var accountName = "Litware, Inc.";
                 var _accountId = orgAdminUIService.Create(
-                new Account {
+                new Account
+                {
                     Name = accountName,
                     Address1_StateOrProvince = "Colorado"
                 });
 
                 // Create the two contacts.
                 var _contact1Id = orgAdminUIService.Create(
-                    new Contact() {
+                    new Contact()
+                    {
                         FirstName = "Ben",
                         LastName = "Andrews",
                         EMailAddress1 = "sample@example.com",
                         Address1_City = "Redmond",
                         Address1_StateOrProvince = "WA",
                         Address1_Telephone1 = "(206)555-5555",
-                        ParentCustomerId = new EntityReference {
+                        ParentCustomerId = new EntityReference
+                        {
                             Id = _accountId,
                             LogicalName = Account.EntityLogicalName
                         }
@@ -106,14 +124,16 @@ namespace DG.XrmMockupTest {
 
 
                 var _contact2Id = orgAdminUIService.Create(
-                    new Contact() {
+                    new Contact()
+                    {
                         FirstName = "Alan",
                         LastName = "Wilcox",
                         EMailAddress1 = "sample@example.com",
                         Address1_City = "Bellevue",
                         Address1_StateOrProvince = "WA",
                         Address1_Telephone1 = "(425)555-5555",
-                        ParentCustomerId = new EntityReference {
+                        ParentCustomerId = new EntityReference
+                        {
                             Id = _accountId,
                             LogicalName = Account.EntityLogicalName
                         }
@@ -169,9 +189,12 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestFetchMoneyAttribute() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var invoice = new Invoice() {
+        public void TestFetchMoneyAttribute()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var invoice = new Invoice()
+                {
                     Name = "test",
                     TotalAmount = 10m,
                 };
@@ -180,7 +203,7 @@ namespace DG.XrmMockupTest {
                 var retrievedSucceeds = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount", "transactioncurrencyid")) as Invoice;
                 Assert.IsNotNull(retrievedSucceeds.TotalAmount);
                 Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
-                
+
                 var retrievedFails = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount")) as Invoice;
                 Assert.IsNotNull(retrievedSucceeds.TotalAmount);
                 Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
@@ -230,7 +253,8 @@ namespace DG.XrmMockupTest {
                     orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,
                         new ColumnSet(attr)).ToEntity<Account>();
                     Assert.Fail();
-                } catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Assert.IsInstanceOfType(e, typeof(MockupException));
                     Assert.AreEqual($"'account' entity doesn't contain attribute with Name = '{attr}'", e.Message);
@@ -238,6 +262,18 @@ namespace DG.XrmMockupTest {
 
             }
         }
-    }
 
+
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [TestMethod]
+        public void TestEmptyCalculatedFieldss()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var id1 = this.orgAdminUIService.Create(new dg_animal());
+                dg_animal.Retrieve(orgAdminService, id1, x => x.dg_EmptyCalculatedField);
+            }
+        }
+#endif
+    }
 }
