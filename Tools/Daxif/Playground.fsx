@@ -1,9 +1,9 @@
 ﻿(**
 Playground
-=================
 *)
 
 #load @"_Config.fsx"
+#r @"System.ServiceModel"
 open _Config
 open System
 open System.IO
@@ -18,4 +18,4 @@ open DG.Daxif.Common
 open DG.Daxif.Common.Utility
 
 
-let proxy = Env.dev.connect().GetProxy()
+let proxy = Env.lab4.connect().GetProxy()
