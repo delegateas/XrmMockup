@@ -1,17 +1,15 @@
 ﻿using System;
 using Microsoft.Xrm.Sdk;
-using Xunit;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestReferences : UnitTestBase
     {
-        public TestReferences(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestCreateCircularReferenceSelf()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -24,17 +22,17 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Create(acc);
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
             }
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestUpdateCircularReference()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -47,11 +45,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Update(acc);
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
                 acc.ParentAccountId = null;

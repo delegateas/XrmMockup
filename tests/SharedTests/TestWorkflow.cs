@@ -1,19 +1,18 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
 using System;
 using System.Linq;
-using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using System.IO;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestWorkflow : UnitTestBase
     {
-        public TestWorkflow(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestCreateWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -26,11 +25,11 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = context.AccountSet.Where(x => x.AccountId == acc.Id).FirstOrDefault();
-                Assert.Equal(acc.Name + "setFromCodeActivity", retrieved.Name);
+                Assert.AreEqual(acc.Name + "setFromCodeActivity", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestStringAdd()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -43,11 +42,11 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal(acc.Name + " - " + acc.Name + " ", retrieved.Name);
+                Assert.AreEqual(acc.Name + " - " + acc.Name + " ", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOtherwiseBranchingWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -60,7 +59,7 @@ namespace DG.XrmMockupTest
                 otherwise.Id = orgAdminUIService.Create(otherwise);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, otherwise.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("SetFromOtherwise", retrieved.Name);
+                Assert.AreEqual("SetFromOtherwise", retrieved.Name);
 
 
                 var thenThen = new Account()
@@ -70,7 +69,7 @@ namespace DG.XrmMockupTest
                 thenThen.Id = orgAdminUIService.Create(thenThen);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, thenThen.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("SetFromThenThen", retrieved.Name);
+                Assert.AreEqual("SetFromThenThen", retrieved.Name);
 
                 var thenOtherwise = new Account
                 {
@@ -79,11 +78,11 @@ namespace DG.XrmMockupTest
                 thenOtherwise.Id = orgAdminUIService.Create(thenOtherwise);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, thenOtherwise.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("SetFromThenOtherwise", retrieved.Name);
+                Assert.AreEqual("SetFromThenOtherwise", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTimeWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -93,26 +92,26 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Null(retrieved.Name);
+                Assert.IsNull(retrieved.Name);
 
                 acc.Name = "Some name";
                 orgAdminUIService.Update(acc);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal(acc.Name + acc.Name, retrieved.Name);
+                Assert.AreEqual(acc.Name + acc.Name, retrieved.Name);
 
                 crm.AddDays(1);
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.NotEqual("qwerty", retrieved.Description);
+                Assert.AreNotEqual("qwerty", retrieved.Description);
 
                 crm.AddDays(2);
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("qwerty", retrieved.Description);
+                Assert.AreEqual("qwerty", retrieved.Description);
             }
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestRelatedNullWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -139,11 +138,11 @@ namespace DG.XrmMockupTest
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal(user.LastName + " - " + con.LastName + " ", retrieved.Name);
+                Assert.AreEqual(user.LastName + " - " + con.LastName + " ", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRelatedWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -170,11 +169,11 @@ namespace DG.XrmMockupTest
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal(user.LastName + " - " + con.LastName + " ", retrieved.Name);
+                Assert.AreEqual(user.LastName + " - " + con.LastName + " ", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOwningBusinessUnitInvalidNameWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -196,11 +195,11 @@ namespace DG.XrmMockupTest
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal(acc.Name, retrieved.Name);
+                Assert.AreEqual(acc.Name, retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOwningBusinessUnitValidNameWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -222,11 +221,11 @@ namespace DG.XrmMockupTest
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("SetOwningBU", retrieved.Name);
+                Assert.AreEqual("SetOwningBU", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMyConditionWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -251,11 +250,11 @@ namespace DG.XrmMockupTest
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.Equal("MyCondition", retrieved.Name);
+                Assert.AreEqual("MyCondition", retrieved.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSendMailWorkflow()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -293,14 +292,14 @@ namespace DG.XrmMockupTest
                     ColumnSet = new ColumnSet(true)
                 }).Entities.FirstOrDefault() as Email;
 
-                Assert.NotNull(email);
-                Assert.Equal("&lt;span&gt;&lt;span&gt;Some kind of email&lt;/span&gt;&lt;/span&gt;", email.Description);
-                Assert.Equal("Something", email.Subject);
-                Assert.Equal(retrieved.ToEntityReference(), email.RegardingObjectId);
+                Assert.IsNotNull(email);
+                Assert.AreEqual("&lt;span&gt;&lt;span&gt;Some kind of email&lt;/span&gt;&lt;/span&gt;", email.Description);
+                Assert.AreEqual("Something", email.Subject);
+                Assert.AreEqual(retrieved.ToEntityReference(), email.RegardingObjectId);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestClear()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestClear.xml"));
@@ -313,10 +312,10 @@ namespace DG.XrmMockupTest
             lead.Id = service.Create(lead);
 
             var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Null(retrieved.Subject);
+            Assert.IsNull(retrieved.Subject);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeConvertingOptionsetToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
@@ -329,10 +328,10 @@ namespace DG.XrmMockupTest
             lead.Id = service.Create(lead);
 
             var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Equal("Trade Show", retrieved.Description);
+            Assert.AreEqual("Trade Show", retrieved.Description);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeConvertingEntityToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
@@ -350,10 +349,10 @@ namespace DG.XrmMockupTest
             lead.Id = service.Create(lead);
 
             var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Equal(acc.Name, retrieved.Description);
+            Assert.AreEqual(acc.Name, retrieved.Description);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeConvertingMoneyToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
@@ -367,11 +366,11 @@ namespace DG.XrmMockupTest
 
             var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
             // TODO.. we should somewhere declare formating and currency should be from record
-            // Assert.Equal("997,98 zł", retrieved.Description);
-            Assert.Equal($"{lead.Revenue:C}", retrieved.Description);
+            // Assert.AreEqual("997,98 zł", retrieved.Description);
+            Assert.AreEqual($"{lead.Revenue:C}", retrieved.Description);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeConvertingIntToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
@@ -385,7 +384,7 @@ namespace DG.XrmMockupTest
 
             var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
             // TODO.. we should somewhere declare formating
-            Assert.Equal($"{lead.NumberOfEmployees:N0}", retrieved.Description);
+            Assert.AreEqual($"{lead.NumberOfEmployees:N0}", retrieved.Description);
         }
     }
 }

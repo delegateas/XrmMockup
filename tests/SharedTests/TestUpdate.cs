@@ -1,20 +1,19 @@
-﻿using Xunit;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestUpdate : UnitTestBase
     {
-        public TestUpdate(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void UpdatingAttributeWithEmptyStringShouldReturnNull()
         {
             var id = orgAdminUIService.Create(new Lead { Subject = "nonemptystring" });
             orgAdminUIService.Update(new Lead { Id = id, Subject = string.Empty });
             var lead = orgAdminService.Retrieve<Lead>(id);
-            Assert.Null(lead.Subject);
+            Assert.IsNull(lead.Subject);
         }
     }
 }

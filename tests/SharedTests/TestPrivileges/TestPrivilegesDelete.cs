@@ -1,13 +1,13 @@
 ﻿using System;
-using Xunit;
 using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestPrivilegesDelete : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -15,7 +15,8 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        public TestPrivilegesDelete(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             crm.DisableRegisteredPlugins(true);
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
@@ -30,7 +31,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test user delete account on basic level
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestDeleteUserLevel()
         {
             // add account to database
@@ -43,11 +44,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -69,7 +70,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -93,7 +94,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -117,7 +118,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -140,14 +141,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
         }
 
         /// <summary>
         /// Test user delete account on local level
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestDeleteBULevel()
         {
             // add account to database
@@ -159,11 +160,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -182,11 +183,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -208,7 +209,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -232,7 +233,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -255,14 +256,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
         }
 
         /// <summary>
         /// Test user delete account on deep level
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestDeleteBUChildLevel()
         {
             // add account to database
@@ -274,11 +275,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -297,11 +298,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -320,11 +321,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -346,7 +347,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
 
             // Add account to database
@@ -369,14 +370,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
         }
 
         /// <summary>
         /// Test user delete account on global level
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestDeleteGlobalLevel()
         {
             // add account to database
@@ -388,11 +389,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -411,11 +412,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -434,11 +435,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -457,11 +458,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Delete(Account.EntityLogicalName, accId);
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to delete");
+                Assert.Fail("User should not be able to delete");
             }
             catch (Exception) { }
 
@@ -482,7 +483,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to delete");
+                Assert.Fail("User should be able to delete");
             }
         }
 

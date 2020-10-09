@@ -1,42 +1,40 @@
 ﻿using System;
-using System.Linq;
-using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk.Metadata;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestMetadata : UnitTestBase
     {
-        public TestMetadata(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestRetrieveOptionSet()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var optionRetrieved = orgAdminUIService.Execute(new RetrieveOptionSetRequest() { Name = "workflow_stage" }) as RetrieveOptionSetResponse;
-                Assert.True(optionRetrieved.OptionSetMetadata.Name == "workflow_stage");
+                Assert.IsTrue(optionRetrieved.OptionSetMetadata.Name == "workflow_stage");
 
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveAllOptionSets()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var optionsRetrieved = orgAdminUIService.Execute(new RetrieveAllOptionSetsRequest()) as RetrieveAllOptionSetsResponse;
-                Assert.Contains(optionsRetrieved.OptionSetMetadata, x => x.Name == "workflow_stage");
+                Assert.IsTrue(optionsRetrieved.OptionSetMetadata.Any(x => x.Name == "workflow_stage"));
 
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSetttingAttributes()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -51,14 +49,14 @@ namespace DG.XrmMockupTest
                 {
                     acc.Attributes["illegalName"] = 1;
                     orgAdminUIService.Update(acc);
-                    throw new XunitException("FaultException should have been thrown");
+                    Assert.Fail("FaultException should have been thrown");
                 }
                 catch (FaultException)
                 {
                 }
                 catch (Exception e)
                 {
-                    throw new XunitException(
+                    Assert.Fail(
                          string.Format("Unexpected exception of type {0} caught: {1}",
                                         e.GetType(), e.Message)
                     );
@@ -66,7 +64,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCRURestrictions()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -76,20 +74,20 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
-                Assert.NotEqual(22, retrieved.OpenDeals_State);
+                Assert.AreNotEqual(22, retrieved.OpenDeals_State);
 
                 orgAdminUIService.Update(acc);
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
-                Assert.NotEqual(22, retrieved.OpenDeals_State);
+                Assert.AreNotEqual(22, retrieved.OpenDeals_State);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("isprivate")) as Account;
-                Assert.False(retrieved.Attributes.ContainsKey("isprivate"));
+                Assert.IsFalse(retrieved.Attributes.ContainsKey("isprivate"));
 
             }
         }
 
 
-        [Fact]
+        [TestMethod]
         public void RetrieveEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -98,12 +96,12 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.NotNull(resp);
-            Assert.NotNull(resp.EntityMetadata);
-            Assert.Equal(req.LogicalName, resp.EntityMetadata.LogicalName);
+            Assert.IsNotNull(resp);
+            Assert.IsNotNull(resp.EntityMetadata);
+            Assert.AreEqual(req.LogicalName, resp.EntityMetadata.LogicalName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveAllFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -113,15 +111,15 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.NotNull(resp.EntityMetadata.Privileges);
-            Assert.NotNull(resp.EntityMetadata.OneToManyRelationships);
-            Assert.NotNull(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.NotNull(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.NotNull(resp.EntityMetadata.Attributes);
+            Assert.IsNotNull(resp.EntityMetadata.Privileges);
+            Assert.IsNotNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.Attributes);
         }
 
 
-        [Fact]
+        [TestMethod]
         public void RetrieveAttributesFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -131,15 +129,15 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.Null(resp.EntityMetadata.Privileges);
-            Assert.Null(resp.EntityMetadata.OneToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.NotNull(resp.EntityMetadata.Attributes);
+            Assert.IsNull(resp.EntityMetadata.Privileges);
+            Assert.IsNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.Attributes);
         }
 
 
-        [Fact]
+        [TestMethod]
         public void RetrievePrivilegesFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -149,15 +147,15 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.NotNull(resp.EntityMetadata.Privileges);
-            Assert.Null(resp.EntityMetadata.OneToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.Null(resp.EntityMetadata.Attributes);
+            Assert.IsNotNull(resp.EntityMetadata.Privileges);
+            Assert.IsNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNull(resp.EntityMetadata.Attributes);
         }
 
 
-        [Fact]
+        [TestMethod]
         public void RetrieveRelationshipsFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -167,14 +165,14 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.Null(resp.EntityMetadata.Privileges);
-            Assert.NotNull(resp.EntityMetadata.OneToManyRelationships);
-            Assert.NotNull(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.NotNull(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.Null(resp.EntityMetadata.Attributes);
+            Assert.IsNull(resp.EntityMetadata.Privileges);
+            Assert.IsNotNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNotNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNull(resp.EntityMetadata.Attributes);
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveEntityFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -184,14 +182,14 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.Null(resp.EntityMetadata.Privileges);
-            Assert.Null(resp.EntityMetadata.OneToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.Null(resp.EntityMetadata.Attributes);
+            Assert.IsNull(resp.EntityMetadata.Privileges);
+            Assert.IsNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNull(resp.EntityMetadata.Attributes);
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveDefaultFilteredEntityMetadata()
         {
             var req = new RetrieveEntityRequest()
@@ -201,11 +199,11 @@ namespace DG.XrmMockupTest
             };
             var resp = (RetrieveEntityResponse)orgAdminService.Execute(req);
 
-            Assert.Null(resp.EntityMetadata.Privileges);
-            Assert.Null(resp.EntityMetadata.OneToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToManyRelationships);
-            Assert.Null(resp.EntityMetadata.ManyToOneRelationships);
-            Assert.Null(resp.EntityMetadata.Attributes);
+            Assert.IsNull(resp.EntityMetadata.Privileges);
+            Assert.IsNull(resp.EntityMetadata.OneToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToManyRelationships);
+            Assert.IsNull(resp.EntityMetadata.ManyToOneRelationships);
+            Assert.IsNull(resp.EntityMetadata.Attributes);
         }
 
     }

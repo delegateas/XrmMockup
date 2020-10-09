@@ -1,18 +1,16 @@
 ﻿using System;
-using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestStates : UnitTestBase
     {
-        public TestStates(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestSetState()
         {
             var acc = new Account()
@@ -24,11 +22,11 @@ namespace DG.XrmMockupTest
             acc.SetState(orgAdminUIService, AccountState.Inactive, Account_StatusCode.Inactive);
 
             var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-            Assert.Equal(AccountState.Inactive, retrieved.StateCode);
+            Assert.AreEqual(AccountState.Inactive, retrieved.StateCode);
         }
 
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-        [Fact]
+        [TestMethod]
         public void TestStatusTransitions()
         {
             var man = new dg_man()
@@ -40,21 +38,21 @@ namespace DG.XrmMockupTest
             man.SetState(orgAdminUIService, dg_manState.Inactive, dg_man_statuscode.Inactive);
 
             var retrieved = orgAdminUIService.Retrieve(dg_man.EntityLogicalName, man.Id, new ColumnSet(true)) as dg_man;
-            Assert.Equal(dg_manState.Inactive, retrieved.statecode);
-            Assert.Equal(dg_man_statuscode.Inactive, retrieved.statuscode);
+            Assert.AreEqual(dg_manState.Inactive, retrieved.statecode);
+            Assert.AreEqual(dg_man_statuscode.Inactive, retrieved.statuscode);
 
             try
             {
                 man.SetState(orgAdminUIService, dg_manState.Active, dg_man_statuscode.Active);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition()
         {
             var man = new dg_man()
@@ -74,10 +72,10 @@ namespace DG.XrmMockupTest
             };
 
             var response = orgAdminUIService.Execute(request) as IsValidStateTransitionResponse;
-            Assert.True(response.IsValid);
+            Assert.IsTrue(response.IsValid);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenStateCodeInvalid()
         {
             var man = new dg_man()
@@ -98,15 +96,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenStatusCodeInvalid()
         {
             var man = new dg_man()
@@ -127,15 +125,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenEntityIsMissing()
         {
             var request = new IsValidStateTransitionRequest
@@ -146,15 +144,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenNewStateIsMissing()
         {
             var man = new dg_man()
@@ -174,15 +172,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenNewStatusIsMissing()
         {
             var man = new dg_man()
@@ -202,15 +200,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenRecordDoesNotExist()
         {
             var request = new IsValidStateTransitionRequest
@@ -222,15 +220,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenEnforceStateTransitionsFalse()
         {
             var field = new dg_field()
@@ -251,15 +249,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIsValidStateTransition_FailsWhenSameState()
         {
             var man = new dg_man()
@@ -279,57 +277,57 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 #endif
 
-        [Fact]
+        [TestMethod]
         public void TestStateStatuscodeCreate()
         {
             var incidentId = orgAdminService.Create(new Incident { });
             var incident = orgAdminService.Retrieve(Incident.EntityLogicalName, incidentId, new ColumnSet(true)).ToEntity<Incident>();
-            Assert.Equal(IncidentState.Active, incident.StateCode);
-            Assert.Equal(Incident_StatusCode.OnHold, incident.StatusCode);
+            Assert.AreEqual(IncidentState.Active, incident.StateCode);
+            Assert.AreEqual(Incident_StatusCode.OnHold, incident.StatusCode);
 
             var accId = orgAdminService.Create(new Account { StateCode = AccountState.Inactive });
             var acc = orgAdminService.Retrieve(Account.EntityLogicalName, accId, new ColumnSet(true)).ToEntity<Account>();
-            Assert.Equal(AccountState.Active, acc.StateCode);
-            Assert.Equal(Account_StatusCode.Somestatus, acc.StatusCode);
+            Assert.AreEqual(AccountState.Active, acc.StateCode);
+            Assert.AreEqual(Account_StatusCode.Somestatus, acc.StatusCode);
 
             accId = orgAdminService.Create(new Account { StatusCode = Account_StatusCode.Active });
             acc = orgAdminService.Retrieve(Account.EntityLogicalName, accId, new ColumnSet(true)).ToEntity<Account>();
-            Assert.Equal(AccountState.Active, acc.StateCode);
-            Assert.Equal(Account_StatusCode.Active, acc.StatusCode);
+            Assert.AreEqual(AccountState.Active, acc.StateCode);
+            Assert.AreEqual(Account_StatusCode.Active, acc.StatusCode);
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestStateStatuscodeUpdate()
         {
             var acc = new Account { };
             acc.Id = orgAdminService.Create(acc);
             var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-            Assert.Equal(AccountState.Active, retrieved.StateCode);
-            Assert.Equal(Account_StatusCode.Somestatus, retrieved.StatusCode);
+            Assert.AreEqual(AccountState.Active, retrieved.StateCode);
+            Assert.AreEqual(Account_StatusCode.Somestatus, retrieved.StatusCode);
 
             acc.StateCode = AccountState.Inactive;
             orgAdminService.Update(acc);
             retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-            Assert.Equal(AccountState.Inactive, retrieved.StateCode);
-            Assert.Equal(Account_StatusCode.Inactive, retrieved.StatusCode);
+            Assert.AreEqual(AccountState.Inactive, retrieved.StateCode);
+            Assert.AreEqual(Account_StatusCode.Inactive, retrieved.StatusCode);
 
             acc.StateCode = null;
             acc.StatusCode = Account_StatusCode.Active;
             orgAdminService.Update(acc);
 
             retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-            Assert.Equal(AccountState.Active, retrieved.StateCode);
-            Assert.Equal(Account_StatusCode.Active, retrieved.StatusCode);
+            Assert.AreEqual(AccountState.Active, retrieved.StateCode);
+            Assert.AreEqual(Account_StatusCode.Active, retrieved.StatusCode);
         }
     }
 }

@@ -1,20 +1,22 @@
 ﻿using Microsoft.Crm.Sdk.Messages;
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestRetrievePrincipalAccess : UnitTestBase
     {
         public SystemUser TestUser;
 
-        public TestRetrievePrincipalAccess(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             TestUser = crm.CreateUser(orgAdminService, new SystemUser { BusinessUnitId = crm.RootBusinessUnit }, SecurityRoles._000TestingRole) as SystemUser;
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrievePrincipalAccessForTestUserOnLead()
         {
             var lead = new Lead();
@@ -26,10 +28,10 @@ namespace DG.XrmMockupTest
                 Target = lead.ToEntityReference()
             });
 
-            Assert.True(principalAccess.AccessRights == AccessRights.ReadAccess);
+            Assert.IsTrue(principalAccess.AccessRights == AccessRights.ReadAccess);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrievePrincipalAccessForTestUserOnAccount()
         {
             var account = new Account();
@@ -41,7 +43,7 @@ namespace DG.XrmMockupTest
                 Target = account.ToEntityReference()
             });
 
-            Assert.True(principalAccess.AccessRights == (AccessRights.ReadAccess | AccessRights.CreateAccess));
+            Assert.IsTrue(principalAccess.AccessRights == (AccessRights.ReadAccess | AccessRights.CreateAccess));
         }
     }
 }

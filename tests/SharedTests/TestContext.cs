@@ -1,27 +1,26 @@
 ﻿using System.Linq;
 using Microsoft.Xrm.Sdk;
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class ContextTest : UnitTestBase
     {
-        public ContextTest(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestAddObject()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 context.AddObject(new Lead());
                 context.SaveChanges();
-                Assert.NotNull(context.LeadSet.FirstOrDefault());
+                Assert.IsNotNull(context.LeadSet.FirstOrDefault());
                 context.ClearChanges();
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestContextIntersectEntity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -43,12 +42,12 @@ namespace DG.XrmMockupTest
 
                 orgAdminUIService.Associate(Contact.EntityLogicalName, con, relationship, relatedAccounts);
 
-                Assert.Equal(3, context.dg_account_contactSet.Where(x => x.contactid == con).ToList().Count());
+                Assert.AreEqual(3, context.dg_account_contactSet.Where(x => x.contactid == con).ToList().Count());
             }
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestUpdateObject()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -62,14 +61,14 @@ namespace DG.XrmMockupTest
                 leadFromContext.FirstName = "After";
                 context.SaveChanges();
 
-                Assert.Equal(lead.FirstName, context.LeadSet.First().FirstName);
+                Assert.AreEqual(lead.FirstName, context.LeadSet.First().FirstName);
                 context.ClearChanges();
 
                 context.Attach(leadFromContext);
                 context.UpdateObject(leadFromContext);
                 context.SaveChanges();
 
-                Assert.Equal(leadFromContext.FirstName, context.LeadSet.First().FirstName);
+                Assert.AreEqual(leadFromContext.FirstName, context.LeadSet.First().FirstName);
                 context.ClearChanges();
             }
         }

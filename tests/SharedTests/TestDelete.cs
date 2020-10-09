@@ -1,25 +1,15 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Messages;
-using Xunit;
 using DG.XrmContext;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestDelete : UnitTestBase
     {
-        public TestDelete(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void DeleteTest()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -28,24 +18,24 @@ namespace DG.XrmMockupTest
                 var guid = orgAdminUIService.Create(new Contact());
 
                 var firstRetrieve = orgAdminUIService.Retrieve<Contact>(guid, null);
-                Assert.NotNull(firstRetrieve);
+                Assert.IsNotNull(firstRetrieve);
 
                 orgAdminUIService.Delete(Contact.EntityLogicalName, guid);
 
                 try
                 {
                     orgAdminUIService.Retrieve<Contact>(guid, null);
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDeleteNonExistingEntity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -53,11 +43,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Delete(Contact.EntityLogicalName, Guid.NewGuid());
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
             }

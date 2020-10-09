@@ -1,11 +1,12 @@
 ﻿using System.Linq;
-using Xunit;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestCascade : UnitTestBase
     {
         SystemUser user1;
@@ -13,7 +14,8 @@ namespace DG.XrmMockupTest
         Account acc2;
         Contact contact;
 
-        public TestCascade(XrmMockupFixture fixture): base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             user1 = crm.CreateUser(orgGodService, crm.RootBusinessUnit, SecurityRoles.Salesperson).ToEntity<SystemUser>();
 
@@ -39,17 +41,17 @@ namespace DG.XrmMockupTest
             contact.Id = orgAdminUIService.Create(contact);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeAssignParentToChildren()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             var req = new AssignRequest()
@@ -62,25 +64,25 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(user1.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(user1.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(user1.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedContact.OwnerId.Id);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeAssignParentToChildAndParent()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             var req = new AssignRequest()
@@ -93,25 +95,25 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(user1.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(user1.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedContact.OwnerId.Id);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeAssignChildToParents()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             var req = new AssignRequest()
@@ -124,25 +126,25 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(user1.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(user1.Id, fetchedContact.OwnerId.Id);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeDeleteParentToChildren()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             orgAdminUIService.Delete(Account.EntityLogicalName, acc1.Id);
@@ -150,26 +152,26 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Null(fetchedAccount1);
+                Assert.IsNull(fetchedAccount1);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.NotNull(fetchedAccount2);
-                Assert.Null(fetchedAccount2.ParentAccountId);
+                Assert.IsNotNull(fetchedAccount2);
+                Assert.IsNull(fetchedAccount2.ParentAccountId);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.NotNull(fetchedContact);
+                Assert.IsNotNull(fetchedContact);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeDeleteParentToChildAndParent()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             orgAdminUIService.Delete(Account.EntityLogicalName, acc2.Id);
@@ -177,25 +179,25 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.NotNull(fetchedAccount1);
+                Assert.IsNotNull(fetchedAccount1);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Null(fetchedAccount2);
+                Assert.IsNull(fetchedAccount2);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Null(fetchedContact);
+                Assert.IsNull(fetchedContact);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCascadeDeleteChildToParents()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Equal(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
+                Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
             }
 
             orgAdminUIService.Delete(Contact.EntityLogicalName, contact.Id);
@@ -203,11 +205,11 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
-                Assert.NotNull(fetchedAccount1);
+                Assert.IsNotNull(fetchedAccount1);
                 var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
-                Assert.NotNull(fetchedAccount2);
+                Assert.IsNotNull(fetchedAccount2);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
-                Assert.Null(fetchedContact);
+                Assert.IsNull(fetchedContact);
             }
         }
     }

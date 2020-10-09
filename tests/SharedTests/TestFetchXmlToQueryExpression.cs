@@ -3,11 +3,12 @@ using System.Linq;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestFetchXmlToQueryExpression : UnitTestBase
     {
         string accountName;
@@ -16,7 +17,8 @@ namespace DG.XrmMockupTest
         Guid _opportunity1Id;
         Guid _opportunity2Id;
 
-        public TestFetchXmlToQueryExpression(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             accountName = "Litware, Inc.";
             // Create an account.
@@ -73,7 +75,7 @@ namespace DG.XrmMockupTest
 
         // ignored until entityname can be handled correctly for 2011
 #if !(XRM_MOCKUP_TEST_2011)
-        [Fact]
+        [TestMethod]
         public void TestFetchXmlToQueryExpressionFromXml()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -110,23 +112,23 @@ namespace DG.XrmMockupTest
                 EntityCollection result = orgAdminUIService.RetrieveMultiple(queryExpression);
 
 
-                Assert.Single(result.Entities);
+                Assert.AreEqual(1, result.Entities.Count);
                 var entity = result.Entities.First();
 
-                Assert.True(entity.Attributes.ContainsKey("opportunityid"));
-                Assert.Equal(_opportunity1Id, entity.Attributes["opportunityid"]);
+                Assert.IsTrue(entity.Attributes.ContainsKey("opportunityid"));
+                Assert.AreEqual(_opportunity1Id, entity.Attributes["opportunityid"]);
 
-                Assert.True(entity.Attributes.ContainsKey("name"));
-                Assert.Equal("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
+                Assert.IsTrue(entity.Attributes.ContainsKey("name"));
+                Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.True(entity.Attributes.ContainsKey("contact.firstname"));
-                Assert.True(entity.Attributes["contact.firstname"] is AliasedValue);
-                Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
+                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
 
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFetchXmlToQueryExpressionFromExpr()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -156,18 +158,18 @@ namespace DG.XrmMockupTest
                 EntityCollection result = orgAdminUIService.RetrieveMultiple(fetchExpr);
 
 
-                Assert.Single(result.Entities);
+                Assert.AreEqual(1, result.Entities.Count);
                 var entity = result.Entities.First();
 
-                Assert.True(entity.Attributes.ContainsKey("opportunityid"));
-                Assert.Equal(_opportunity1Id, entity.Attributes["opportunityid"]);
+                Assert.IsTrue(entity.Attributes.ContainsKey("opportunityid"));
+                Assert.AreEqual(_opportunity1Id, entity.Attributes["opportunityid"]);
 
-                Assert.True(entity.Attributes.ContainsKey("name"));
-                Assert.Equal("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
+                Assert.IsTrue(entity.Attributes.ContainsKey("name"));
+                Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.True(entity.Attributes.ContainsKey("contact.firstname"));
-                Assert.True(entity.Attributes["contact.firstname"] is AliasedValue);
-                Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
+                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
             }
         }
 #endif

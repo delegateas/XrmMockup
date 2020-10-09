@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
-using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestCreate : UnitTestBase
     {
-        public TestCreate(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestCreateSimple()
         {
             var contact = new Contact()
@@ -26,10 +24,10 @@ namespace DG.XrmMockupTest
             contact.Id = orgAdminService.Create(contact);
 
             var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
-            Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCreateWithRequest()
         {
             var contact = new Contact()
@@ -43,10 +41,10 @@ namespace DG.XrmMockupTest
             var resp = orgAdminService.Execute(req) as CreateResponse;
 
             var dbContact = Contact.Retrieve(orgAdminService, resp.id);
-            Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCreateWithNamedRequest()
         {
             var contact = new Contact()
@@ -59,11 +57,11 @@ namespace DG.XrmMockupTest
             var resp = orgAdminService.Execute(req) as CreateResponse;
 
             var dbContact = Contact.Retrieve(orgAdminService, resp.id);
-            Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestUserCreation()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -79,15 +77,15 @@ namespace DG.XrmMockupTest
                 var userid = orgAdminUIService.Create(user);
 
                 var retrievedUser = orgAdminUIService.Retrieve("systemuser", userid, new ColumnSet(true));
-                Assert.Equal(user.Attributes["firstname"], retrievedUser.Attributes["firstname"]);
+                Assert.AreEqual(user.Attributes["firstname"], retrievedUser.Attributes["firstname"]);
                 var businessunitid = retrievedUser.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var businessunit = orgAdminUIService.Retrieve("businessunit", businessunitid, new ColumnSet("name"));
 
-                Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
+                Assert.AreEqual(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTeamCreation()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -103,15 +101,15 @@ namespace DG.XrmMockupTest
                 var userid = orgAdminUIService.Create(user);
 
                 var retrievedTeam = orgAdminUIService.Retrieve("team", userid, new ColumnSet(true));
-                Assert.Equal(user.Attributes["name"], retrievedTeam.Attributes["name"]);
+                Assert.AreEqual(user.Attributes["name"], retrievedTeam.Attributes["name"]);
                 var businessunitid = retrievedTeam.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var businessunit = orgAdminUIService.Retrieve("businessunit", businessunitid, new ColumnSet("name"));
 
-                Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
+                Assert.AreEqual(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPopulateWith()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -127,7 +125,7 @@ namespace DG.XrmMockupTest
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestCreateSameId()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -136,17 +134,17 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Create(new Account(id));
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCreateWithRelatedEntities()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -173,11 +171,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Execute(request);
-                    throw new XunitException();
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType<FaultException>(e);
+                    Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
                 contact = new Contact();
@@ -194,44 +192,44 @@ namespace DG.XrmMockupTest
 
                 contact.Id = (orgAdminUIService.Execute(request) as CreateResponse).id;
                 var accountSet = context.AccountSet.Where(x => x.Name.StartsWith("AccountRelated")).ToList();
-                Assert.Equal(2, accountSet.Count);
+                Assert.AreEqual(2, accountSet.Count);
                 foreach (var acc in accountSet)
                 {
-                    Assert.Equal(contact.Id, acc.PrimaryContactId.Id);
+                    Assert.AreEqual(contact.Id, acc.PrimaryContactId.Id);
                 }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CreatingAttributeWithEmptyStringShouldReturnNull()
         {
             var id = orgAdminUIService.Create(new Lead { Subject = string.Empty });
             var lead = orgAdminService.Retrieve<Lead>(id);
-            Assert.Null(lead.Subject);
+            Assert.IsNull(lead.Subject);
         }
 
-        [Fact]
+        [TestMethod]
         public void CreatingEntityWithSdkModeShouldInitializeBooleanAttributes()
         {
             var id = orgAdminService.Create(new Lead());
             var lead = orgAdminService.Retrieve<Lead>(id);
-            Assert.NotNull(lead.DoNotBulkEMail);
-            Assert.NotNull(lead.DoNotEMail);
-            Assert.NotNull(lead.DoNotFax);
-            Assert.NotNull(lead.DoNotPhone);
-            Assert.NotNull(lead.DoNotPostalMail);
-            Assert.NotNull(lead.DoNotSendMM);
+            Assert.IsNotNull(lead.DoNotBulkEMail);
+            Assert.IsNotNull(lead.DoNotEMail);
+            Assert.IsNotNull(lead.DoNotFax);
+            Assert.IsNotNull(lead.DoNotPhone);
+            Assert.IsNotNull(lead.DoNotPostalMail);
+            Assert.IsNotNull(lead.DoNotSendMM);
         }
 
-        [Fact]
+        [TestMethod]
         public void CreatingEntityWithSdkModeShouldInitializePicklistAttributes()
         {
             var id = orgAdminService.Create(new Lead());
             var lead = orgAdminService.Retrieve<Lead>(id);
-            Assert.NotNull(lead.LeadQualityCode);
-            Assert.NotNull(lead.PreferredContactMethodCode);
-            Assert.NotNull(lead.PriorityCode);
-            Assert.NotNull(lead.SalesStageCode);
+            Assert.IsNotNull(lead.LeadQualityCode);
+            Assert.IsNotNull(lead.PreferredContactMethodCode);
+            Assert.IsNotNull(lead.PriorityCode);
+            Assert.IsNotNull(lead.SalesStageCode);
         }
     }
 }

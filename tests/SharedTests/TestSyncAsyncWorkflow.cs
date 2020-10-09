@@ -1,20 +1,19 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011) && !(XRM_MOCKUP_TEST_2013) && !(XRM_MOCKUP_TEST_2015) && !(XRM_MOCKUP_TEST_2016)
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestSyncAsyncWorkflow : UnitTestBase
     {
         Account account;
         string oldAccountName;
         string newAccountName;
 
-        public TestSyncAsyncWorkflow(XrmMockupFixture fixture) : base(fixture) { }
-
         /*Tests concerning execution of synchronous and asynchronous workflows. All workflows can be found in the folder "TestSyncAsyncWorkflows"*/
-        [Fact]
+        [TestMethod]
         public void Test1Async2Sync1TriggerSync3SuccedsWhenAllApplies()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -41,11 +40,11 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Test2Sync1Sync2SucceedsWhenOnlySync2Applies()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -73,11 +72,11 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Test3Async1Async2SucceedsWhenBothApply()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -103,11 +102,11 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Test4Sync1Async2SucceedsWhenBothApplies()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -133,11 +132,11 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Test5Sync3Sync1TriggersAsync2SucceedsWhenSync1AndAsync2Applies()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -164,11 +163,11 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Test6Async3Sync1TriggersAsync2SucceedsWhenAllApplies()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -195,7 +194,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-                Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.AreEqual(newAccountName, retrievedAccount.Name);
             }
         }
     }

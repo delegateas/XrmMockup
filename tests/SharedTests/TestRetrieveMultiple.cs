@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
-using Xunit;
 using System.Globalization;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmContext;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestRetrieveMultiple : UnitTestBase
     {
 
@@ -29,7 +30,8 @@ namespace DG.XrmMockupTest
         Lead lead3;
         Lead lead4;
 
-        public TestRetrieveMultiple(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             account1 = new Account();
             account2 = new Account();
@@ -96,7 +98,7 @@ namespace DG.XrmMockupTest
 
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInnerJoin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -111,19 +113,19 @@ namespace DG.XrmMockupTest
                     select new { acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(2, result.Count());
+                Assert.AreEqual(2, result.Count());
 
                 foreach (var r in result)
                 {
-                    Assert.Equal(account1.Name, r.Name);
-                    Assert.StartsWith("Some", r.Subject);
+                    Assert.AreEqual(account1.Name, r.Name);
+                    Assert.IsTrue(r.Subject.StartsWith("Some"));
                 }
             }
         }
 
         // ignored until entityname can be handled correctly for 2011
 #if !(XRM_MOCKUP_TEST_2011)
-        [Fact]
+        [TestMethod]
         public void TestFilterOnJoin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -136,11 +138,11 @@ namespace DG.XrmMockupTest
                     select new { con.LastName, lead.Subject };
 
                 var result = query.ToArray();
-                Assert.Equal(2, result.Count());
+                Assert.AreEqual(2, result.Count());
             }
         }
 #endif
-        [Fact]
+        [TestMethod]
         public void TestAllColumns()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -151,11 +153,11 @@ namespace DG.XrmMockupTest
                     select con;
 
                 var result = query.First();
-                Assert.Equal(contact1.LastName, result.LastName);
+                Assert.AreEqual(contact1.LastName, result.LastName);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFilterOnOptionSet()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -168,11 +170,11 @@ namespace DG.XrmMockupTest
                     select con;
 
                 var result = query.First();
-                Assert.Equal(contact1.LastName, result.LastName);
+                Assert.AreEqual(contact1.LastName, result.LastName);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOrderingJoin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -188,14 +190,14 @@ namespace DG.XrmMockupTest
                     select new { acc.Name, acc.AccountId, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(8, result.Count());
+                Assert.AreEqual(8, result.Count());
 
                 var ordered = result.OrderByDescending(x => x.Name).ThenBy(x => x.AccountId);
-                Assert.Equal(ordered.ToList(), result.ToList());
+                CollectionAssert.AreEqual(ordered.ToList(), result.ToList());
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void BusinessUnitChange()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -213,7 +215,7 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 acc = orgAdminUIService.Retrieve<Account>(acc.Id);
-                Assert.Equal(acc.OwnerId.Id, crm.AdminUser.Id);
+                Assert.AreEqual(acc.OwnerId.Id, crm.AdminUser.Id);
 
                 // Update and check new account user/bu
                 var upd = new Account(acc.Id)
@@ -223,13 +225,13 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Update(upd);
 
                 acc = orgAdminUIService.Retrieve<Account>(acc.Id);
-                Assert.Equal(acc.OwnerId.Id, user.Id);
-                Assert.Equal(acc.OwningBusinessUnit.Id, user.BusinessUnitId.Id);
+                Assert.AreEqual(acc.OwnerId.Id, user.Id);
+                Assert.AreEqual(acc.OwningBusinessUnit.Id, user.BusinessUnitId.Id);
             }
         }
 
         /// This commit in XrmContext makes it so the test fails. Consider the consequences of changing it back https://github.com/delegateas/XrmContext/commit/eb8a513517614e1e8cf4aca985eb465c39399acf#diff-d8e7c594f843646d7b0be2cccb990355
-        [Fact(Skip = "Error from commit in XrmContext")]
+        [TestMethod, Ignore( "Error from commit in XrmContext")]
         public void ContextJoinTest()
         {
             using (var context = new Xrm(this.orgAdminUIService))
@@ -281,20 +283,20 @@ namespace DG.XrmMockupTest
                         .Join<Account, Contact, Guid, object>(context.ContactSet, acc => acc.Id, c => c.ParentCustomerId.Id, (acc, c) => new { acc, c })
                         .FirstOrDefault();
 
-                Assert.True(testEnumeration1.Count() == 0);
-                Assert.True(testEnumeration2.Count() > 0);
-                Assert.NotNull(testRelated1);
-                Assert.Null(testRelated2);
-                Assert.True(testRelated1.RelatedEntities.Count() > 0);
-                Assert.True(testRelated1.RelatedEntities.Values.First().Entities.Count() > 0);
-                Assert.Equal(testEnumeration2.Count(), testRelated1.RelatedEntities.Values.First().Entities.Count());
-                Assert.Equal(retrieved.ParentAccountId.Id, id2);
-                Assert.Equal(retrieved2.Referencedaccount_parent_account?.FirstOrDefault()?.Id, id1);
+                Assert.IsTrue(testEnumeration1.Count() == 0);
+                Assert.IsTrue(testEnumeration2.Count() > 0);
+                Assert.IsNotNull(testRelated1);
+                Assert.IsNull(testRelated2);
+                Assert.IsTrue(testRelated1.RelatedEntities.Count() > 0);
+                Assert.IsTrue(testRelated1.RelatedEntities.Values.First().Entities.Count() > 0);
+                Assert.AreEqual(testEnumeration2.Count(), testRelated1.RelatedEntities.Values.First().Entities.Count());
+                Assert.AreEqual(retrieved.ParentAccountId.Id, id2);
+                Assert.AreEqual(retrieved2.Referencedaccount_parent_account?.FirstOrDefault()?.Id, id1);
             }
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ContextLoadDifferentEntitiesTest()
         {
             using (var context = new Xrm(this.orgAdminUIService))
@@ -332,12 +334,12 @@ namespace DG.XrmMockupTest
 
                 var test = (IEnumerable<Contact>)context.LoadEnumeration<Account, object>(retrieved, x => x.contact_customer_accounts);
 
-                Assert.True(test.Count() == 1);
-                Assert.Equal(test.First().Id, cid);
+                Assert.IsTrue(test.Count() == 1);
+                Assert.AreEqual(test.First().Id, cid);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestLeftJoin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -350,17 +352,17 @@ namespace DG.XrmMockupTest
                     from lead in ls.DefaultIfEmpty()
                     select new { con.ContactId, lead.Subject };
 
-                Assert.Equal(4, query.AsEnumerable().Count());
+                Assert.AreEqual(4, query.AsEnumerable().Count());
 
                 foreach (var r in query)
                 {
-                    Assert.True(r.Subject == null && (r.ContactId == contact3.Id || r.ContactId == contact4.Id) ||
+                    Assert.IsTrue(r.Subject == null && (r.ContactId == contact3.Id || r.ContactId == contact4.Id) ||
                         r.Subject.StartsWith("Some contact lead") && (r.ContactId == contact1.Id || r.ContactId == contact2.Id));
                 }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNestedJoins()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -387,18 +389,18 @@ namespace DG.XrmMockupTest
                     select new { con.LastName, acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(4, result.Count());
+                Assert.AreEqual(4, result.Count());
 
                 foreach (var r in result)
                 {
-                    Assert.Equal(contact1.LastName, r.LastName);
-                    Assert.True(account1.Name == r.Name || account2.Name == r.Name);
-                    Assert.StartsWith("Some", r.Subject);
+                    Assert.AreEqual(contact1.LastName, r.LastName);
+                    Assert.IsTrue(account1.Name == r.Name || account2.Name == r.Name);
+                    Assert.IsTrue(r.Subject.StartsWith("Some"));
                 }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNestedJoinsLinkedSelectOnId()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -425,18 +427,18 @@ namespace DG.XrmMockupTest
                     select new { con.Id, con.LastName, acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(4, result.Count());
+                Assert.AreEqual(4, result.Count());
 
                 foreach (var r in result)
                 {
-                    Assert.Equal(contact1.LastName, r.LastName);
-                    Assert.True(account1.Name == r.Name || account2.Name == r.Name);
-                    Assert.StartsWith("Some", r.Subject);
+                    Assert.AreEqual(contact1.LastName, r.LastName);
+                    Assert.IsTrue(account1.Name == r.Name || account2.Name == r.Name);
+                    Assert.IsTrue(r.Subject.StartsWith("Some"));
                 }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFilter()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -448,16 +450,16 @@ namespace DG.XrmMockupTest
                     select new { acc.Name };
 
 
-                Assert.Equal(2, query.AsEnumerable().Count());
+                Assert.AreEqual(2, query.AsEnumerable().Count());
 
                 foreach (var r in query)
                 {
-                    Assert.True(account1.Name == r.Name || account2.Name == r.Name);
+                    Assert.IsTrue(account1.Name == r.Name || account2.Name == r.Name);
                 }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOrderByOtherAttributes()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -470,13 +472,13 @@ namespace DG.XrmMockupTest
                     select new { acc.AccountId };
 
                 var result = query.ToArray();
-                Assert.Equal(2, result.Length);
-                Assert.Equal(account1.Id, result[0].AccountId);
-                Assert.Equal(account2.Id, result[1].AccountId);
+                Assert.AreEqual(2, result.Length);
+                Assert.AreEqual(account1.Id, result[0].AccountId);
+                Assert.AreEqual(account2.Id, result[1].AccountId);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveMultipleNotEqualsNullCheck()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -501,14 +503,14 @@ namespace DG.XrmMockupTest
 
                 var isTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail == true).ToList();
 
-                Assert.Single(isTrue);
+                Assert.AreEqual(1, isTrue.Count);
 
                 var isNotTrue = context.ContactSet.Where(x => x.ParentCustomerId.Id == acc.Id && x.DoNotEMail != true).ToList();
-                Assert.Single(isNotTrue);
+                Assert.AreEqual(1, isNotTrue.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveMultipleFilterNullOr()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -519,13 +521,13 @@ namespace DG.XrmMockupTest
                     select acc;
 
                 var result = query.ToList();
-                Assert.Equal(4, result.Count);
+                Assert.AreEqual(4, result.Count);
                 var accResult = result.FirstOrDefault();
-                Assert.Equal("account1", accResult.Name);
+                Assert.AreEqual("account1", accResult.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveMultipleFilterNullAnd()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -536,13 +538,13 @@ namespace DG.XrmMockupTest
                     select acc;
 
                 var result = query.ToList();
-                Assert.Single(result);
+                Assert.AreEqual(1, result.Count);
                 var accResult = result.FirstOrDefault();
-                Assert.Equal("account1", accResult.Name);
+                Assert.AreEqual("account1", accResult.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveMultipleFilterGreaterThan5UnderlyingNull()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -553,11 +555,11 @@ namespace DG.XrmMockupTest
                     select acc;
 
                 var result = query.ToList();
-                Assert.Empty(result);
+                Assert.AreEqual(0, result.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveMultipleFilterNullOrGreaterThan()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -568,11 +570,11 @@ namespace DG.XrmMockupTest
                     select acc;
 
                 var result = query.ToList();
-                Assert.Empty(result);
+                Assert.AreEqual(0, result.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRetrieveMultipleFilterOrWithNullValue()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -583,11 +585,11 @@ namespace DG.XrmMockupTest
                     select acc;
 
                 var result = query.ToList();
-                Assert.Empty(result);
+                Assert.AreEqual(0, result.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestContextWhere()
         {
             using (var context = new Xrm(orgAdminService))
@@ -595,11 +597,11 @@ namespace DG.XrmMockupTest
                 var userId = context.SystemUserSet.First().Id;
                 //Currently returns null. Should return the same record.
                 var reFetched = context.SystemUserSet.Single(a => a.Id == userId);
-                Assert.NotNull(reFetched);
+                Assert.IsNotNull(reFetched);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionIn()
         {
             var query = new QueryExpression("lead")
@@ -613,14 +615,14 @@ namespace DG.XrmMockupTest
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
-            Assert.Equal(2, res.Count());
-            Assert.Contains(res, x => x.Id == lead1.Id);
-            Assert.Contains(res, x => x.Id == lead2.Id);
-            Assert.Contains(res, x => x.Description == "*** TEST VALUE ***");
-            Assert.Contains(res, x => x.Description == null);
+            Assert.AreEqual(2, res.Count());
+            Assert.IsTrue(res.Any(x => x.Id == lead1.Id));
+            Assert.IsTrue(res.Any(x => x.Id == lead2.Id));
+            Assert.IsTrue(res.Any(x => x.Description == "*** TEST VALUE ***"));
+            Assert.IsTrue(res.Any(x => x.Description == null));
         }
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionInEmpty()
         {
             var query = new QueryExpression("lead")
@@ -634,10 +636,10 @@ namespace DG.XrmMockupTest
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
-            Assert.Empty(res);
+            Assert.AreEqual(0, res.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionNotIn()
         {
             var query = new QueryExpression("lead")
@@ -651,11 +653,11 @@ namespace DG.XrmMockupTest
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
-            Assert.True(!res.Any(x => x.Id == lead1.Id));
-            Assert.True(!res.Any(x => x.Id == lead2.Id));
+            Assert.IsTrue(!res.Any(x => x.Id == lead1.Id));
+            Assert.IsTrue(!res.Any(x => x.Id == lead2.Id));
         }
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionNotInEmpty()
         {
             var leadCount = 0;
@@ -675,12 +677,12 @@ namespace DG.XrmMockupTest
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
-            Assert.Equal(leadCount, res.Count());
+            Assert.AreEqual(leadCount, res.Count());
         }
 
 #if !(XRM_MOCKUP_TEST_2011)
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionLinkEntity()
         {
             var query = new QueryExpression("contact")
@@ -707,11 +709,11 @@ namespace DG.XrmMockupTest
             query.LinkEntities.Add(linkEntity);
 
             var res = orgAdminService.RetrieveMultiple(query).Entities;
-            Assert.Equal(2, res.Count());
+            Assert.AreEqual(2, res.Count());
         }
 
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionLinkEntityNoSetEntityNameAndAlias()
         {
             var query = new QueryExpression("contact")
@@ -737,10 +739,10 @@ namespace DG.XrmMockupTest
             query.LinkEntities.Add(linkEntity);
 
             var res = orgAdminService.RetrieveMultiple(query).Entities;
-            Assert.Equal(2, res.Count());
+            Assert.AreEqual(2, res.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public void TestQueryExpressionLinkEntityNoSetEntityName()
         {
             var query = new QueryExpression("contact")
@@ -767,12 +769,12 @@ namespace DG.XrmMockupTest
             query.LinkEntities.Add(linkEntity);
 
             var res = orgAdminService.RetrieveMultiple(query).Entities;
-            Assert.Equal(2, res.Count());
+            Assert.AreEqual(2, res.Count());
         }
 
 #endif
 
-        [Fact]
+        [TestMethod]
         public void RetrieveMultipleWithQueryByAttribute()
         {
             var result = orgAdminUIService.RetrieveMultiple(new QueryByAttribute
@@ -781,10 +783,10 @@ namespace DG.XrmMockupTest
                 Attributes = { "name" },
                 Values = { account3.Name }
             });
-            Assert.Single(result.Entities);
+            Assert.AreEqual(1, result.Entities.Count);
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveMultipleWithAliasedNullAttribute()
         {
             using (var context = new Xrm(orgAdminService))
@@ -793,11 +795,11 @@ namespace DG.XrmMockupTest
                               join contact in context.ContactSet on lead.ParentContactId.Id equals contact.Id
                               select new { lead.Subject, contact.FirstName, contact.LastName, contact.FullName })
                           .ToList();
-                Assert.Equal(2, result.Count);
+                Assert.AreEqual(2, result.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestLINQContains()
         {
             var account = new Account()
@@ -818,7 +820,7 @@ namespace DG.XrmMockupTest
                         c.Name
                     };
                 var queryList = query.ToList();
-                Assert.True(queryList.Count > 0);
+                Assert.IsTrue(queryList.Count > 0);
             }
 
             using (var xrm = new Xrm(orgAdminService))
@@ -831,11 +833,11 @@ namespace DG.XrmMockupTest
                         c.AccountId
                     };
                 var queryNotA = query.FirstOrDefault();
-                Assert.Equal(account.Id, queryNotA.AccountId);
+                Assert.AreEqual(account.Id, queryNotA.AccountId);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveMultipleTotalRecordCount()
         {
             using (var context = new Xrm(orgAdminService))
@@ -848,12 +850,12 @@ namespace DG.XrmMockupTest
 
                 var res = orgAdminService.RetrieveMultiple(query);
 
-                Assert.True(query.PageInfo.ReturnTotalRecordCount);
-                Assert.Equal(4, res.TotalRecordCount);
+                Assert.IsTrue(query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(4, res.TotalRecordCount);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RetrieveMultipleTotalRecordCountDefault()
         {
             using (var context = new Xrm(orgAdminService))
@@ -865,8 +867,8 @@ namespace DG.XrmMockupTest
 
                 var res = orgAdminService.RetrieveMultiple(query);
 
-                Assert.False(query.PageInfo.ReturnTotalRecordCount);
-                Assert.Equal(-1, res.TotalRecordCount);
+                Assert.IsFalse(query.PageInfo.ReturnTotalRecordCount);
+                Assert.AreEqual(-1, res.TotalRecordCount);
             }
         }
 

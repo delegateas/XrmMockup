@@ -1,13 +1,13 @@
 ﻿using System;
-using Xunit;
 using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestPrivilegesCreate : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -15,7 +15,8 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        public TestPrivilegesCreate(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             crm.DisableRegisteredPlugins(true);
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
@@ -45,7 +46,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test create account with basic level privilege
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestCreateUserLevelPrivilege()
         {
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
@@ -57,11 +58,11 @@ namespace DG.XrmMockupTest
                 {
                     Name = "Account non",
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -84,12 +85,12 @@ namespace DG.XrmMockupTest
                     Name = "Account basic",
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl11.Id, account.OwnerId.Id);
-                Assert.Equal("Account basic", account.Name);
+                Assert.AreEqual(UserBULvl11.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account basic", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with local privilege
@@ -100,11 +101,11 @@ namespace DG.XrmMockupTest
                     Name = "Account local",
                     OwnerId = UserBULvl12.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -116,11 +117,11 @@ namespace DG.XrmMockupTest
                     Name = "Account deep",
                     OwnerId = UserBULvl2.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -132,11 +133,11 @@ namespace DG.XrmMockupTest
                     Name = "Account global",
                     OwnerId = UserBURoot.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
         }
@@ -144,7 +145,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test create account with local level privilege
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestCreateBULevelPrivilege()
         {
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
@@ -156,11 +157,11 @@ namespace DG.XrmMockupTest
                 {
                     Name = "Account non",
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -183,12 +184,12 @@ namespace DG.XrmMockupTest
                     Name = "Account basic",
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl11.Id, account.OwnerId.Id);
-                Assert.Equal("Account basic", account.Name);
+                Assert.AreEqual(UserBULvl11.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account basic", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with local privilege
@@ -200,12 +201,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl12.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl12.Id, account.OwnerId.Id);
-                Assert.Equal("Account local", account.Name);
+                Assert.AreEqual(UserBULvl12.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account local", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with deep privilege
@@ -216,11 +217,11 @@ namespace DG.XrmMockupTest
                     Name = "Account deep",
                     OwnerId = UserBULvl2.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -232,11 +233,11 @@ namespace DG.XrmMockupTest
                     Name = "Account global",
                     OwnerId = UserBURoot.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
         }
@@ -244,7 +245,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test create account with deep level privilege
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestCreateDeepLevelPrivilege()
         {
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
@@ -256,11 +257,11 @@ namespace DG.XrmMockupTest
                 {
                     Name = "Account non",
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -283,12 +284,12 @@ namespace DG.XrmMockupTest
                     Name = "Account basic",
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl11.Id, account.OwnerId.Id);
-                Assert.Equal("Account basic", account.Name);
+                Assert.AreEqual(UserBULvl11.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account basic", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with local privilege
@@ -300,12 +301,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl12.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl12.Id, account.OwnerId.Id);
-                Assert.Equal("Account local", account.Name);
+                Assert.AreEqual(UserBULvl12.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account local", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with deep privilege
@@ -317,12 +318,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl2.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl2.Id, account.OwnerId.Id);
-                Assert.Equal("Account deep", account.Name);
+                Assert.AreEqual(UserBULvl2.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account deep", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with global privilege
@@ -333,11 +334,11 @@ namespace DG.XrmMockupTest
                     Name = "Account global",
                     OwnerId = UserBURoot.ToEntityReference(),
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
         }
@@ -345,7 +346,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test create account with global level privilege
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void TestCreateGlobalLevelPrivilege()
         {
             var userOrg = crm.CreateOrganizationService(UserBULvl11.Id);
@@ -357,11 +358,11 @@ namespace DG.XrmMockupTest
                 {
                     Name = "Account non",
                 });
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
-            catch (XunitException)
+            catch (AssertFailedException)
             {
-                throw new XunitException("User should not be able to create");
+                Assert.Fail("User should not be able to create");
             }
             catch (Exception) { }
 
@@ -384,12 +385,12 @@ namespace DG.XrmMockupTest
                     Name = "Account basic",
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl11.Id, account.OwnerId.Id);
-                Assert.Equal("Account basic", account.Name);
+                Assert.AreEqual(UserBULvl11.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account basic", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with local privilege
@@ -401,12 +402,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl12.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl12.Id, account.OwnerId.Id);
-                Assert.Equal("Account local", account.Name);
+                Assert.AreEqual(UserBULvl12.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account local", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with deep privilege
@@ -418,12 +419,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl2.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBULvl2.Id, account.OwnerId.Id);
-                Assert.Equal("Account deep", account.Name);
+                Assert.AreEqual(UserBULvl2.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account deep", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
 
             // try create account with global privilege
@@ -435,12 +436,12 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBURoot.ToEntityReference(),
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Equal(UserBURoot.Id, account.OwnerId.Id);
-                Assert.Equal("Account global", account.Name);
+                Assert.AreEqual(UserBURoot.Id, account.OwnerId.Id);
+                Assert.AreEqual("Account global", account.Name);
             }
             catch (Exception)
             {
-                throw new XunitException("User should be able to create");
+                Assert.Fail("User should be able to create");
             }
         }
         

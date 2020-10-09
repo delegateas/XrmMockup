@@ -2,18 +2,19 @@
 using System;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-    public class TestAction : UnitTestBase {
-
-        public TestAction(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
-        public void TestActionExecution() {
-            using (var context = new Xrm(orgAdminUIService)) {
+    [TestClass]
+    public class TestAction : UnitTestBase
+    {
+        [TestMethod]
+        public void TestActionExecution()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var someString = "A some string";
                 var entity = new Contact();
                 entity.Id = orgAdminUIService.Create(entity);
@@ -23,14 +24,16 @@ namespace DG.XrmMockupTest
                 var resp = orgAdminUIService.Execute(req);
                 var leadRef = resp["CreatedEntity"] as EntityReference;
                 var lead = orgAdminUIService.Retrieve(leadRef.LogicalName, leadRef.Id, new ColumnSet(true)) as Lead;
-                Assert.Equal(someString, lead.LastName);
-                Assert.Equal("From Action", lead.Subject);
+                Assert.AreEqual(someString, lead.LastName);
+                Assert.AreEqual("From Action", lead.Subject);
             }
         }
 
-        [Fact]
-        public void TestActionParts() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        [TestMethod]
+        public void TestActionParts()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var stringInput = "A string";
                 var datetimeInput = DateTime.Now;
                 var boolInput = true;
@@ -47,57 +50,57 @@ namespace DG.XrmMockupTest
                 req["StringInput"] = stringInput;
                 req["Target"] = entity.ToEntityReference();
                 var resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 var output = resp["Output"] as string;
-                Assert.Equal(stringInput, output);
+                Assert.AreEqual(stringInput, output);
 
                 req = new OrganizationRequest("Full action");
                 req["DateTimeInput"] = datetimeInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(datetimeInput.ToString(), output);
+                Assert.AreEqual(datetimeInput.ToString(), output);
 
                 req = new OrganizationRequest("Full action");
                 req["BoolInput"] = boolInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(boolInput.ToString(), output);
+                Assert.AreEqual(boolInput.ToString(), output);
 
                 req = new OrganizationRequest("Full action");
                 req["DecimalInput"] = decimalInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(decimalInput.ToString(), output);
+                Assert.AreEqual(decimalInput.ToString(), output);
 
                 req = new OrganizationRequest("Full action");
                 req["FloatInput"] = floatInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(floatInput.ToString(), output);
+                Assert.AreEqual(floatInput.ToString(), output);
 
                 req = new OrganizationRequest("Full action");
                 req["IntegerInput"] = intInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(intInput.ToString(), output);
+                Assert.AreEqual(intInput.ToString(), output);
 
                 req = new OrganizationRequest("Full action");
                 req["PicklistInput"] = pickListInput;
                 req["Target"] = entity.ToEntityReference();
                 resp = orgAdminUIService.Execute(req);
-                Assert.True(resp.Results.ContainsKey("Output"));
+                Assert.IsTrue(resp.Results.ContainsKey("Output"));
                 output = resp["Output"] as string;
-                Assert.Equal(pickListInput.ToString(), output);
+                Assert.AreEqual(pickListInput.ToString(), output);
 
             }
         }

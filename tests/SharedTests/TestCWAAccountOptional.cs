@@ -1,14 +1,13 @@
 ﻿using System.IO;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestCWAAccountOptional : UnitTestBase
     {
-        public TestCWAAccountOptional(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestWorkFlowWithEmptyOptionalParameter()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "CWAAccountoptional.xml"));
@@ -18,7 +17,7 @@ namespace DG.XrmMockupTest
             account.Id = orgAdminService.Create(account);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestWorkFlowWithFilledOptionalParameter()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "CWAAccountoptionalWithDateValue.xml"));

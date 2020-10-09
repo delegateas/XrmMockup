@@ -1,16 +1,15 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Xunit;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestAlternateKeys : UnitTestBase
     {
-        public TestAlternateKeys(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestAlternateKeysAll()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -34,8 +33,8 @@ namespace DG.XrmMockupTest
                 
                 var resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var entity = resp.Entity as Account;
-                Assert.Equal("Burgers", entity.Name);
-                Assert.Equal("Virum", entity.Address1_City);
+                Assert.AreEqual("Burgers", entity.Name);
+                Assert.AreEqual("Virum", entity.Address1_City);
 
                 var newAttributes = new AttributeCollection {
                     { "name", "Toast" }
@@ -52,13 +51,13 @@ namespace DG.XrmMockupTest
                 };
                 resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var updatedEntity = resp.Entity as Account;
-                Assert.Equal("Toast", updatedEntity.Name);
-                Assert.Equal("Virum", updatedEntity.Address1_City);
+                Assert.AreEqual("Toast", updatedEntity.Name);
+                Assert.AreEqual("Virum", updatedEntity.Address1_City);
                 
             }
         }
 
-        [Fact]
+        [TestMethod]
 
         public void AltKeyRetrieveWithoutEntityTypeInDb() {
 

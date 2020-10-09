@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
-using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestOrderByQueryExpression : UnitTestBase
     {
-        public TestOrderByQueryExpression(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_money_fields_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -41,11 +40,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
 
-                Assert.Equal(12345m, firstResultValue.Value);
+                Assert.AreEqual(12345m, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_money_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -77,11 +76,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
 
-                Assert.Equal(678910M, firstResultValue.Value);
+                Assert.AreEqual(678910M, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_entity_reference_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -113,11 +112,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
 
-                Assert.Equal("Jordi", firstResultValue.Name);
+                Assert.AreEqual("Jordi", firstResultValue.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_entity_reference_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -149,11 +148,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
 
-                Assert.Equal("Skuba", firstResultValue.Name);
+                Assert.AreEqual("Skuba", firstResultValue.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_optionsetvalue_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -176,11 +175,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
 
-                Assert.Equal(Contact_GenderCode.Male, firstResultValue.Value);
+                Assert.AreEqual(Contact_GenderCode.Male, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_optionsetvalue_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -203,11 +202,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
 
-                Assert.Equal(Contact_GenderCode.Female, firstResultValue.Value);
+                Assert.AreEqual(Contact_GenderCode.Female, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_int_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -230,11 +229,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
 
-                Assert.Equal(2, firstResultValue.Value);
+                Assert.AreEqual(2, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_int_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -257,11 +256,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
 
-                Assert.Equal(5, firstResultValue.Value);
+                Assert.AreEqual(5, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_datetime_ascending_fields_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -284,11 +283,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-                Assert.Equal(now, firstResultValue.Value);
+                Assert.AreEqual(now, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_datetime_descending_fields_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -311,11 +310,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-                Assert.Equal(now.AddDays(1), firstResultValue.Value);
+                Assert.AreEqual(now.AddDays(1), firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_guid_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -339,11 +338,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
 
-                Assert.Equal(g1, firstResultValue.Value);
+                Assert.AreEqual(g1, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_guid_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -367,11 +366,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
 
-                Assert.Equal(g2, firstResultValue.Value);
+                Assert.AreEqual(g2, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_decimal_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -393,11 +392,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
 
-                Assert.Equal(20m, firstResultValue);
+                Assert.AreEqual(20m, firstResultValue);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_decimal_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -419,11 +418,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
 
-                Assert.Equal(50m, firstResultValue);
+                Assert.AreEqual(50m, firstResultValue);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_double_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -446,11 +445,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
 
-                Assert.Equal(2, firstResultValue.Value);
+                Assert.AreEqual(2, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_double_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -473,11 +472,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
 
-                Assert.Equal(5, firstResultValue.Value);
+                Assert.AreEqual(5, firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_boolean_fields_ascending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -500,11 +499,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).DoNotEMail;
 
-                Assert.False(firstResultValue.Value);
+                Assert.IsFalse(firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_boolean_fields_descending_expected_result_is_returned()
         {
             using (var context = new Xrm(orgAdminService))
@@ -527,11 +526,11 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).DoNotEMail;
 
-                Assert.True(firstResultValue.Value);
+                Assert.IsTrue(firstResultValue.Value);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_2_columns_simultaneously_right_result_is_returned_asc_desc()
         {
             using (var context = new Xrm(orgAdminService))
@@ -560,16 +559,16 @@ namespace DG.XrmMockupTest
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.True(names[0].Equals("12"), "Test 12 failed");
-                Assert.True(names[1].Equals("11"), "Test 11 failed");
-                Assert.True(names[2].Equals("22"), "Test 22 failed");
-                Assert.True(names[3].Equals("21"), "Test 21 failed");
-                Assert.True(names[4].Equals("32"), "Test 32 failed");
-                Assert.True(names[5].Equals("31"), "Test 31 failed");
+                Assert.IsTrue(names[0].Equals("12"), "Test 12 failed");
+                Assert.IsTrue(names[1].Equals("11"), "Test 11 failed");
+                Assert.IsTrue(names[2].Equals("22"), "Test 22 failed");
+                Assert.IsTrue(names[3].Equals("21"), "Test 21 failed");
+                Assert.IsTrue(names[4].Equals("32"), "Test 32 failed");
+                Assert.IsTrue(names[5].Equals("31"), "Test 31 failed");
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_2_columns_simultaneously_right_result_is_returned_asc_asc()
         {
             using (var context = new Xrm(orgAdminService))
@@ -597,16 +596,16 @@ namespace DG.XrmMockupTest
 
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
-                Assert.True(names[0].Equals("11"), "Test 11 failed");
-                Assert.True(names[1].Equals("12"), "Test 12 failed");
-                Assert.True(names[2].Equals("21"), "Test 21 failed");
-                Assert.True(names[3].Equals("22"), "Test 22 failed");
-                Assert.True(names[4].Equals("31"), "Test 31 failed");
-                Assert.True(names[5].Equals("32"), "Test 32 failed");
+                Assert.IsTrue(names[0].Equals("11"), "Test 11 failed");
+                Assert.IsTrue(names[1].Equals("12"), "Test 12 failed");
+                Assert.IsTrue(names[2].Equals("21"), "Test 21 failed");
+                Assert.IsTrue(names[3].Equals("22"), "Test 22 failed");
+                Assert.IsTrue(names[4].Equals("31"), "Test 31 failed");
+                Assert.IsTrue(names[5].Equals("32"), "Test 32 failed");
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_2_columns_simultaneously_right_result_is_returned_desc_desc()
         {
             using (var context = new Xrm(orgAdminService))
@@ -635,16 +634,16 @@ namespace DG.XrmMockupTest
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.True(names[0].Equals("32"), "Test 32 failed");
-                Assert.True(names[1].Equals("31"), "Test 31 failed");
-                Assert.True(names[2].Equals("22"), "Test 22 failed");
-                Assert.True(names[3].Equals("21"), "Test 21 failed");
-                Assert.True(names[4].Equals("12"), "Test 12 failed");
-                Assert.True(names[5].Equals("11"), "Test 11 failed");
+                Assert.IsTrue(names[0].Equals("32"), "Test 32 failed");
+                Assert.IsTrue(names[1].Equals("31"), "Test 31 failed");
+                Assert.IsTrue(names[2].Equals("22"), "Test 22 failed");
+                Assert.IsTrue(names[3].Equals("21"), "Test 21 failed");
+                Assert.IsTrue(names[4].Equals("12"), "Test 12 failed");
+                Assert.IsTrue(names[5].Equals("11"), "Test 11 failed");
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void When_ordering_by_2_columns_simultaneously_right_result_is_returned_desc_asc()
         {
             using (var context = new Xrm(orgAdminService))
@@ -673,12 +672,12 @@ namespace DG.XrmMockupTest
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.True(names[0].Equals("31"), "Test 31 failed");
-                Assert.True(names[1].Equals("32"), "Test 32 failed");
-                Assert.True(names[2].Equals("21"), "Test 21 failed");
-                Assert.True(names[3].Equals("22"), "Test 22 failed");
-                Assert.True(names[4].Equals("11"), "Test 11 failed");
-                Assert.True(names[5].Equals("12"), "Test 12 failed");
+                Assert.IsTrue(names[0].Equals("31"), "Test 31 failed");
+                Assert.IsTrue(names[1].Equals("32"), "Test 32 failed");
+                Assert.IsTrue(names[2].Equals("21"), "Test 21 failed");
+                Assert.IsTrue(names[3].Equals("22"), "Test 22 failed");
+                Assert.IsTrue(names[4].Equals("11"), "Test 11 failed");
+                Assert.IsTrue(names[5].Equals("12"), "Test 12 failed");
             }
         }
     }

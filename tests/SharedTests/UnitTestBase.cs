@@ -3,11 +3,12 @@ using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-    public class UnitTestBase : IClassFixture<XrmMockupFixture>
+    [TestClass]
+    public class UnitTestBase
     {
         private static DateTime _startTime { get; set; }
 
@@ -15,53 +16,48 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
-        private XrmMockupFixture fixture;
+
 
 #if XRM_MOCKUP_TEST_2011
-        protected XrmMockup2011 crm;
+        static protected XrmMockup2011 crm;
+        static protected XrmMockup2011 crmRealData;
 #elif XRM_MOCKUP_TEST_2013
-        protected XrmMockup2013 crm;
+        static protected XrmMockup2013 crm;
+        static protected XrmMockup2013 crmRealData;
 #elif XRM_MOCKUP_TEST_2015
-        protected XrmMockup2015 crm;
+        static protected XrmMockup2015 crm;
+        static protected XrmMockup2015 crmRealData;
 #elif XRM_MOCKUP_TEST_2016
-        protected XrmMockup2016 crm;
+        static protected XrmMockup2016 crm;
+        static XrmMockup2016 crmRealData;
 #elif XRM_MOCKUP_TEST_365
-        protected XrmMockup365 crm;
+        static protected XrmMockup365 crm;
+        static protected XrmMockup365 crmRealData;
 #endif
 
-        public UnitTestBase(XrmMockupFixture fixture)
+        public UnitTestBase()
         {
-            this.fixture = fixture;
-            crm = fixture.crm;
-            crm.ResetEnvironment();
             orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             orgAdminService = crm.GetAdminService();
-            if (fixture.crmRealData != null)
-                orgRealDataService = fixture.crmRealData.GetAdminService();
+            if (crmRealData != null)
+                orgRealDataService = crmRealData.GetAdminService();
         }
-    }
 
-    public class XrmMockupFixture : IDisposable
-    {
-#if XRM_MOCKUP_TEST_2011
-        public XrmMockup2011 crm;
-        public XrmMockup2011 crmRealData;
-#elif XRM_MOCKUP_TEST_2013
-        public XrmMockup2013 crm;
-        public XrmMockup2013 crmRealData;
-#elif XRM_MOCKUP_TEST_2015
-        public XrmMockup2015 crm;
-        public XrmMockup2015 crmRealData;
-#elif XRM_MOCKUP_TEST_2016
-        public XrmMockup2016 crm;
-        public XrmMockup2016 crmRealData;
-#elif XRM_MOCKUP_TEST_365
-        public XrmMockup365 crm;
-        public XrmMockup365 crmRealData;
-#endif
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            crm.ResetEnvironment();
+        }
 
-        public XrmMockupFixture()
+
+        [AssemblyInitialize]
+        public static void InitializeServices(TestContext context)
+        {
+            InitializeMockup(context);
+        }
+
+        public static void InitializeMockup(TestContext context)
         {
             var settings = new XrmMockupSettings
             {
@@ -118,10 +114,6 @@ namespace DG.XrmMockupTest
             {
                 // ignore
             }
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

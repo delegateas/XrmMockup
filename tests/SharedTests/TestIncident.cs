@@ -1,19 +1,17 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
-using Xunit;
 using Microsoft.Xrm.Sdk;
 using System.Linq;
 using System;
 using System.ServiceModel;
-using Xunit.Sdk;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestIncident : UnitTestBase
     {
-        public TestIncident(XrmMockupFixture fixture) : base(fixture) { }
-
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestSuccess()
         {
             var incident = new Incident();
@@ -39,20 +37,20 @@ namespace DG.XrmMockupTest
             };
 
             var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
-            Assert.NotNull(response);
+            Assert.IsNotNull(response);
 
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+                Assert.AreEqual(IncidentState.Resolved, retrievedIncident.StateCode);
+                Assert.AreEqual(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
 
                 var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
-                Assert.NotNull(retrievedIncidentResolution);
+                Assert.IsNotNull(retrievedIncidentResolution);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenPreviouslyResolved()
         {
             var incident = new Incident();
@@ -78,16 +76,16 @@ namespace DG.XrmMockupTest
             };
 
             var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
-            Assert.NotNull(response);
+            Assert.IsNotNull(response);
 
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+                Assert.AreEqual(IncidentState.Resolved, retrievedIncident.StateCode);
+                Assert.AreEqual(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
 
                 var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
-                Assert.NotNull(retrievedIncidentResolution);
+                Assert.IsNotNull(retrievedIncidentResolution);
             }
 
             var incidentResolution2 = new IncidentResolution
@@ -105,15 +103,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request2);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenIncidentResolutionMissing()
         {
             var incident = new Incident();
@@ -135,15 +133,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenLogicalNameMissing()
         {
             var incident = new Incident();
@@ -169,15 +167,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenLogicalNameDoesNotExist()
         {
             var incident = new Incident();
@@ -208,15 +206,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenLogicalNameWrong()
         {
             var incident = new Incident();
@@ -245,15 +243,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenStatusMissing()
         {
             var incident = new Incident();
@@ -281,15 +279,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenStatusDoesNotExist()
         {
             var incident = new Incident();
@@ -318,15 +316,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenStateOfStatusWrong()
         {
             var incident = new Incident();
@@ -355,15 +353,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenIncidentidMissing()
         {
             var incident = new Incident();
@@ -391,15 +389,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenIncidentDoesNotExist()
         {
             var incident = new Incident();
@@ -419,15 +417,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCloseIncidentRequestFailsWhenIncidentResolutionAlreadyExists()
         {
             var incident = new Incident();
@@ -458,15 +456,15 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminUIService.Execute(request);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUpdateResolvedIncidentFailsWhenFieldModificationIsNotAllowed()
         {
             var incident = new Incident()
@@ -496,18 +494,18 @@ namespace DG.XrmMockupTest
             try
             {
                 orgAdminService.Update(incidentUpdate);
-                throw new XunitException();
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.IsType<FaultException>(e);
+                Assert.IsInstanceOfType(e, typeof(FaultException));
             }
 
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-            Assert.Equal(incident.Title, retrievedIncident.Title);
+            Assert.AreEqual(incident.Title, retrievedIncident.Title);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUpdateResolvedIncidentSucceedsWhenFieldModificationIsAllowed()
         {
             var incident = new Incident()
@@ -537,7 +535,7 @@ namespace DG.XrmMockupTest
             orgAdminService.Update(incidentUpdate);
 
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-            Assert.Equal(IncidentState.Active,retrievedIncident.StateCode);
+            Assert.AreEqual(IncidentState.Active,retrievedIncident.StateCode);
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Xunit;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
+    [TestClass]
     public class TestDefaultBusinessUnitTeamMembers : UnitTestBase
     {
         private BusinessUnit _businessUnit1;
@@ -16,7 +17,8 @@ namespace DG.XrmMockupTest
         private SystemUser _user1;
         private  SystemUser _user2;
 
-        public TestDefaultBusinessUnitTeamMembers(XrmMockupFixture fixture) : base(fixture)
+        [TestInitialize]
+        public void Init()
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
 
@@ -34,7 +36,7 @@ namespace DG.XrmMockupTest
             _user2 = crm.CreateUser(orgAdminService, _businessUnit3.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
         }
 
-        [Fact]
+        [TestMethod]
         public void AddMembersToBusinessUnit()
         {
             var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit1);
@@ -44,11 +46,11 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-                Assert.Single(fetchedTeam);
+                Assert.AreEqual(1, fetchedTeam.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveMemberFromBusinessUnit()
         {
             var team = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit2);
@@ -58,11 +60,11 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-                Assert.Empty(fetchedTeam);
+                Assert.AreEqual(0, fetchedTeam.Count);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MoveMemberFromBUOneToBUTwo()
         {
             var retrievedUser = orgAdminService.Retrieve("systemuser", _user2.Id, new ColumnSet("businessunitid"));
@@ -78,13 +80,13 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team3.Id).ToList();
-                Assert.Empty(fetchedTeam);
+                Assert.AreEqual(0, fetchedTeam.Count);
             }
 
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team4.Id).ToList();
-                Assert.Single(fetchedTeam);
+                Assert.AreEqual(1, fetchedTeam.Count);
             }
         }
 
@@ -97,7 +99,7 @@ namespace DG.XrmMockupTest
                     .Where(x => x.Name == businessUnit.Name)
                     .FirstOrDefault();
 
-                Assert.NotNull(fetchedTeam);
+                Assert.IsNotNull(fetchedTeam);
                 CheckTeamAttributes(fetchedTeam, businessUnit);
 
                 return fetchedTeam;
@@ -108,15 +110,15 @@ namespace DG.XrmMockupTest
         {
             businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
 
-            Assert.Equal(businessUnit.Name, fetchedTeam.Name);
+            Assert.AreEqual(businessUnit.Name, fetchedTeam.Name);
 #if !(XRM_MOCKUP_2011)
-            Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
+            Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
 #endif
-            Assert.Equal(true, fetchedTeam.IsDefault);
-            Assert.Equal("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
+            Assert.AreEqual(true, fetchedTeam.IsDefault);
+            Assert.AreEqual("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
                 fetchedTeam.Description);
-            Assert.Equal(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
-            Assert.Equal(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
+            Assert.AreEqual(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
+            Assert.AreEqual(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
         }
     }
 }
