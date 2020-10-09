@@ -12,15 +12,19 @@ using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
 
     [TestClass]
-    public class TestCreate : UnitTestBase {
+    public class TestCreate : UnitTestBase
+    {
 
 
         [TestMethod]
-        public void TestCreateSimple() {
-            var contact = new Contact() {
+        public void TestCreateSimple()
+        {
+            var contact = new Contact()
+            {
                 FirstName = "John"
             };
             contact.Id = orgAdminService.Create(contact);
@@ -30,11 +34,14 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestCreateWithRequest() {
-            var contact = new Contact() {
+        public void TestCreateWithRequest()
+        {
+            var contact = new Contact()
+            {
                 FirstName = "John"
             };
-            var req = new CreateRequest() {
+            var req = new CreateRequest()
+            {
                 Target = contact
             };
             var resp = orgAdminService.Execute(req) as CreateResponse;
@@ -44,13 +51,15 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestCreateWithNamedRequest() {
-            var contact = new Contact() {
+        public void TestCreateWithNamedRequest()
+        {
+            var contact = new Contact()
+            {
                 FirstName = "John"
             };
             var req = new OrganizationRequest("Create");
             req.Parameters["Target"] = contact;
-            
+
             var resp = orgAdminService.Execute(req) as CreateResponse;
 
             var dbContact = Contact.Retrieve(orgAdminService, resp.id);
@@ -59,13 +68,28 @@ namespace DG.XrmMockupTest {
 
 
         [TestMethod]
-        public void TestUserCreation() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestCreateWithUpdate()
+        {
+            var child = new dg_child()
+            {
+                dg_name = "Donald Duck"
+            };
 
+            child.Id = orgAdminUIService.Create(child);
+
+            var resp = dg_child.Retrieve(orgAdminService, child.Id);
+            Assert.AreEqual(resp.dg_name, "Micky Mouse");
+        }
+
+
+        [TestMethod]
+        public void TestUserCreation()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var adminUser = orgAdminUIService.Retrieve("systemuser", crm.AdminUser.Id, new ColumnSet("businessunitid"));
                 var adminBusinessunitid = adminUser.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var adminBusinessunit = orgAdminUIService.Retrieve("businessunit", adminBusinessunitid, new ColumnSet("name"));
-
 
                 var user = new Entity("systemuser");
                 user.Attributes["firstname"] = "Test User";
@@ -81,8 +105,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestTeamCreation() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestTeamCreation()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
 
                 var adminUser = orgAdminUIService.Retrieve("systemuser", crm.AdminUser.Id, new ColumnSet("businessunitid"));
                 var adminBusinessunitid = adminUser.GetAttributeValue<EntityReference>("businessunitid").Id;
@@ -103,8 +129,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestPopulateWith() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestPopulateWith()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var id = Guid.NewGuid();
                 var acc = new Account(id);
                 acc.Name = "Dauda";
@@ -115,13 +143,18 @@ namespace DG.XrmMockupTest {
 
 
         [TestMethod]
-        public void TestCreateSameId() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestCreateSameId()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var id = orgAdminUIService.Create(new Account());
-                try {
+                try
+                {
                     orgAdminUIService.Create(new Account(id));
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
@@ -129,8 +162,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestCreateWithRelatedEntities() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestCreateWithRelatedEntities()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var contact = new Contact();
                 var account1 = new Account();
                 var account2 = new Account();
@@ -140,35 +175,43 @@ namespace DG.XrmMockupTest {
                 var accounts = new EntityCollection(new List<Entity>() { account1, account2 });
 
                 // Add related order items so it can be created in one request
-                contact.RelatedEntities.Add(new Relationship {
+                contact.RelatedEntities.Add(new Relationship
+                {
                     PrimaryEntityRole = EntityRole.Referenced,
                     SchemaName = "somerandomrelation"
                 }, accounts);
 
-                var request = new CreateRequest {
+                var request = new CreateRequest
+                {
                     Target = contact
                 };
-                try {
+                try
+                {
                     orgAdminUIService.Execute(request);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
 
                 contact = new Contact();
-                contact.RelatedEntities.Add(new Relationship {
+                contact.RelatedEntities.Add(new Relationship
+                {
                     PrimaryEntityRole = EntityRole.Referenced,
                     SchemaName = "account_primary_contact"
                 }, accounts);
 
-                request = new CreateRequest {
+                request = new CreateRequest
+                {
                     Target = contact
                 };
 
                 contact.Id = (orgAdminUIService.Execute(request) as CreateResponse).id;
                 var accountSet = context.AccountSet.Where(x => x.Name.StartsWith("AccountRelated")).ToList();
                 Assert.AreEqual(2, accountSet.Count);
-                foreach (var acc in accountSet) {
+                foreach (var acc in accountSet)
+                {
                     Assert.AreEqual(contact.Id, acc.PrimaryContactId.Id);
                 }
             }
