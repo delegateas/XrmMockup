@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PackageProjectUrl>http://delegateas.github.io/</PackageProjectUrl>
-    <Authors>Delegate A/S</Authors>
+    <Authors>Delegate A/S, Martin Kasban Tange, Magnus Gether Sørensen</Authors>
     <Company>Delegate</Company>
     <Description>Engine which simulates your exact Dynamics 365/CRM instance locally including all of it's logic!</Description>
     <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
