@@ -1,23 +1,16 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 
 namespace DG.XrmMockupTest
 {
-
-    [TestClass]
     public class TestMerge : UnitTestBase
     {
+        public TestMerge(XrmMockupFixture fixture) : base(fixture) { }
 
-        [TestMethod]
+        [Fact]
         public void TestMergeAll()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -63,18 +56,18 @@ namespace DG.XrmMockupTest
                     (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName,
                     _account2Id, new ColumnSet(true));
 
-                Assert.IsTrue(mergeeAccount.StateCode.Equals(AccountState.Inactive));
-                Assert.IsTrue(mergeeAccount.StatusCode.Equals(Account_StatusCode.Inactive));
-                Assert.IsTrue(mergeeAccount.Merged.Value);
+                Assert.True(mergeeAccount.StateCode.Equals(AccountState.Inactive));
+                Assert.True(mergeeAccount.StatusCode.Equals(Account_StatusCode.Inactive));
+                Assert.True(mergeeAccount.Merged.Value);
 
                 Account mergedAccount =
                     (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName,
                     _account1Id, new ColumnSet(true));
 
-                Assert.AreEqual("Fourth Coffee", mergedAccount.Name);
-                Assert.AreEqual("Coffee House", mergedAccount.Description);
-                Assert.AreEqual(updateContent.NumberOfEmployees, mergedAccount.NumberOfEmployees);
-                Assert.AreEqual(updateContent.Address1_Line1, mergedAccount.Address1_Line1);
+                Assert.Equal("Fourth Coffee", mergedAccount.Name);
+                Assert.Equal("Coffee House", mergedAccount.Description);
+                Assert.Equal(updateContent.NumberOfEmployees, mergedAccount.NumberOfEmployees);
+                Assert.Equal(updateContent.Address1_Line1, mergedAccount.Address1_Line1);
 
             }
         }

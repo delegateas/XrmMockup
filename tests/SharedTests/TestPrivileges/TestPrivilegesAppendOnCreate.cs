@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
-using DG.Tools.XrmMockup;
-using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPrivilegesAppendOnCreate : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -20,8 +15,7 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        [TestInitialize]
-        public void Init()
+        public TestPrivilegesAppendOnCreate(XrmMockupFixture fixture) : base(fixture)
         {
             crm.DisableRegisteredPlugins(true);
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
@@ -58,7 +52,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test user append on basic level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendOnCreateUserLevel()
         {
             // contact to database
@@ -74,11 +68,11 @@ namespace DG.XrmMockupTest
                     Name = "Account non",
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -102,12 +96,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account basic", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account basic", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with local level
@@ -130,12 +124,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account local", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account local", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with deep level
@@ -158,12 +152,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account deep", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account deep", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with global level
@@ -185,19 +179,19 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account global", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append on local level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendOnCreateBULevel()
         {
             // contact to database
@@ -215,11 +209,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl12.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -243,11 +237,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl12.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -272,12 +266,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account local", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account local", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with deep level
@@ -301,12 +295,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account deep", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account deep", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with global level
@@ -329,19 +323,19 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account global", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append on deep level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendOnCreateBUChildlevel()
         {
             // contact to database
@@ -359,11 +353,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl2.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -387,11 +381,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl2.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -415,11 +409,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBULvl2.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -444,12 +438,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account deep", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account deep", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with global level
@@ -472,19 +466,19 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account global", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append on global level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendOnCreateGlobalLevel()
         {
             // contact to database
@@ -502,11 +496,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBURoot.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -530,11 +524,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBURoot.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -558,11 +552,11 @@ namespace DG.XrmMockupTest
                     OwnerId = UserBURoot.ToEntityReference(),
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -587,11 +581,11 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -615,12 +609,12 @@ namespace DG.XrmMockupTest
                     PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId)
                 });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
-                Assert.AreEqual("Account global", account.Name);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
+                Assert.Equal("Account global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 

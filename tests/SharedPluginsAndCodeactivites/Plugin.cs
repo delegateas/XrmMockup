@@ -159,7 +159,7 @@
                      where (
                      a.Item1 == localcontext.PluginExecutionContext.Stage &&
                      a.Item2 == localcontext.PluginExecutionContext.MessageName &&
-                     (string.IsNullOrWhiteSpace(a.Item3) ? true : a.Item3 == localcontext.PluginExecutionContext.PrimaryEntityName)
+                     (string.IsNullOrWhiteSpace(a.Item3) || a.Item3 == localcontext.PluginExecutionContext.PrimaryEntityName)
                      )
                      select a.Item4).FirstOrDefault();
 
@@ -225,10 +225,12 @@
                 collection = context.PluginExecutionContext.PostEntityImages;
             }
 
-            Entity entity;
-            if (collection != null && collection.TryGetValue(name, out entity)) {
+            if (collection != null && collection.TryGetValue(name, out Entity entity))
+            {
                 return entity.ToEntity<T>();
-            } else {
+            }
+            else
+            {
                 return null;
             }
         }
@@ -430,10 +432,9 @@
 
 
         private static string GetMemberName(Expression<Func<T, object>> lambda) {
-            MemberExpression body = lambda.Body as MemberExpression;
-
-            if (body == null) {
-                UnaryExpression ubody = (UnaryExpression)lambda.Body;
+            if (!(lambda.Body is MemberExpression body))
+            {
+                var ubody = (UnaryExpression)lambda.Body;
                 body = ubody.Operand as MemberExpression;
             }
 

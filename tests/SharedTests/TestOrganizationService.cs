@@ -1,23 +1,25 @@
-﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmMockupTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
-    public class TestOrganizationService : UnitTestBase {
-        [TestMethod]
-        public void TestOrgSvcWithNonExistentUser() {
-            try {
+    public class TestOrganizationService : UnitTestBase
+    {
+        public TestOrganizationService(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
+        public void TestOrgSvcWithNonExistentUser()
+        {
+            try
+            {
                 crm.CreateOrganizationService(Guid.NewGuid());
-                Assert.Fail();
-            } catch (Exception e) {
-                Assert.IsInstanceOfType(e, typeof(FaultException));
+                throw new XunitException();
+            }
+            catch (Exception e)
+            {
+                Assert.IsType<FaultException>(e);
             }
         }
     }

@@ -1,17 +1,13 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmMockupTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestTeams : UnitTestBase
     {
 
@@ -38,8 +34,7 @@ namespace DG.XrmMockupTest
         private Team team3;
         private Team team4;
 
-        [TestInitialize]
-        public void Initialize()
+        public TestTeams(XrmMockupFixture fixture) : base(fixture)
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
 
@@ -93,22 +88,22 @@ namespace DG.XrmMockupTest
 
         }
 
-        [TestMethod]
+        [Fact]
         public void CreateTeam()
         {
             var team = crm.CreateTeam(orgAdminService, crm.RootBusinessUnit, SecurityRoles.SystemCustomizer);
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedTeam = context.TeamSet.FirstOrDefault(x => x.Id == team.Id);
-                Assert.IsNotNull(fetchedTeam);
+                Assert.NotNull(fetchedTeam);
 #if !(XRM_MOCKUP_2011)
-                Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
+                Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
 #endif
             }
         }
 
 
-        [TestMethod]
+        [Fact]
         public void TestAddMembers()
         {
             var bu1 = new BusinessUnit() { Name = "bu1", ParentBusinessUnitId = crm.RootBusinessUnit };
@@ -124,15 +119,15 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-                Assert.AreEqual(2, fetchedTeam.Count);
+                Assert.Equal(2, fetchedTeam.Count);
                 var user1Member = fetchedTeam.FirstOrDefault(x => x.SystemUserId == user1.Id);
-                Assert.IsNotNull(user1Member);
+                Assert.NotNull(user1Member);
                 var user2Member = fetchedTeam.FirstOrDefault(x => x.SystemUserId == user2.Id);
-                Assert.IsNotNull(user2Member);
+                Assert.NotNull(user2Member);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestRemoveMembers()
         {
             var bu1 = new BusinessUnit() { Name = "bu1", ParentBusinessUnitId = crm.RootBusinessUnit };
@@ -148,122 +143,122 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-                Assert.AreEqual(2, fetchedTeam.Count);
+                Assert.Equal(2, fetchedTeam.Count);
                 var user1Member = fetchedTeam.FirstOrDefault(x => x.SystemUserId == user1.Id);
-                Assert.IsNotNull(user1Member);
+                Assert.NotNull(user1Member);
                 var user2Member = fetchedTeam.FirstOrDefault(x => x.SystemUserId == user2.Id);
-                Assert.IsNotNull(user2Member);
+                Assert.NotNull(user2Member);
             }
 
             crm.RemoveUsersFromTeam(team.ToEntityReference(), user1.ToEntityReference(), user2.ToEntityReference());
             using (var context = new Xrm(orgAdminUIService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-                Assert.AreEqual(0, fetchedTeam.Count);
+                Assert.Empty(fetchedTeam);
             }
         }
 
 
 #region Positive Tests
         //A User can see there own Account
-        [TestMethod]
+        [Fact]
         public void UserCanReadOwn()
         {
-            Assert.IsTrue(CanRead(user11, account11));
-            Assert.IsTrue(CanRead(user12, account12));
-            Assert.IsTrue(CanRead(user21, account21));
-            Assert.IsTrue(CanRead(user22, account22));
+            Assert.True(CanRead(user11, account11));
+            Assert.True(CanRead(user12, account12));
+            Assert.True(CanRead(user21, account21));
+            Assert.True(CanRead(user22, account22));
         }
 
         //A User can edit there own Account
-        [TestMethod]
+        [Fact]
         public void UserCanWriteOwn()
         {
-            Assert.IsTrue(CanWrite(user11, account11));
-            Assert.IsTrue(CanWrite(user12, account12));
-            Assert.IsTrue(CanWrite(user21, account21));
-            Assert.IsTrue(CanWrite(user22, account22));
+            Assert.True(CanWrite(user11, account11));
+            Assert.True(CanWrite(user12, account12));
+            Assert.True(CanWrite(user21, account21));
+            Assert.True(CanWrite(user22, account22));
         }
 
         //A User can see the account of its teams
-        [TestMethod]
+        [Fact]
         public void UserCanReadTeam()
         {
             crm.AddUsersToTeam(team1.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
             crm.AddUsersToTeam(team2.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
 
-            Assert.IsTrue(CanRead(user11, account1));
-            Assert.IsTrue(CanRead(user12, account2));
-            Assert.IsTrue(CanRead(user21, account1));
-            Assert.IsTrue(CanRead(user22, account2));
+            Assert.True(CanRead(user11, account1));
+            Assert.True(CanRead(user12, account2));
+            Assert.True(CanRead(user21, account1));
+            Assert.True(CanRead(user22, account2));
         }
         //A user can access a team when joining it.
-        [TestMethod]
+        [Fact]
         public void UserCanReadAfterJoining()
         {
-            Assert.IsFalse(CanRead(user12, account1));
+            Assert.False(CanRead(user12, account1));
             crm.AddUsersToTeam(team1.ToEntityReference(), user12.ToEntityReference());
-            Assert.IsTrue(CanRead(user12, account1));
+            Assert.True(CanRead(user12, account1));
         }
 #endregion
 
 #region Negative Tests
         //A User can't see the account beloning to different officies
-        [TestMethod]
+        [Fact]
         public void UserCantReadOtherUnit()
         {
-            Assert.IsFalse(CanRead(user11, account21));
-            Assert.IsFalse(CanRead(user12, account22));
-            Assert.IsFalse(CanRead(user21, account12));
-            Assert.IsFalse(CanRead(user22, account11));
+            Assert.False(CanRead(user11, account21));
+            Assert.False(CanRead(user12, account22));
+            Assert.False(CanRead(user21, account12));
+            Assert.False(CanRead(user22, account11));
         }
         //A User can't see the account  beloning to different team
-        [TestMethod]
+        [Fact]
         public void UserCantReadOtherTeam()
         {
             crm.AddUsersToTeam(team1.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
             crm.AddUsersToTeam(team2.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
 
-            Assert.IsFalse(CanRead(user11, account2));
-            Assert.IsFalse(CanRead(user12, account1));
-            Assert.IsFalse(CanRead(user21, account2));
-            Assert.IsFalse(CanRead(user22, account1));
+            Assert.False(CanRead(user11, account2));
+            Assert.False(CanRead(user12, account1));
+            Assert.False(CanRead(user21, account2));
+            Assert.False(CanRead(user22, account1));
         }
 
         //A user from a different business unit can't read another members account when team has user level access
-        [TestMethod]
+        [Fact]
         public void UserCantReadOtherTeamMembersUserLevel()
         {
             crm.AddUsersToTeam(team1.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
             crm.AddUsersToTeam(team2.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
 
-            Assert.IsFalse(CanRead(user11, account21));
-            Assert.IsFalse(CanRead(user12, account22));
-            Assert.IsFalse(CanRead(user21, account11));
-            Assert.IsFalse(CanRead(user22, account12));
+            Assert.False(CanRead(user11, account21));
+            Assert.False(CanRead(user12, account22));
+            Assert.False(CanRead(user21, account11));
+            Assert.False(CanRead(user22, account12));
         }
 
         //A user from a different business unit can read another members account when team has global level access
-        [TestMethod]
+        [Fact]
         public void UserCanReadOtherTeamMembersGlobalLevel()
         {
             crm.AddUsersToTeam(team3.ToEntityReference(), user11.ToEntityReference(), user21.ToEntityReference());
             crm.AddUsersToTeam(team4.ToEntityReference(), user12.ToEntityReference(), user22.ToEntityReference());
 
-            Assert.IsTrue(CanRead(user11, account21));
-            Assert.IsTrue(CanRead(user12, account22));
-            Assert.IsTrue(CanRead(user21, account11));
-            Assert.IsTrue(CanRead(user22, account12));
+            Assert.True(CanRead(user11, account21));
+            Assert.True(CanRead(user12, account22));
+            Assert.True(CanRead(user21, account11));
+            Assert.True(CanRead(user22, account12));
         }
 
         //A user can't access a team after leaving it.
-        [TestMethod]
+        [Fact]
         public void UserCantReadAfterLeaving()
         {
             crm.AddUsersToTeam(team2.ToEntityReference(), user12.ToEntityReference());
-            Assert.IsTrue(CanRead(user12, account2));
+            Assert.True(CanRead(user12, account2));
             crm.RemoveUsersFromTeam(team2.ToEntityReference(), user12.ToEntityReference());
-            Assert.IsFalse(CanRead(user12, account2));
+            Assert.False(CanRead(user12, account2));
         }
 
 #endregion

@@ -7,45 +7,57 @@ using Microsoft.Xrm.Sdk;
 using System.Diagnostics;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using DG.XrmContext;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Xunit.Sdk;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
+    public class TestDelete : UnitTestBase
+    {
+        public TestDelete(XrmMockupFixture fixture) : base(fixture) { }
 
-    [TestClass]
-    public class TestDelete : UnitTestBase {
+        [Fact]
+        public void DeleteTest()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
 
-        [TestMethod]
-        public void DeleteTest() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                
                 var guid = orgAdminUIService.Create(new Contact());
-                
+
                 var firstRetrieve = orgAdminUIService.Retrieve<Contact>(guid, null);
-                Assert.IsNotNull(firstRetrieve);
+                Assert.NotNull(firstRetrieve);
 
                 orgAdminUIService.Delete(Contact.EntityLogicalName, guid);
 
-                try {
+                try
+                {
                     orgAdminUIService.Retrieve<Contact>(guid, null);
-                    Assert.Fail();
-                } catch (Exception e) {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    throw new XunitException();
                 }
-                
+                catch (Exception e)
+                {
+                    Assert.IsType<FaultException>(e);
+                }
+
             }
         }
 
-        [TestMethod]
-        public void TestDeleteNonExistingEntity() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                try {
+        [Fact]
+        public void TestDeleteNonExistingEntity()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                try
+                {
                     orgAdminUIService.Delete(Contact.EntityLogicalName, Guid.NewGuid());
-                    Assert.Fail();
-                } catch (Exception e) {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    throw new XunitException();
+                }
+                catch (Exception e)
+                {
+                    Assert.IsType<FaultException>(e);
                 }
 
             }

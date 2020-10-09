@@ -6,18 +6,19 @@ using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.Diagnostics;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPlugins : UnitTestBase
     {
+        public TestPlugins(XrmMockupFixture fixture) : base(fixture) { }
+
 #if !XRM_MOCKUP_TEST_2011
-        [TestMethod]
+        [Fact]
         public void TestImages()
         {
             // Testing that plugins not registered with DAXIF still have access to pre and post images during update.
@@ -29,13 +30,14 @@ namespace DG.XrmMockupTest
 
             orgAdminService.Update(createdAccount);
             var retrievedAccount = Account.Retrieve(orgAdminService, createdAccount.Id, x => x.Name);
-            Assert.AreEqual("NameIsModified", retrievedAccount.Name, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
+            // The update plugin isn't run or the name it updates doesn't match what we are expecting!
+            Assert.Equal("NameIsModified", retrievedAccount.Name);
 
             orgAdminUIService.Delete(Account.EntityLogicalName, createdAccount.Id);
         }
 #endif
 
-        [TestMethod]
+        [Fact]
         public void TestSystemAttributesAddedToTargetForPostOperationStepPlugins()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -46,12 +48,12 @@ namespace DG.XrmMockupTest
                 con.Id = orgAdminUIService.Create(con);
 
                 con = Contact.Retrieve(orgAdminService, con.Id, x => x.LastName,x=>x.CreatedOn);
-                Assert.IsTrue(!string.IsNullOrEmpty(con.LastName));
-                Assert.AreEqual(con.CreatedOn.ToString(), con.LastName);
+                Assert.True(!string.IsNullOrEmpty(con.LastName));
+                Assert.Equal(con.CreatedOn.ToString(), con.LastName);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestPluginTrigger()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -60,12 +62,11 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Create(acc);
 
                 var leads = context.LeadSet.ToList();
-                Assert.IsTrue(leads.Count > 0);
+                Assert.True(leads.Count > 0);
             }
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(FaultException))]
+        [Fact]
         public void TestPluginChain()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -76,12 +77,12 @@ namespace DG.XrmMockupTest
                 acc.Id = accid;
                 acc.Fax = "1233213";
 
-                orgAdminUIService.Update(acc);
+                Assert.Throws<FaultException>(() => orgAdminUIService.Update(acc));
             }
         }
 
 #if !XRM_MOCKUP_TEST_2011
-        [TestMethod]
+        [Fact]
         public void TestUpdateBase()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -99,7 +100,7 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Update(accUpd);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-                Assert.AreEqual(acc.Name + "UpdateBase", retrieved.Name);
+                Assert.Equal(acc.Name + "UpdateBase", retrieved.Name);
             }
         }
 #endif

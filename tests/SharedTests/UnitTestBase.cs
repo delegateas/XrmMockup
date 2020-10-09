@@ -1,64 +1,76 @@
 ﻿using System;
-using DG.Tools;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
+using Xunit;
 
-namespace DG.XrmMockupTest {
-
-    [TestClass]
-    public class UnitTestBase {
+namespace DG.XrmMockupTest
+{
+    public class UnitTestBase : IClassFixture<XrmMockupFixture>
+    {
         private static DateTime _startTime { get; set; }
 
         protected IOrganizationService orgAdminUIService;
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
+        private XrmMockupFixture fixture;
+
 #if XRM_MOCKUP_TEST_2011
-        protected static XrmMockup2011 crm;
-        protected static XrmMockup2011 crmRealData;
+        protected XrmMockup2011 crm;
 #elif XRM_MOCKUP_TEST_2013
-        protected static XrmMockup2013 crm;
-        protected static XrmMockup2013 crmRealData;
+        protected XrmMockup2013 crm;
 #elif XRM_MOCKUP_TEST_2015
-        protected static XrmMockup2015 crm;
-        protected static XrmMockup2015 crmRealData;
+        protected XrmMockup2015 crm;
 #elif XRM_MOCKUP_TEST_2016
-        protected static XrmMockup2016 crm;
-        protected static XrmMockup2016 crmRealData;
+        protected XrmMockup2016 crm;
 #elif XRM_MOCKUP_TEST_365
-        protected static XrmMockup365 crm;
-        protected static XrmMockup365 crmRealData;
+        protected XrmMockup365 crm;
 #endif
 
-        public UnitTestBase() {
-            this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
-            this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
-            this.orgAdminService = crm.GetAdminService();
-            if(crmRealData != null)
-                this.orgRealDataService = crmRealData.GetAdminService();
-        }
-
-        [TestCleanup]
-        public void TestCleanup() {
+        public UnitTestBase(XrmMockupFixture fixture)
+        {
+            this.fixture = fixture;
+            crm = fixture.crm;
             crm.ResetEnvironment();
+            orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
+            orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
+            orgAdminService = crm.GetAdminService();
+            if (fixture.crmRealData != null)
+                orgRealDataService = fixture.crmRealData.GetAdminService();
         }
+    }
 
+    public class XrmMockupFixture : IDisposable
+    {
+#if XRM_MOCKUP_TEST_2011
+        public XrmMockup2011 crm;
+        public XrmMockup2011 crmRealData;
+#elif XRM_MOCKUP_TEST_2013
+        public XrmMockup2013 crm;
+        public XrmMockup2013 crmRealData;
+#elif XRM_MOCKUP_TEST_2015
+        public XrmMockup2015 crm;
+        public XrmMockup2015 crmRealData;
+#elif XRM_MOCKUP_TEST_2016
+        public XrmMockup2016 crm;
+        public XrmMockup2016 crmRealData;
+#elif XRM_MOCKUP_TEST_365
+        public XrmMockup365 crm;
+        public XrmMockup365 crmRealData;
+#endif
 
-        [AssemblyInitialize]
-        public static void InitializeServices(TestContext context) {
-            InitializeMockup(context);
-        }
-
-        public static void InitializeMockup(TestContext context) {
-            var settings = new XrmMockupSettings {
+        public XrmMockupFixture()
+        {
+            var settings = new XrmMockupSettings
+            {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
+                MetadataDirectoryPath = "../../../Metadata"
             };
 
 #if XRM_MOCKUP_TEST_2011
@@ -106,6 +118,10 @@ namespace DG.XrmMockupTest {
             {
                 // ignore
             }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

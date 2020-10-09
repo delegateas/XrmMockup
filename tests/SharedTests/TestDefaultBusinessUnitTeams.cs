@@ -1,22 +1,21 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestDefaultBusinessUnitTeams : UnitTestBase
     {
         private BusinessUnit _businessUnit1;
         private BusinessUnit _businessUnit2;
         private BusinessUnit _businessUnit3;
 
-        [TestInitialize]
-        public void Initialize()
+        public TestDefaultBusinessUnitTeams(XrmMockupFixture fixture) : base(fixture)
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
             
@@ -29,7 +28,7 @@ namespace DG.XrmMockupTest
             _businessUnit3.Id = orgAdminService.Create(_businessUnit3);
         }
 
-        [TestMethod]
+        [Fact]
         public void CreateBusinessUnit()
         {
             _businessUnit1.Id = orgAdminService.Create(_businessUnit1);
@@ -37,7 +36,7 @@ namespace DG.XrmMockupTest
             RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit1);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateBusinessUnit()
         {
             _businessUnit2.Name = "A new business unit name";
@@ -46,7 +45,7 @@ namespace DG.XrmMockupTest
             RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit2);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeleteBusinessUnit()
         {
             var fetchedTeam = RetrieveBusinessUnitDefaultTeamAndCheckAttributes(_businessUnit3);
@@ -59,11 +58,13 @@ namespace DG.XrmMockupTest
             }
             catch (FaultException e)
             {
-                Assert.AreEqual($"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
-                    e.Message, "Error message doesn't match expected error message, maybe a different error is thrown?");
+                // Test error message
+                Assert.Equal(
+                    $"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
+                    e.Message);
                 return;
             }
-            Assert.Fail("Exception when trying to fetch deleted team isn't thrown.");
+            throw new XunitException("Exception when trying to fetch deleted team isn't thrown.");
         }
 
         private Team RetrieveBusinessUnitDefaultTeamAndCheckAttributes(BusinessUnit businessUnit)
@@ -75,7 +76,7 @@ namespace DG.XrmMockupTest
                     .Where(x => x.Name == businessUnit.Name)
                     .FirstOrDefault();
 
-                Assert.IsNotNull(fetchedTeam);
+                Assert.NotNull(fetchedTeam);
                 CheckTeamAttributes(fetchedTeam, businessUnit);
 
                 return fetchedTeam;
@@ -86,15 +87,15 @@ namespace DG.XrmMockupTest
         {
             businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
 
-            Assert.AreEqual(businessUnit.Name, fetchedTeam.Name);
+            Assert.Equal(businessUnit.Name, fetchedTeam.Name);
 #if !(XRM_MOCKUP_2011)
-            Assert.AreEqual(Team_TeamType.Owner, fetchedTeam.TeamType);
+            Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
 #endif
-            Assert.AreEqual(true, fetchedTeam.IsDefault);
-            Assert.AreEqual("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
+            Assert.Equal(true, fetchedTeam.IsDefault);
+            Assert.Equal("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
                 fetchedTeam.Description);
-            Assert.AreEqual(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
-            Assert.AreEqual(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
+            Assert.Equal(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
+            Assert.Equal(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
         }
     }
 }

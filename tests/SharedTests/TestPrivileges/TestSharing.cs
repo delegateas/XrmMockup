@@ -1,25 +1,23 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk.Messages;
+﻿using Xunit;
 using Microsoft.Xrm.Sdk.Query;
 using DG.Tools.XrmMockup;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Xunit.Sdk;
+using System;
 
-namespace DG.XrmMockupTest {
+namespace DG.XrmMockupTest
+{
+    public class TestSharing : UnitTestBase
+    {
+        public TestSharing(XrmMockupFixture fixture) : base(fixture) { }
 
-    [TestClass]
-    public class TestSharing : UnitTestBase {
-        [TestMethod]
-        public void TestSharingAccess() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        [Fact]
+        public void TestSharingAccess()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var businessunit = new BusinessUnit();
                 businessunit["name"] = "business unit name";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
@@ -31,22 +29,26 @@ namespace DG.XrmMockupTest {
                 var contact = new Contact();
                 contact.Id = sharingService.Create(contact);
 
-
-                FaultException faultException = null;
-                try {
+                try
+                {
                     otherService.Retrieve(Contact.EntityLogicalName, contact.Id, new ColumnSet(true));
-                    Assert.Fail();
-                } catch (FaultException e) {
-                    faultException = e;
+                    throw new XunitException();
                 }
-                var req = new GrantAccessRequest();
-                req.PrincipalAccess = new PrincipalAccess() {
-                    AccessMask = AccessRights.ReadAccess,
-                    Principal = otherUser.ToEntityReference()
+                catch (Exception e)
+                {
+                    Assert.IsType<FaultException>(e);
+                }
+                var req = new GrantAccessRequest
+                {
+                    PrincipalAccess = new PrincipalAccess()
+                    {
+                        AccessMask = AccessRights.ReadAccess,
+                        Principal = otherUser.ToEntityReference()
+                    },
+                    Target = contact.ToEntityReference()
                 };
-                req.Target = contact.ToEntityReference();
                 sharingService.Execute(req);
-                
+
                 otherService.Retrieve(Contact.EntityLogicalName, contact.Id, new ColumnSet(true));
             }
         }

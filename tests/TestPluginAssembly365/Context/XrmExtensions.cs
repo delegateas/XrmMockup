@@ -171,9 +171,11 @@ namespace DG.XrmContext
 
         protected static T Retrieve_AltKey<T>(IOrganizationService service, KeyAttributeCollection keys, params Expression<Func<T, object>>[] attributes) where T : Entity
         {
-            var req = new RetrieveRequest();
-            req.Target = new EntityReference(Activator.CreateInstance<T>().LogicalName, keys);
-            req.ColumnSet = XrmExtensions.GetColumnSet(attributes);
+            var req = new RetrieveRequest
+            {
+                Target = new EntityReference(Activator.CreateInstance<T>().LogicalName, keys),
+                ColumnSet = XrmExtensions.GetColumnSet(attributes)
+            };
             try
             {
                 return (service.Execute(req) as RetrieveResponse)?.Entity?.ToEntity<T>();
@@ -185,9 +187,7 @@ namespace DG.XrmContext
         }
         public static string GetColumnName<T>(Expression<Func<T, object>> lambda) where T : Entity
         {
-            MemberExpression body = lambda.Body as MemberExpression;
-
-            if (body == null)
+            if (!(lambda.Body is MemberExpression body))
             {
                 UnaryExpression ubody = (UnaryExpression)lambda.Body;
                 body = ubody.Operand as MemberExpression;
@@ -228,10 +228,12 @@ namespace DG.XrmContext
 
         public SetStateRequest MakeSetStateRequest(State state, Status status)
         {
-            var req = new SetStateRequest();
-            req.EntityMoniker = ToEntityReference();
-            req.State = new OptionSetValue((int)(object)state);
-            req.Status = new OptionSetValue((int)(object)status);
+            var req = new SetStateRequest
+            {
+                EntityMoniker = ToEntityReference(),
+                State = new OptionSetValue((int)(object)state),
+                Status = new OptionSetValue((int)(object)status)
+            };
             return req;
         }
 
@@ -342,12 +344,16 @@ namespace DG.XrmContext
             var resps = new List<ExecuteMultipleResponseItem>();
             foreach (var rs in splitReqs)
             {
-                var req = new ExecuteMultipleRequest();
-                req.Requests = new OrganizationRequestCollection();
+                var req = new ExecuteMultipleRequest
+                {
+                    Requests = new OrganizationRequestCollection()
+                };
                 req.Requests.AddRange(rs);
-                req.Settings = new ExecuteMultipleSettings();
-                req.Settings.ContinueOnError = continueOnError;
-                req.Settings.ReturnResponses = true;
+                req.Settings = new ExecuteMultipleSettings
+                {
+                    ContinueOnError = continueOnError,
+                    ReturnResponses = true
+                };
                 var resp = service.Execute(req) as ExecuteMultipleResponse;
                 resps.AddRange(resp.Responses);
             }
@@ -363,20 +369,17 @@ namespace DG.XrmContext
 
         public static string GetAttributeLogicalName<T, U>(Expression<Func<T, U>> lambda)
         {
-            MemberExpression body = lambda.Body as MemberExpression;
-
-            if (body == null)
+            if (!(lambda.Body is MemberExpression body))
             {
                 UnaryExpression ubody = (UnaryExpression)lambda.Body;
                 body = ubody.Operand as MemberExpression;
             }
 
-            var attributelogicalName = body.Member.GetCustomAttributes(false)
+            if (!(body.Member.GetCustomAttributes(false)
                 .Where(x => x is AttributeLogicalNameAttribute)
-                .FirstOrDefault() as AttributeLogicalNameAttribute;
-
-            if (attributelogicalName == null)
+                .FirstOrDefault() is AttributeLogicalNameAttribute attributelogicalName))
                 return body.Member.Name;
+
             return attributelogicalName.LogicalName;
         }
 
