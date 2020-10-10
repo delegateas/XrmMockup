@@ -1,27 +1,24 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
 using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestMoney : UnitTestBase {
+    public class TestMoney : UnitTestBase
+    {
         [TestMethod]
-        public void TestCalculatedIsSet() {
+        public void TestCalculatedIsSet()
+        {
 
-            var bus = new dg_bus();
-            bus.dg_name = "Buu";
+            var bus = new dg_bus
+            {
+                dg_name = "Buu"
+            };
             bus.Id = orgAdminUIService.Create(bus);
 
             using (var context = new Xrm(orgAdminUIService))
@@ -30,8 +27,8 @@ namespace DG.XrmMockupTest {
                 Assert.IsNull(retrieved.dg_Udregnet);
             }
 
-                bus.dg_name = "Woop";
-                orgAdminUIService.Update(bus);
+            bus.dg_name = "Woop";
+            orgAdminUIService.Update(bus);
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
@@ -50,13 +47,15 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
                 Assert.AreEqual(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
                 Assert.AreEqual(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
-                Assert.IsNotNull(retrieved.dg_AllConditions);            
+                Assert.IsNotNull(retrieved.dg_AllConditions);
             }
         }
 
         [TestMethod]
-        public void TestRollUp() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestRollUp()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var childlessBus = new dg_bus() { dg_name = "Buu" };
                 childlessBus.Id = orgAdminUIService.Create(childlessBus);
 
@@ -72,37 +71,44 @@ namespace DG.XrmMockupTest {
                 var bus = new dg_bus { dg_name = "Woop" };
                 bus.Id = orgAdminUIService.Create(bus);
 
-                var child1 = orgAdminUIService.Create(
-                    new dg_child() {
+                orgAdminUIService.Create(
+                    new dg_child()
+                    {
                         dg_name = "Hans Jørgen",
                         dg_Allowance = 20,
-                        dg_Skolebus = new EntityReference {
+                        dg_Skolebus = new EntityReference
+                        {
                             Id = bus.Id,
                             LogicalName = dg_bus.EntityLogicalName
                         }
                     });
 
-                var child2 = orgAdminUIService.Create(
-                    new dg_child() {
+                orgAdminUIService.Create(
+                    new dg_child()
+                    {
                         dg_name = "Hans Gert",
                         dg_Allowance = 50,
-                        dg_Skolebus = new EntityReference {
+                        dg_Skolebus = new EntityReference
+                        {
                             Id = bus.Id,
                             LogicalName = dg_bus.EntityLogicalName
                         }
                     });
 
-                var anotherCurrency = new TransactionCurrency() {
+                var anotherCurrency = new TransactionCurrency()
+                {
                     ExchangeRate = 0.5m,
                     CurrencyPrecision = 2
                 };
                 anotherCurrency.Id = orgAdminUIService.Create(anotherCurrency);
 
-                var child3 = orgAdminUIService.Create(
-                   new dg_child() {
+                orgAdminUIService.Create(
+                   new dg_child()
+                   {
                        dg_name = "Børge Hansen",
                        dg_Allowance = 30,
-                       dg_Skolebus = new EntityReference {
+                       dg_Skolebus = new EntityReference
+                       {
                            Id = bus.Id,
                            LogicalName = dg_bus.EntityLogicalName
                        },
@@ -115,7 +121,8 @@ namespace DG.XrmMockupTest {
                 Assert.IsNull(retrieved.dg_MinAllowance);
                 Assert.IsNull(retrieved.dg_AvgAllowance);
 
-                var req = new CalculateRollupFieldRequest() {
+                var req = new CalculateRollupFieldRequest()
+                {
                     FieldName = "dg_totalallowance",
                     Target = bus.ToEntityReference()
                 };
@@ -157,15 +164,19 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestPrecisionSource() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var currency = new TransactionCurrency() {
+        public void TestPrecisionSource()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var currency = new TransactionCurrency()
+                {
                     ExchangeRate = 1m,
                     CurrencyPrecision = 3
                 };
                 currency.Id = orgAdminUIService.Create(currency);
 
-                var bus = new dg_bus() {
+                var bus = new dg_bus()
+                {
                     dg_name = "Woop",
                     dg_Ticketprice = 10.1234m,
                     TransactionCurrencyId = currency.ToEntityReference()

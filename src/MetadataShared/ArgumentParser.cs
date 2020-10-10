@@ -59,8 +59,8 @@ namespace DG.Tools.XrmMockup.Metadata
                 if (!ArgMap.TryGetValue(argName.ToLower(), out string val)) {
                     return ConfigurationManager.AppSettings[argName];
                 }
-                if (val is string)
-                    return (string)val;
+                if (val is string s) return s;
+
                 return null;
             }
         }
@@ -81,7 +81,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 return (T)(converter.ConvertFromInvariantString(value));
             }
             catch (NotSupportedException) {
-                return default(T);
+                return default;
             }
         }
     }
@@ -95,8 +95,9 @@ namespace DG.Tools.XrmMockup.Metadata
         }
 
         public override bool Equals(Object obj) {
-            if (obj == null || !(obj is ArgumentDescription)) return false;
-            else return Name == ((ArgumentDescription)obj).Name;
+            if (obj is ArgumentDescription description) return Name == description.Name;
+
+            return false;
         }
 
         public override string ToString() {

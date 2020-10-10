@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-using System.ServiceModel;
-using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestSettings : UnitTestBase {
+    public class TestSettings : UnitTestBase
+    {
         [TestMethod]
-        public void TestNoExceptionRequest() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestNoExceptionRequest()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
 
                 var req = new OrganizationRequest("WrongRequestThatFails");
-                try {
+                try
+                {
                     orgAdminUIService.Execute(req);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(NotImplementedException));
                 }
 
@@ -33,9 +31,11 @@ namespace DG.XrmMockupTest {
             }
         }
 
-        [TestMethod,Ignore]
-        public void TestRealDataRetrieve() {
-            var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68")) {
+        [TestMethod, Ignore("Using real data")]
+        public void TestRealDataRetrieve()
+        {
+            var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68"))
+            {
                 Name = "babuasd"
             };
             orgRealDataService.Update(acc);
@@ -44,11 +44,14 @@ namespace DG.XrmMockupTest {
             Assert.AreEqual("12321123312", retrieved.AccountNumber);
         }
 
-        [TestMethod,Ignore]
-        public void TestRealDataRetrieveMultiple() {
-            var query = new QueryExpression(Account.EntityLogicalName) {
+        [TestMethod, Ignore( "Using real data")]
+        public void TestRealDataRetrieveMultiple()
+        {
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
                 ColumnSet = new ColumnSet(true),
-                PageInfo = new PagingInfo() {
+                PageInfo = new PagingInfo()
+                {
                     Count = 1000,
                     PageNumber = 1
                 }

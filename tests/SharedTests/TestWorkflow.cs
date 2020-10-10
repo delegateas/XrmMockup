@@ -1,22 +1,25 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
 using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using System.IO;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestWorkflow : UnitTestBase {
-
+    public class TestWorkflow : UnitTestBase
+    {
         [TestMethod]
-        public void TestCreateWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "Activeworkflow.xml"));
-                var acc = new Account() {
+        public void TestCreateWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "Activeworkflow.xml"));
+                var acc = new Account()
+                {
                     Name = "Wap"
                 };
                 acc.Id = orgAdminUIService.Create(acc);
@@ -27,10 +30,13 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestStringAdd() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "AddStringWorkflow.xml"));
-                var acc = new Account() {
+        public void TestStringAdd()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "AddStringWorkflow.xml"));
+                var acc = new Account()
+                {
                     Name = "WapAdd"
                 };
                 acc.Id = orgAdminUIService.Create(acc);
@@ -41,10 +47,13 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestOtherwiseBranchingWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "OtherwiseWorkflow.xml"));
-                var otherwise = new Account() {
+        public void TestOtherwiseBranchingWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "OtherwiseWorkflow.xml"));
+                var otherwise = new Account()
+                {
                     Name = "Otherwise"
                 };
                 otherwise.Id = orgAdminUIService.Create(otherwise);
@@ -53,7 +62,8 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual("SetFromOtherwise", retrieved.Name);
 
 
-                var thenThen = new Account() {
+                var thenThen = new Account()
+                {
                     Name = "ThenThen"
                 };
                 thenThen.Id = orgAdminUIService.Create(thenThen);
@@ -61,8 +71,10 @@ namespace DG.XrmMockupTest {
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, thenThen.Id, new ColumnSet(true)) as Account;
                 Assert.AreEqual("SetFromThenThen", retrieved.Name);
 
-                var thenOtherwise = new Account();
-                thenOtherwise.Name = "ThenOtherwise";
+                var thenOtherwise = new Account
+                {
+                    Name = "ThenOtherwise"
+                };
                 thenOtherwise.Id = orgAdminUIService.Create(thenOtherwise);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, thenOtherwise.Id, new ColumnSet(true)) as Account;
@@ -71,21 +83,23 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestTimeWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "WaitingWorkflow.xml"));
+        public void TestTimeWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "WaitingWorkflow.xml"));
                 var acc = new Account();
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.IsNull(retrieved.Name);
-                
+
                 acc.Name = "Some name";
                 orgAdminUIService.Update(acc);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.AreEqual(acc.Name + acc.Name, retrieved.Name);
-                
+
                 crm.AddDays(1);
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
                 Assert.AreNotEqual("qwerty", retrieved.Description);
@@ -98,24 +112,29 @@ namespace DG.XrmMockupTest {
 
 
         [TestMethod]
-        public void TestRelatedNullWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
+        public void TestRelatedNullWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
                 businessunit["name"] = "business unit name 1";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
-                var user = crm.CreateUser(orgAdminUIService, 
+                var user = crm.CreateUser(orgAdminUIService,
                     new SystemUser() { LastName = null, BusinessUnitId = businessunit.ToEntityReference() }, SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
-                var con = new Contact() {
+                var con = new Contact()
+                {
                     LastName = "SomeLastname"
                 };
                 con.Id = service.Create(con);
 
-                var acc = new Account();
-                acc.Name = "Related";
-                acc.PrimaryContactId = con.ToEntityReference();
+                var acc = new Account
+                {
+                    Name = "Related",
+                    PrimaryContactId = con.ToEntityReference()
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -124,9 +143,11 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestRelatedWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
+        public void TestRelatedWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "RelatedWorkflow.xml"));
                 var businessunit = new BusinessUnit();
                 businessunit["name"] = "business unit name 2";
                 businessunit.Id = orgAdminUIService.Create(businessunit);
@@ -134,13 +155,17 @@ namespace DG.XrmMockupTest {
                 var user = crm.CreateUser(orgAdminUIService,
                     new SystemUser() { LastName = "UserLastName", BusinessUnitId = businessunit.ToEntityReference() }, SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
-                var con = new Contact();
-                con.LastName = "SomeLastname";
+                var con = new Contact
+                {
+                    LastName = "SomeLastname"
+                };
                 con.Id = service.Create(con);
 
-                var acc = new Account();
-                acc.Name = "Related";
-                acc.PrimaryContactId = con.ToEntityReference();
+                var acc = new Account
+                {
+                    Name = "Related",
+                    PrimaryContactId = con.ToEntityReference()
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -149,18 +174,24 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestOwningBusinessUnitInvalidNameWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "OwningBUWorkflow.xml"));
-                var businessunit = new BusinessUnit();
-                businessunit.Name = "something";
+        public void TestOwningBusinessUnitInvalidNameWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "OwningBUWorkflow.xml"));
+                var businessunit = new BusinessUnit
+                {
+                    Name = "something"
+                };
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
 
-                var acc = new Account();
-                acc.Name = "Some name";
+                var acc = new Account
+                {
+                    Name = "Some name"
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -169,18 +200,24 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestOwningBusinessUnitValidNameWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "OwningBUWorkflow.xml"));
-                var businessunit = new BusinessUnit();
-                businessunit.Name = "delegatelab4";
+        public void TestOwningBusinessUnitValidNameWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "OwningBUWorkflow.xml"));
+                var businessunit = new BusinessUnit
+                {
+                    Name = "delegatelab4"
+                };
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
 
-                var acc = new Account();
-                acc.Name = "Some name";
+                var acc = new Account
+                {
+                    Name = "Some name"
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -189,21 +226,27 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestMyConditionWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "OtherWorkflows", "MyConditionWorkflow.xml"));
-                var businessunit = new BusinessUnit();
-                businessunit.Name = "deledevelopmentasd";
+        public void TestMyConditionWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "OtherWorkflows", "MyConditionWorkflow.xml"));
+                var businessunit = new BusinessUnit
+                {
+                    Name = "deledevelopmentasd"
+                };
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
                 var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
 
-                var acc = new Account();
-                acc.Name = "Some name";
-                acc.Revenue = 3000;
-                acc.DoNotFax = true;
-                acc.DoNotBulkPostalMail = false;
+                var acc = new Account
+                {
+                    Name = "Some name",
+                    Revenue = 3000,
+                    DoNotFax = true,
+                    DoNotBulkPostalMail = false
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -212,15 +255,20 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestSendMailWorkflow() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "SendMailWorkflow.xml"));
-                var businessunit = new BusinessUnit();
-                businessunit.Name = "delegatelab4";
+        public void TestSendMailWorkflow()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "SendMailWorkflow.xml"));
+                var businessunit = new BusinessUnit
+                {
+                    Name = "delegatelab4"
+                };
                 businessunit.Id = orgAdminUIService.Create(businessunit);
 
-                crm.CreateUser(orgAdminService, 
-                    new SystemUser() {
+                crm.CreateUser(orgAdminService,
+                    new SystemUser()
+                    {
                         Id = new Guid("9732d6d5-8e46-44e1-b408-32d3801c5724"),
                         FirstName = "Kaspar",
                         LastName = "Bøgh Christensen",
@@ -230,8 +278,10 @@ namespace DG.XrmMockupTest {
                 var user = crm.CreateUser(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator) as SystemUser;
                 var service = crm.CreateOrganizationService(user.Id);
 
-                var acc = new Account();
-                acc.Name = "Some name";
+                var acc = new Account
+                {
+                    Name = "Some name"
+                };
                 acc.Id = service.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
@@ -252,7 +302,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestClear()
         {
-            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestClear.xml"));
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestClear.xml"));
             var service = crm.GetAdminService();
             var lead = new Lead
             {
@@ -268,7 +318,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestTypeConvertingOptionsetToString()
         {
-            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
             var service = crm.GetAdminService();
             var lead = new Lead
             {
@@ -284,7 +334,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestTypeConvertingEntityToString()
         {
-            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
             var service = crm.GetAdminService();
             var acc = new Account
             {
@@ -305,7 +355,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestTypeConvertingMoneyToString()
         {
-            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
             var service = crm.GetAdminService();
             var lead = new Lead
             {
@@ -323,7 +373,7 @@ namespace DG.XrmMockupTest {
         [TestMethod]
         public void TestTypeConvertingIntToString()
         {
-            crm.AddWorkflow(Path.Combine("../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
             var service = crm.GetAdminService();
             var lead = new Lead
             {

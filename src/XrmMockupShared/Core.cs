@@ -282,8 +282,7 @@ namespace DG.Tools.XrmMockup
             foreach (var relQuery in relatedEntityQuery)
             {
                 var relationship = relQuery.Key;
-                var queryExpr = relQuery.Value as QueryExpression;
-                if (queryExpr == null)
+                if (!(relQuery.Value is QueryExpression queryExpr))
                 {
                     queryExpr = XmlHandling.FetchXmlToQueryExpression(((FetchExpression)relQuery.Value).Query);
                 }
@@ -394,7 +393,7 @@ namespace DG.Tools.XrmMockup
             if (selection.unshare && HasCascadeBehaviour(cascadeConfiguration.Unshare))
                 return true;
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             if (selection.rollup && HasCascadeBehaviour(cascadeConfiguration.RollupView))
                 return true;
 #endif
@@ -853,20 +852,16 @@ namespace DG.Tools.XrmMockup
                 }
             }
 
-            if (obj != null)
+            if (obj is Entity entity)
             {
-                var entity = obj as Entity;
-                var entityRef = obj as EntityReference;
-
-                if (entity != null)
-                {
-                    return new Tuple<object, string, Guid>(obj, entity.LogicalName, entity.Id);
-                }
-                else
-                {
-                    return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
-                }
+                return new Tuple<object, string, Guid>(obj, entity.LogicalName, entity.Id);
             }
+
+            if (obj is EntityReference entityRef)
+            {
+                return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
+            }
+            
             return null;
         }
 

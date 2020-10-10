@@ -1,7 +1,7 @@
 ﻿using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
@@ -11,7 +11,7 @@ namespace DG.XrmMockupTest
         public SystemUser TestUser;
 
         [TestInitialize]
-        public void CreateTestUser()
+        public void Init()
         {
             TestUser = crm.CreateUser(orgAdminService, new SystemUser { BusinessUnitId = crm.RootBusinessUnit }, SecurityRoles._000TestingRole) as SystemUser;
         }

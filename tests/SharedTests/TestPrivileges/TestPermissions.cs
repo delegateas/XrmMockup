@@ -1,25 +1,15 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using DG.Tools.XrmMockup;
 using System.ServiceModel;
-using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestPermissions : UnitTestBase
     {
-
         [TestMethod]
         public void TestPermissionWhenThroughTeam()
         {
@@ -68,7 +58,7 @@ namespace DG.XrmMockupTest
             userService.Update(updateContact);
             // Assert success
             contact = (Contact) orgAdminUIService.Retrieve(Contact.EntityLogicalName, contactId, new ColumnSet(true));
-            Assert.AreEqual(contact.GetAttributeValue<string>("jobtitle"), "CEO");
+            Assert.AreEqual("CEO", contact.GetAttributeValue<string>("jobtitle"));
         }
     }
 }

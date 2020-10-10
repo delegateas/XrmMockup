@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestAssocDissoc : UnitTestBase
     {
@@ -23,8 +18,9 @@ namespace DG.XrmMockupTest
 
         Contact contact1;
         Contact contact2;
+
         [TestInitialize]
-        public void TestInitialize()
+        public void Init()
         {
             contact1 = new Contact { FirstName = "Hans" };
             contact2 = new Contact { FirstName = "John" };
@@ -38,15 +34,18 @@ namespace DG.XrmMockupTest
             account2.Id = orgAdminUIService.Create(account2);
             account3.Id = orgAdminUIService.Create(account3);
         }
+
         [TestMethod]
         public void TestAssocDissoc1N()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection
+                {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, account2.Id),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
 
                 Relationship relationship = new Relationship("account_primary_contact");
 
@@ -76,8 +75,10 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
-                relatedEntities.Add(new EntityReference(Contact.EntityLogicalName, contact1.Id));
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection
+                {
+                    new EntityReference(Contact.EntityLogicalName, contact1.Id)
+                };
 
                 Relationship relationship = new Relationship("account_primary_contact");
 
@@ -115,14 +116,18 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                var relatedAccounts = new EntityReferenceCollection();
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
+                var relatedAccounts = new EntityReferenceCollection
+                {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, account2.Id),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
 
-                var relatedContacts = new EntityReferenceCollection();
-                relatedContacts.Add(new EntityReference(Contact.EntityLogicalName, contact1.Id));
-                relatedContacts.Add(new EntityReference(Contact.EntityLogicalName, contact2.Id));
+                var relatedContacts = new EntityReferenceCollection
+                {
+                    new EntityReference(Contact.EntityLogicalName, contact1.Id),
+                    new EntityReference(Contact.EntityLogicalName, contact2.Id)
+                };
 
                 Relationship relationship = new Relationship(dg_account_contact.EntityLogicalName);
 
@@ -131,13 +136,17 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Associate(Contact.EntityLogicalName, contact2.Id, relationship, relatedAccounts);
 
                 var relationQuery = new RelationshipQueryCollection();
-                var query = new QueryExpression(Account.EntityLogicalName);
-                query.ColumnSet = new ColumnSet("name");
+                var query = new QueryExpression(Account.EntityLogicalName)
+                {
+                    ColumnSet = new ColumnSet("name")
+                };
                 relationQuery.Add(relationship, query);
-                var req = new RetrieveRequest();
-                req.ColumnSet = new ColumnSet("firstname");
-                req.RelatedEntitiesQuery = relationQuery;
-                req.Target = new EntityReference(Contact.EntityLogicalName, contact1.Id);
+                var req = new RetrieveRequest
+                {
+                    ColumnSet = new ColumnSet("firstname"),
+                    RelatedEntitiesQuery = relationQuery,
+                    Target = new EntityReference(Contact.EntityLogicalName, contact1.Id)
+                };
                 var retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
                 var related = retrievedContact.RelatedEntities[relationship].Entities;
                 Assert.AreEqual(3, related.Count());
@@ -149,24 +158,32 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Disassociate(Contact.EntityLogicalName, contact1.Id, relationship, relatedAccounts);
 
                 relationQuery = new RelationshipQueryCollection();
-                query = new QueryExpression(Account.EntityLogicalName);
-                query.ColumnSet = new ColumnSet("name");
+                query = new QueryExpression(Account.EntityLogicalName)
+                {
+                    ColumnSet = new ColumnSet("name")
+                };
                 relationQuery.Add(relationship, query);
-                req = new RetrieveRequest();
-                req.ColumnSet = new ColumnSet("firstname");
-                req.RelatedEntitiesQuery = relationQuery;
-                req.Target = new EntityReference(Contact.EntityLogicalName, contact1.Id);
+                req = new RetrieveRequest
+                {
+                    ColumnSet = new ColumnSet("firstname"),
+                    RelatedEntitiesQuery = relationQuery,
+                    Target = new EntityReference(Contact.EntityLogicalName, contact1.Id)
+                };
                 retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
-                Assert.AreEqual(0, retrievedContact.RelatedEntities.Count());
+                Assert.AreEqual(0, retrievedContact.RelatedEntities.Count);
 
                 relationQuery = new RelationshipQueryCollection();
-                query = new QueryExpression(Account.EntityLogicalName);
-                query.ColumnSet = new ColumnSet("name");
+                query = new QueryExpression(Account.EntityLogicalName)
+                {
+                    ColumnSet = new ColumnSet("name")
+                };
                 relationQuery.Add(relationship, query);
-                req = new RetrieveRequest();
-                req.ColumnSet = new ColumnSet("firstname");
-                req.RelatedEntitiesQuery = relationQuery;
-                req.Target = new EntityReference(Contact.EntityLogicalName, contact2.Id);
+                req = new RetrieveRequest
+                {
+                    ColumnSet = new ColumnSet("firstname"),
+                    RelatedEntitiesQuery = relationQuery,
+                    Target = new EntityReference(Contact.EntityLogicalName, contact2.Id)
+                };
                 retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
                 related = retrievedContact.RelatedEntities[relationship].Entities;
                 Assert.AreEqual(3, related.Count());
@@ -182,26 +199,34 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                var relatedAccounts = new EntityReferenceCollection();
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
-                relatedAccounts.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
+                var relatedAccounts = new EntityReferenceCollection
+                {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, account2.Id),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
 
-                var relatedContacts = new EntityReferenceCollection();
-                relatedContacts.Add(new EntityReference(Contact.EntityLogicalName, contact1.Id));
-                relatedContacts.Add(new EntityReference(Contact.EntityLogicalName, contact2.Id));
+                var relatedContacts = new EntityReferenceCollection
+                {
+                    new EntityReference(Contact.EntityLogicalName, contact1.Id),
+                    new EntityReference(Contact.EntityLogicalName, contact2.Id)
+                };
 
                 Relationship relationship = new Relationship(dg_account_contact.EntityLogicalName);
 
                 orgAdminUIService.Associate(Account.EntityLogicalName, account1.Id, relationship, relatedContacts);
                 var relationQuery = new RelationshipQueryCollection();
-                var query = new QueryExpression(Contact.EntityLogicalName);
-                query.ColumnSet = new ColumnSet("firstname");
+                var query = new QueryExpression(Contact.EntityLogicalName)
+                {
+                    ColumnSet = new ColumnSet("firstname")
+                };
                 relationQuery.Add(relationship, query);
-                var req = new RetrieveRequest();
-                req.ColumnSet = new ColumnSet("name");
-                req.RelatedEntitiesQuery = relationQuery;
-                req.Target = new EntityReference(Account.EntityLogicalName, account1.Id);
+                var req = new RetrieveRequest
+                {
+                    ColumnSet = new ColumnSet("name"),
+                    RelatedEntitiesQuery = relationQuery,
+                    Target = new EntityReference(Account.EntityLogicalName, account1.Id)
+                };
                 var retrievedAccount = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Account;
                 var related = retrievedAccount.RelatedEntities[relationship].Entities;
                 Assert.AreEqual(2, related.Count());
@@ -216,10 +241,12 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account2.Id));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection
+                {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, account2.Id),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
 
                 Relationship relationship = new Relationship("account_primary_contact");
                 try
@@ -240,10 +267,12 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account1.Id));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, Guid.NewGuid()));
-                relatedEntities.Add(new EntityReference(Account.EntityLogicalName, account3.Id));
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection
+                {
+                    new EntityReference(Account.EntityLogicalName, account1.Id),
+                    new EntityReference(Account.EntityLogicalName, Guid.NewGuid()),
+                    new EntityReference(Account.EntityLogicalName, account3.Id)
+                };
 
                 Relationship relationship = new Relationship("account_primary_contact");
                 try

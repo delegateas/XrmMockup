@@ -858,7 +858,7 @@ namespace DG.Tools.XrmMockup
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
-            using (var stream = new FileStream(pathToMetadata, FileMode.Open))
+            using (var stream = new FileStream(pathToMetadata, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return (MetadataSkeleton)serializer.ReadObject(stream);
             }
@@ -879,7 +879,7 @@ namespace DG.Tools.XrmMockup
         internal static Entity GetWorkflow(string path)
         {
             var serializer = new DataContractSerializer(typeof(Entity));
-            using (var stream = new FileStream(path, FileMode.Open))
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return (Entity)serializer.ReadObject(stream);
             }
@@ -894,7 +894,7 @@ namespace DG.Tools.XrmMockup
             var serializer = new DataContractSerializer(typeof(SecurityRole));
             foreach (var file in files)
             {
-                using (var stream = new FileStream(file, FileMode.Open))
+                using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     securityRoles.Add((SecurityRole)serializer.ReadObject(stream));
                 }

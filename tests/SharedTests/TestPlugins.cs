@@ -1,15 +1,8 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
@@ -29,7 +22,8 @@ namespace DG.XrmMockupTest
 
             orgAdminService.Update(createdAccount);
             var retrievedAccount = Account.Retrieve(orgAdminService, createdAccount.Id, x => x.Name);
-            Assert.AreEqual("NameIsModified", retrievedAccount.Name, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
+            // The update plugin isn't run or the name it updates doesn't match what we are expecting!
+            Assert.AreEqual("NameIsModified", retrievedAccount.Name);
 
             orgAdminUIService.Delete(Account.EntityLogicalName, createdAccount.Id);
         }

@@ -1,24 +1,20 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
 using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestAction : UnitTestBase {
-
+    public class TestAction : UnitTestBase
+    {
         [TestMethod]
-        public void TestActionExecution() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestActionExecution()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var someString = "A some string";
                 var entity = new Contact();
                 entity.Id = orgAdminUIService.Create(entity);
@@ -34,8 +30,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestActionParts() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestActionParts()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var stringInput = "A string";
                 var datetimeInput = DateTime.Now;
                 var boolInput = true;
