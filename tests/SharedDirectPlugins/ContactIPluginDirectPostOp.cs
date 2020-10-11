@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DG.Some.Namespace
 {
-    public class ContactIPluginDirectImplementation : IPlugin
+    public class ContactIPluginDirectPostOp : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -15,10 +15,11 @@ namespace DG.Some.Namespace
             IOrganizationService service = factory.CreateOrganizationService(context.UserId);
 
             var contact = context.InputParameters["Target"] as Entity;
-            if (contact.GetAttributeValue<string>("firstname") == "ChangeMePlease")
+            if (contact.GetAttributeValue<string>("firstname") == "ChangeMePleasePostOp")
             {
-                contact["firstname"] = "NameIsModified";
+                contact["firstname"] = "NameIsModifiedPostOp";
             }
+            service.Update(contact);
         }
     }
 }
