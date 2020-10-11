@@ -84,7 +84,6 @@ namespace DG.Tools.XrmMockup {
                     {
                         RegisterPlugin(type, metadata, plugins, register);
                     }
-
                 }
             }
             SortAllLists(register);

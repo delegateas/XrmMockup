@@ -52,9 +52,6 @@ namespace DG.Tools.XrmMockup
         /// Additional Plugin Metatdata for IPlugin direct plugin registration
         /// </summary>
         public MetaPlugin[] DirectIPluginMetadata { get; set; }
-
-
-
     }
 
     public struct Env {
