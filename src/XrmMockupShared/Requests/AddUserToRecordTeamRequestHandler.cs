@@ -11,7 +11,6 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 
-
 namespace DG.Tools.XrmMockup
 {
     internal class AddUserToRecordTeamRequestHandler : RequestHandler
@@ -66,8 +65,6 @@ namespace DG.Tools.XrmMockup
                 teamMember["systemuserid"] = request.SystemUserId;
                 db.Add(teamMember);
             }
-
-
 
             return resp;
         }
