@@ -40,13 +40,14 @@ namespace DG.Tools.XrmMockup {
             new SystemPlugins.DefaultBusinessUnitTeamMembers()
         };
 
-        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
+        public PluginManager(IEnumerable<Type> basePluginTypes, IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
             registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
+            RegisterDirectPlugins(pluginTypes, metadata, plugins, registeredPlugins);
             RegisterSystemPlugins(registeredSystemPlugins, metadata);
         }
 
@@ -59,9 +60,31 @@ namespace DG.Tools.XrmMockup {
 
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
-                    if (type.BaseType != null && (type.BaseType == basePluginType || (type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == basePluginType))) { 
+                    if (type.BaseType != null && (type.BaseType == basePluginType || (type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == basePluginType)))
+                    {
                         RegisterPlugin(type, metadata, plugins, register);
                     }
+                }
+            }
+            SortAllLists(register);
+        }
+
+        private void RegisterDirectPlugins(IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        {
+            if (pluginTypes == null) return;
+
+            foreach (var pluginType in pluginTypes)
+            {
+                if (pluginType == null) continue;
+                Assembly proxyTypeAssembly = pluginType.Assembly;
+
+                foreach (var type in proxyTypeAssembly.GetLoadableTypes())
+                {
+                    if (type.GetInterface("IPlugin") == typeof(IPlugin) && type.BaseType == typeof(Object))
+                    {
+                        RegisterPlugin(type, metadata, plugins, register);
+                    }
+
                 }
             }
             SortAllLists(register);
@@ -112,11 +135,15 @@ namespace DG.Tools.XrmMockup {
             // Add discovered plugin triggers
             foreach (var stepConfig in stepConfigs)
             {
-                var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
-                var stage = (ExecutionStage)stepConfig.Item1.Item2;
-                var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
+                EventOperation operation;
+                var operationExists = Enum.TryParse<EventOperation>(stepConfig.Item1.Item3,out operation);
 
-                AddTrigger(operation, stage, trigger, register);
+                if (operationExists)
+                { 
+                    var stage = (ExecutionStage)stepConfig.Item1.Item2;
+                    var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
+                    AddTrigger(operation, stage, trigger, register);
+                }
             }
         }
 

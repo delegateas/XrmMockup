@@ -59,14 +59,23 @@ namespace DG.XrmMockupTest
 
         public static void InitializeMockup(TestContext context)
         {
+            var additionalPluginMetadata = new MetaPlugin();
+            additionalPluginMetadata.AssemblyName = "DG.Some.Namespace.ContactIPluginDirectImplementation";
+            additionalPluginMetadata.MessageName = "Create";
+            additionalPluginMetadata.PrimaryEntity = "contact";
+            additionalPluginMetadata.Rank = 10;
+            additionalPluginMetadata.Stage = 20; //pre op as it only updates a field name
+
             var settings = new XrmMockupSettings
             {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
+                PluginTypes = new Type[] { typeof(ContactIPluginDirectImplementation) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
-                MetadataDirectoryPath = "../../../Metadata"
+                MetadataDirectoryPath = "../../../Metadata",
+                DirectIPluginMetadata = new MetaPlugin[] { additionalPluginMetadata}
             };
 
 #if XRM_MOCKUP_TEST_2011

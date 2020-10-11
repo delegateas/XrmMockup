@@ -99,7 +99,11 @@ namespace DG.Tools.XrmMockup
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-            this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
+
+            //add the additional plugin settings to the meta data
+            metadata.Plugins.AddRange(Settings.DirectIPluginMetadata);
+
+            this.pluginManager = new PluginManager(Settings.BasePluginTypes,settings.PluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
 
             this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
