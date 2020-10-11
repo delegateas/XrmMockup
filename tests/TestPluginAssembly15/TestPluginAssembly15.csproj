@@ -41,4 +41,5 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <Import Project="..\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems" Label="Shared" />
+  <Import Project="..\SharedDirectPlugins\SharedDirectPlugins.projitems" Label="Shared" />
 </Project>

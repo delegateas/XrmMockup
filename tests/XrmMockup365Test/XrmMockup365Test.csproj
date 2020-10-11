@@ -31,7 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\XrmMockup365\XrmMockup365.csproj" />
-    <ProjectReference Include="..\TestDirectPluginAssembly365\TestDirectPluginAssembly365.csproj" />
     <ProjectReference Include="..\TestPluginAssembly365\TestPluginAssembly365.csproj" />
   </ItemGroup>
   <ItemGroup>
