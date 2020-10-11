@@ -1,15 +1,11 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
+﻿using System.Linq;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestCascade : UnitTestBase
     {
@@ -19,7 +15,7 @@ namespace DG.XrmMockupTest
         Contact contact;
 
         [TestInitialize]
-        public void TestInitialize()
+        public void Init()
         {
             user1 = crm.CreateUser(orgGodService, crm.RootBusinessUnit, SecurityRoles.Salesperson).ToEntity<SystemUser>();
 

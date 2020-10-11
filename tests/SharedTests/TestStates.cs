@@ -1,10 +1,9 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {

@@ -62,6 +62,8 @@ namespace DG.Tools.XrmMockup
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
 
+        private List<string> systemAttributeNames;
+
         public EntityReference AdminUserRef;
         public EntityReference RootBusinessUnitRef;
 
@@ -97,8 +99,10 @@ namespace DG.Tools.XrmMockup
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-            this.pluginManager = new PluginManager(Settings.BasePluginTypes, Settings.PluginTypes, metadata.EntityMetadata, metadata.Plugins);
+            this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
+
+            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -176,10 +180,6 @@ namespace DG.Tools.XrmMockup
                 new CloseIncidentRequestHandler(this, db, metadata, security),
                 new AddMembersTeamRequestHandler(this, db, metadata, security),
                 new RemoveMembersTeamRequestHandler(this, db, metadata, security),
-                new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
-#if !(XRM_MOCKUP_2011)
-                new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
-#endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
                 new IsValidStateTransitionRequestHandler(this, db, metadata, security),
                 new CalculateRollupFieldRequestHandler(this, db, metadata, security),
@@ -282,8 +282,7 @@ namespace DG.Tools.XrmMockup
             foreach (var relQuery in relatedEntityQuery)
             {
                 var relationship = relQuery.Key;
-                var queryExpr = relQuery.Value as QueryExpression;
-                if (queryExpr == null)
+                if (!(relQuery.Value is QueryExpression queryExpr))
                 {
                     queryExpr = XmlHandling.FetchXmlToQueryExpression(((FetchExpression)relQuery.Value).Query);
                 }
@@ -394,7 +393,7 @@ namespace DG.Tools.XrmMockup
             if (selection.unshare && HasCascadeBehaviour(cascadeConfiguration.Unshare))
                 return true;
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             if (selection.rollup && HasCascadeBehaviour(cascadeConfiguration.RollupView))
                 return true;
 #endif
@@ -538,7 +537,7 @@ namespace DG.Tools.XrmMockup
             var buRef = GetBusinessUnit(userRef);
             pluginContext.BusinessUnitId = buRef.Id;
 
-            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out string eventOp);
+            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out EventOperation? eventOp);
 
             var entityInfo = GetEntityInfo(request);
 
@@ -560,22 +559,22 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
-            if (settings.TriggerProcesses && entityInfo != null && !string.IsNullOrEmpty(eventOp)) {
+            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
                 // System Pre-validation
-                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 // Pre-validation
-                pluginManager.Trigger(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
 
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
                 pluginContext.ParentContext = pluginContext.Clone();
                 pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
-                pluginManager.Trigger(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                workflowManager.Trigger(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
 
                 // System Pre-operation
-                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
             }
 
             // Core operation
@@ -587,17 +586,23 @@ namespace DG.Tools.XrmMockup
 
                 postImage = TryRetrieve(primaryRef);
 
-                if (!string.IsNullOrEmpty(eventOp))
+                // In RetrieveMultipleRequests, the OutputParameters bag contains the entity collection
+                if (request is RetrieveMultipleRequest)
+                {
+                    pluginContext.OutputParameters["BusinessEntityCollection"] = (response as RetrieveMultipleResponse)?.EntityCollection;
+                }
+
+                if (eventOp.HasValue)
                 {
                     //copy the createon etc system attributes onto the target so they are available for postoperation processing
                     CopySystemAttributes(postImage, entityInfo.Item1 as Entity);
 
-                    pluginManager.TriggerSystem(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     
-                    workflowManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
 
                 //When last Sync has been executed we trigger the Async jobs.
@@ -618,15 +623,19 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            item1["createdon"] = postImage.GetAttributeValue<DateTime>("createdon");
-            item1["modifiedon"] = postImage.GetAttributeValue<DateTime>("modifiedon");
-            if (postImage.Contains("createdby"))
+            foreach (var systemAttributeName in this.systemAttributeNames)
             {
-                item1["createdby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("createdby").LogicalName, postImage.GetAttributeValue<EntityReference>("createdby").Id);
-            }
-            if (postImage.Contains("modifiedby"))
-            {
-                item1["modifiedby"] = new EntityReference(postImage.GetAttributeValue<EntityReference>("modifiedby").LogicalName, postImage.GetAttributeValue<EntityReference>("modifiedby").Id);
+                if (postImage.Contains(systemAttributeName))
+                {
+                    if (postImage[systemAttributeName] is EntityReference)
+                    {
+                        item1[systemAttributeName] = new EntityReference(postImage.GetAttributeValue<EntityReference>(systemAttributeName).LogicalName, postImage.GetAttributeValue<EntityReference>(systemAttributeName).Id);
+                    }
+                    else if (postImage[systemAttributeName] is DateTime)
+                    {
+                        item1[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
+                    }
+                }
             }
         }
 
@@ -814,21 +823,45 @@ namespace DG.Tools.XrmMockup
                     : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
             }
-
-            if (obj != null)
+            else if (request is RetrieveMultipleRequest)
             {
-                var entity = obj as Entity;
-                var entityRef = obj as EntityReference;
+                var retrieve = request as RetrieveMultipleRequest;
 
-                if (entity != null)
+                string entityName = null;
+                switch (retrieve.Query)
                 {
-                    return new Tuple<object, string, Guid>(obj, entity.LogicalName, entity.Id);
+                    case FetchExpression fe:
+                        var qe = XmlHandling.FetchXmlToQueryExpression(fe.Query);
+                        entityName = qe.EntityName;
+                        break;
+                    case QueryExpression query:
+                        entityName = query.EntityName;
+                        break;
+                    case QueryByAttribute qba:
+                        entityName = qba.EntityName;
+                        break;
                 }
-                else
+                
+                if (entityName != null)
                 {
-                    return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
+                    return new Tuple<object, string, Guid>(new EntityReference
+                    {
+                        LogicalName = entityName,
+                        Id = Guid.Empty
+                    }, entityName, Guid.Empty);
                 }
             }
+
+            if (obj is Entity entity)
+            {
+                return new Tuple<object, string, Guid>(obj, entity.LogicalName, entity.Id);
+            }
+
+            if (obj is EntityReference entityRef)
+            {
+                return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
+            }
+            
             return null;
         }
 

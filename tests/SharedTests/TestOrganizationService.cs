@@ -1,22 +1,22 @@
-﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmMockupTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.ServiceModel;
-using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
     [TestClass]
-    public class TestOrganizationService : UnitTestBase {
+    public class TestOrganizationService : UnitTestBase
+    {
         [TestMethod]
-        public void TestOrgSvcWithNonExistentUser() {
-            try {
+        public void TestOrgSvcWithNonExistentUser()
+        {
+            try
+            {
                 crm.CreateOrganizationService(Guid.NewGuid());
                 Assert.Fail();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Assert.IsInstanceOfType(e, typeof(FaultException));
             }
         }

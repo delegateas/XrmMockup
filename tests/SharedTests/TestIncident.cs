@@ -1,21 +1,16 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmMockupTest;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using System;
-using System.Collections.Generic;
 using System.ServiceModel;
-using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
     [TestClass]
     public class TestIncident : UnitTestBase
     {
-
         [TestMethod]
         public void TestCloseIncidentRequestSuccess()
         {

@@ -1,77 +1,72 @@
 ﻿using System;
-using DG.Tools;
 using DG.Some.Namespace;
 using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class UnitTestBase {
+    public class UnitTestBase
+    {
         private static DateTime _startTime { get; set; }
 
         protected IOrganizationService orgAdminUIService;
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
+
+
 #if XRM_MOCKUP_TEST_2011
-        protected static XrmMockup2011 crm;
-        protected static XrmMockup2011 crmRealData;
+        static protected XrmMockup2011 crm;
+        static protected XrmMockup2011 crmRealData;
 #elif XRM_MOCKUP_TEST_2013
-        protected static XrmMockup2013 crm;
-        protected static XrmMockup2013 crmRealData;
+        static protected XrmMockup2013 crm;
+        static protected XrmMockup2013 crmRealData;
 #elif XRM_MOCKUP_TEST_2015
-        protected static XrmMockup2015 crm;
-        protected static XrmMockup2015 crmRealData;
+        static protected XrmMockup2015 crm;
+        static protected XrmMockup2015 crmRealData;
 #elif XRM_MOCKUP_TEST_2016
-        protected static XrmMockup2016 crm;
-        protected static XrmMockup2016 crmRealData;
+        static protected XrmMockup2016 crm;
+        static XrmMockup2016 crmRealData;
 #elif XRM_MOCKUP_TEST_365
-        protected static XrmMockup365 crm;
-        protected static XrmMockup365 crmRealData;
+        static protected XrmMockup365 crm;
+        static protected XrmMockup365 crmRealData;
 #endif
 
-        public UnitTestBase() {
-            this.orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
-            this.orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
-            this.orgAdminService = crm.GetAdminService();
-            if(crmRealData != null)
-                this.orgRealDataService = crmRealData.GetAdminService();
+        public UnitTestBase()
+        {
+            orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
+            orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
+            orgAdminService = crm.GetAdminService();
+            if (crmRealData != null)
+                orgRealDataService = crmRealData.GetAdminService();
         }
 
         [TestCleanup]
-        public void TestCleanup() {
+        public void TestCleanup()
+        {
             crm.ResetEnvironment();
         }
 
 
         [AssemblyInitialize]
-        public static void InitializeServices(TestContext context) {
+        public static void InitializeServices(TestContext context)
+        {
             InitializeMockup(context);
         }
 
-        public static void InitializeMockup(TestContext context) {
-            var metadataDirectory = "../../Metadata/";
-            MetadataSkeleton metadata = Utility.GetMetadata(metadataDirectory);
-
-            var item = new MetaPlugin();
-            item.MessageName = "Create";
-            item.PrimaryEntity = "contact";
-            item.Stage = 20;
-            item.AssemblyName = "DG.Some.Namespace.ContactIPluginDirectImplementation";
-
-            metadata.Plugins.Add(item);
-
-            var settings = new XrmMockupSettings {
+        public static void InitializeMockup(TestContext context)
+        {
+            var settings = new XrmMockupSettings
+            {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
-                PluginTypes = new  Type[] { typeof(ContactIPluginDirectImplementation) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
-                Metadata = metadata,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
+                MetadataDirectoryPath = "../../../Metadata"
             };
 
 #if XRM_MOCKUP_TEST_2011
@@ -91,12 +86,10 @@ namespace DG.XrmMockupTest {
                 var realDataSettings = new XrmMockupSettings
                 {
                     BasePluginTypes = settings.BasePluginTypes,
-                    PluginTypes = settings.PluginTypes,
                     CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
                     EnableProxyTypes = settings.EnableProxyTypes,
                     IncludeAllWorkflows = settings.IncludeAllWorkflows,
                     ExceptionFreeRequests = settings.ExceptionFreeRequests,
-                    Metadata = settings.Metadata,
                     OnlineEnvironment = new Env
                     {
                         providerType = AuthenticationProviderType.OnlineFederation,

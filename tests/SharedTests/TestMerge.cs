@@ -1,22 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestMerge : UnitTestBase
     {
-
         [TestMethod]
         public void TestMergeAll()
         {

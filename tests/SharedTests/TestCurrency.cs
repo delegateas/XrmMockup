@@ -1,33 +1,33 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
 using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestCurency : UnitTestBase {
-
+    public class TestCurency : UnitTestBase
+    {
         [TestMethod]
-        public void TestBasesGetUpdated() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var currency = new TransactionCurrency() {
+        public void TestBasesGetUpdated()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var currency = new TransactionCurrency()
+                {
                     ExchangeRate = 0.5m,
                     CurrencyPrecision = 2
                 };
                 currency.Id = orgAdminUIService.Create(currency);
 
                 // test currency gets set
-                var bus = new dg_bus();
-                bus.TransactionCurrencyId = currency.ToEntityReference();
+                var bus = new dg_bus
+                {
+                    TransactionCurrencyId = currency.ToEntityReference()
+                };
                 bus.Id = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
@@ -56,9 +56,11 @@ namespace DG.XrmMockupTest {
                 Assert.AreEqual(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 // test base value gets updated when transactioncurrencyid changes
-                var newCurrency = new TransactionCurrency();
-                newCurrency.ExchangeRate = 1m;
-                newCurrency.CurrencyPrecision = 3;
+                var newCurrency = new TransactionCurrency
+                {
+                    ExchangeRate = 1m,
+                    CurrencyPrecision = 3
+                };
                 newCurrency.Id = orgAdminUIService.Create(newCurrency);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
@@ -87,18 +89,24 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestExchangeRate() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var dollar = new TransactionCurrency();
-                dollar.ExchangeRate = 0.6m;
-                dollar.CurrencyPrecision = 3;
+        public void TestExchangeRate()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var dollar = new TransactionCurrency
+                {
+                    ExchangeRate = 0.6m,
+                    CurrencyPrecision = 3
+                };
                 var dollarId = orgAdminUIService.Create(dollar);
                 dollar.Id = dollarId;
 
 
-                var bus = new dg_bus();
-                bus.dg_Ticketprice = 10m;
-                bus.TransactionCurrencyId = dollar.ToEntityReference();
+                var bus = new dg_bus
+                {
+                    dg_Ticketprice = 10m,
+                    TransactionCurrencyId = dollar.ToEntityReference()
+                };
                 var busId = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
@@ -108,18 +116,24 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestExchangeIsSet() {
-            using (var context = new Xrm(orgAdminUIService)) {
-                var dollar = new TransactionCurrency();
-                dollar.ExchangeRate = 0.6m;
-                dollar.CurrencyPrecision = 3;
+        public void TestExchangeIsSet()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var dollar = new TransactionCurrency
+                {
+                    ExchangeRate = 0.6m,
+                    CurrencyPrecision = 3
+                };
                 var dollarId = orgAdminUIService.Create(dollar);
                 dollar.Id = dollarId;
 
 
-                var bus = new dg_bus();
-                bus.dg_Ticketprice = 10m;
-                bus.TransactionCurrencyId = dollar.ToEntityReference();
+                var bus = new dg_bus
+                {
+                    dg_Ticketprice = 10m,
+                    TransactionCurrencyId = dollar.ToEntityReference()
+                };
                 var busId = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
@@ -129,12 +143,16 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestSettingTransactionCurrency() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestSettingTransactionCurrency()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var bus = new dg_bus();
                 var busId = orgAdminUIService.Create(bus);
-                var query = new QueryExpression(TransactionCurrency.EntityLogicalName);
-                query.Criteria = new FilterExpression();
+                var query = new QueryExpression(TransactionCurrency.EntityLogicalName)
+                {
+                    Criteria = new FilterExpression()
+                };
                 query.Criteria.AddCondition(new ConditionExpression("isocurrencycode", ConditionOperator.Equal, "DKK"));
                 var resp = orgAdminUIService.RetrieveMultiple(query);
                 var currency = resp.Entities.First().ToEntity<TransactionCurrency>();
@@ -150,18 +168,24 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestUserCurrencyIsChosen() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestUserCurrencyIsChosen()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var currentUser = orgAdminUIService.Retrieve(SystemUser.EntityLogicalName, crm.AdminUser.Id, new ColumnSet(true)).ToEntity<SystemUser>();
-                var currency = new TransactionCurrency();
-                currency.ExchangeRate = 0.5m;
-                currency.CurrencyPrecision = 3;
+                var currency = new TransactionCurrency
+                {
+                    ExchangeRate = 0.5m,
+                    CurrencyPrecision = 3
+                };
                 currency.Id = orgAdminUIService.Create(currency);
                 currentUser.TransactionCurrencyId = currency.ToEntityReference();
                 orgAdminUIService.Update(currentUser);
 
-                var bus = new dg_bus();
-                bus.dg_Ticketprice = 10m;
+                var bus = new dg_bus
+                {
+                    dg_Ticketprice = 10m
+                };
                 var busId = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
@@ -175,7 +199,8 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestRetrieveExchangeRate() {
+        public void TestRetrieveExchangeRate()
+        {
             using (var context = new Xrm(orgAdminUIService))
             {
                 var dollar = new TransactionCurrency

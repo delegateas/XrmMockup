@@ -115,20 +115,48 @@ namespace DG.Tools.XrmMockup {
         };
 
 
-        public static EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request) {
-            if (request is RetrieveRequest) return ((RetrieveRequest)request).Target;
-            if (request is CreateRequest) return ((CreateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
-            if (request is UpdateRequest) return ((UpdateRequest)request).Target.ToEntityReferenceWithKeyAttributes();
-            if (request is DeleteRequest) return ((DeleteRequest)request).Target;
-            if (request is SetStateRequest) return ((SetStateRequest)request).EntityMoniker;
-            if (request is AssignRequest) return ((AssignRequest)request).Target;
-            if (request is AssociateRequest) return ((AssociateRequest)request).Target;
-            if (request is DisassociateRequest) return ((DisassociateRequest)request).Target;
-            if (request is MergeRequest) return ((MergeRequest)request).Target;
-            if (request is WinOpportunityRequest) return ((WinOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
-            if (request is LoseOpportunityRequest) return ((LoseOpportunityRequest)request).OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
+        public static EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request)
+        {
+            switch (request)
+            {
+                case RetrieveRequest retrieveRequest:
+                    return retrieveRequest.Target;
+                case CreateRequest createRequest:
+                    return createRequest.Target.ToEntityReferenceWithKeyAttributes();
+                case UpdateRequest updateRequest:
+                    return updateRequest.Target.ToEntityReferenceWithKeyAttributes();
+                case DeleteRequest deleteRequest:
+                    return deleteRequest.Target;
+                case SetStateRequest setStateRequest:
+                    return setStateRequest.EntityMoniker;
+                case AssignRequest assignRequest:
+                    return assignRequest.Target;
+                case AssociateRequest associateRequest:
+                    return associateRequest.Target;
+                case DisassociateRequest disassociateRequest:
+                    return disassociateRequest.Target;
+                case MergeRequest mergeRequest:
+                    return mergeRequest.Target;
+                case WinOpportunityRequest winOpportunityRequest:
+                    return winOpportunityRequest.OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
+                case LoseOpportunityRequest loseOpportunityRequest:
+                    return loseOpportunityRequest.OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
+                case RetrieveMultipleRequest retrieveMultipleRequest:
+                    return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
+            }
 
             return null;
+        }
+
+        public static EntityReference GetPrimaryEntityReferenceFromQuery(QueryBase query)
+        {
+            switch (query)
+            {
+                case FetchExpression fe: return new EntityReference(XmlHandling.FetchXmlToQueryExpression(fe.Query).EntityName, Guid.Empty);
+                case QueryExpression qe: return new EntityReference(qe.EntityName, Guid.Empty);
+                case QueryByAttribute qba: return new EntityReference(qba.EntityName, Guid.Empty);
+                default: return null;
+            }
         }
     }
 }

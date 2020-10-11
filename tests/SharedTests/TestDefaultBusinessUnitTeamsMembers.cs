@@ -1,9 +1,9 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
@@ -18,7 +18,7 @@ namespace DG.XrmMockupTest
         private  SystemUser _user2;
 
         [TestInitialize]
-        public void Initialize()
+        public void Init()
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
 

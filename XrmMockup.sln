@@ -1,6 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.36
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
 	ProjectSection(SolutionItems) = preProject
@@ -57,7 +58,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly15", "tes
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataSkeleton", "src\MetadataSkeleton\MetadataSkeleton.shproj", "{FDDB9BF5-4D33-495D-91A4-DFE919CF96CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator11", "src\MetadataGen\MetadataGenerator11\MetadataGenerator11.csproj", "{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator11", "src\MetadataGen\MetadataGenerator11\MetadataGenerator11.csproj", "{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator13", "src\MetadataGen\MetadataGenerator13\MetadataGenerator13.csproj", "{F57425C1-13CB-483B-BDDE-605D9A712F4A}"
 EndProject
@@ -97,16 +98,18 @@ Global
 		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
 		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{056c073b-1bba-4d11-9006-cc6443c4e681}*SharedItemsImports = 4
+		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
 		tests\SharedTests\SharedTests.projitems*{0d9bfa02-4e2d-4229-9256-7d4bf438b917}*SharedItemsImports = 13
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{130fe820-97d0-4369-837c-7aaf6ef58dce}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{3a74d109-c538-4df5-b277-cc39fface93f}*SharedItemsImports = 4
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{130fe820-97d0-4369-837c-7aaf6ef58dce}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{3a74d109-c538-4df5-b277-cc39fface93f}*SharedItemsImports = 5
 		src\MetadataShared\MetadataShared.projitems*{3c2bbe8a-2ace-44ca-9994-49c768b2ca1d}*SharedItemsImports = 13
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{40554299-9809-470a-a04a-7829d6f4db70}*SharedItemsImports = 4
-		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 4
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 4
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{40554299-9809-470a-a04a-7829d6f4db70}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 5
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{60cdd422-5f52-4d1f-b61c-b2bcef09302b}*SharedItemsImports = 13
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 4
 		src\XrmMockupShared\XrmMockupShared.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 4
@@ -140,6 +143,33 @@ Global
 		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
 		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{fa71e38b-dc18-42a3-9eda-6be1467b55df}*SharedItemsImports = 4
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{8ea1358f-b522-4d84-996b-23663682fe3e}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{90c1c72b-c544-485a-b718-acfaee516106}*SharedItemsImports = 13
+		tests\SharedTests\SharedTests.projitems*{a0c49d15-d911-42ab-b6d3-116ef7f452de}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{a7594771-2b0a-43ed-9335-343598ed1c7d}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{bf19d931-3322-40ac-8e90-98417b1ce132}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{d4f99f23-a452-4f6f-abf4-54fc5c792d5a}*SharedItemsImports = 13
+		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -288,5 +318,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E5937758-3E5B-447D-85CB-0C4E9F24C953}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7565DA42-40CA-442E-B85C-DB64B497DFAB}
 	EndGlobalSection
 EndGlobal

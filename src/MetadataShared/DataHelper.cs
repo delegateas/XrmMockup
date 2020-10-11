@@ -414,11 +414,10 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             var rolelist = QueryPaging(roleQuery);
             // Joins
-            // rpr <- roleprivileges left outer join roles
-            var roleprivilegeLOJrole =
+            // rpr <- roleprivileges inner join roles
+            var roleprivilegeIJrole =
                 from roleprivilege in rolePrivileges
-                join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id into res
-                from role in res.DefaultIfEmpty()
+                join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id
                 where ((EntityReference)role["businessunitid"]).Id.Equals(rootBUId) &&
                     (int)roleprivilege["privilegedepthmask"] != 0
                 select new { roleprivilege, role };
@@ -433,7 +432,7 @@ namespace DG.Tools.XrmMockup.Metadata
             // entities <- pp left outer join rpr
             var entities =
                 from pp in privilegesLOJprivilegeOTCs
-                join rpr in roleprivilegeLOJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
+                join rpr in roleprivilegeIJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
                 from rpr in res.DefaultIfEmpty()
                 select new { pp, rpr };
 

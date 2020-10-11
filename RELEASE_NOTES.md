@@ -1,3 +1,10 @@
+### 1.3.1 - 10 October 2020
+* Fixed error with sales solution which had a role without a businessunit
+
+### 1.3.0 - 07 September 2020
+* Added support for RetrieveMultiple plugins
+* Made some system attributes available in plugins
+
 ### 1.2.5 - 17 June 2020
 * Added Connection String Authentication method
 
