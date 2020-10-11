@@ -9,6 +9,7 @@
     <Import_RootNamespace>SharedDirectPlugins</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ContactIPluginDirectImplementation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContactIPluginDirectPostOp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContactIPluginDirectPreOp.cs" />
   </ItemGroup>
 </Project>
