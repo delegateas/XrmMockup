@@ -80,7 +80,7 @@ namespace DG.Tools.XrmMockup {
 
                 foreach (var type in proxyTypeAssembly.GetLoadableTypes())
                 {
-                    if (type.GetInterface("IPlugin") == typeof(IPlugin) && type.BaseType == typeof(Object))
+                    if (!type.IsAbstract && type.GetInterface("IPlugin") == typeof(IPlugin) && type.BaseType == typeof(Object))
                     {
                         RegisterPlugin(type, metadata, plugins, register);
                     }
@@ -92,7 +92,23 @@ namespace DG.Tools.XrmMockup {
 
         private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
-            var plugin = Activator.CreateInstance(basePluginType);
+            object plugin = null;
+            try
+            {
+                plugin = Activator.CreateInstance(basePluginType);
+            }
+            catch (Exception ex)
+            {
+                if (!ex.Message.StartsWith("No parameterless constructor"))
+                {
+                    throw;
+                }
+            }
+
+            if (plugin == null)
+            {
+                return;
+            }
 
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
             var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
