@@ -325,17 +325,20 @@ namespace DG.Tools.XrmMockup {
             Guid? impersonatingUserId;
 
             HashSet<string> attributes;
-            IEnumerable<ImageConfig> images;
+            List<ImageConfig> images = new List<ImageConfig>();
 
             public PluginTrigger(EventOperation operation, ExecutionStage stage,
                     Action<MockupServiceProviderAndFactory> pluginExecute, PluginStepConfig stepConfig, Dictionary<string, EntityMetadata> metadata) {
                 this.pluginExecute = pluginExecute;
-                this.entityName = stepConfig.StepConfig.ClassName;
+                this.entityName = stepConfig.StepConfig.LogicalName;
                 this.operation = operation;
                 this.stage = stage;
                 this.mode = (ExecutionMode)stepConfig.ExtendedStepConfig.ExecutionMode;
                 this.order = stepConfig.ExtendedStepConfig.ExecutionOrder;
-                this.images = stepConfig.ImageConfigs;
+                if (stepConfig.ImageConfigs != null)
+                {
+                    this.images.AddRange(stepConfig.ImageConfigs);
+                }
                 this.metadata = metadata;
                 this.impersonatingUserId = stepConfig.ExtendedStepConfig.ImpersonatingUserId;
 
