@@ -165,5 +165,11 @@
     <None Include="XrmContext\Run.ps1" />
     <None Include="XrmContext\XrmContext.exe.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\XrmMockupConfig\XrmMockupConfig.csproj">
+      <Project>{9d886dcb-5415-4ae3-8344-92017b821cc0}</Project>
+      <Name>XrmMockupConfig</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

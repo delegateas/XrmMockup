@@ -52,6 +52,9 @@
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="7.1.1" />
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="7.1.1" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XrmMockupConfig\XrmMockupConfig.csproj" />
+  </ItemGroup>
   <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
   <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />
   <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />

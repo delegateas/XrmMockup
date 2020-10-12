@@ -22,6 +22,9 @@
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="8.0.2.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\XrmMockupConfig\XrmMockupConfig.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Activities" />
     <Reference Include="System.Core" />

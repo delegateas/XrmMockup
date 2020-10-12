@@ -12,9 +12,10 @@ namespace DG.XrmFramework.Plugins {
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    using StepConfig = System.Tuple<string, int, string, string>;
-    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
-    using ImageTuple = System.Tuple<string, string, int, string>;
+    //using StepConfig = System.Tuple<string, int, string, string>;
+    //using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
+    //using ImageTuple = System.Tuple<string, string, int, string>;
+    using XrmMockupConfig;
 
     /// <summary>
     /// Base class for all Plugins.
@@ -260,14 +261,13 @@ namespace DG.XrmFramework.Plugins {
         /// Get the plugin step configurations.
         /// </summary>
         /// <returns>List of steps</returns>
-        public IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>> PluginProcessingStepConfigs() {
+        public IEnumerable<PluginStepConfig> PluginProcessingStepConfigs() {
             var className = this.ChildClassName;
             foreach (var config in this.PluginStepConfigs) {
                 yield return
-                    new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(
-                        new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
-                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext.ToString()),
-                        config.GetImages());
+                    new PluginStepConfig(new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
+                                         new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext),
+                                         config.GetImages());
             }
         }
 
@@ -321,7 +321,7 @@ namespace DG.XrmFramework.Plugins {
         int _ExecutionOrder { get; }
         string _FilteredAttributes { get; }
         Guid _UserContext { get; }
-        IEnumerable<ImageTuple> GetImages();
+        IEnumerable<ImageConfig> GetImages();
     }
 
     /// <summary>
@@ -413,9 +413,9 @@ namespace DG.XrmFramework.Plugins {
             return this;
         }
 
-        public IEnumerable<ImageTuple> GetImages() {
+        public IEnumerable<ImageConfig> GetImages() {
             foreach (var image in this._Images) {
-                yield return new ImageTuple(image.Name, image.EntityAlias, image.ImageType, image.Attributes);
+                yield return new ImageConfig(image.Name, image.EntityAlias, image.ImageType, image.Attributes);
             }
         }
 

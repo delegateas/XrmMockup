@@ -40,6 +40,9 @@
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="5.0.18" />
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="5.0.18" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\XrmMockupConfig\XrmMockupConfig.csproj" />
+  </ItemGroup>
   <Import Project="..\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems" Label="Shared" />
   <Import Project="..\SharedDirectPlugins\SharedDirectPlugins.projitems" Label="Shared" />
 </Project>

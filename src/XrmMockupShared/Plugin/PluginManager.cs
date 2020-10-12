@@ -11,15 +11,21 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Runtime.ExceptionServices;
 using XrmMockupShared.Plugin;
+using XrmMockupConfig;
 
 namespace DG.Tools.XrmMockup {
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    using StepConfig = Tuple<string, int, string, string>;
-    using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
-    using ImageTuple = Tuple<string, string, int, string>;
+    //using StepConfig = Tuple<string, int, string, string>;
+    //using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
+    //using ImageTuple = Tuple<string, string, int, string>;
+
+   
+
+
+   
 
     internal class PluginManager {
 
@@ -111,15 +117,16 @@ namespace DG.Tools.XrmMockup {
             }
 
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
-            var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
+            var stepConfigs = new List<PluginStepConfig>();
 
+            
             if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
             { // Matches DAXIF plugin registration
                 stepConfigs.AddRange(
                     basePluginType
                     .GetMethod("PluginProcessingStepConfigs")
                     .Invoke(plugin, new object[] { })
-                    as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
+                    as IEnumerable<PluginStepConfig>);
                 pluginExecute = (provider) => {
                     basePluginType
                     .GetMethod("Execute")
@@ -136,9 +143,9 @@ namespace DG.Tools.XrmMockup {
 
                 foreach(var metaStep in metaSteps) { 
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
-                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, Guid.Empty.ToString());
-                    var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
-                    stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
+                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId);
+                    var imageConfig = metaStep.Images?.Select(x => new ImageConfig(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageConfig>();
+                    stepConfigs.Add(new PluginStepConfig(stepConfig, extendedConfig, imageConfig));
                     pluginExecute = (provider) => {
                         basePluginType
                         .GetMethod("Execute")
@@ -151,11 +158,11 @@ namespace DG.Tools.XrmMockup {
             foreach (var stepConfig in stepConfigs)
             {
                 EventOperation operation;
-                var operationExists = Enum.TryParse<EventOperation>(stepConfig.Item1.Item3,out operation);
+                var operationExists = Enum.TryParse<EventOperation>(stepConfig.StepConfig.EventOperation,out operation);
 
                 if (operationExists)
                 { 
-                    var stage = (ExecutionStage)stepConfig.Item1.Item2;
+                    var stage = (ExecutionStage)stepConfig.StepConfig.ExecutionStage;
                     var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
                     AddTrigger(operation, stage, trigger, register);
                 }
@@ -190,7 +197,7 @@ namespace DG.Tools.XrmMockup {
         private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, Dictionary<string, EntityMetadata> metadata)
         {
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
-            var stepConfigs = new List<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>();
+            var stepConfigs = new List<PluginStepConfig>();
 
             foreach (var plugin in systemPlugins)
             {
@@ -200,8 +207,8 @@ namespace DG.Tools.XrmMockup {
                 // Add discovered plugin triggers
                 foreach (var stepConfig in stepConfigs)
                 {
-                    var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.Item1.Item3);
-                    var stage = (ExecutionStage)stepConfig.Item1.Item2;
+                    var operation = (EventOperation)Enum.Parse(typeof(EventOperation), stepConfig.StepConfig.EventOperation);
+                    var stage = (ExecutionStage)stepConfig.StepConfig.ExecutionStage;
                     var trigger = new PluginTrigger(operation, stage, pluginExecute, stepConfig, metadata);
 
                     AddTrigger(operation, stage, trigger, register);
@@ -315,23 +322,24 @@ namespace DG.Tools.XrmMockup {
             ExecutionMode mode;
             int order = 0;
             Dictionary<string, EntityMetadata> metadata;
+            Guid? impersonatingUserId;
 
             HashSet<string> attributes;
-            IEnumerable<ImageTuple> images;
+            IEnumerable<ImageConfig> images;
 
             public PluginTrigger(EventOperation operation, ExecutionStage stage,
-                    Action<MockupServiceProviderAndFactory> pluginExecute, Tuple<StepConfig, ExtendedStepConfig,
-                        IEnumerable<ImageTuple>> stepConfig, Dictionary<string, EntityMetadata> metadata) {
+                    Action<MockupServiceProviderAndFactory> pluginExecute, PluginStepConfig stepConfig, Dictionary<string, EntityMetadata> metadata) {
                 this.pluginExecute = pluginExecute;
-                this.entityName = stepConfig.Item1.Item4;
+                this.entityName = stepConfig.StepConfig.ClassName;
                 this.operation = operation;
                 this.stage = stage;
-                this.mode = (ExecutionMode)stepConfig.Item2.Item2;
-                this.order = stepConfig.Item2.Item4;
-                this.images = stepConfig.Item3;
+                this.mode = (ExecutionMode)stepConfig.ExtendedStepConfig.ExecutionMode;
+                this.order = stepConfig.ExtendedStepConfig.ExecutionOrder;
+                this.images = stepConfig.ImageConfigs;
                 this.metadata = metadata;
+                this.impersonatingUserId = stepConfig.ExtendedStepConfig.ImpersonatingUserId;
 
-                var attrs = stepConfig.Item2.Item5 ?? "";
+                var attrs = stepConfig.ExtendedStepConfig.FilteredAttributes ?? "";
                 this.attributes = String.IsNullOrWhiteSpace(attrs) ? new HashSet<string>() : new HashSet<string>(attrs.Split(','));
             }
 
@@ -476,15 +484,15 @@ namespace DG.Tools.XrmMockup {
 
                 foreach (var image in this.images)
                 {
-                    var type = (ImageType)image.Item3;
-                    var cols = image.Item4 != null ? new ColumnSet(image.Item4.Split(',')) : new ColumnSet(true);
+                    var type = (ImageType)image.ImageType;
+                    var cols = image.Attributes != null ? new ColumnSet(image.Attributes.Split(',')) : new ColumnSet(true);
                     if (postImage != null && stage == ExecutionStage.PostOperation && (type == ImageType.PostImage || type == ImageType.Both))
                     {
-                        thisPluginContext.PostEntityImages.Add(image.Item1, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
+                        thisPluginContext.PostEntityImages.Add(image.Name, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
                     }
                     if (preImage != null && type == ImageType.PreImage || type == ImageType.Both)
                     {
-                        thisPluginContext.PreEntityImages.Add(image.Item1, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
+                        thisPluginContext.PreEntityImages.Add(image.Name, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
                     }
                 }
                 return thisPluginContext;
