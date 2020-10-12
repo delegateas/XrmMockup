@@ -43,8 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\MetadataGen\MetadataGenerator11\bin\Release\MetadataGenerator11.exe" Pack="true" PackagePath="content\net462\Metadata" />
-    <Content Include="..\MetadataGen\MetadataGenerator11\bin\Release\MetadataGenerator11.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
+    <Content Include="..\MetadataGen\MetadataGenerator11\bin\Release\$(TargetFramework)\MetadataGenerator11.exe" Pack="true" PackagePath="content\net462\Metadata" />
+    <Content Include="..\MetadataGen\MetadataGenerator11\bin\Release\$(TargetFramework)\MetadataGenerator11.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
     <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
     <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
   </ItemGroup>
