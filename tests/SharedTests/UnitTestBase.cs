@@ -75,14 +75,13 @@ namespace DG.XrmMockupTest
 
             var settings = new XrmMockupSettings
             {
-                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
-                PluginTypes = new Type[] { typeof(ContactIPluginDirectPreOp) },
+                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(ContactIPluginDirectPreOp) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata",
-                DirectIPluginMetadata = new MetaPlugin[] { additionalPluginMetadata , additionalPluginMetadata2 }
+                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata , additionalPluginMetadata2 }
             };
 
 #if XRM_MOCKUP_TEST_2011

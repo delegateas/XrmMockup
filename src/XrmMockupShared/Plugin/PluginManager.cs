@@ -40,14 +40,14 @@ namespace DG.Tools.XrmMockup {
             new SystemPlugins.DefaultBusinessUnitTeamMembers()
         };
 
-        public PluginManager(IEnumerable<Type> basePluginTypes, IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
+        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
             registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
             registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
-            RegisterDirectPlugins(pluginTypes, metadata, plugins, registeredPlugins);
+            RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
             RegisterSystemPlugins(registeredSystemPlugins, metadata);
         }
 
