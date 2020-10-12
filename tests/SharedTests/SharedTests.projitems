@@ -60,5 +60,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmMockupCollection.cs" />
   </ItemGroup>
 </Project>

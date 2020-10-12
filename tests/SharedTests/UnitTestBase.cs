@@ -7,7 +7,8 @@ using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    public class UnitTestBase : IClassFixture<XrmMockupFixture>
+    [Collection("Xrm Collection")]
+    public class UnitTestBase : IDisposable
     {
         private static DateTime _startTime { get; set; }
 
@@ -39,6 +40,11 @@ namespace DG.XrmMockupTest
             orgAdminService = crm.GetAdminService();
             if (fixture.crmRealData != null)
                 orgRealDataService = fixture.crmRealData.GetAdminService();
+        }
+
+        public void Dispose()
+        {
+            crm.ResetEnvironment();
         }
     }
 
