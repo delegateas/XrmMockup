@@ -101,7 +101,10 @@ namespace DG.Tools.XrmMockup
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
 
             //add the additional plugin settings to the meta data
-            metadata.Plugins.AddRange(Settings.IPluginMetadata);
+            if (settings.IPluginMetadata != null)
+            {
+                metadata.Plugins.AddRange(Settings.IPluginMetadata); 
+            }
 
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
