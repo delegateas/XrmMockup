@@ -40,6 +40,14 @@ let projectPaths =
     "src" ++ "XrmMockup2013"
     "src" ++ "XrmMockup2011"
   |]
+let metaDataGeneratorProjectPaths =
+  [|
+    "src" ++ "MetadataGen" ++ "MetadataGenerator365"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator16"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator15"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator13"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator11"
+  |]
 let solutionFile = "XrmMockup.sln"
 let testAssemblies = "tests/**/bin/Release/*Test.dll"
 
@@ -97,6 +105,7 @@ let commonBuild solution =
 
 Target.create "Clean" (fun _ ->
   projectPaths
+  |> Array.append metaDataGeneratorProjectPaths
   |> Array.map (fun path -> path ++ "bin")
   |> Array.append [|"bin"; "temp"|]
   |> Shell.cleanDirs 
@@ -114,13 +123,12 @@ Target.create "Build" (fun _ ->
 
 Target.create "Test" (fun _ ->
   let result =
-    CreateProcess.fromRawCommand "rundotnettest.cmd" [||]
+    Command.RawCommand("dotnet", Arguments.OfArgs [| "test" |])
+    |> CreateProcess.fromCommand
     |> Proc.run
 
   if result.ExitCode <> 0 then failwith "Test failed"
 )
-
-
 
 // --------------------------------------------------------------------------------------
 // Build a NuGet package

@@ -10,4 +10,4 @@ if errorlevel 1 (
 if not exist packages\FAKE\tools\Fake.exe (
   nuget install FAKE -OutputDirectory packages -ExcludeVersion
 )
-packages\FAKE\tools\FAKE.exe build.fsx %*
+packages\FAKE\tools\FAKE.exe build.fsx --removeLegacyFakeWarning %*
