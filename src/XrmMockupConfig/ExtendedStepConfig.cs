@@ -23,6 +23,5 @@ namespace XrmMockupConfig
         public int ExecutionOrder { get; set; }
         public string FilteredAttributes { get; set; }
         public Guid? ImpersonatingUserId { get; set; }
-
     }
 }

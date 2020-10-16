@@ -12,8 +12,7 @@ namespace XrmMockupConfig
         {
             StepConfig = stepConfig;
             ExtendedStepConfig = extendedStepConfig;
-            ImageConfigs = ImageConfigs;
-
+            ImageConfigs = imageConfigs;
         }
 
         public StepConfig StepConfig { get; set; }
