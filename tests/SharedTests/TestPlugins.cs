@@ -30,6 +30,56 @@ namespace DG.XrmMockupTest
 #endif
 
         [TestMethod]
+        public void TestImpersonatingUser()
+        {
+            // Testing that plugins which implement IPlugin directly are loaded and called as expected
+            var createdContact = new Contact()
+            {
+                FirstName = "Matt Trinder"
+            };
+            createdContact.Id = salesUserService.Create(createdContact);
+
+            var retrievedContact = Contact.Retrieve(orgAdminService, createdContact.Id, x => x.FirstName);
+            Assert.AreEqual("Matt Trinder", retrievedContact.FirstName, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
+
+            var createdContact2 = new Contact()
+            {
+                FirstName = "Fred Bloggs"
+            };
+            createdContact2.Id = orgAdminService.Create(createdContact2);
+
+            var retrievedContact2 = Contact.Retrieve(orgAdminService, createdContact2.Id, x => x.FirstName);
+            Assert.AreEqual("Fred Bloggs", retrievedContact2.FirstName, "The update plugin isn't run or the name it updates doesn't match what we are expecting!");
+
+            //check that the sales user can't delete the admin users contact
+            try
+            {
+                salesUserService.Delete("contact", createdContact2.Id);
+                Assert.Fail("should not be able to delete");
+            }
+            catch (System.Exception ex)
+            {
+                if (!ex.Message.Contains("delete"))
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                //update the salesuser contact with the id of the admin contact as the first name
+                //this will trigger the plugin running as admin to delete the admin contact.
+                var updateContact = new Contact(createdContact.Id);
+                updateContact.FirstName = createdContact2.Id.ToString();
+                salesUserService.Update(updateContact);
+
+                orgAdminUIService.Delete(Contact.EntityLogicalName, createdContact.Id);
+            }
+
+
+            
+        }
+
+        [TestMethod]
         public void TestDirectIPluginImplementationPreOp()
         {
             // Testing that plugins which implement IPlugin directly are loaded and called as expected

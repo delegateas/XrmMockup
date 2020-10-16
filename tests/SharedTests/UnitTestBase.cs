@@ -16,7 +16,8 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
-
+        protected IOrganizationService salesUserService;
+        
 
 #if XRM_MOCKUP_TEST_2011
         static protected XrmMockup2011 crm;
@@ -42,6 +43,24 @@ namespace DG.XrmMockupTest
             orgAdminService = crm.GetAdminService();
             if (crmRealData != null)
                 orgRealDataService = crmRealData.GetAdminService();
+
+
+            //create an admin user for our impersonating user plugin to run as
+            var adminId = Guid.Parse("84a23551-017a-44fa-9cc1-08ee14bb97e8");
+            var admin = new Entity("systemuser");
+            admin.Id = adminId;
+            admin["internalemailaddress"] = "camstestuser1@official.mod.uk";
+            admin["businessunitid"] = crm.RootBusinessUnit;
+            admin["islicensed"] = true;
+            var adminUser = crm.CreateUser(orgAdminService, admin, new Guid[] { SecurityRoles.SystemAdministrator });
+            
+            var user = new Entity("systemuser");
+            user["internalemailaddress"] = "camstestuser1@official.mod.uk";
+            user["businessunitid"] = crm.RootBusinessUnit;
+            user["islicensed"] = true;
+            var salesUser = crm.CreateUser(orgAdminService, user, new Guid[] { SecurityRoles.Salesperson });
+            salesUserService = crm.CreateOrganizationService(salesUser.Id);
+
         }
 
         [TestCleanup]
@@ -71,7 +90,7 @@ namespace DG.XrmMockupTest
             additionalPluginMetadata2.MessageName = "Create";
             additionalPluginMetadata2.PrimaryEntity = "contact";
             additionalPluginMetadata2.Rank = 10;
-            additionalPluginMetadata2.Stage = 40; //pre op as it only updates a field name
+            additionalPluginMetadata2.Stage = 40; //postOp
 
             var settings = new XrmMockupSettings
             {

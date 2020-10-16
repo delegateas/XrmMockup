@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BusTicketSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContactPostPluginAdmin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContactPostPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync2WithExecutionOrder - Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\AsyncWithExecutionOrder.cs" />

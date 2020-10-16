@@ -25,7 +25,7 @@
 
             var con = localContext.PluginExecutionContext.InputParameters["Target"] as Contact;
             Guid id;
-            if (Guid.TryParse(con.FirstName, out id))
+            if (con != null && con.FirstName != null && Guid.TryParse(con.FirstName, out id))
             {
                 //this should work as this plugin has been registered to run as system admin
                 service.Delete("contact", id);
