@@ -125,18 +125,24 @@ namespace DG.Tools.XrmMockup.Metadata
 
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
             {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name","impersonatinguserid"),
+                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
 
-            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.Inner)
+
+
+
+            var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.LeftOuter)
             {
                 Columns = new ColumnSet("primaryobjecttypecode"),
                 EntityAlias = "sdkmessagefilter",
                 LinkCriteria = new FilterExpression()
             };
             pluginQuery.LinkEntities.Add(sdkMessageFilterQuery);
+
+
+
 
             var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
             {
@@ -188,6 +194,7 @@ namespace DG.Tools.XrmMockup.Metadata
             var images = service.RetrieveMultiple(imagesQuery);
 
             var plugins = new List<MetaPlugin>();
+            var test = service.RetrieveMultiple(pluginQuery).Entities;
 
             foreach (var plugin in service.RetrieveMultiple(pluginQuery).Entities)
             {
@@ -200,8 +207,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
-                    ImpersonatingUserId = plugin.Contains("impersonatinguserid") ? plugin.GetAttributeValue<EntityReference>("impersonatinguserid").Id : (Guid?)null,
-                    PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode").Value as string,
+                    PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode")?.Value as string ?? "",  // In case of AnyEntity use ""
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
                         .Select(x => new MetaImage
@@ -411,10 +417,11 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             var rolelist = QueryPaging(roleQuery);
             // Joins
-            // rpr <- roleprivileges inner join roles
-            var roleprivilegeIJrole =
+            // rpr <- roleprivileges left outer join roles
+            var roleprivilegeLOJrole =
                 from roleprivilege in rolePrivileges
-                join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id
+                join role in rolelist on ((Guid)roleprivilege["roleid"]) equals ((EntityReference)role["parentrootroleid"]).Id into res
+                from role in res.DefaultIfEmpty()
                 where ((EntityReference)role["businessunitid"]).Id.Equals(rootBUId) &&
                     (int)roleprivilege["privilegedepthmask"] != 0
                 select new { roleprivilege, role };
@@ -429,7 +436,7 @@ namespace DG.Tools.XrmMockup.Metadata
             // entities <- pp left outer join rpr
             var entities =
                 from pp in privilegesLOJprivilegeOTCs
-                join rpr in roleprivilegeIJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
+                join rpr in roleprivilegeLOJrole on ((Guid)pp.privilege["privilegeid"]) equals ((Guid)rpr.roleprivilege["privilegeid"]) into res
                 from rpr in res.DefaultIfEmpty()
                 select new { pp, rpr };
 
