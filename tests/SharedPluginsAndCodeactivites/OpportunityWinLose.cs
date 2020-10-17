@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Config;
 
 namespace DG.Some.Namespace {
     public class OpportunityWinLose : Plugin {

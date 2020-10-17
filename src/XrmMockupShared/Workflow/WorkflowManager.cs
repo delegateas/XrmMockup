@@ -11,6 +11,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using System.Activities;
+using DG.Tools.XrmMockup.Config;
 
 
 namespace DG.Tools.XrmMockup {

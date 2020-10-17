@@ -17,7 +17,7 @@ namespace DG.Tools.XrmMockup {
    // using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
     //using ImageTuple = System.Tuple<string, string, int, string>;
     using System.Reflection;
-    using XrmMockupConfig;
+    using DG.Tools.XrmMockup.Config;
 
     /// <summary>
     /// Base class for all Plugins.

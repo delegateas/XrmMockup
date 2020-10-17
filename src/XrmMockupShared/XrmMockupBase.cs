@@ -9,6 +9,7 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
 using System.Runtime.CompilerServices;
+using DG.Tools.XrmMockup.Config;
 
 namespace DG.Tools.XrmMockup
 {

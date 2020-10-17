@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools.XrmMockup {
-
+namespace DG.Tools.XrmMockup.Config
+{
     /// <summary>
     /// Enum for defining the scope of the registered plugin
     /// </summary>

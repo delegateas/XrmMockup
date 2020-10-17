@@ -8,7 +8,7 @@
     using System.Linq.Expressions;
     using Microsoft.Xrm.Sdk;
     using System.Reflection;
-    using XrmMockupConfig;
+    using DG.Tools.XrmMockup.Config;
     using DG.Tools.XrmMockup;
 
     /// <summary>
@@ -289,22 +289,5 @@
             }
         }
         #endregion
-
     }
-
-    #region PluginStepConfig made by Delegate A/S
-    
-
-    /// <summary>
-    /// Made by Delegate A/S
-    /// Class to encapsulate the various configurations that can be made 
-    /// to a plugin step.
-    /// </summary>
-    
-    class AnyEntity : Entity {
-        public AnyEntity() : base("") { }
-    }
-
-    
-    #endregion
 }

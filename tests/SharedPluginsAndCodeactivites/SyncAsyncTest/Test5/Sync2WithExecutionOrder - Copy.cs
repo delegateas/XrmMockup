@@ -3,8 +3,7 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    using DG.Tools.XrmMockup;
-
+    using DG.Tools.XrmMockup.Config;
 
     public class Sync2WithExecutionOrder : TestPlugin
     {

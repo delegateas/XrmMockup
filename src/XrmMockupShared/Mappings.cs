@@ -5,6 +5,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DG.Tools.XrmMockup.Config;
 
 namespace DG.Tools.XrmMockup {
 

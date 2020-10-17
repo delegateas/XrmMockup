@@ -9,8 +9,6 @@
     using Microsoft.Xrm.Sdk;
     using DG.Tools.XrmMockup;
 
-
-
     /// <summary>
     /// Base class for all Plugins.
     /// </summary>    

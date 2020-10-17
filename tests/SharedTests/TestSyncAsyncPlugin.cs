@@ -1,6 +1,8 @@
 ﻿using DG.Some.Namespace.Test;
+using DG.Tools.XrmMockup.Config;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 
 namespace DG.XrmMockupTest
 {
@@ -26,7 +28,7 @@ namespace DG.XrmMockupTest
         public void Test4ASyncAndSyncPluginFailsWhenAsyncAppliesFirst()
         {
             //OrderOfPluginDeclaration -> Register ASync first, then Sync 
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test4PluginASync),
                 typeof(Test4PluginSync));
 
@@ -56,7 +58,7 @@ namespace DG.XrmMockupTest
         public void Test4SyncAndAsyncPluginSucceedsWhenSyncAppliesFirst()
         {
             //OrderOfPluginDeclaration -> Register Sync first, then ASync 
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test4PluginSync),
                 typeof(Test4PluginASync));
 
@@ -87,7 +89,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void Test5TwoSyncPluginsLowestExecutionOrderExecutesFirst()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Sync2WithExecutionOrder),
                 typeof(Sync1WithExecutionOrder));
 
@@ -118,7 +120,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void Test5TwoSyncAndAsyncWithLowerExecutionOrderSucceedsWhenSyncsTriggerFirst()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                typeof(Sync2WithExecutionOrder),
                typeof(ASyncWithExecutionOrder),
                typeof(Sync1WithExecutionOrder));
@@ -151,7 +153,7 @@ namespace DG.XrmMockupTest
         public void Test6SyncPluginCallsSyncAndAsyncPlugNoExecutionOrder()
         {
             //Sync plugin calls another Sync and Async plugin. Sync executes first.
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test6Plugin1Sync),
                 typeof(Test6Plugin2Async),
                 typeof(Test6Plugin3Sync));
@@ -184,7 +186,7 @@ namespace DG.XrmMockupTest
         public void Test1Sync1Sync2PostPluginSucceedsWhenOnlySync2Applies()
         {
             /* Two Sync plugins trigger of same emailAddress1 change  - the one with the highest execution order is the only one that executes*/
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test1Plugin1),
                 typeof(Test1Plugin2));
 
@@ -213,7 +215,7 @@ namespace DG.XrmMockupTest
         public void Test2ASync1ASync2PostPluginSucceedsWhenOnlyASync2Applies()
         {
             /* Same as previous but with Async plugins*/
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test2Plugin1),
                 typeof(Test2Plugin2));
 
@@ -243,7 +245,7 @@ namespace DG.XrmMockupTest
         {
             /* Sync and Async trigger of same emailAddress1 update - Only Async applies Since it is executed last and does not use the postimage of the sync Operation */
 
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test3Plugin1),
                 typeof(Test3Plugin2));
 
@@ -271,7 +273,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void Test7Sync1TriggersAsync2Sync3PostPluginSucceedsWhenSync1AndAsync2Applies()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test7Plugin1),
                 typeof(Test7Plugin2),
                 typeof(Test7Plugin3));
@@ -301,7 +303,7 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void Test8Async2Sync1TriggersSync3SucceedsWhenAsync2Applies()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary,
                 typeof(Test8Plugin1),
                 typeof(Test8Plugin2),
                 typeof(Test8Plugin3));

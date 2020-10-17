@@ -74,9 +74,6 @@ namespace DG.XrmMockupTest
 
                 orgAdminUIService.Delete(Contact.EntityLogicalName, createdContact.Id);
             }
-
-
-            
         }
 
         [TestMethod]

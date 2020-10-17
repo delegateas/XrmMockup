@@ -7,15 +7,8 @@
     using System.ServiceModel;
     using System.Linq.Expressions;
     using Microsoft.Xrm.Sdk;
-
-    // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
-    // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    //using StepConfig = System.Tuple<string, int, string, string>;
-    //using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
-    //using ImageConfig = System.Tuple<string, string, int, string>;
     using System.Reflection;
-    using XrmMockupConfig;
+    using DG.Tools.XrmMockup.Config;
     using DG.Tools.XrmMockup;
 
     /// <summary>
@@ -442,15 +435,5 @@
             return body.Member.Name;
         }
     }
-
-    class AnyEntity : Entity {
-        public AnyEntity() : base("") { }
-    }
-
-    /**
-     * Enums to help setup plugin steps
-     */
-
-    
     #endregion
 }

@@ -15,7 +15,7 @@ namespace DG.XrmFramework.Plugins {
     //using StepConfig = System.Tuple<string, int, string, string>;
     //using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
     //using ImageTuple = System.Tuple<string, string, int, string>;
-    using XrmMockupConfig;
+    using DG.Tools.XrmMockup.Config;
 
     /// <summary>
     /// Base class for all Plugins.

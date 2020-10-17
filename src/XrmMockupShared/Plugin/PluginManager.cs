@@ -11,7 +11,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Runtime.ExceptionServices;
 using XrmMockupShared.Plugin;
-using XrmMockupConfig;
+using DG.Tools.XrmMockup.Config;
 
 namespace DG.Tools.XrmMockup {
 
@@ -278,7 +278,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-
             if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
             {
                 var toExecute = temporaryPlugins[operation][stage].Where(p => p.ShouldExecute(entity, preImage, postImage, pluginContext))
@@ -333,7 +332,6 @@ namespace DG.Tools.XrmMockup {
             {
                 plugin.Execute(entity, preImage, postImage, pluginContext, core);
             }
-            
         }
 
         internal class PluginTrigger : IComparable<PluginTrigger> {
@@ -398,7 +396,6 @@ namespace DG.Tools.XrmMockup {
                 return null;             
             }
 
-            
             public void Execute(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
             {
                 // Check if it is supposed to execute. Returns preemptively, if it should not.

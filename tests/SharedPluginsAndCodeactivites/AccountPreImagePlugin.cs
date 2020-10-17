@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Config;
 
 namespace DG.Some.Namespace {
 
