@@ -44,7 +44,6 @@ namespace DG.XrmMockupTest
             if (crmRealData != null)
                 orgRealDataService = crmRealData.GetAdminService();
 
-
             //create an admin user for our impersonating user plugin to run as
             var adminId = Guid.Parse("84a23551-017a-44fa-9cc1-08ee14bb97e8");
             var admin = new Entity("systemuser");
@@ -60,7 +59,6 @@ namespace DG.XrmMockupTest
             user["islicensed"] = true;
             var salesUser = crm.CreateUser(orgAdminService, user, new Guid[] { SecurityRoles.Salesperson });
             salesUserService = crm.CreateOrganizationService(salesUser.Id);
-
         }
 
         [TestCleanup]

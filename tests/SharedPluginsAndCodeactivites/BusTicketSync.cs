@@ -4,6 +4,8 @@ using DG.Some.Namespace;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using DG.Tools.XrmMockup;
+
 
 #if !(XRM_MOCKUP_PLUGIN_2011 || XRM_MOCKUP_PLUGIN_2013 || XRM_MOCKUP_PLUGIN_2015 || XRM_MOCKUP_PLUGIN_2016)
 namespace DG.NotAKeyWord.SSPOnBoarding.Plugins

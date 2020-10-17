@@ -3,6 +3,7 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
+    using DG.Tools.XrmMockup;
 
     public class Test6Plugin3Sync : TestPlugin
     {
@@ -13,7 +14,7 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Sync3NameUpdate)
-                .AddFilteredAttributes(x => x.EMailAddress2);
+                .AddFilteredAttributes("emailaddress2");
         }
 
         protected void Sync3NameUpdate(LocalPluginContext localContext)

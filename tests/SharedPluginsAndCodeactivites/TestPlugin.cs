@@ -9,6 +9,7 @@
     using Microsoft.Xrm.Sdk;
     using System.Reflection;
     using XrmMockupConfig;
+    using DG.Tools.XrmMockup;
 
     /// <summary>
     /// Base class for all Plugins.
@@ -251,37 +252,38 @@
         public IEnumerable<PluginStepConfig> PluginProcessingStepConfigs() {
             var className = this.ChildClassName;
             foreach (var config in this.PluginStepConfigs) {
-                yield return
-                    new PluginStepConfig(
-                        new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
-                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext),
-                        new List<ImageConfig>(config.GetImages().Select(x=>new ImageConfig(x.Name,x.EntityAlias,x.ImageType,x.Attributes)  )));
+                yield return config;
             }
         }
 
 
-        protected TypedPluginStepConfig<T> RegisterPluginStep<T>(
-            EventOperation eventOperation, ExecutionStage executionStage, Action<LocalPluginContext> action)
-            where T : Entity {
-            TypedPluginStepConfig<T> stepConfig = new TypedPluginStepConfig<T>(eventOperation, executionStage);
-            this.PluginStepConfigs.Add((ITypedPluginStepConfig)stepConfig);
+        protected PluginStepConfig RegisterPluginStep<T>(EventOperation eventOperation, ExecutionStage executionStage, Action<LocalPluginContext> action)where T : Entity 
+        {
+            var e = Activator.CreateInstance<T>();
+            //TypedPluginStepConfig stepConfig = new TypedPluginStepConfig(eventOperation, executionStage, (e as Entity).LogicalName);
+            var config = new StepConfig((e as Entity).LogicalName,(int)executionStage, Enum.GetName(typeof(EventOperation), eventOperation), (e as Entity).LogicalName);
+            var extended = new ExtendedStepConfig((int)Deployment.ServerOnly,(int) ExecutionMode.Synchronous, (e as Entity).LogicalName, 1, "", null);
+
+            var pluginStepConfig = new PluginStepConfig(config, extended, new List<ImageConfig>());
+
+            this.PluginStepConfigs.Add(pluginStepConfig);
 
             this.RegisteredEvents.Add(
                 new Tuple<int, string, string, Action<LocalPluginContext>>(
-                    stepConfig._ExecutionStage,
-                    stepConfig._EventOperation,
-                    stepConfig._LogicalName,
+                    config.ExecutionStage,
+                    config.EventOperation,
+                    config.LogicalName,
                     new Action<LocalPluginContext>(action)));
 
-            return stepConfig;
+            return pluginStepConfig;
         }
 
 
-        private Collection<ITypedPluginStepConfig> pluginConfigs;
-        private Collection<ITypedPluginStepConfig> PluginStepConfigs {
+        private Collection<PluginStepConfig> pluginConfigs;
+        private Collection<PluginStepConfig> PluginStepConfigs {
             get {
                 if (this.pluginConfigs == null) {
-                    this.pluginConfigs = new Collection<ITypedPluginStepConfig>();
+                    this.pluginConfigs = new Collection<PluginStepConfig>();
                 }
                 return this.pluginConfigs;
             }
@@ -291,283 +293,18 @@
     }
 
     #region PluginStepConfig made by Delegate A/S
-    interface ITypedPluginStepConfig {
-        string _LogicalName { get; }
-        string _EventOperation { get; }
-        int _ExecutionStage { get; }
-
-        string _Name { get; }
-        int _Deployment { get; }
-        int _ExecutionMode { get; }
-        int _ExecutionOrder { get; }
-        string _FilteredAttributes { get; }
-        Guid _UserContext { get; }
-        IEnumerable<ImageConfig> GetImages();
-    }
+    
 
     /// <summary>
     /// Made by Delegate A/S
     /// Class to encapsulate the various configurations that can be made 
     /// to a plugin step.
     /// </summary>
-    public class TypedPluginStepConfig<T> : ITypedPluginStepConfig where T : Entity {
-        public string _LogicalName { get; private set; }
-        public string _EventOperation { get; private set; }
-        public int _ExecutionStage { get; private set; }
-
-        public string _Name { get; private set; }
-        public int _Deployment { get; private set; }
-        public int _ExecutionMode { get; private set; }
-        public int _ExecutionOrder { get; private set; }
-        public Guid _UserContext { get; private set; }
-
-        public Collection<PluginStepImage> _Images = new Collection<PluginStepImage>();
-        public Collection<string> _FilteredAttributesCollection = new Collection<string>();
-
-        public string _FilteredAttributes {
-            get {
-                if (this._FilteredAttributesCollection.Count == 0) return null;
-                return string.Join(",", this._FilteredAttributesCollection).ToLower();
-            }
-        }
-
-
-        public TypedPluginStepConfig(EventOperation eventOperation, ExecutionStage executionStage) {
-            this._LogicalName = Activator.CreateInstance<T>().LogicalName;
-            this._EventOperation = eventOperation.ToString();
-            this._ExecutionStage = (int)executionStage;
-            this._Deployment = (int)Deployment.ServerOnly;
-            this._ExecutionMode = (int)ExecutionMode.Synchronous;
-            this._ExecutionOrder = 1;
-            this._UserContext = Guid.Empty;
-        }
-
-        private TypedPluginStepConfig<T> AddFilteredAttribute(Expression<Func<T, object>> lambda) {
-            this._FilteredAttributesCollection.Add(GetMemberName(lambda));
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> AddFilteredAttributes(params Expression<Func<T, object>>[] lambdas) {
-            foreach (var lambda in lambdas) this.AddFilteredAttribute(lambda);
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> SetDeployment(Deployment deployment) {
-            this._Deployment = (int)deployment;
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> SetExecutionMode(ExecutionMode executionMode) {
-            this._ExecutionMode = (int)executionMode;
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> SetName(string name) {
-            this._Name = name;
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> SetExecutionOrder(int executionOrder) {
-            this._ExecutionOrder = executionOrder;
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> SetUserContext(Guid userContext) {
-            this._UserContext = userContext;
-            return this;
-        }
-
-        public TypedPluginStepConfig<T> AddImage(ImageType imageType) {
-            return this.AddImage(imageType, null);
-        }
-
-        public TypedPluginStepConfig<T> AddImage(ImageType imageType, params Expression<Func<T, object>>[] attributes) {
-            return this.AddImage(imageType.ToString(), imageType.ToString(), imageType, attributes);
-        }
-
-        public TypedPluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType) {
-            return this.AddImage(name, entityAlias, imageType, null);
-        }
-
-        public TypedPluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType, params Expression<Func<T, object>>[] attributes) {
-            this._Images.Add(new PluginStepImage(name, entityAlias, imageType, attributes));
-            return this;
-        }
-
-        public IEnumerable<ImageConfig> GetImages() {
-            foreach (var image in this._Images) {
-                yield return new ImageConfig(image.Name, image.EntityAlias, image.ImageType, image.Attributes);
-            }
-        }
-
-        /// <summary>
-        /// Container for information about images attached to steps
-        /// </summary>
-        public class PluginStepImage {
-            public string Name { get; private set; }
-            public string EntityAlias { get; private set; }
-            public int ImageType { get; private set; }
-            public string Attributes { get; private set; }
-
-            public PluginStepImage(string name, string entityAlias, ImageType imageType, Expression<Func<T, object>>[] attributes) {
-                this.Name = name;
-                this.EntityAlias = entityAlias;
-                this.ImageType = (int)imageType;
-
-                if (attributes != null && attributes.Length > 0) {
-                    this.Attributes = string.Join(",", attributes.Select(x => TypedPluginStepConfig<T>.GetMemberName(x))).ToLower();
-                } else {
-                    this.Attributes = null;
-                }
-            }
-        }
-
-
-        private static string GetMemberName(Expression<Func<T, object>> lambda) {
-            MemberExpression body = lambda.Body as MemberExpression;
-
-            if (body == null) {
-                UnaryExpression ubody = (UnaryExpression)lambda.Body;
-                body = ubody.Operand as MemberExpression;
-            }
-
-            return body.Member.Name;
-        }
-    }
-
+    
     class AnyEntity : Entity {
         public AnyEntity() : base("") { }
     }
 
-    /**
-     * Enums to help setup plugin steps
-     */
-
-    public enum ExecutionMode {
-        Synchronous = 0,
-        Asynchronous = 1,
-    }
-
-    public enum ExecutionStage {
-        PreValidation = 10,
-        PreOperation = 20,
-        PostOperation = 40,
-    }
-
-    public enum Deployment {
-        ServerOnly = 0,
-        MicrosoftDynamicsCRMClientforOutlookOnly = 1,
-        Both = 2,
-    }
-
-    // EventOperation based on CRM 2016
-    public enum EventOperation {
-        AddItem,
-        AddListMembers,
-        AddMember,
-        AddMembers,
-        AddPrincipalToQueue,
-        AddPrivileges,
-        AddProductToKit,
-        AddRecurrence,
-        AddToQueue,
-        AddUserToRecordTeam,
-        ApplyRecordCreationAndUpdateRule,
-        Assign,
-        AssignUserRoles,
-        Associate,
-        BackgroundSend,
-        Book,
-        CalculatePrice,
-        Cancel,
-        CheckIncoming,
-        CheckPromote,
-        Clone,
-        CloneProduct,
-        Close,
-        CopyDynamicListToStatic,
-        CopySystemForm,
-        Create,
-        CreateException,
-        CreateInstance,
-        CreateKnowledgeArticleTranslation,
-        CreateKnowledgeArticleVersion,
-        Delete,
-        DeleteOpenInstances,
-        DeliverIncoming,
-        DeliverPromote,
-        DetachFromQueue,
-        Disassociate,
-        Execute,
-        ExecuteById,
-        Export,
-        ExportAll,
-        ExportCompressed,
-        ExportCompressedAll,
-        GenerateSocialProfile,
-        GetDefaultPriceLevel,
-        GrantAccess,
-        Handle,
-        Import,
-        ImportAll,
-        ImportCompressedAll,
-        ImportCompressedWithProgress,
-        ImportWithProgress,
-        LockInvoicePricing,
-        LockSalesOrderPricing,
-        Lose,
-        Merge,
-        ModifyAccess,
-        PickFromQueue,
-        Publish,
-        PublishAll,
-        PublishTheme,
-        QualifyLead,
-        Recalculate,
-        ReleaseToQueue,
-        RemoveFromQueue,
-        RemoveItem,
-        RemoveMember,
-        RemoveMembers,
-        RemovePrivilege,
-        RemoveProductFromKit,
-        RemoveRelated,
-        RemoveUserFromRecordTeam,
-        RemoveUserRoles,
-        ReplacePrivileges,
-        Reschedule,
-        Retrieve,
-        RetrieveExchangeRate,
-        RetrieveFilteredForms,
-        RetrieveMultiple,
-        RetrievePersonalWall,
-        RetrievePrincipalAccess,
-        RetrieveRecordWall,
-        RetrieveSharedPrincipalsAndAccess,
-        RetrieveUnpublished,
-        RetrieveUnpublishedMultiple,
-        RetrieveUserQueues,
-        RevokeAccess,
-        Route,
-        RouteTo,
-        Send,
-        SendFromTemplate,
-        SetLocLabels,
-        SetRelated,
-        SetState,
-        SetStateDynamicEntity,
-        TriggerServiceEndpointCheck,
-        UnlockInvoicePricing,
-        UnlockSalesOrderPricing,
-        Update,
-        ValidateRecurrenceRule,
-        Win
-    }
-
-    public enum ImageType {
-        PreImage = 0,
-        PostImage = 1,
-        Both = 2,
-    }
+    
     #endregion
 }

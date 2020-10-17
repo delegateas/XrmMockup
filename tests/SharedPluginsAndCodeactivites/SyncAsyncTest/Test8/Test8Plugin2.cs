@@ -3,6 +3,7 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
+    using DG.Tools.XrmMockup;
 
     public class Test8Plugin3 : TestPlugin
     {
@@ -13,8 +14,8 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 ASync2NameUpdate)
-                .AddImage(ImageType.PostImage, (x => x.Name))
-                .AddFilteredAttributes(x => x.EMailAddress1)
+                .AddImage(ImageType.PostImage, "name")
+                .AddFilteredAttributes("emailaddress1")
                 .SetExecutionMode(ExecutionMode.Asynchronous);
         }
 

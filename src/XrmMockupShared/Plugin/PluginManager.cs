@@ -15,18 +15,6 @@ using XrmMockupConfig;
 
 namespace DG.Tools.XrmMockup {
 
-    // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
-    // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    //using StepConfig = Tuple<string, int, string, string>;
-    //using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
-    //using ImageTuple = Tuple<string, string, int, string>;
-
-   
-
-
-   
-
     internal class PluginManager {
 
         private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins;
@@ -301,7 +289,6 @@ namespace DG.Tools.XrmMockup {
                     plugin.Execute(entity, preImage, postImage, pluginContext, core);
                 }
             }
-         
         }
 
         public void StageAsync(EventOperation operation, ExecutionStage stage,
@@ -438,7 +425,6 @@ namespace DG.Tools.XrmMockup {
                 {
                     pluginContext.SharedVariables[parameter.Key] = parameter.Value;
                 }
-                
             }
 
             public bool ShouldExecute(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext)
@@ -534,7 +520,7 @@ namespace DG.Tools.XrmMockup {
                 thisPluginContext.PrimaryEntityName = logicalName;
                 if (this.impersonatingUserId != null)
                 {
-                    thisPluginContext.UserId = this.impersonatingUserId.Value ;
+                    thisPluginContext.UserId = this.impersonatingUserId.Value;
                 }
 
                 foreach (var image in this.images)

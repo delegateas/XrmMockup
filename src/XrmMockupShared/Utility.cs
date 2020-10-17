@@ -1113,7 +1113,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum workflow_runas
+    public enum workflow_runas
     {
 
         [EnumMember()]
@@ -1124,7 +1124,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum workflow_stage
+    public enum workflow_stage
     {
 
         [EnumMember()]
@@ -1135,7 +1135,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_Type
+    public enum Workflow_Type
     {
 
         [EnumMember()]
@@ -1149,7 +1149,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum componentstate
+    public enum componentstate
     {
 
         [EnumMember()]
@@ -1166,7 +1166,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_Scope
+    public enum Workflow_Scope
     {
 
         [EnumMember()]
@@ -1183,7 +1183,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_Mode
+    public enum Workflow_Mode
     {
 
         [EnumMember()]
@@ -1194,7 +1194,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_BusinessProcessType
+    public enum Workflow_BusinessProcessType
     {
 
         [EnumMember()]
@@ -1205,7 +1205,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_Category
+    public enum Workflow_Category
     {
 
         [EnumMember()]
@@ -1225,7 +1225,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum WorkflowState
+    public enum WorkflowState
     {
 
         [EnumMember()]
@@ -1236,7 +1236,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Workflow_StatusCode
+    public enum Workflow_StatusCode
     {
 
         [EnumMember()]
@@ -1247,7 +1247,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum OpportunityState
+    public enum OpportunityState
     {
 
         [EnumMember()]
@@ -1261,7 +1261,7 @@ namespace DG.Tools.XrmMockup
     }
 
     [DataContract()]
-    internal enum Opportunity_StatusCode
+    public enum Opportunity_StatusCode
     {
 
         [EnumMember()]

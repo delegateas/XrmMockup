@@ -11,7 +11,7 @@ using Microsoft.Xrm.Tooling.Connector;
 namespace DG.Tools.XrmMockup.Metadata
 {
 
-    internal enum ConnectionType
+    public enum ConnectionType
     {
         Proxy,
         OAuth,

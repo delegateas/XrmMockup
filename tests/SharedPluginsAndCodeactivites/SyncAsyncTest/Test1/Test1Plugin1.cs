@@ -3,7 +3,8 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    
+    using DG.Tools.XrmMockup;
+
     public class Test1Plugin1 : TestPlugin
     {
         public Test1Plugin1()
@@ -13,8 +14,8 @@
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Sync1NameUpdate)
-                .AddImage(ImageType.PostImage, x => x.Name)
-                .AddFilteredAttributes(x => x.EMailAddress1)
+                .AddImage(ImageType.PostImage, "name")
+                .AddFilteredAttributes("emailaddress1")
                 .SetExecutionMode(ExecutionMode.Synchronous)
                 .SetExecutionOrder(1);
         }
@@ -28,7 +29,7 @@
 
             var service = localContext.OrganizationService;
 
-            //var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, x => x.Name);
+            //var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, "name");
             var account = GetPostImage<Account>(localContext, "PostImage");
 
             var accountUpd = new Account(account.Id)

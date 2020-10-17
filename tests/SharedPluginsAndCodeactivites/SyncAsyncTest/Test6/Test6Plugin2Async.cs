@@ -3,8 +3,10 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
+    using DG.Tools.XrmMockup;
 
     public class Test6Plugin2Async : TestPlugin
+
     {
         public Test6Plugin2Async()
             : base(typeof(Test6Plugin2Async))
@@ -14,7 +16,7 @@
                 ExecutionStage.PostOperation,
                 Async2NameUpdate)
                 .SetExecutionMode(ExecutionMode.Asynchronous)
-                .AddFilteredAttributes(x => x.EMailAddress1);
+                .AddFilteredAttributes("emailaddress1");
         }
 
         protected void Async2NameUpdate(LocalPluginContext localContext)

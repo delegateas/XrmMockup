@@ -3,6 +3,7 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
+    using DG.Tools.XrmMockup;
 
     public class ASyncWithExecutionOrder : TestPlugin
     {
@@ -15,7 +16,7 @@
                 ExecuteASyncWithExecutionOrder)
                 .SetExecutionMode(ExecutionMode.Asynchronous)
                 .SetExecutionOrder(1)
-                .AddFilteredAttributes(x => x.EMailAddress1);
+                .AddFilteredAttributes("emailaddress1");
         }
 
         protected void ExecuteASyncWithExecutionOrder(LocalPluginContext localContext)

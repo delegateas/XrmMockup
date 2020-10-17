@@ -130,9 +130,6 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
 
-
-
-
             var sdkMessageFilterQuery = new LinkEntity("sdkmessageprocessingstep", "sdkmessagefilter", "sdkmessagefilterid", "sdkmessagefilterid", JoinOperator.LeftOuter)
             {
                 Columns = new ColumnSet("primaryobjecttypecode"),
@@ -140,9 +137,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 LinkCriteria = new FilterExpression()
             };
             pluginQuery.LinkEntities.Add(sdkMessageFilterQuery);
-
-
-
 
             var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
             {
@@ -158,7 +152,6 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions);
             solutionComponentQuery.LinkEntities.Add(solutionQuery);
-
 
             var imagesQuery = new QueryExpression
             {

@@ -29,7 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\WhoAmIRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Security.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Domain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mappings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupExecutionContext.cs" />
