@@ -13,8 +13,8 @@ namespace DG.Tools.XrmMockup {
 				Console.WriteLine(format, args);
 			}
 			catch
-			{
-
+			{	
+				//swallow error
 			}
 		}
     }

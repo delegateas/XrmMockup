@@ -3,13 +3,11 @@ using System.Activities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
-
 
 namespace DG.Some.Namespace {
     public sealed partial class AccountWorkflowActivity : CodeActivity {

@@ -106,7 +106,6 @@ namespace DG.Tools.XrmMockup {
 
             Action<MockupServiceProviderAndFactory> pluginExecute = null;
             var stepConfigs = new List<PluginStepConfig>();
-
             
             if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
             { // Matches DAXIF plugin registration

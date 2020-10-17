@@ -3,7 +3,6 @@ using DG.Tools.XrmMockup.Config;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-
 namespace DG.XrmMockupTest
 {
     [TestClass]
@@ -146,9 +145,7 @@ namespace DG.XrmMockupTest
 
             Assert.AreEqual(newFirstName, retrievedPersonel.FirstName);
         }
-
-
-
+        
         [TestMethod]
         public void Test6SyncPluginCallsSyncAndAsyncPlugNoExecutionOrder()
         {

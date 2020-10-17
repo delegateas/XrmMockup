@@ -6,7 +6,6 @@
     using DG.Tools.XrmMockup.Config;
 
     public class Test6Plugin2Async : TestPlugin
-
     {
         public Test6Plugin2Async()
             : base(typeof(Test6Plugin2Async))

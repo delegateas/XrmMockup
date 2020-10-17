@@ -22,8 +22,6 @@ using DG.Tools.XrmMockup.Database;
 using System.Xml.Linq;
 using DG.Tools.XrmMockup.Config;
 
-
-
 namespace DG.Tools.XrmMockup
 {
     internal static class Utility
