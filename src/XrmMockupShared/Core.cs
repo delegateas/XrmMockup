@@ -180,8 +180,12 @@ namespace DG.Tools.XrmMockup
                 new CloseIncidentRequestHandler(this, db, metadata, security),
                 new AddMembersTeamRequestHandler(this, db, metadata, security),
                 new RemoveMembersTeamRequestHandler(this, db, metadata, security),
+#if !(XRM_MOCKUP_2011)
+                new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
+                new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
+#endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-                new IsValidStateTransitionRequestHandler(this, db, metadata, security),
+            new IsValidStateTransitionRequestHandler(this, db, metadata, security),
                 new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)

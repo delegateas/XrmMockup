@@ -36,7 +36,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
 
             // Add default entities
-            var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles", "activitypointer" };
+            var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles", "activitypointer", "teamtemplate" };
             foreach (var logicalName in defaultEntities)
             {
                 this.EntityLogicalNames.Add(logicalName);
@@ -78,6 +78,9 @@ namespace DG.Tools.XrmMockup.Metadata
             Console.WriteLine("Getting Default state and status");
             skeleton.DefaultStateStatus = GetDefaultStateAndStatus();
 
+            Console.WriteLine("Getting Access Team Templates");
+            skeleton.AccessTeamTemplates = GetAccessTeamTemplates();
+
             return skeleton;
         }
 
@@ -114,6 +117,21 @@ namespace DG.Tools.XrmMockup.Metadata
             Console.WriteLine($"Retrieved entity metadata for: {String.Join(", ", this.EntityLogicalNames.ToArray())}");
 
             return entityMetadata;
+        }
+
+        private List<Entity> GetAccessTeamTemplates()
+        {
+            var q = new QueryExpression("teamtemplate");
+            q.ColumnSet = new ColumnSet(true);
+            var tts = service.RetrieveMultiple(q);
+            if (tts.Entities != null && tts.Entities.Any())
+            {
+                return new List<Entity>(tts.Entities);
+            }
+            else
+            {
+                return new List<Entity>();
+            }
         }
 
         private List<MetaPlugin> GetPlugins(string[] solutions)

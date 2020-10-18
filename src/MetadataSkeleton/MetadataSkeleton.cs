@@ -14,6 +14,8 @@ namespace DG.Tools.XrmMockup {
         public List<MetaPlugin> Plugins;
         public OptionSetMetadataBase[] OptionSets;
         public Dictionary<string, Dictionary<int,int>> DefaultStateStatus;
+        public List<Entity> AccessTeamTemplates;
+
     }
 
     public class MetaPlugin {
