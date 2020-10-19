@@ -29,7 +29,12 @@ namespace DG.XrmMockupTest
             var req = new AddUserToRecordTeamRequest();
             req.Record = contact.ToEntityReference();
             req.SystemUserId = salesUser.Id;
-            req.TeamTemplateId = contactWriteAccessTeamTemplate.Id;
+
+            var q = new QueryExpression("teamtemplate");
+            q.Criteria.AddCondition("teamtemplatename", ConditionOperator.Equal, "(CAMS) Appendix Write");
+            var tt = orgAdminService.RetrieveMultiple(q);
+
+            req.TeamTemplateId = tt.Entities.First().Id;
 
             orgAdminService.Execute(req);
 

@@ -15,10 +15,53 @@ namespace DG.Tools.XrmMockup
 {
     internal class AddUserToRecordTeamRequestHandler : RequestHandler
     {
-        internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddMembersTeam") { }
+        internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
+
+            //validate that the team template exists
+            var ttId = (Guid)orgRequest["TeamTemplateId"];
+            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId));
+
+            var rows = db.GetDBEntityRows("team").Where(x => (int)x.GetColumn("teamtype") == 1)
+                                             .Where(x => (x.GetColumn("teamtemplateid") as DbRow).Id == ttId)
+                                             .Where(x => (x.GetColumn("regardingobjectid") as DbRow).Id == (orgRequest["Record"] as EntityReference).Id);
+            Guid teamId;
+            if (rows.Any())
+            {
+                teamId = rows.Single().Id;
+            }
+            else
+            {
+                //create the team
+                teamId = Guid.NewGuid();
+                var team = new Entity("team");
+                team.Id = teamId;
+                team["teamtype"] = new OptionSetValue(1);
+                team["teamtemplateid"] = new EntityReference("teamtemplate", ttId);
+                team["regardingobjectid"] = orgRequest["Record"];
+                team["name"] = (orgRequest["Record"] as EntityReference).Id.ToString() + "+" + ttId.ToString();
+                db.Add(team);
+            }
+
+
+            var membershiprows = db.GetDBEntityRows("teammembership").Where(x => ((Guid)x.GetColumn("teamid") == teamId))
+                                                                     .Where(x => ((Guid)x.GetColumn("systemuserid") == (Guid)orgRequest["SystemUserId"]));
+            if (!membershiprows.Any())
+            {
+                //create the team
+                var teammembership = new Entity("teammembership");
+                teammembership["teamid"] = teamId;
+                teammembership["systemuserid"] = (Guid)orgRequest["SystemUserId"];
+                db.Add(teammembership);
+
+            }
+
+
+
+
+
             //var request = MakeRequest<AddMembersTeamRequest>(orgRequest);
 
             //// Check if the team exist
@@ -28,7 +71,7 @@ namespace DG.Tools.XrmMockup
             //}
 
             //var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
-            
+
             //foreach (var userId in request.MemberIds)
             //{
             //    // Check if the user exist
