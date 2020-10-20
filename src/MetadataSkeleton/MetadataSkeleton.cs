@@ -83,7 +83,19 @@ namespace DG.Tools.XrmMockup {
         public SecurityRole Clone()
         {
             var clone = new SecurityRole();
-            clone.Privileges = this.Privileges;
+            clone.Privileges = new Dictionary<string, Dictionary<AccessRights, RolePrivilege>>();
+            foreach (var priv in this.Privileges)
+            {
+                var newV = new Dictionary<AccessRights, RolePrivilege>();
+                foreach (var v in priv.Value)
+                {
+                    newV.Add(v.Key, new RolePrivilege() { AccessRight = v.Value.AccessRight, CanBeBasic = v.Value.CanBeBasic, CanBeDeep = v.Value.CanBeDeep, CanBeGlobal = v.Value.CanBeGlobal, CanBeLocal = v.Value.CanBeLocal, PrivilegeDepth = v.Value.PrivilegeDepth });
+                }
+
+                var p = new KeyValuePair<string,Dictionary< AccessRights, RolePrivilege>>(priv.Key,newV);
+                clone.Privileges.Add(p.Key,p.Value);
+            }
+
             clone.Name = "Clone of " + this.Name;
             clone.BusinessUnitId = this.BusinessUnitId;
             clone.RoleId = Guid.NewGuid();

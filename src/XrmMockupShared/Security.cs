@@ -681,8 +681,11 @@ namespace DG.Tools.XrmMockup
             // check if any of the Teams that the caller is a member of has access
             if (HasTeamMemberPermission(entity, access, caller)) return true;
 
+
+#if !(XRM_MOCKUP_2011)
             // check if any of the Teams that the caller is a member of has access
             if (HasAccessTeamMemberPermission(entity, access, caller)) return true;
+#endif
 
             // check if there are any shares of the entity with the caller
             if (HasSharePermission(entity, access, caller)) return true;
@@ -707,7 +710,8 @@ namespace DG.Tools.XrmMockup
             var s =  new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList(),this.db)
             {
                 SecurityRoleMapping = this.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value),
-                Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value))
+                Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value)),
+                addedRoles = new List<Guid>(this.addedRoles)
             };
             s.PrinciplePrivilages = this.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
             return s;
