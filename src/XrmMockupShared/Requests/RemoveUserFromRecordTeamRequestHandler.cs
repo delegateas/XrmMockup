@@ -15,44 +15,32 @@ namespace DG.Tools.XrmMockup
 {
     internal class RemoveUserFromRecordTeamRequestHandler : RequestHandler
     {
-        internal RemoveUserFromRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
+        internal RemoveUserFromRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveUserFromRecordTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
-            //var request = MakeRequest<AddMembersTeamRequest>(orgRequest);
+            //validate that the team template exists
+            var ttId = (Guid)orgRequest["TeamTemplateId"];
 
-            //// Check if the team exist
-            //if (!db.HasRow(new EntityReference(LogicalNames.Team, request.TeamId)))
-            //{
-            //    throw new MockupException($"Team with id {request.TeamId} does not exist");
-            //}
+            var record = orgRequest["Record"] as EntityReference;
 
-            //var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
-            
-            //foreach (var userId in request.MemberIds)
-            //{
-            //    // Check if the user exist
-            //    if (!db.HasRow(new EntityReference(LogicalNames.SystemUser, userId)))
-            //    {
-            //        throw new MockupException($"User with id {userId} does not exist");
-            //    }
+            var accessTeam = security.GetAccessTeam(ttId, record.Id);
 
-            //    // Check if the user is already a member of the team
-            //    if (teamMembers.Any(t => t.GetAttributeValue<Guid>("systemuserid") == userId))
-            //    {
-            //        throw new MockupException($"User with id {userId} is already member of the team with id {request.TeamId}");
-            //    }
-            //}
+            var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+            if (membershiprow != null)
+            {
+                var poa = security.GetPOA((Guid)orgRequest["SystemUserId"], record.Id);
 
-            //foreach (var userId in request.MemberIds)
-            //{
-            //    var teamMember = new Entity(LogicalNames.TeamMembership);
-            //    teamMember["teamid"] = request.TeamId;
-            //    teamMember["systemuserid"] = userId;
-            //    db.Add(teamMember);
-            //}
+                if (poa != null)
+                {
+                    db.Delete(poa);
+                }
+                db.Delete(membershiprow);
+            }
 
-            return new RemoveUserFromRecordTeamResponse();
+            var resp = new RemoveUserFromRecordTeamResponse();
+            resp.Results["AccessTeamId"] = accessTeam.Id;
+            return resp;
         }
     }
 }

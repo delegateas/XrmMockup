@@ -109,11 +109,14 @@ namespace DG.Tools.XrmMockup
             this.security.InitializeSecurityRoles(db);
 
             //persist the access team templates as they livein the db as records.
-            foreach (var att in metadata.AccessTeamTemplates)
+            if (metadata.AccessTeamTemplates != null)
             {
-                var create = new CreateRequest();
-                create.Target = att;
-                this.Execute(create, AdminUserRef);
+                foreach (var att in metadata.AccessTeamTemplates)
+                {
+                    var create = new CreateRequest();
+                    create.Target = att;
+                    this.Execute(create, AdminUserRef);
+                }
             }
 
         }
@@ -771,6 +774,12 @@ namespace DG.Tools.XrmMockup
         internal SecurityRole GetSecurityRole(string roleName)
         {
             return security.GetSecurityRole(roleName);
+        }
+
+        internal void AddSecurityRole (SecurityRole role)
+        {
+            
+            security.AddSecurityRole(role);
         }
 
         internal void AddPrivileges(EntityReference entRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)

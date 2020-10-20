@@ -36,7 +36,7 @@ namespace DG.XrmMockupTest
             try
             {
                 var checkContact = testUser1Service.Retrieve("contact", contact2.Id, new ColumnSet(true));
-                Assert.Fail ();
+                Assert.Fail();
             }
             catch (Exception ex)
             {
@@ -45,8 +45,6 @@ namespace DG.XrmMockupTest
                     throw;
                 }
             }
-            
-
 
             var req = new AddUserToRecordTeamRequest();
             req.Record = contact2.ToEntityReference();
@@ -60,9 +58,29 @@ namespace DG.XrmMockupTest
 
             orgAdminService.Execute(req);
 
-
             //that user 1 can now see contact 2
             var checkContact2 = testUser1Service.Retrieve("contact", contact2.Id, new ColumnSet(true));
+
+            var removereq = new RemoveUserFromRecordTeamRequest();
+            removereq.Record = contact2.ToEntityReference();
+            removereq.SystemUserId = testUser1.Id;
+            removereq.TeamTemplateId = tt.Entities.First().Id;
+
+            orgAdminService.Execute(removereq);
+
+            //check that user 1 cannot see contact 2
+            try
+            {
+                var checkContact = testUser1Service.Retrieve("contact", contact2.Id, new ColumnSet(true));
+                Assert.Fail();
+            }
+            catch (Exception ex)
+            {
+                if (!ex.Message.Contains("does not have permission"))
+                {
+                    throw;
+                }
+            }
 
 
         }

@@ -857,11 +857,30 @@ namespace DG.Tools.XrmMockup
                 throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'." +
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
+
+
+            //check for any additional metadata files
+            var metaDataFiles = Directory.GetFiles(folderLocation, "*Metadata.xml");
+
+            var master = new MetadataSkeleton();
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
             using (var stream = new FileStream(pathToMetadata, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                return (MetadataSkeleton)serializer.ReadObject(stream);
+                master = (MetadataSkeleton)serializer.ReadObject(stream);
             }
+            
+
+            foreach (var file in metaDataFiles.Where(x=>Path.GetFileName(x) != Path.GetFileName(pathToMetadata)))
+            {
+                serializer = new DataContractSerializer(typeof(MetadataSkeleton));
+                using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    master.Merge((MetadataSkeleton)serializer.ReadObject(stream));
+                }
+            }
+
+            return master;
+            
         }
 
         internal static List<Entity> GetWorkflows(string folderLocation)
@@ -1110,6 +1129,8 @@ namespace DG.Tools.XrmMockup
         public const string Lead = "lead";
         public const string Opportunity = "opportunity";
         public const string TeamMembership = "teammembership";
+        public const string PrincipalObjectAccess = "principalobjectaccess";
+
     }
 
     [DataContract()]

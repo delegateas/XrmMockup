@@ -4,6 +4,8 @@ using Microsoft.Xrm.Sdk;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace DG.XrmMockupTest
 {
@@ -63,29 +65,60 @@ namespace DG.XrmMockupTest
             // crm.CreateUser
 
             var adminRole = crm.GetSecurityRole("System Administrator");
-
             var adminUser = crm.CreateUser(orgAdminService, admin, new Guid[] { adminRole.RoleId });
 
+            InitialiseAccessTeamConfiguration();
+
+        }
+
+        private void InitialiseAccessTeamConfiguration()
+        {
+            //create a new security role with basic level only on all contact privileges
+            var accessTeamTestRole = crm.CloneSecurityRole("Salesperson");
+            accessTeamTestRole.Name = "AccessTeamTest";
+            var contactPriv = accessTeamTestRole.Privileges["contact"];
+
+            var newPriv = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
+
+            foreach (var priv in contactPriv)
+            {
+                var newP = priv.Value.Clone();
+                newP.PrivilegeDepth = PrivilegeDepth.Basic;
+                newPriv.Add(priv.Key, newP);
+            }
+
+            accessTeamTestRole.Privileges.Remove("contact");
+            accessTeamTestRole.Privileges.Add("contact", newPriv);
+            crm.AddSecurityRole(accessTeamTestRole);
+            
+            //create some users with the new role
             var user = new Entity("systemuser");
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
-            testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("Test").RoleId });
+            testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser1Service = crm.CreateOrganizationService(testUser1.Id);
 
             var user2 = new Entity("systemuser");
             user2["internalemailaddress"] = "camstestuser2@official.mod.uk";
             user2["businessunitid"] = crm.RootBusinessUnit;
             user2["islicensed"] = true;
-            testUser2 = crm.CreateUser(orgAdminService, user2, new Guid[] { crm.GetSecurityRole("Test").RoleId });
+            testUser2 = crm.CreateUser(orgAdminService, user2, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser2Service = crm.CreateOrganizationService(testUser2.Id);
 
-            contactWriteAccessTeamTemplate = new Entity("teamtemplate");
+            //create some access team templates
+            var contactWriteAccessTeamTemplate = new Entity("teamtemplate");
+            contactWriteAccessTeamTemplate["teamtemplatename"] = "TestWriteContact";
             contactWriteAccessTeamTemplate["objecttypecode"] = 2;
-            contactWriteAccessTeamTemplate["defaultaccessrightsmask"] = 22;
+            contactWriteAccessTeamTemplate["defaultaccessrightsmask"] = 2;
             contactWriteAccessTeamTemplate.Id = orgAdminService.Create(contactWriteAccessTeamTemplate);
 
-            
+            var contactReadAccessTeamTemplate = new Entity("teamtemplate");
+            contactReadAccessTeamTemplate["teamtemplatename"] = "TestReadContact";
+            contactReadAccessTeamTemplate["objecttypecode"] = 2;
+            contactReadAccessTeamTemplate["defaultaccessrightsmask"] = 1;
+            contactReadAccessTeamTemplate.Id = orgAdminService.Create(contactReadAccessTeamTemplate);
+
         }
 
         [TestCleanup]
@@ -105,15 +138,17 @@ namespace DG.XrmMockupTest
         {
             var settings = new XrmMockupSettings
             {
-                BasePluginTypes = new Type[] { typeof(Plugin)},//, typeof(PluginNonDaxif) },
+                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
-                //MetadataDirectoryPath = "../../../Metadata"
-                MetadataDirectoryPath = @"C:\dev\MOD\CAMS\Plugins\XrmMockupTests\Metadata"
+                MetadataDirectoryPath = "../../../Metadata"
+                //MetadataDirectoryPath = @"C:\dev\MOD\CAMS\Plugins\XrmMockupTests\Metadata"
 
             };
+
+            
 
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);
@@ -127,39 +162,41 @@ namespace DG.XrmMockupTest
             crm = XrmMockup365.GetInstance(settings);
 #endif
 
-//            try
-//            {
-//                var realDataSettings = new XrmMockupSettings
-//                {
-//                    BasePluginTypes = settings.BasePluginTypes,
-//                    CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
-//                    EnableProxyTypes = settings.EnableProxyTypes,
-//                    IncludeAllWorkflows = settings.IncludeAllWorkflows,
-//                    ExceptionFreeRequests = settings.ExceptionFreeRequests,
-//                    OnlineEnvironment = new Env
-//                    {
-//                        providerType = AuthenticationProviderType.OnlineFederation,
-//                        uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-//                        username = "exampleUser",
-//                        password = "examplePass"
-//                    }
-//                };
-//#if XRM_MOCKUP_TEST_2011
-//                crmRealData = XrmMockup2011.GetInstance(realDataSettings);
-//#elif XRM_MOCKUP_TEST_2013
-//                crmRealData = XrmMockup2013.GetInstance(realDataSettings);
-//#elif XRM_MOCKUP_TEST_2015
-//                crmRealData = XrmMockup2015.GetInstance(realDataSettings);
-//#elif XRM_MOCKUP_TEST_2016
-//                crmRealData = XrmMockup2016.GetInstance(realDataSettings);
-//#elif XRM_MOCKUP_TEST_365
-//                crmRealData = XrmMockup365.GetInstance(realDataSettings);
-//#endif
-//            }
-//            catch
-//            {
-//                // ignore
-//            }
+            
+
+            //            try
+            //            {
+            //                var realDataSettings = new XrmMockupSettings
+            //                {
+            //                    BasePluginTypes = settings.BasePluginTypes,
+            //                    CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
+            //                    EnableProxyTypes = settings.EnableProxyTypes,
+            //                    IncludeAllWorkflows = settings.IncludeAllWorkflows,
+            //                    ExceptionFreeRequests = settings.ExceptionFreeRequests,
+            //                    OnlineEnvironment = new Env
+            //                    {
+            //                        providerType = AuthenticationProviderType.OnlineFederation,
+            //                        uri = "https://exampleURL/XRMServices/2011/Organization.svc",
+            //                        username = "exampleUser",
+            //                        password = "examplePass"
+            //                    }
+            //                };
+            //#if XRM_MOCKUP_TEST_2011
+            //                crmRealData = XrmMockup2011.GetInstance(realDataSettings);
+            //#elif XRM_MOCKUP_TEST_2013
+            //                crmRealData = XrmMockup2013.GetInstance(realDataSettings);
+            //#elif XRM_MOCKUP_TEST_2015
+            //                crmRealData = XrmMockup2015.GetInstance(realDataSettings);
+            //#elif XRM_MOCKUP_TEST_2016
+            //                crmRealData = XrmMockup2016.GetInstance(realDataSettings);
+            //#elif XRM_MOCKUP_TEST_365
+            //                crmRealData = XrmMockup365.GetInstance(realDataSettings);
+            //#endif
+            //            }
+            //            catch
+            //            {
+            //                // ignore
+            //            }
         }
     }
 }
