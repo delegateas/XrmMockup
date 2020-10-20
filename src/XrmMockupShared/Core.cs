@@ -97,7 +97,7 @@ namespace DG.Tools.XrmMockup
 
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
-            this.security = new Security(this, metadata, SecurityRoles);
+            this.security = new Security(this, metadata, SecurityRoles,this.db);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows, Workflows, metadata.EntityMetadata);
@@ -770,7 +770,6 @@ namespace DG.Tools.XrmMockup
 
         internal SecurityRole GetSecurityRole(string roleName)
         {
-
             return security.GetSecurityRole(roleName);
         }
 

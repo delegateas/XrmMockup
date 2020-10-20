@@ -22,80 +22,33 @@ namespace DG.Tools.XrmMockup
 
             //validate that the team template exists
             var ttId = (Guid)orgRequest["TeamTemplateId"];
-            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId));
+            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity() ;
 
-            var rows = db.GetDBEntityRows("team").Where(x => (int)x.GetColumn("teamtype") == 1)
-                                             .Where(x => (x.GetColumn("teamtemplateid") as DbRow).Id == ttId)
-                                             .Where(x => (x.GetColumn("regardingobjectid") as DbRow).Id == (orgRequest["Record"] as EntityReference).Id);
-            Guid teamId;
-            if (rows.Any())
+            var record = orgRequest["Record"] as EntityReference;
+
+            var accessTeam = security.GetAccessTeam(ttId, record.Id);
+            if (accessTeam == null)
             {
-                teamId = rows.Single().Id;
-            }
-            else
-            {
-                //create the team
-                teamId = Guid.NewGuid();
-                var team = new Entity("team");
-                team.Id = teamId;
-                team["teamtype"] = new OptionSetValue(1);
-                team["teamtemplateid"] = new EntityReference("teamtemplate", ttId);
-                team["regardingobjectid"] = orgRequest["Record"];
-                team["name"] = (orgRequest["Record"] as EntityReference).Id.ToString() + "+" + ttId.ToString();
-                db.Add(team);
+                accessTeam = security.AddAccessTeam(ttId, record);
             }
 
 
-            var membershiprows = db.GetDBEntityRows("teammembership").Where(x => ((Guid)x.GetColumn("teamid") == teamId))
-                                                                     .Where(x => ((Guid)x.GetColumn("systemuserid") == (Guid)orgRequest["SystemUserId"]));
-            if (!membershiprows.Any())
+            var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+            if (membershiprow==null)
             {
-                //create the team
-                var teammembership = new Entity("teammembership");
-                teammembership["teamid"] = teamId;
-                teammembership["systemuserid"] = (Guid)orgRequest["SystemUserId"];
-                db.Add(teammembership);
+                membershiprow = security.AddTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
 
+                var poa = security.GetPOA((Guid)orgRequest["SystemUserId"], record.Id);
+
+                if (poa == null)
+                {
+                    poa = security.AddPOA((Guid)orgRequest["SystemUserId"], record, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
+                }
             }
 
-
-
-
-
-            //var request = MakeRequest<AddMembersTeamRequest>(orgRequest);
-
-            //// Check if the team exist
-            //if (!db.HasRow(new EntityReference(LogicalNames.Team, request.TeamId)))
-            //{
-            //    throw new MockupException($"Team with id {request.TeamId} does not exist");
-            //}
-
-            //var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
-
-            //foreach (var userId in request.MemberIds)
-            //{
-            //    // Check if the user exist
-            //    if (!db.HasRow(new EntityReference(LogicalNames.SystemUser, userId)))
-            //    {
-            //        throw new MockupException($"User with id {userId} does not exist");
-            //    }
-
-            //    // Check if the user is already a member of the team
-            //    if (teamMembers.Any(t => t.GetAttributeValue<Guid>("systemuserid") == userId))
-            //    {
-            //        throw new MockupException($"User with id {userId} is already member of the team with id {request.TeamId}");
-            //    }
-            //}
-
-            //foreach (var userId in request.MemberIds)
-            //{
-            //    var teamMember = new Entity(LogicalNames.TeamMembership);
-            //    teamMember["teamid"] = request.TeamId;
-            //    teamMember["systemuserid"] = userId;
-            //    db.Add(teamMember);
-            //}
-
-            return new AddUserToRecordTeamResponse();
+            var resp = new AddUserToRecordTeamResponse();
+            resp.Results["AccessTeamId"] = accessTeam.Id;
+            return resp;
         }
     }
 }

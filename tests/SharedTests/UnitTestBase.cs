@@ -16,9 +16,14 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
-        protected IOrganizationService salesUserService;
 
-        protected Entity salesUser;
+        protected Entity testUser1;
+        protected IOrganizationService testUser1Service; 
+        
+        protected Entity testUser2;
+        protected IOrganizationService testUser2Service;
+
+
 
         protected Entity contactWriteAccessTeamTemplate;
 
@@ -65,14 +70,22 @@ namespace DG.XrmMockupTest
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
-            salesUser = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("Salesperson").RoleId });
-            salesUserService = crm.CreateOrganizationService(salesUser.Id);
+            testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("Test").RoleId });
+            testUser1Service = crm.CreateOrganizationService(testUser1.Id);
+
+            var user2 = new Entity("systemuser");
+            user2["internalemailaddress"] = "camstestuser2@official.mod.uk";
+            user2["businessunitid"] = crm.RootBusinessUnit;
+            user2["islicensed"] = true;
+            testUser2 = crm.CreateUser(orgAdminService, user2, new Guid[] { crm.GetSecurityRole("Test").RoleId });
+            testUser2Service = crm.CreateOrganizationService(testUser2.Id);
 
             contactWriteAccessTeamTemplate = new Entity("teamtemplate");
             contactWriteAccessTeamTemplate["objecttypecode"] = 2;
             contactWriteAccessTeamTemplate["defaultaccessrightsmask"] = 22;
             contactWriteAccessTeamTemplate.Id = orgAdminService.Create(contactWriteAccessTeamTemplate);
 
+            
         }
 
         [TestCleanup]
