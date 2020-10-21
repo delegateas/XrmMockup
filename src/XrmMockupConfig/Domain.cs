@@ -146,6 +146,13 @@ namespace DG.Tools.XrmMockup.Config
         Win
     }
 
+    public static class EventOperationStrings
+    {
+        public static readonly string Create = "create";
+        public static readonly string Update = "update";
+        public static readonly string Delete = "delete";
+    }
+
     public enum ImageType {
         PreImage = 0,
         PostImage = 1,

@@ -27,26 +27,26 @@ namespace DG.Tools.XrmMockup {
             { typeof(DisassociateRequest), "Target" },
         };
 
-        public static Dictionary<Type, EventOperation?> RequestToEventOperation = new Dictionary<Type, EventOperation?>()
+        public static Dictionary<Type, string> RequestToEventOperation = new Dictionary<Type, string>()
         {
-            { typeof(AssignRequest), EventOperation.Assign },
-            { typeof(AssociateRequest), EventOperation.Associate },
-            { typeof(CreateRequest), EventOperation.Create },
-            { typeof(DeleteRequest), EventOperation.Delete },
-            { typeof(DisassociateRequest), EventOperation.Disassociate },
-            { typeof(GrantAccessRequest), EventOperation.GrantAccess },
-            { typeof(MergeRequest), EventOperation.Merge },
-            { typeof(ModifyAccessRequest), EventOperation.ModifyAccess },
-            { typeof(RetrieveRequest), EventOperation.Retrieve },
-            { typeof(RetrieveMultipleRequest), EventOperation.RetrieveMultiple },
-            { typeof(RetrievePrincipalAccessRequest), EventOperation.RetrievePrincipalAccess },
+            { typeof(AssignRequest), Enum.GetName(typeof(EventOperation),EventOperation.Assign).ToLower() },
+            { typeof(AssociateRequest), Enum.GetName(typeof(EventOperation),EventOperation.Associate).ToLower()},
+            { typeof(CreateRequest), Enum.GetName(typeof(EventOperation),EventOperation.Create).ToLower() },
+            { typeof(DeleteRequest), Enum.GetName(typeof(EventOperation),EventOperation.Delete).ToLower()},
+            { typeof(DisassociateRequest), Enum.GetName(typeof(EventOperation),EventOperation.Disassociate).ToLower()},
+            { typeof(GrantAccessRequest), Enum.GetName(typeof(EventOperation),EventOperation.GrantAccess).ToLower()},
+            { typeof(MergeRequest), Enum.GetName(typeof(EventOperation),EventOperation.Merge).ToLower()},
+            { typeof(ModifyAccessRequest),Enum.GetName(typeof(EventOperation),EventOperation.ModifyAccess).ToLower()  },
+            { typeof(RetrieveRequest), Enum.GetName(typeof(EventOperation),EventOperation.Retrieve).ToLower()},
+            { typeof(RetrieveMultipleRequest), Enum.GetName(typeof(EventOperation),EventOperation.RetrieveMultiple).ToLower()},
+            { typeof(RetrievePrincipalAccessRequest), Enum.GetName(typeof(EventOperation),EventOperation.RetrievePrincipalAccess).ToLower()},
             //{ typeof(RetrieveSharedPrincipalAccessRequest), EventOperation.RetrieveSharedPrincipalAccess }, // No such request
-            { typeof(RevokeAccessRequest), EventOperation.RevokeAccess },
-            { typeof(SetStateRequest), EventOperation.SetState },
+            { typeof(RevokeAccessRequest), Enum.GetName(typeof(EventOperation),EventOperation.RevokeAccess).ToLower()},
+            { typeof(SetStateRequest), Enum.GetName(typeof(EventOperation),EventOperation.SetState).ToLower()},
             //{ typeof(SetStateDynamicEntityRequest), EventOperation.SetStateDynamicEntity }, // No such request
-            { typeof(UpdateRequest), EventOperation.Update },
-            { typeof(WinOpportunityRequest), EventOperation.Win },
-            { typeof(LoseOpportunityRequest), EventOperation.Lose },
+            { typeof(UpdateRequest), Enum.GetName(typeof(EventOperation),EventOperation.Update).ToLower()},
+            { typeof(WinOpportunityRequest), Enum.GetName(typeof(EventOperation),EventOperation.Win).ToLower()},
+            { typeof(LoseOpportunityRequest), Enum.GetName(typeof(EventOperation),EventOperation.Lose).ToLower()},
 
         };
 
