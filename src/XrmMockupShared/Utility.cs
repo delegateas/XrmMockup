@@ -858,7 +858,6 @@ namespace DG.Tools.XrmMockup
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
 
-
             //check for any additional metadata files
             var metaDataFiles = Directory.GetFiles(folderLocation, "*Metadata.xml");
 
@@ -869,7 +868,6 @@ namespace DG.Tools.XrmMockup
                 master = (MetadataSkeleton)serializer.ReadObject(stream);
             }
             
-
             foreach (var file in metaDataFiles.Where(x=>Path.GetFileName(x) != Path.GetFileName(pathToMetadata)))
             {
                 serializer = new DataContractSerializer(typeof(MetadataSkeleton));
@@ -880,7 +878,6 @@ namespace DG.Tools.XrmMockup
             }
 
             return master;
-            
         }
 
         internal static List<Entity> GetWorkflows(string folderLocation)
@@ -1130,7 +1127,6 @@ namespace DG.Tools.XrmMockup
         public const string Opportunity = "opportunity";
         public const string TeamMembership = "teammembership";
         public const string PrincipalObjectAccess = "principalobjectaccess";
-
     }
 
     [DataContract()]

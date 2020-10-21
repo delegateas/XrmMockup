@@ -69,7 +69,6 @@ namespace DG.XrmMockupTest
             var adminUser = crm.CreateUser(orgAdminService, admin, new Guid[] { adminRole.RoleId });
 
             InitialiseAccessTeamConfiguration();
-
         }
 
         private void InitialiseAccessTeamConfiguration()
@@ -122,7 +121,6 @@ namespace DG.XrmMockupTest
             testUser3 = crm.CreateUser(orgAdminService, user3, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser3Service = crm.CreateOrganizationService(testUser3.Id);
 
-
             //create some access team templates
             CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);
             CreateAccessTeamTemplate("TestReadContact", 2, AccessRights.ReadAccess);
@@ -132,8 +130,6 @@ namespace DG.XrmMockupTest
             CreateAccessTeamTemplate("TestShareContact", 2, AccessRights.ShareAccess);
             CreateAccessTeamTemplate("TestAppendToAccount", 1, AccessRights.AppendToAccess);
             CreateAccessTeamTemplate("TestMultipleContact", 2, AccessRights.WriteAccess, AccessRights.ReadAccess, AccessRights.DeleteAccess);
-
-
         }
 
         private void CreateAccessTeamTemplate(string name,int objectTypeCode,params AccessRights[] access)
@@ -175,10 +171,7 @@ namespace DG.XrmMockupTest
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata"
                 //MetadataDirectoryPath = @"C:\dev\MOD\CAMS\Plugins\XrmMockupTests\Metadata"
-
             };
-
-            
 
 #if XRM_MOCKUP_TEST_2011
             crm = XrmMockup2011.GetInstance(settings);
@@ -192,41 +185,39 @@ namespace DG.XrmMockupTest
             crm = XrmMockup365.GetInstance(settings);
 #endif
 
-            
-
-            //            try
-            //            {
-            //                var realDataSettings = new XrmMockupSettings
-            //                {
-            //                    BasePluginTypes = settings.BasePluginTypes,
-            //                    CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
-            //                    EnableProxyTypes = settings.EnableProxyTypes,
-            //                    IncludeAllWorkflows = settings.IncludeAllWorkflows,
-            //                    ExceptionFreeRequests = settings.ExceptionFreeRequests,
-            //                    OnlineEnvironment = new Env
-            //                    {
-            //                        providerType = AuthenticationProviderType.OnlineFederation,
-            //                        uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-            //                        username = "exampleUser",
-            //                        password = "examplePass"
-            //                    }
-            //                };
-            //#if XRM_MOCKUP_TEST_2011
-            //                crmRealData = XrmMockup2011.GetInstance(realDataSettings);
-            //#elif XRM_MOCKUP_TEST_2013
-            //                crmRealData = XrmMockup2013.GetInstance(realDataSettings);
-            //#elif XRM_MOCKUP_TEST_2015
-            //                crmRealData = XrmMockup2015.GetInstance(realDataSettings);
-            //#elif XRM_MOCKUP_TEST_2016
-            //                crmRealData = XrmMockup2016.GetInstance(realDataSettings);
-            //#elif XRM_MOCKUP_TEST_365
-            //                crmRealData = XrmMockup365.GetInstance(realDataSettings);
-            //#endif
-            //            }
-            //            catch
-            //            {
-            //                // ignore
-            //            }
+            try
+            {
+                var realDataSettings = new XrmMockupSettings
+                {
+                    BasePluginTypes = settings.BasePluginTypes,
+                    CodeActivityInstanceTypes = settings.CodeActivityInstanceTypes,
+                    EnableProxyTypes = settings.EnableProxyTypes,
+                    IncludeAllWorkflows = settings.IncludeAllWorkflows,
+                    ExceptionFreeRequests = settings.ExceptionFreeRequests,
+                    OnlineEnvironment = new Env
+                    {
+                        providerType = AuthenticationProviderType.OnlineFederation,
+                        uri = "https://exampleURL/XRMServices/2011/Organization.svc",
+                        username = "exampleUser",
+                        password = "examplePass"
+                    }
+                };
+#if XRM_MOCKUP_TEST_2011
+                            crmRealData = XrmMockup2011.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2013
+                            crmRealData = XrmMockup2013.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2015
+                            crmRealData = XrmMockup2015.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_2016
+                            crmRealData = XrmMockup2016.GetInstance(realDataSettings);
+#elif XRM_MOCKUP_TEST_365
+                crmRealData = XrmMockup365.GetInstance(realDataSettings);
+#endif
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
 }

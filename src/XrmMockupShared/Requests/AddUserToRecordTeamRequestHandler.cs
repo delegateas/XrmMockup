@@ -19,10 +19,9 @@ namespace DG.Tools.XrmMockup
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
-
             //validate that the team template exists
             var ttId = (Guid)orgRequest["TeamTemplateId"];
-            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity() ;
+            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
 
             var record = orgRequest["Record"] as EntityReference;
 
@@ -31,8 +30,7 @@ namespace DG.Tools.XrmMockup
             {
                 accessTeam = security.AddAccessTeam(ttId, record);
             }
-
-
+            
             var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
             if (membershiprow==null)
             {

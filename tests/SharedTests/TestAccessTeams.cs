@@ -81,8 +81,6 @@ namespace DG.XrmMockupTest
                     throw;
                 }
             }
-
-
         }
 
         [TestMethod]
@@ -158,8 +156,6 @@ namespace DG.XrmMockupTest
                     throw;
                 }
             }
-
-
         }
 
         [TestMethod]
@@ -201,8 +197,6 @@ namespace DG.XrmMockupTest
             testUser1Service.Execute(grant);
 
             testUser3Service.Retrieve("contact", contact2.Id, new ColumnSet(true));
-
-
         }
         [TestMethod]
         public void TestUserAddedToMultipleSimpleAccessTeams()
@@ -231,7 +225,6 @@ namespace DG.XrmMockupTest
             testUser1Service.Update(updateContact);
 
             testUser1Service.Delete("contact", contact2.Id);
-
         }
         [TestMethod]
         public void TestUserAddedToSingleComplexAccessTeam()
@@ -258,7 +251,6 @@ namespace DG.XrmMockupTest
             testUser1Service.Update(updateContact);
 
             testUser1Service.Delete("contact", contact2.Id);
-
         }
 
         [TestMethod]
@@ -300,7 +292,6 @@ namespace DG.XrmMockupTest
             updateContact.Id = contact2.Id;
             updateContact["ownerid"] = testUser1.ToEntityReference();
             testUser1Service.Update(updateContact);
-
         }
         [TestMethod]
         public void SimpleDeleteTest()
@@ -398,7 +389,6 @@ namespace DG.XrmMockupTest
             updateContact.Id = contact2.Id;
             updateContact.ParentCustomerId = new EntityReference("account", account.Id);
             testUser1Service.Update(updateContact);
-
         }
 
         [TestMethod]
@@ -453,7 +443,6 @@ namespace DG.XrmMockupTest
             updateContact.Id = contact.Id;
             updateContact.ParentCustomerId = new EntityReference("account", account2.Id);
             testUser1Service.Update(updateContact);
-
         }
 
         [TestMethod]
@@ -517,16 +506,12 @@ namespace DG.XrmMockupTest
             updateContactE["parentcustomerid"] = null;
             testUser2Service.Update(updateContactE);
 
-
             //check they can still edit
             updateContact = new Contact();
             updateContact.Id = contact2.Id;
             updateContact["firstname"] = "bob";
             testUser1Service.Update(updateContact); ;
-
-
-
-            }
+        }
 
         private void AddUserToAccessTeam(string accessTeamName, EntityReference record, Guid userId)
         {

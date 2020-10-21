@@ -118,7 +118,6 @@ namespace DG.Tools.XrmMockup
                     this.Execute(create, AdminUserRef);
                 }
             }
-
         }
 
         private void InitializeDB()
@@ -778,7 +777,6 @@ namespace DG.Tools.XrmMockup
 
         internal void AddSecurityRole (SecurityRole role)
         {
-            
             security.AddSecurityRole(role);
         }
 

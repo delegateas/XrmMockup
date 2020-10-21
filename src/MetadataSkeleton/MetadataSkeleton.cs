@@ -27,7 +27,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
         }
-
     }
 
     public class MetaPlugin {
@@ -103,6 +102,5 @@ namespace DG.Tools.XrmMockup {
 
             return clone;
         }
-
     }
 }

@@ -83,7 +83,6 @@ namespace DG.Tools.XrmMockup
             role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
             db.Add(role);
             SecurityRoleMapping.Add(role.Id, newRole.RoleId);
-            
         }
 
         internal void InitializeSecurityRoles(XrmDb db)
@@ -181,23 +180,20 @@ namespace DG.Tools.XrmMockup
                         .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                         .Where(x => (x.GetAttributeValue<EntityReference>("teamtemplateid").Id == teamTemplateId))
                         .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId))
-                        .SingleOrDefault()
-                        ;
+                        .SingleOrDefault();
         }
         internal IEnumerable<Entity> GetAccessTeams(Guid recordId)
         {
             return Core.GetDbTable("team")
                         .Select(x => x.ToEntity())
                         .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
-                        .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId))
-                        ;
-                        
+                        .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId));
         }
         internal Entity AddAccessTeam(Guid teamTemplateId, EntityReference record)
         {
             //create the team
             var team = new Entity("team");
-            team.Id = Guid.NewGuid(); ;
+            team.Id = Guid.NewGuid();
             team["teamtype"] = new OptionSetValue(1);
             team["teamtemplateid"] = new EntityReference("teamtemplate", teamTemplateId);
             team["regardingobjectid"] = record;
@@ -227,7 +223,7 @@ namespace DG.Tools.XrmMockup
         internal Entity AddTeamMembership(Guid teamId, Guid systemuserId)
         {
             var teammembership = new Entity("teammembership");
-            teammembership.Id = Guid.NewGuid(); ;
+            teammembership.Id = Guid.NewGuid();
             teammembership["teamid"] = teamId;
             teammembership["systemuserid"] = systemuserId;
             db.Add(teammembership);
@@ -237,7 +233,7 @@ namespace DG.Tools.XrmMockup
         internal Entity AddPOA(Guid principalId, EntityReference objectId, int accessRightsMask)
         {
             var poa = new Entity("principalobjectaccess");
-            poa.Id = Guid.NewGuid(); ;
+            poa.Id = Guid.NewGuid();
             poa["principalid"] = principalId;
             poa["objectid"] = objectId.Id;
             poa["accessrightsmask"] = accessRightsMask;
@@ -589,7 +585,6 @@ namespace DG.Tools.XrmMockup
                               .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                               .Where(x => x.GetAttributeValue<EntityReference>("regardingobjectid").Id == entity.Id);
 
-
             if (!accessTeams.Any())
                 return false;
 
@@ -601,7 +596,6 @@ namespace DG.Tools.XrmMockup
             if (!accessTeamMemberships.Any())
                 return false;
 
-
             foreach (var atm in accessTeamMemberships)
             {
                 var poa = GetPOA(atm.GetAttributeValue<Guid>("systemuserid"), entity.Id);
@@ -612,29 +606,7 @@ namespace DG.Tools.XrmMockup
                     if ((mask & (int)access) > 0)
                         return true;
                 }
-
             }
-
-
-            //if (!entity.Attributes.ContainsKey("ownerid") || caller.LogicalName != LogicalNames.SystemUser)
-            //    return false;
-
-            //var owner = entity.GetAttributeValue<EntityReference>("ownerid");
-
-            //// Check if owner is a team, and if user is member of that team, then check access for that team
-            //if (owner.LogicalName == LogicalNames.Team && IsMemberOfTeam(owner, caller))
-            //{
-            //    return HasPermission(entity, access, owner);
-            //}
-
-            //// Check if any teams that the user is a member of have access 
-            //var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
-            //.Select(x => x.ToEntity())
-            //.Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
-            //.Select(tm => tm.GetAttributeValue<Guid>("teamid"))
-            //.ToList();
-
-            //return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
 
             return false;
         }
