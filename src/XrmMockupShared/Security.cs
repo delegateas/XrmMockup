@@ -559,8 +559,6 @@ namespace DG.Tools.XrmMockup
             .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
             .ToList();
 
-
-
             return teamIds.Any(teamId => !IsAccessTeam(teamId) &&  HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
         }
 
@@ -689,7 +687,6 @@ namespace DG.Tools.XrmMockup
 
             // check if any of the Teams that the caller is a member of has access
             if (HasTeamMemberPermission(entity, access, caller)) return true;
-
 
 #if !(XRM_MOCKUP_2011)
             // check if any of the Teams that the caller is a member of has access

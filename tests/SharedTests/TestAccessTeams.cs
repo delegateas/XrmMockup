@@ -16,7 +16,6 @@ namespace DG.XrmMockupTest
     [TestClass]
     public class TestAccessTeams : UnitTestBase
     {
-        
         [TestMethod]
         public void SimpleReadTest()
         {
@@ -510,7 +509,7 @@ namespace DG.XrmMockupTest
             updateContact = new Contact();
             updateContact.Id = contact2.Id;
             updateContact["firstname"] = "bob";
-            testUser1Service.Update(updateContact); ;
+            testUser1Service.Update(updateContact);
         }
 
         private void AddUserToAccessTeam(string accessTeamName, EntityReference record, Guid userId)
