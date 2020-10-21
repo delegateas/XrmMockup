@@ -44,6 +44,11 @@ namespace DG.Tools.XrmMockup
                 {
                     poa = security.AddPOA((Guid)orgRequest["SystemUserId"], record, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
                 }
+                else
+                {
+                    //update the existing poa to include the new privlege
+                    security.UpdatePOAMask(poa.Id, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
+                }
             }
 
             var resp = new AddUserToRecordTeamResponse();

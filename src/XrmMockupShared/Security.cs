@@ -181,7 +181,17 @@ namespace DG.Tools.XrmMockup
                         .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                         .Where(x => (x.GetAttributeValue<EntityReference>("teamtemplateid").Id == teamTemplateId))
                         .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId))
-                        .SingleOrDefault();
+                        .SingleOrDefault()
+                        ;
+        }
+        internal IEnumerable<Entity> GetAccessTeams(Guid recordId)
+        {
+            return Core.GetDbTable("team")
+                        .Select(x => x.ToEntity())
+                        .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
+                        .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId))
+                        ;
+                        
         }
         internal Entity AddAccessTeam(Guid teamTemplateId, EntityReference record)
         {
@@ -224,7 +234,7 @@ namespace DG.Tools.XrmMockup
 
             return GetTeamMembership(teamId, systemuserId);
         }
-        internal Entity AddPOA(Guid principalId, EntityReference objectId,int accessRightsMask)
+        internal Entity AddPOA(Guid principalId, EntityReference objectId, int accessRightsMask)
         {
             var poa = new Entity("principalobjectaccess");
             poa.Id = Guid.NewGuid(); ;
@@ -235,7 +245,19 @@ namespace DG.Tools.XrmMockup
 
             db.Add(poa);
 
-            return GetPOA(principalId,objectId.Id);
+            return GetPOA(principalId, objectId.Id);
+        }
+        internal void UpdatePOAMask(Guid poaId, int accessRightsMask)
+        {
+            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            existing["accessrightsmask"] = existing.GetAttributeValue<int>("accessrightsmask") | accessRightsMask;
+            db.Update(existing);
+        }
+        internal void OverwritePOAMask(Guid poaId, int accessRightsMask)
+        {
+            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            existing["accessrightsmask"] = accessRightsMask;
+            db.Update(existing);
         }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
@@ -541,7 +563,22 @@ namespace DG.Tools.XrmMockup
             .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
             .ToList();
 
-            return teamIds.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+
+
+            return teamIds.Any(teamId => !IsAccessTeam(teamId) &&  HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+        }
+
+        internal bool IsAccessTeam(Guid teamId)
+        {
+            var team = Core.GetDbRow(new EntityReference("team", teamId)).ToEntity();
+            if (!team.Contains("teamtype"))
+            {
+                return false;
+            }
+            else
+            {
+                return team.GetAttributeValue<OptionSetValue>("teamtype").Value == 1;
+            }
         }
 
         internal bool HasAccessTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
@@ -572,7 +609,7 @@ namespace DG.Tools.XrmMockup
                 {
                     var mask = poa.GetAttributeValue<int>("accessrightsmask");
                     //check if the mask covers the requested access right
-                    if ((mask | (int)access) > 0)
+                    if ((mask & (int)access) > 0)
                         return true;
                 }
 
@@ -695,11 +732,20 @@ namespace DG.Tools.XrmMockup
                 .Where(r => r.CascadeConfiguration.Reparent == CascadeType.Cascade || r.CascadeConfiguration.Reparent == CascadeType.Active)
                 .Where(r => entity.Attributes.ContainsKey(r.ReferencingAttribute));
 
-            if (parentChangeRelationships.Any(r =>
-                Core.GetDbRowOrNull(new EntityReference(r.ReferencedEntity, Utility.GetGuidFromReference(entity[r.ReferencingAttribute])))
-                    ?.GetColumn<DbRow>("ownerid").Id == caller.Id))
+            //cope with entity[pcr.ReferencingAttribute] being null
+            foreach (var pcr in parentChangeRelationships)
             {
-                return true;
+                if (entity.Contains(pcr.ReferencingAttribute) && entity[pcr.ReferencingAttribute] != null)
+                {
+                    var refEntity = Core.GetDbRowOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
+                    if (refEntity != null)
+                    {
+                        if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
+                        {
+                            return true;
+                        }
+                    }
+                }
             }
 
             return false;
