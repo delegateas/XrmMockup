@@ -19,11 +19,11 @@ namespace DG.Tools.XrmMockup {
             this.core = core;
             this.db = db;
             this.metadata = metadata;
-            this.RequestName = RequestName;
+            this.RequestName = RequestName.ToLower();
         }
 
         internal Boolean HandlesRequest(string RequestName) {
-            return this.RequestName == RequestName;
+            return this.RequestName == RequestName.ToLower();
         }
         abstract internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef);
 

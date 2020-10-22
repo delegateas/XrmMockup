@@ -317,7 +317,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         public Entity GetActionDefaultNull(string requestName) {
-            return actions.FirstOrDefault(e => e.GetAttributeValue<string>("name") == requestName);
+            return actions.FirstOrDefault(e => e.GetAttributeValue<string>("name").ToLower() == requestName.ToLower());
         }
 
         internal void ResetWorkflows() {
