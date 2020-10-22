@@ -717,7 +717,7 @@ namespace DG.Tools.XrmMockup
             {
                 case "LoseOpportunity": return "Lose";
                 case "WinOpportunity": return "Win";
-                default: return requestName;
+                default: return requestName.ToLower();
             }
         }
 
