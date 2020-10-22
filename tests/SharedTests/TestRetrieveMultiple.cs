@@ -112,7 +112,7 @@ namespace DG.XrmMockupTest
                     where acc.Id == res
                     select new { acc.Name, lead.Subject };
 
-                var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
+                var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some")).ToList();
                 Assert.AreEqual(2, result.Count());
 
                 foreach (var r in result)

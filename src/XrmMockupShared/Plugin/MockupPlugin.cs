@@ -161,7 +161,7 @@ namespace DG.Tools.XrmMockup {
                     (from a in this.RegisteredEvents
                      where (
                      a.Item1 == localcontext.PluginExecutionContext.Stage &&
-                     a.Item2 == localcontext.PluginExecutionContext.MessageName &&
+                     a.Item2.ToLower() == localcontext.PluginExecutionContext.MessageName.ToLower() &&
                      (string.IsNullOrWhiteSpace(a.Item3) ? true : a.Item3 == localcontext.PluginExecutionContext.PrimaryEntityName)
                      )
                      select a.Item4).FirstOrDefault();
@@ -277,7 +277,7 @@ namespace DG.Tools.XrmMockup {
             this.RegisteredEvents.Add(
                 new Tuple<int, string, string, Action<LocalPluginContext>>(
                     stepConfig._PluginExecutionStage,
-                    stepConfig._PluginEventOperation,
+                    stepConfig._PluginEventOperation.ToLower(),
                     stepConfig._LogicalName,
                     new Action<LocalPluginContext>(action)));
 

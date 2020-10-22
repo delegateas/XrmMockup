@@ -36,7 +36,7 @@ namespace DG.NotAKeyWord.SSPOnBoarding.Plugins
             if (snapshotChild != null)
                 service.Update(new dg_bus(id)
                 {
-                    dg_Ticketprice = context.PluginExecutionContext.MessageName == "Associate" ? 25 : 26  
+                    dg_Ticketprice = context.PluginExecutionContext.MessageName.ToLower() == "associate" ? 25 : 26  
                 });
         }
     }

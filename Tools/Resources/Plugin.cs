@@ -159,7 +159,7 @@ namespace DG.XrmFramework.Plugins {
                     (from a in this.RegisteredEvents
                      where (
                      a.Item1 == localcontext.PluginExecutionContext.Stage &&
-                     a.Item2 == localcontext.PluginExecutionContext.MessageName &&
+                     a.Item2.ToLower() == localcontext.PluginExecutionContext.MessageName.ToLower() &&
                      (string.IsNullOrWhiteSpace(a.Item3) ? true : a.Item3 == localcontext.PluginExecutionContext.PrimaryEntityName)
                      )
                      select a.Item4).FirstOrDefault();
