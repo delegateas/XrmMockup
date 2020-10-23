@@ -31,6 +31,7 @@ namespace DG.XrmMockupTest
         protected Entity contactWriteAccessTeamTemplate;
 
         protected IOrganizationService salesUserService;
+        
 
 #if XRM_MOCKUP_TEST_2011
         static protected XrmMockup2011 crm;
@@ -66,19 +67,14 @@ namespace DG.XrmMockupTest
             admin["islicensed"] = true;
 
             // crm.CreateUser
-            //create some users with the new role
-            var user = new Entity("systemuser");
-            user["internalemailaddress"] = "camstestuser1@official.mod.uk";
-            user["businessunitid"] = crm.RootBusinessUnit;
-            user["islicensed"] = true;
-            var salesUser = crm.CreateUser(orgAdminService, user, new Guid[] { SecurityRoles.Salesperson });
-            salesUserService = crm.CreateOrganizationService(salesUser.Id);
 
             var adminRole = crm.GetSecurityRole("System Administrator");
             var adminUser = crm.CreateUser(orgAdminService, admin, new Guid[] { adminRole.RoleId });
 
             InitialiseAccessTeamConfiguration();
         }
+
+        
 
         private void InitialiseAccessTeamConfiguration()
         {
@@ -129,6 +125,13 @@ namespace DG.XrmMockupTest
             user3["islicensed"] = true;
             testUser3 = crm.CreateUser(orgAdminService, user3, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser3Service = crm.CreateOrganizationService(testUser3.Id);
+
+            var salesUser = new Entity("systemuser");
+            salesUser["internalemailaddress"] = "camstestuser4@official.mod.uk";
+            salesUser["businessunitid"] = crm.RootBusinessUnit;
+            salesUser["islicensed"] = true;
+            crm.CreateUser(orgAdminService, salesUser, new Guid[] { SecurityRoles.Salesperson });
+            salesUserService = crm.CreateOrganizationService(salesUser.Id);
 
             //create some access team templates
             CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);

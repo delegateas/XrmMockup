@@ -556,6 +556,13 @@ namespace DG.Tools.XrmMockup
             pluginContext.BusinessUnitId = buRef.Id;
 
             Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out string eventOp);
+            if (string.IsNullOrEmpty(eventOp))
+            {
+                //then this may be a custom action request, so continue with the request name
+                if (request.RequestName.Contains("_")) //if we have a prefix then assume it is a custom action
+                    eventOp = request.RequestName.ToLower();
+            }
+
 
             var entityInfo = GetEntityInfo(request);
 
@@ -718,6 +725,10 @@ namespace DG.Tools.XrmMockup
             {
                 return handler.Execute(request, userRef);
             }
+            else if (request.RequestName.Contains("_"))
+            {
+                return new OrganizationResponse();
+            }
 
             if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false)
             {
@@ -839,6 +850,13 @@ namespace DG.Tools.XrmMockup
         private Tuple<object, string, Guid> GetEntityInfo(OrganizationRequest request)
         {
             Mappings.EntityImageProperty.TryGetValue(request.GetType(), out string key);
+
+            if (string.IsNullOrEmpty(key) && request.RequestName.Contains("_"))
+            {
+                //this is a custom action request so the entity info is in Target;
+                key = "Target";
+            }
+
             object obj = null;
             if (key != null)
             {

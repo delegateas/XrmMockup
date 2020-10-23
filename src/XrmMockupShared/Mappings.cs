@@ -146,6 +146,11 @@ namespace DG.Tools.XrmMockup {
                     return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
             }
 
+            if (request.RequestName.Contains("_"))
+            {
+                return request["Target"] as EntityReference;
+            }
+
             return null;
         }
 

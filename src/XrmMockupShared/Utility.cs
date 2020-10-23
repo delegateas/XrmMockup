@@ -660,10 +660,12 @@ namespace DG.Tools.XrmMockup
                     {
                         return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
                     }
-                    
+
+
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    return !Matches(attr, ConditionOperator.Equal, values);
+                        //Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
