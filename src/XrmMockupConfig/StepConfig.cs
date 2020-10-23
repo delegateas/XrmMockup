@@ -14,6 +14,7 @@ namespace DG.Tools.XrmMockup.Config
             ExecutionStage = executionStage;
             EventOperation = eventOperation.ToLower();
             LogicalName = logicalName;
+            
         }
         public string ClassName { get; set; }
         public int ExecutionStage { get; set; }

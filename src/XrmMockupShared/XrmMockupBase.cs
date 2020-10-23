@@ -420,7 +420,20 @@ namespace DG.Tools.XrmMockup
         {
             return Core.GetPrivilege(principleId);
         }
-        
+
+        public SecurityRole GetSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName);
+        }
+        public SecurityRole CloneSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName).Clone();
+        }
+        public void AddSecurityRole(SecurityRole role)
+        {
+            Core.AddSecurityRole(role);
+        }
+
         /// <summary>
         /// Checks if a principle has the given access right to an entity
         /// </summary>
