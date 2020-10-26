@@ -265,11 +265,7 @@ namespace DG.Tools.XrmMockup {
             if ((int)thisStage != (int)stage) return false;
 
             var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
-
-            //workaround for workflows which attempt to update a parent entity
-            if (workflow.GetAttributeValue<string>("xaml").Contains("[InputEntities(&quot;related_"))
-                return false;
-
+                        
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return false;
 
