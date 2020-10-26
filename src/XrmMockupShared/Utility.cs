@@ -1019,7 +1019,7 @@ namespace DG.Tools.XrmMockup
                 attributeMetadata is DecimalAttributeMetadata;
         }
 
-        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
+        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity,EntityMetadata lookupMetadata = null)
         {
             if (metadataAtt is PicklistAttributeMetadata)
             {
@@ -1050,7 +1050,23 @@ namespace DG.Tools.XrmMockup
             {
                 try
                 {
-                    return (value as EntityReference).Name;
+                    if (string.IsNullOrEmpty((value as EntityReference).Name))
+                    {
+
+                        var lookupEnt = db.GetEntity(value as EntityReference);
+                        var primaryAttr = lookupMetadata.Attributes.SingleOrDefault(x => x.IsPrimaryName.HasValue && x.IsPrimaryName.Value);
+                        if (primaryAttr != null)
+                        {
+                            return lookupEnt.GetAttributeValue<string>(primaryAttr.LogicalName);
+                        }
+
+
+                    }
+                    else
+                    {
+                        return (value as EntityReference).Name; 
+                    }
+                    
                 }
                 catch (NullReferenceException e)
                 {
@@ -1070,9 +1086,9 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
+        internal static void SetFormattedValues(XrmDb db, Entity entity, EntityMetadata entityMetadata,MetadataSkeleton metadata)
         {
-            var validMetadata = metadata.Attributes
+            var validMetadata = entityMetadata.Attributes
                 .Where(a => IsValidForFormattedValues(a));
 
             var formattedValues = new List<KeyValuePair<string, string>>();
@@ -1080,11 +1096,22 @@ namespace DG.Tools.XrmMockup
             {
                 if (a.Value == null) continue;
                 var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
-                var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
-                if (formattedValuePair.Value != null)
+
+                if (metadataAtt != null)
                 {
-                    formattedValues.Add(formattedValuePair);
+                    EntityMetadata lookupMetadata = null;
+                    if (metadataAtt is LookupAttributeMetadata)
+                    {
+                        lookupMetadata = metadata.EntityMetadata[(metadataAtt as LookupAttributeMetadata).Targets[0]];
+                    }
+                    var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity, lookupMetadata));
+                    if (formattedValuePair.Value != null)
+                    {
+                        formattedValues.Add(formattedValuePair);
+                    }
                 }
+
+                
             }
 
             if (formattedValues.Count > 0)
