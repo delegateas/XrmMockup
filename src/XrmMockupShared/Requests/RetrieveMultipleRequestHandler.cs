@@ -43,7 +43,7 @@ namespace DG.Tools.XrmMockup {
                     var entity = row.ToEntity();
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
-                    Utility.SetFormmattedValues(db, toAdd, row.Metadata);
+                    Utility.SetFormattedValues(db, toAdd, row.Metadata,metadata);
 
                     if (queryExpr.LinkEntities.Count > 0) {
                         foreach (var linkEntity in queryExpr.LinkEntities) {
