@@ -326,6 +326,14 @@ namespace DG.Tools.XrmMockup
                     {
                         queryExpr.Criteria.AddCondition(
                             new ConditionExpression(oneToMany.ReferencingAttribute, ConditionOperator.Equal, entity.Id));
+
+                        //special case for teams - exclude access teams
+                        if (oneToMany.ReferencingEntity == "team")
+                        {
+                            queryExpr.Criteria.AddCondition(
+                              new ConditionExpression("teamtype", ConditionOperator.NotEqual, 1));
+                        }
+
                     }
                 }
 
@@ -989,6 +997,11 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
+        }
+
+        internal void ResetAccessTeams()
+        {
+            this.db.ResetAccessTeams();
         }
     }
 }
