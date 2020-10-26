@@ -46,6 +46,18 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
+
+            foreach (var rt in SecurityRoles.Where(x => x.Value.RoleTemplateId != Guid.Empty)
+                                                     .Select(x => x.Value.RoleTemplateId)
+                                                     .Distinct())
+             {
+
+                var roleTemplate = new Entity("roletemplate");
+                roleTemplate.Id = rt;
+                //roleTemplate["name"] = "System Administrator";
+                db.Add(roleTemplate);
+            }
+
             foreach (var sr in SecurityRoles.Values)
             {
                 var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
@@ -53,10 +65,20 @@ namespace DG.Tools.XrmMockup
                 {
                     Id = Guid.NewGuid()
                 };
+
+                //if (sr.Name.ToLower() == "system administrator")
+                //{ 
+                //    role["roletemplateid"] = new EntityReference("roletemplate",  Guid.Parse("627090FF-40A3-4053-8790-584EDC5BE201"));
+                //}
+
+                
                 role[roleMeta.PrimaryIdAttribute] = role.Id;
                 role["businessunitid"] = businessUnit;
                 role["name"] = sr.Name;
-                role["roletemplateid"] = sr.RoleTemplateId;
+                if (sr.RoleTemplateId != Guid.Empty)
+                {
+                    role["roletemplateid"] = new EntityReference("roletemplate", sr.RoleTemplateId);
+                }
                 role["createdby"] = Core.AdminUserRef;
                 role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 role["modifiedby"] = Core.AdminUserRef;
@@ -311,13 +333,13 @@ namespace DG.Tools.XrmMockup
             if (!HasPermission(entity, AccessRights.AssignAccess, userRef))
             {
                 throw new FaultException($"Trying to assign '{assignee.Id}' to entity '{entity.LogicalName}'" +
-                    $", but calling user with id '{userRef.Id}' does not have assign access for that entity");
+                    $", but calling user with id '{userRef.Id}' does not have assign access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 
             if (!HasPermission(entity, AccessRights.WriteAccess, userRef))
             {
                 throw new FaultException($"Trying to assign '{assignee.Id}' to entity '{entity.LogicalName}'" +
-                     $", but calling user with id '{userRef.Id}' does not have write access for that entity");
+                     $", but calling user with id '{userRef.Id}' does not have write access for that entity (SecLib::AccessCheckEx2 failed)");
             }
         }
 
@@ -709,7 +731,11 @@ namespace DG.Tools.XrmMockup
                     var refEntity = Core.GetDbRowOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
                     if (refEntity != null)
                     {
-                        if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
+                        if (!refEntity.AttributeMetadata.ContainsKey("ownerid"))
+                        {
+                            return false;
+                        }
+                        else if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
                         {
                             return true;
                         }
