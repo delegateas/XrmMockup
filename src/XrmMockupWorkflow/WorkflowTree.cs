@@ -424,11 +424,7 @@ namespace WorkflowExecuter
                 return;
             }
 
-            if (var1 == null || var2 == null)
-            {
-                variables[VariableName] = null;
-                return;
-            }
+            
 
             if (TargetType == "DateTime")
             {
@@ -452,23 +448,69 @@ namespace WorkflowExecuter
             decimal? dec1 = null;
             decimal? dec2 = null;
 
+
             switch (TargetType)
             {
                 case "Money":
-                    dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
-                    dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
+                    }
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    }
                     break;
                 case "Int32":
-                    dec1 = (int)var1;
-                    dec2 = (int)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = (int)var1;
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = (int)var2;
+                    }
                     break;
                 case "Decimal":
-                    dec1 = (decimal)var1;
-                    dec2 = (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = (decimal)var1;
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = (decimal)var2;
+                    }
                     break;
                 default:
                     break;
             }
+            
 
             if (!dec1.HasValue || !dec2.HasValue)
             {
@@ -937,7 +979,10 @@ namespace WorkflowExecuter
                     variables[VariableName] = null;
                     return;
                 }
-                entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
+                if (entRef.LogicalName == EntityLogicalName)
+                {
+                    entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
+                }
 
             }
             else
@@ -1190,6 +1235,12 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            //if (GuardId == "True" && variables[GuardId] != null && !(bool)variables[GuardId])
+            //{
+            //    //this looks to be a special case for calculated fields with no conditions...
+            //    Then.Execute(ref variables, timeOffset, orgService, factory, trace);
+            //}
+            //else 
             if (variables[GuardId] != null && (bool)variables[GuardId])
             {
                 Then.Execute(ref variables, timeOffset, orgService, factory, trace);
@@ -1301,8 +1352,32 @@ namespace WorkflowExecuter
             if (Value.Contains(".Id"))
             {
                 var toEntity = variables[To.Replace(".Id", "")] as Entity;
-                var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
-                toEntity.Id = valueEntity.Id;
+
+                if (Value.Contains("related_"))
+                {
+                    var regex = new Regex(@"_.+#");
+                    var relatedAttr = regex.Match(Value).Value.TrimEdge();
+                    var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
+                    if (!primaryEntity.Attributes.ContainsKey(relatedAttr))
+                    {
+                       // variables[VariableName] = null;
+                        return;
+                    }
+                    var entRef = primaryEntity.Attributes[relatedAttr] as EntityReference;
+                    if (entRef == null)
+                    {
+                      //  variables[VariableName] = null;
+                        return;
+                    }
+                    var entity = orgService.Retrieve(entRef.LogicalName, entRef.Id, new ColumnSet(true));
+                    toEntity.Id = entity.Id;
+                }
+                else
+                {
+                    var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
+                    toEntity.Id = valueEntity.Id;
+                }
+
                 return;
             }
 
