@@ -82,7 +82,11 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         internal bool HasRow(EntityReference reference) {
-            return this[reference.LogicalName][reference.Id] != null;
+
+            if (!TableDict.ContainsKey(reference.LogicalName)) return false;
+            if (TableDict[reference.LogicalName][reference.Id] == null) return false;
+            return true;
+
         }
 
         internal bool HasTable(string tableName)
@@ -171,19 +175,17 @@ namespace DG.Tools.XrmMockup.Database {
 
         #region GetOrNull
         internal DbRow GetDbRowOrNull(EntityReference reference) {
-            try {
+            if (HasRow(reference))
                 return GetDbRow(reference);
-            } catch (Exception) {
+            else
                 return null;
-            }
         }
 
         internal Entity GetEntityOrNull(EntityReference reference) {
-            try {
+            if (HasRow(reference))
                 return GetEntity(reference);
-            } catch (Exception) {
+            else
                 return null;
-            }
         }
         #endregion
 
@@ -196,6 +198,19 @@ namespace DG.Tools.XrmMockup.Database {
             };
 
             return clonedDB;
+        }
+
+        public void ResetAccessTeams()
+        {
+            var accessteams = TableDict["team"]
+                                .Where(x => x.ToEntity().GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
+                                .Select(x=>x.Id)
+                                .ToList();
+            foreach (var at in accessteams)
+            {
+                TableDict["team"].Remove(at);
+            }
+            TableDict.Remove("teammembership");
         }
     }
 }

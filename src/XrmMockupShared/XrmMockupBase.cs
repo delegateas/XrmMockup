@@ -128,6 +128,12 @@ namespace DG.Tools.XrmMockup
             Core.ResetEnvironment();
         }
 
+        public void ResetAccessTeams()
+        {
+            Core.ResetAccessTeams();
+        }
+
+
 
         internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext pluginContext) {
             return Core.Execute(request, userRef, pluginContext);
