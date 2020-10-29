@@ -16,6 +16,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk.Client;
+using XrmMockupShared.Database;
 
 namespace DG.Tools.XrmMockup
 {
@@ -95,7 +96,14 @@ namespace DG.Tools.XrmMockup
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            if (!string.IsNullOrEmpty(Settings.DatabaseConnectionString))
+            {
+                this.db = new SQLDb(metadata.EntityMetadata, Settings.DatabaseConnectionString,Settings.RecreateDatabase);
+            }
+            else
+            {
+                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            }
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);

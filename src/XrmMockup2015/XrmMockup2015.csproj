@@ -51,6 +51,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="7.1.1" />
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="7.1.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
   <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
   <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />

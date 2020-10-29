@@ -43,6 +43,14 @@ namespace DG.Tools.XrmMockup
         /// Flag for if Append And Append To privilege should be check on create and update. Default is true
         /// </summary>
         public bool? AppendAndAppendToPrivilegeCheck { get; set; }
+        /// <summary>
+        /// Database Connection String
+        /// </summary>
+        public string DatabaseConnectionString { get; set; }
+        public bool RecreateDatabase { get; set; }
+
+
+
     }
 
     public struct Env {
