@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class CloseIncidentRequestHandler : RequestHandler
     {
-        internal CloseIncidentRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "CloseIncident") { }
+        internal CloseIncidentRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "CloseIncident") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

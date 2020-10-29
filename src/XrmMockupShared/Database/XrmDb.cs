@@ -10,20 +10,26 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace DG.Tools.XrmMockup.Database {
 
-    internal class XrmDb {
+    internal class XrmDb : IXrmDb
+    {
         private Dictionary<string, DbTable> TableDict = new Dictionary<string, DbTable>();
         private Dictionary<string, EntityMetadata> EntityMetadata;
         private OrganizationServiceProxy OnlineProxy;
 
-        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, OrganizationServiceProxy onlineProxy) {
+        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, OrganizationServiceProxy onlineProxy)
+        {
             this.EntityMetadata = entityMetadata;
             this.OnlineProxy = onlineProxy;
         }
 
-        public DbTable this[string tableName] {
-            get {
-                if (!TableDict.ContainsKey(tableName)) {
-                    if (!EntityMetadata.TryGetValue(tableName, out EntityMetadata entityMetadata)) {
+        public DbTable this[string tableName]
+        {
+            get
+            {
+                if (!TableDict.ContainsKey(tableName))
+                {
+                    if (!EntityMetadata.TryGetValue(tableName, out EntityMetadata entityMetadata))
+                    {
                         throw new MockupException($"No EntityMetadata found for entity with logical name '{tableName}'.");
                     }
                     TableDict[tableName] = new DbTable(entityMetadata);
@@ -32,7 +38,8 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
+        public void Add(Entity xrmEntity, bool withReferenceChecks = true)
+        {
             var dbEntity = ToDbRow(xrmEntity, withReferenceChecks);
             this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
         }
@@ -61,27 +68,31 @@ namespace DG.Tools.XrmMockup.Database {
             return dbEntity;
         }
 
-        public void AddRange(IEnumerable<Entity> xrmEntities, bool withReferenceChecks = true) {
+        public void AddRange(IEnumerable<Entity> xrmEntities, bool withReferenceChecks = true)
+        {
             foreach (var xrmEntity in xrmEntities) Add(xrmEntity, withReferenceChecks);
         }
 
-        internal IEnumerable<DbRow> GetDBEntityRows(string EntityLogicalName)
+        public IEnumerable<DbRow> GetDBEntityRows(string EntityLogicalName)
         {
             return this[EntityLogicalName];
         }
 
-        public void Update(Entity xrmEntity, bool withReferenceChecks = true) {
+        public void Update(Entity xrmEntity, bool withReferenceChecks = true)
+        {
             var currentDbRow = GetDbRow(xrmEntity);
 
             var dbEntity = DbRow.FromEntity(xrmEntity, withReferenceChecks ? this : null);
             this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
         }
 
-        public void Delete(Entity xrmEntity) {
+        public void Delete(Entity xrmEntity)
+        {
             this[xrmEntity.LogicalName].Remove(xrmEntity.Id);
         }
 
-        internal bool HasRow(EntityReference reference) {
+        public bool HasRow(EntityReference reference)
+        {
             return this[reference.LogicalName][reference.Id] != null;
         }
 
@@ -90,12 +101,12 @@ namespace DG.Tools.XrmMockup.Database {
             return TableDict.ContainsKey(tableName);
         }
 
-        internal bool IsValidEntity(string entityLogicalName)
+        public bool IsValidEntity(string entityLogicalName)
         {
             return EntityMetadata.TryGetValue(entityLogicalName, out EntityMetadata entityMetadata);
         }
 
-        internal void PrefillDBWithOnlineData(QueryExpression queryExpr)
+        public void PrefillDBWithOnlineData(QueryExpression queryExpr)
         {
             if (OnlineProxy != null)
             {
@@ -110,12 +121,15 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true) {
+        public DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true)
+        {
             DbRow currentDbRow = null;
 
-            if (reference?.Id != Guid.Empty) {                
+            if (reference?.Id != Guid.Empty)
+            {
                 currentDbRow = this[reference.LogicalName][reference.Id];
-                if (currentDbRow == null && OnlineProxy != null) {
+                if (currentDbRow == null && OnlineProxy != null)
+                {
                     if (!withReferenceCheck)
                         currentDbRow = DbRow.MakeDBRowRef(reference, this);
                     else
@@ -125,7 +139,8 @@ namespace DG.Tools.XrmMockup.Database {
                         currentDbRow = this[reference.LogicalName][reference.Id];
                     }
                 }
-                if (currentDbRow == null) {
+                if (currentDbRow == null)
+                {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
@@ -143,7 +158,8 @@ namespace DG.Tools.XrmMockup.Database {
             }
 #endif
             // No identification given for the entity, throw error
-            else {
+            else
+            {
                 throw new FaultException($"Missing a form of identification for the desired record in order to retrieve it.");
             }
 
@@ -151,43 +167,56 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
 
-        internal DbRow GetDbRow(Entity xrmEntity) {
+        public DbRow GetDbRow(Entity xrmEntity)
+        {
             return GetDbRow(xrmEntity.ToEntityReferenceWithKeyAttributes());
         }
+        
 
 
-        internal DbRow GetDbRow(string logicalName, Guid id) {
+        public DbRow GetDbRow(string logicalName, Guid id)
+        {
             return GetDbRow(new EntityReference(logicalName, id));
         }
 
-        public Entity GetEntity(string logicalName, Guid id) {
+        public Entity GetEntity(string logicalName, Guid id)
+        {
             return GetDbRow(logicalName, id).ToEntity();
         }
 
-        public Entity GetEntity(EntityReference reference) {
+        public Entity GetEntity(EntityReference reference)
+        {
             return GetDbRow(reference).ToEntity();
         }
 
 
         #region GetOrNull
-        internal DbRow GetDbRowOrNull(EntityReference reference) {
-            try {
+        public DbRow GetDbRowOrNull(EntityReference reference)
+        {
+            try
+            {
                 return GetDbRow(reference);
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 return null;
             }
         }
 
-        internal Entity GetEntityOrNull(EntityReference reference) {
-            try {
+        public Entity GetEntityOrNull(EntityReference reference)
+        {
+            try
+            {
                 return GetEntity(reference);
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 return null;
             }
         }
         #endregion
 
-        public XrmDb Clone()
+        public IXrmDb Clone()
         {
             var clonedTables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.Clone());
             var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineProxy)

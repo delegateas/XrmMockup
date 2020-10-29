@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class RemoveMembersTeamRequestHandler : RequestHandler
     {
-        internal RemoveMembersTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveMembersTeam") { }
+        internal RemoveMembersTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveMembersTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

@@ -353,7 +353,7 @@ namespace DG.Tools.XrmMockup
             return metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
         }
 
-        private static void HandleBaseCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        private static void HandleBaseCurrencies(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
@@ -389,7 +389,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void HandlePrecision(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        internal static void HandlePrecision(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
@@ -442,7 +442,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void HandleCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        internal static void HandleCurrencies(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             HandleBaseCurrencies(metadata, db, entity);
             HandlePrecision(metadata, db, entity);
@@ -478,7 +478,7 @@ namespace DG.Tools.XrmMockup
             return false;
         }
 
-        internal static void SetOwner(XrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner)
+        internal static void SetOwner(IXrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner)
         {
             var ownershipType = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
@@ -528,7 +528,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static EntityReference GetBusinessUnit(XrmDb db, EntityReference owner)
+        internal static EntityReference GetBusinessUnit(IXrmDb db, EntityReference owner)
         {
             var user = db.GetEntityOrNull(owner);
             if (user == null)
@@ -785,7 +785,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, XrmDb db)
+        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db)
         {
             foreach (var attr in entity.Attributes)
             {
@@ -991,7 +991,7 @@ namespace DG.Tools.XrmMockup
                 attributeMetadata is DecimalAttributeMetadata;
         }
 
-        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
+        private static string GetFormattedValueLabel(IXrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
         {
             if (metadataAtt is PicklistAttributeMetadata)
             {
@@ -1042,7 +1042,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
+        internal static void SetFormmattedValues(IXrmDb db, Entity entity, EntityMetadata metadata)
         {
             var validMetadata = metadata.Attributes
                 .Where(a => IsValidForFormattedValues(a));

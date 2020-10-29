@@ -7,7 +7,7 @@ using System.Linq;
 namespace DG.Tools.XrmMockup
 {
     internal class WhoAmIRequestHandler : RequestHandler {
-        internal WhoAmIRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "WhoAmI") {}
+        internal WhoAmIRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "WhoAmI") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<WhoAmIRequest>(orgRequest);

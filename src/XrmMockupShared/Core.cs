@@ -22,7 +22,7 @@ namespace DG.Tools.XrmMockup
 
     internal class Snapshot
     {
-        public XrmDb db;
+        public IXrmDb db;
         public Security security;
         public EntityReference AdminUserRef;
         public EntityReference RootBusinessUnitRef;
@@ -53,7 +53,7 @@ namespace DG.Tools.XrmMockup
         private Security security;
         private XrmMockupSettings settings;
         private MetadataSkeleton metadata;
-        private XrmDb db;
+        private IXrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private OrganizationServiceProxy OnlineProxy;
@@ -153,7 +153,7 @@ namespace DG.Tools.XrmMockup
             this.db.Add(teamMembership);
         }
 
-        private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
+        private List<RequestHandler> GetRequestHandlers(IXrmDb db) => new List<RequestHandler> {
                 new CreateRequestHandler(this, db, metadata, security),
                 new UpdateRequestHandler(this, db, metadata, security),
                 new RetrieveMultipleRequestHandler(this, db, metadata, security),

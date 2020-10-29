@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class AddMembersTeamRequestHandler : RequestHandler
     {
-        internal AddMembersTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddMembersTeam") { }
+        internal AddMembersTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddMembersTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

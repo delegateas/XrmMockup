@@ -16,7 +16,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class IsValidStateTransitionRequestHandler : RequestHandler
     {
-        internal IsValidStateTransitionRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "IsValidStateTransition") { }
+        internal IsValidStateTransitionRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "IsValidStateTransition") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

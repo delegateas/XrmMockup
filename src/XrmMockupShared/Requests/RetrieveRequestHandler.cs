@@ -13,7 +13,7 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveRequestHandler : RequestHandler {
-        internal RetrieveRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Retrieve") { }
+        internal RetrieveRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Retrieve") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveRequest>(orgRequest);

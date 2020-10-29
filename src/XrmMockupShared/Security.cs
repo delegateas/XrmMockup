@@ -40,7 +40,7 @@ namespace DG.Tools.XrmMockup
             this.Shares = new Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>>();
         }
 
-        internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
+        internal void AddRolesForBusinessUnit(IXrmDb db, EntityReference businessUnit)
         {
             foreach (var sr in SecurityRoles.Values)
             {
@@ -62,7 +62,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal void InitializeSecurityRoles(XrmDb db)
+        internal void InitializeSecurityRoles(IXrmDb db)
         {
             AddRolesForBusinessUnit(db, Core.RootBusinessUnitRef);
             SetSecurityRole(Core.AdminUserRef,
@@ -215,7 +215,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal void ResetEnvironment(XrmDb db)
+        internal void ResetEnvironment(IXrmDb db)
         {
             Initialize();
             InitializeSecurityRoles(db);

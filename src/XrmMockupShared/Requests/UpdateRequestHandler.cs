@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class UpdateRequestHandler : RequestHandler
     {
-        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
+        internal UpdateRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
