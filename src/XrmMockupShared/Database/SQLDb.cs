@@ -4,6 +4,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -114,13 +115,48 @@ namespace XrmMockupShared.Database
 
         }
 
-        private void ExecuteNonQuery(string sql)
+        private DbTable GetTable(string tableName)
+        {
+            var dataTable = ExecuteReader($"SELECT * FROM [{tableName}]");
+            
+            var dbTable = new DbTable(this.EntityMetadata[tableName]);
+
+            foreach (var row in dataTable.Rows)
+            { 
+                //var dbRow = new DbRow()
+            }
+
+            return dbTable;
+
+        }
+
+        private DataTable ExecuteReader(string sql)
+        {
+            using (var conn = new SqlConnection(this.ConnectionString))
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    DataTable dt = new DataTable();
+                    dt.Load(reader);
+                    return dt;
+                    
+                }
+            }
+        }
+
+        private void ExecuteNonQuery(string sql, List<SqlParameter> paramValues = null)
         {
             using (var conn = new SqlConnection(this.ConnectionString))
             {
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     conn.Open();
+                    if (paramValues != null)
+                    {
+                        cmd.Parameters.AddRange(paramValues.ToArray());
+                    }
                     cmd.ExecuteNonQuery();
                     conn.Close();
                 }
@@ -145,7 +181,7 @@ namespace XrmMockupShared.Database
                 {
                     sqlFields += $" [{attr.LogicalName}] ,";
                     sqlValues += $" @{attr.LogicalName} ,";
-                    paramValues.Add(new SqlParameter());
+                    paramValues.Add(new SqlParameter($"@{attr.LogicalName}",GetSqlValue(xrmEntity,attr)));
                 }
             }
 
@@ -154,7 +190,35 @@ namespace XrmMockupShared.Database
 
             var insertSQL = $"insert into [{xrmEntity.LogicalName}] ({sqlFields}) VALUES ({sqlValues})";
 
-            ExecuteNonQuery(insertSQL);
+            ExecuteNonQuery(insertSQL,paramValues);
+        }
+
+        private object GetSqlValue(Entity xrmEntity, AttributeMetadata attr)
+        {
+            switch (attr.AttributeType)
+            {
+
+                case AttributeTypeCode.Lookup:
+                case AttributeTypeCode.Owner:
+                case AttributeTypeCode.Customer:
+                    if (xrmEntity[attr.LogicalName] is EntityReference)
+                    {
+                        return xrmEntity.GetAttributeValue<EntityReference>(attr.LogicalName).Id;
+                    }
+                    else
+                    {
+                        //this shouldnt actually happen...
+                        return xrmEntity[attr.LogicalName];
+                    }
+
+                case AttributeTypeCode.State:
+                case AttributeTypeCode.Status:
+                case AttributeTypeCode.Picklist:
+                    return xrmEntity.GetAttributeValue<OptionSetValue>(attr.LogicalName).Value;
+                default:
+                    return (xrmEntity[attr.LogicalName]);
+
+            }
         }
 
         private string TrimTrailingComma(string sql)
@@ -241,6 +305,10 @@ namespace XrmMockupShared.Database
 
         public DbRow GetDbRow(EntityReference reference, bool v)
         {
+
+            // var row = new DbRow()
+
+
             throw new NotImplementedException();
         }
 

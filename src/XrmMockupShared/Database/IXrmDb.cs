@@ -19,11 +19,11 @@ namespace DG.Tools.XrmMockup.Database
         void Update(Entity xrmEntity, bool withReferenceChecks = true);
         bool HasRow(EntityReference entityReference);
         IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
-        DbRow GetDbRow(Entity entity);
+       // DbRow GetDbRow(Entity entity);
         DbRow GetDbRowOrNull(EntityReference entityReference);
         Entity GetEntityOrNull(EntityReference entityReference);
         bool IsValidEntity(string logicalName);
-        DbRow GetDbRow(EntityReference reference, bool v = true);
+        //DbRow GetDbRow(EntityReference reference, bool v = true);
         void PrefillDBWithOnlineData(QueryExpression queryExpr);
     }
 }

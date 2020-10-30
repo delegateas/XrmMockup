@@ -252,9 +252,18 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal DbRow GetDbRow(EntityReference entityReference)
+        //internal DbRow GetDbRow(EntityReference entityReference)
+        //{
+        //    return db.GetDbRow(entityReference);
+        //}
+        internal Entity GetEntity(EntityReference entityReference)
         {
-            return db.GetDbRow(entityReference);
+            return db.GetEntity(entityReference);
+        }
+
+        internal EntityMetadata GetEntityMetadata(string entityName)
+        {
+            return this.metadata.EntityMetadata[entityName];
         }
 
         internal DbRow GetDbRowOrNull(EntityReference entityReference)

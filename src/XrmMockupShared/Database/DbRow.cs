@@ -155,12 +155,12 @@ namespace DG.Tools.XrmMockup.Database {
                 return money.Value;
             }
             if (value is EntityReference reference && db.IsValidEntity(reference.LogicalName)) {
-                return db.GetDbRow(reference, false);
+                return db.GetEntity(reference);
             }
             if (value is IEnumerable<Entity> entities) {
                 return entities
                     .Where(e => db.IsValidEntity(e.LogicalName))
-                    .Select(e => db.GetDbRow(e))
+                    .Select(e => db.GetEntity(e.ToEntityReference()))
                     .ToArray();
             }
 

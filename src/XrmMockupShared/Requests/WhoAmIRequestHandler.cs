@@ -12,9 +12,9 @@ namespace DG.Tools.XrmMockup
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<WhoAmIRequest>(orgRequest);
             var ret = new WhoAmIResponse();
-            var user = core.GetDbRow(new EntityReference("systemuser", userRef.Id == default(Guid) ? core.AdminUserRef.Id : userRef.Id));
+            var user = core.GetEntity(new EntityReference("systemuser", userRef.Id == default(Guid) ? core.AdminUserRef.Id : userRef.Id));
             ret.Results.Add("UserId", user.Id);
-            ret.Results.Add("BusinessUnitId", user.GetColumn<DbRow>("businessunitid").Id);
+            ret.Results.Add("BusinessUnitId", user.GetAttributeValue<EntityReference>("businessunitid").Id);
             ret.Results.Add("OrganizationId", default(Guid));
             return ret;
         }

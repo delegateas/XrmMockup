@@ -23,38 +23,38 @@ namespace DG.Tools.XrmMockup
 
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
             var entity = request.Target;
-            var row = db.GetDbRow(entRef);
+            var row = db.GetEntity(entRef);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName != LogicalNames.Opportunity &&
-                row.Table.TableName != LogicalNames.SystemUser &&
-                row.GetColumn<int?>("statecode") == 1)
+                row.LogicalName != LogicalNames.Opportunity &&
+                row.LogicalName != LogicalNames.SystemUser &&
+                row.GetAttributeValue<int?>("statecode") == 1)
             {
-                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
+                throw new MockupException($"Trying to update inactive '{row.LogicalName}', which is impossible in UI");
             }
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.Opportunity &&
-                row.GetColumn<int?>("statecode") == 1)
+                row.LogicalName == LogicalNames.Opportunity &&
+                row.GetAttributeValue<int?>("statecode") == 1)
             {
                 throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
             }
 
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.SystemUser &&
-                row.GetColumn<bool?>("isdisabled") == true)
+                row.LogicalName == LogicalNames.SystemUser &&
+                row.GetAttributeValue<bool?>("isdisabled") == true)
             {
                 throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
             }
 
             // modify for all activites
             //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
-            var xrmEntity = row.ToEntity();
+            var xrmEntity = row;
 
             if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
             {
-                throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
+                throw new FaultException($"Trying to update entity '{row.LogicalName}'" +
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity");
             }
 
@@ -97,7 +97,7 @@ namespace DG.Tools.XrmMockup
             }
 #endif
 
-            var updEntity = request.Target.CloneEntity(row.Metadata, new ColumnSet(true));
+            var updEntity = request.Target.CloneEntity(core.GetEntityMetadata(row.LogicalName), new ColumnSet(true));
 
             if (updEntity.Contains("statecode") || updEntity.Contains("statuscode"))
             {
@@ -123,7 +123,7 @@ namespace DG.Tools.XrmMockup
 
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            Utility.CheckStatusTransitions(row.Metadata, updEntity, xrmEntity);
+            Utility.CheckStatusTransitions(core.GetEntityMetadata(row.LogicalName), updEntity, xrmEntity);
 #endif
 
 
@@ -147,7 +147,7 @@ namespace DG.Tools.XrmMockup
             var transactioncurrencyId = "transactioncurrencyid";
             if (updEntity.LogicalName != LogicalNames.TransactionCurrency &&
                 (updEntity.Attributes.ContainsKey(transactioncurrencyId) ||
-                updEntity.Attributes.Any(a => row.Metadata.Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
+                updEntity.Attributes.Any(a => core.GetEntityMetadata(row.LogicalName).Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
             {
                 if (!xrmEntity.Attributes.ContainsKey(transactioncurrencyId))
                 {
@@ -193,7 +193,7 @@ namespace DG.Tools.XrmMockup
                 core.Execute(req, userRef);
             }
 
-            Utility.Touch(xrmEntity, row.Metadata, core.TimeOffset, userRef);
+            Utility.Touch(xrmEntity, core.GetEntityMetadata(row.LogicalName), core.TimeOffset, userRef);
 
             db.Update(xrmEntity);
 

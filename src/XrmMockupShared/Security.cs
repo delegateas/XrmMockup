@@ -132,8 +132,9 @@ namespace DG.Tools.XrmMockup
         }
         internal AccessRights GetAccessRights(EntityReference target, EntityReference userRef)
         {
-            var entity = Core.GetDbRow(target);
-            return GetAccessRights(entity.ToEntity(), userRef);
+            //var entity = Core.GetDbRow(target);
+            var entity = Core.GetEntity(target);
+            return GetAccessRights(entity, userRef);
         }
 
         internal AccessRights GetAccessRights(Entity target, EntityReference userRef)
@@ -174,7 +175,7 @@ namespace DG.Tools.XrmMockup
                     case CascadeType.Active:
                         foreach (var relatedEntity in relatedEntities.Value.Entities)
                         {
-                            if (Core.GetDbRow(relatedEntity.ToEntityReference()).ToEntity().GetAttributeValue<OptionSetValue>("statecode")?.Value == 0)
+                            if (Core.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<OptionSetValue>("statecode")?.Value == 0)
                             {
                                 req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
                                 req.Target.Attributes["ownerid"] = ownerRef;
@@ -187,7 +188,7 @@ namespace DG.Tools.XrmMockup
                         foreach (var relatedEntity in relatedEntities.Value.Entities)
                         {
                             var currentOwner = dbEntity.Attributes["ownerid"] as EntityReference;
-                            if (Core.GetDbRow(relatedEntity.ToEntityReference()).ToEntity().GetAttributeValue<EntityReference>("ownerid")?.Id == currentOwner.Id)
+                            if (Core.GetEntity(relatedEntity.ToEntityReference()).GetAttributeValue<EntityReference>("ownerid")?.Id == currentOwner.Id)
                             {
                                 req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
                                 req.Target.Attributes["ownerid"] = ownerRef;
@@ -344,7 +345,9 @@ namespace DG.Tools.XrmMockup
             {
                 throw new MockupException($"Unknown security role");
             }
-            var user = Core.GetDbRow(entRef).ToEntity();
+            //            var user = Core.GetDbRow(entRef).ToEntity();
+            var user = Core.GetEntity(entRef);
+
             var relationship = entRef.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
             var roles = secRoles
                 .Select(sr => SecurityRoleMapping.Where(srm => srm.Value == sr).Select(srm => srm.Key))
@@ -464,19 +467,19 @@ namespace DG.Tools.XrmMockup
             // if the caller is the owner of the entity, he has access
             if (owner.Id == caller.Id) return true;
 
-            var callerRow = Core.GetDbRow(caller);
+            var callerRow = Core.GetEntity(caller);
 
             if (maxRole == PrivilegeDepth.Local)
             {
                 // if the owner-user or the owner-team is in the same BU as the caller, he has access
-                if (IsInBusinessUnit(owner, callerRow.GetColumn<DbRow>("businessunitid").Id))
+                if (IsInBusinessUnit(owner, callerRow.GetAttributeValue<EntityReference>("businessunitid").Id))
                     return true;
             }
 
             if (maxRole == PrivilegeDepth.Deep)
             {
                 // if the owner-user or the owner-team is in the same BU, or sub BU's, as the caller, he has access
-                if (IsInBusinessUnitTree(owner, callerRow.GetColumn<DbRow>("businessunitid").Id))
+                if (IsInBusinessUnitTree(owner, callerRow.GetAttributeValue<EntityReference>("businessunitid").Id))
                     return true;
             }
 
@@ -493,7 +496,7 @@ namespace DG.Tools.XrmMockup
 
         internal bool HasPermission(EntityReference entityReference, AccessRights access, EntityReference caller)
         {
-            return HasPermission(Core.GetDbRow(entityReference).ToEntity(), access, caller);
+            return HasPermission(Core.GetEntity(entityReference), access, caller);
         }
 
         internal bool HasPermission(Entity entity, AccessRights access, EntityReference caller)
