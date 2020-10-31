@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 
 namespace XrmMockupShared.Database
@@ -52,11 +53,26 @@ namespace XrmMockupShared.Database
         {
             DropTableIfExists(entityMeta.Key);
 
+            var primaryAttribute = entityMeta.Value.Attributes.Where(x => x.LogicalName == entityMeta.Value.PrimaryIdAttribute).Single();
+            
             var createSQL = $"create table [{entityMeta.Key}] ( ";
 
-            foreach (var attr in entityMeta.Value.Attributes.Where(x => x.AttributeType != AttributeTypeCode.Virtual && x.AttributeType != AttributeTypeCode.EntityName && x.AttributeType != AttributeTypeCode.ManagedProperty))
+            foreach (var attr in entityMeta.Value.Attributes
+                                                    .Where(x => x.AttributeType != AttributeTypeCode.Virtual 
+                                                             && x.AttributeType != AttributeTypeCode.EntityName 
+                                                             && x.AttributeType != AttributeTypeCode.ManagedProperty
+                                                             && x.AttributeOf == null).OrderBy(x=>x.LogicalName))
             {
                 createSQL += $" [{attr.LogicalName}] {GetFieldDataType(attr)}, ";
+
+                if (attr.LogicalName == primaryAttribute.LogicalName)
+                {
+                    createSQL += $"CONSTRAINT PK_{entityMeta.Key}_{attr.LogicalName} PRIMARY KEY CLUSTERED({attr.LogicalName}),";
+                }
+
+                //, 
+
+
             }
 
             createSQL = createSQL.Trim().TrimEnd(new char[] { ',' });
@@ -134,8 +150,10 @@ namespace XrmMockupShared.Database
         {
             using (var conn = new SqlConnection(this.ConnectionString))
             {
+
                 using (var cmd = new SqlCommand(sql, conn))
                 {
+                    conn.Open();
                     SqlDataReader reader = cmd.ExecuteReader();
 
                     DataTable dt = new DataTable();
@@ -170,54 +188,93 @@ namespace XrmMockupShared.Database
             var entityMetadata = this.EntityMetadata[xrmEntity.LogicalName];
             var sqlAttributes = entityMetadata.Attributes.Where(x => x.AttributeType != AttributeTypeCode.Virtual && x.AttributeType != AttributeTypeCode.EntityName && x.AttributeType != AttributeTypeCode.ManagedProperty);
 
-            
-            string sqlFields = string.Empty;
-            string sqlValues = string.Empty;
+            var primaryAttributes = sqlAttributes.Where(x => x.IsPrimaryId.Value);
+            if (primaryAttributes.Count() > 1)
+            {
+                primaryAttributes = primaryAttributes.Where(x => x.LogicalName == xrmEntity.LogicalName + "id");
+            }
+            var primaryAttribute = primaryAttributes.SingleOrDefault();
+
+            var sqlFields = new List<string>();
+            var sqlValues = new List<string>();
             var paramValues = new List<SqlParameter>();
-            
-            foreach (var attr in sqlAttributes)
+
+            sqlFields.Add($"[{primaryAttribute.LogicalName}]");
+            sqlValues.Add($"@{primaryAttribute.LogicalName}");
+            paramValues.Add(new SqlParameter($"@{primaryAttribute.LogicalName}", xrmEntity.Id));
+
+            //string sqlFields = string.Empty;
+            //string sqlValues = string.Empty;
+
+            foreach (var attr in sqlAttributes.Except(new List<AttributeMetadata>() { primaryAttribute }))
             {
                 if (xrmEntity.Contains(attr.LogicalName))
                 {
-                    sqlFields += $" [{attr.LogicalName}] ,";
-                    sqlValues += $" @{attr.LogicalName} ,";
-                    paramValues.Add(new SqlParameter($"@{attr.LogicalName}",GetSqlValue(xrmEntity,attr)));
+                    sqlFields.Add($"[{attr.LogicalName}]");
+                    sqlValues.Add($"@{attr.LogicalName}");
+                    paramValues.Add(new SqlParameter($"@{attr.LogicalName}", GetSqlValue(xrmEntity, attr)));
                 }
             }
 
-            sqlFields = TrimTrailingComma(sqlFields);
-            sqlValues = TrimTrailingComma(sqlValues);
+            var fieldSQL = string.Join(",", sqlFields);
+            var valueSQL = string.Join(",", sqlValues);
+            
+            var insertSQL = $"insert into [{xrmEntity.LogicalName}] ({fieldSQL}) VALUES ({valueSQL})";
 
-            var insertSQL = $"insert into [{xrmEntity.LogicalName}] ({sqlFields}) VALUES ({sqlValues})";
+            try
+            {
+                ExecuteNonQuery(insertSQL, paramValues);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Cannot insert duplicate key"))
+                {
+                    throw new FaultException(ex.Message);
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-            ExecuteNonQuery(insertSQL,paramValues);
+            
         }
 
         private object GetSqlValue(Entity xrmEntity, AttributeMetadata attr)
         {
-            switch (attr.AttributeType)
+
+            if (xrmEntity[attr.LogicalName] == null)
+            {
+                return DBNull.Value;
+            }
+            else
             {
 
-                case AttributeTypeCode.Lookup:
-                case AttributeTypeCode.Owner:
-                case AttributeTypeCode.Customer:
-                    if (xrmEntity[attr.LogicalName] is EntityReference)
-                    {
-                        return xrmEntity.GetAttributeValue<EntityReference>(attr.LogicalName).Id;
-                    }
-                    else
-                    {
-                        //this shouldnt actually happen...
-                        return xrmEntity[attr.LogicalName];
-                    }
+                switch (attr.AttributeType)
+                {
 
-                case AttributeTypeCode.State:
-                case AttributeTypeCode.Status:
-                case AttributeTypeCode.Picklist:
-                    return xrmEntity.GetAttributeValue<OptionSetValue>(attr.LogicalName).Value;
-                default:
-                    return (xrmEntity[attr.LogicalName]);
+                    case AttributeTypeCode.Lookup:
+                    case AttributeTypeCode.Owner:
+                    case AttributeTypeCode.Customer:
+                        if (xrmEntity[attr.LogicalName] is EntityReference)
+                        {
+                            return xrmEntity.GetAttributeValue<EntityReference>(attr.LogicalName).Id;
+                        }
+                        else
+                        {
+                            //this shouldnt actually happen...
+                            return xrmEntity[attr.LogicalName];
+                        }
 
+                    case AttributeTypeCode.State:
+                    case AttributeTypeCode.Status:
+                    case AttributeTypeCode.Picklist:
+                        return xrmEntity.GetAttributeValue<OptionSetValue>(attr.LogicalName).Value;
+                    case AttributeTypeCode.Money:
+                        return xrmEntity.GetAttributeValue<Money>(attr.LogicalName).Value;
+                    default:
+                        return (xrmEntity[attr.LogicalName]);
+                }
             }
         }
 
@@ -290,7 +347,9 @@ namespace XrmMockupShared.Database
 
         public void Delete(Entity xrmEntity)
         {
-            throw new NotImplementedException();
+            var sql = $"delete from {xrmEntity.LogicalName} where {xrmEntity.LogicalName}id = '{xrmEntity.Id.ToString()}'";
+            ExecuteReader(sql);
+            
         }
 
         public IEnumerable<DbRow> GetDBEntityRows(string teamMembership)
@@ -322,14 +381,82 @@ namespace XrmMockupShared.Database
             throw new NotImplementedException();
         }
 
+        public IEnumerable<Entity> GetEntities(string tableName)
+        {
+            var sql = $"select * from {tableName}";
+            var data = ExecuteReader(sql);
+            var entities = new List<Entity>();
+            foreach (var row in data.Rows)
+            {
+                entities.Add(RowToEntity((DataRow)row,tableName));
+            }
+            return entities;
+        }
+
         public Entity GetEntity(EntityReference reference)
         {
-            throw new NotImplementedException();
+            var sql = $"select * from {reference.LogicalName} where {reference.LogicalName}id = '{reference.Id.ToString()}'";
+            var data = ExecuteReader(sql);
+            if (data.Rows.Count == 0)
+            {
+                throw new FaultException($"{reference.LogicalName} with {reference.LogicalName}id = '{reference.Id.ToString()}' not found");
+            }
+            var row = data.Rows[0];
+            return RowToEntity(row,reference.LogicalName);
+        }
+
+        private Entity RowToEntity(DataRow row,string logicalName)
+        {
+            var entity = new Entity(logicalName);
+            
+            var primaryAttributes = this.EntityMetadata[logicalName].Attributes.Where(x => x.IsPrimaryId.Value);
+            if (primaryAttributes.Count() > 1)
+            {
+                primaryAttributes = primaryAttributes.Where(x => x.LogicalName == logicalName + "id");
+            }
+            var primaryAttribute = primaryAttributes.SingleOrDefault();
+            entity.Id = (Guid)row[primaryAttribute.LogicalName];
+
+            foreach (var attr in this.EntityMetadata[logicalName].Attributes)
+            {
+                if (row.Table.Columns.Contains(attr.LogicalName))
+                {
+                    if (row[attr.LogicalName] != System.DBNull.Value)
+                    {
+                        entity[attr.LogicalName] = GetDynamicsValue(row, attr);
+                    }
+
+                }
+            }
+
+            return entity;
+        }
+
+        private object GetDynamicsValue(DataRow row, AttributeMetadata attr)
+        {
+            switch (attr.AttributeType)
+            {
+
+                case AttributeTypeCode.Lookup:
+                case AttributeTypeCode.Owner:
+                case AttributeTypeCode.Customer:
+                    return new EntityReference((attr as LookupAttributeMetadata).Targets[0], (Guid)row[attr.LogicalName]);
+
+                case AttributeTypeCode.State:
+                case AttributeTypeCode.Status:
+                case AttributeTypeCode.Picklist:
+                    return new OptionSetValue((int)row[attr.LogicalName]);
+                case AttributeTypeCode.Money:
+                    return new Money((decimal)row[attr.LogicalName]);
+                default:
+                    return (row[attr.LogicalName]);
+
+            }
         }
 
         public Entity GetEntity(string logicalName, Guid id)
         {
-            throw new NotImplementedException();
+            return GetEntity(new EntityReference(logicalName, id));
         }
 
         public object GetEntityOrNull(EntityReference entityReference)
@@ -339,7 +466,9 @@ namespace XrmMockupShared.Database
 
         public bool HasRow(EntityReference entityReference)
         {
-            throw new NotImplementedException();
+            var sql = $"select * from {entityReference.LogicalName} where {entityReference.LogicalName}id = '{entityReference.Id.ToString()}'";
+            var data = ExecuteReader(sql);
+            return data.Rows.Count > 0;
         }
 
         public bool IsValidEntity(string logicalName)
@@ -349,7 +478,7 @@ namespace XrmMockupShared.Database
 
         public void PrefillDBWithOnlineData(QueryExpression queryExpr)
         {
-            throw new NotImplementedException();
+            
         }
 
         public DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true)
@@ -364,7 +493,17 @@ namespace XrmMockupShared.Database
 
         Entity IXrmDb.GetEntityOrNull(EntityReference entityReference)
         {
-            throw new NotImplementedException();
+            var sql = $"select * from {entityReference.LogicalName} where {entityReference.LogicalName}id = '{entityReference.Id.ToString()}'";
+            var data = ExecuteReader(sql);
+            if (data.Rows.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                var row = data.Rows[0];
+                return RowToEntity(row, entityReference.LogicalName);
+            }
         }
     }
 }

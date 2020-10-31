@@ -67,8 +67,8 @@ namespace DG.XrmMockupTest
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata"
-                //,DatabaseConnectionString = "Server=.;Database=XrmMockup;Trusted_Connection=True;"
-                //,RecreateDatabase = false
+                , DatabaseConnectionString = "Server=.;Database=XrmMockup;Trusted_Connection=True;"
+                , RecreateDatabase = true
             };
 
 #if XRM_MOCKUP_TEST_2011

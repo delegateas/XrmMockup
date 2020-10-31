@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup
                 throw new MockupException($"Team with id {request.TeamId} does not exist");
             }
 
-            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
+            var teamMembers = db.GetEntities(LogicalNames.TeamMembership).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
 
             foreach (var userId in request.MemberIds)
             {

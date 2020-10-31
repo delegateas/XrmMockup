@@ -28,14 +28,14 @@ namespace DG.Tools.XrmMockup
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
                 row.LogicalName != LogicalNames.Opportunity &&
                 row.LogicalName != LogicalNames.SystemUser &&
-                row.GetAttributeValue<int?>("statecode") == 1)
+                row.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
             {
                 throw new MockupException($"Trying to update inactive '{row.LogicalName}', which is impossible in UI");
             }
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
                 row.LogicalName == LogicalNames.Opportunity &&
-                row.GetAttributeValue<int?>("statecode") == 1)
+                row.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
             {
                 throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
             }

@@ -17,10 +17,10 @@ namespace DG.Tools.XrmMockup {
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveExchangeRateRequest>(orgRequest);
 
-            var row = db.GetDbRowOrNull(new EntityReference("transactioncurrency", request.TransactionCurrencyId));
+            var row = db.GetEntityOrNull(new EntityReference("transactioncurrency", request.TransactionCurrencyId));
 
             var resp = new RetrieveExchangeRateResponse();
-            resp.Results["ExchangeRate"] = row?.GetColumn("exchangerate") ?? throw new FaultException($"transactioncurrency With Id = {request.TransactionCurrencyId} Does Not Exist");
+            resp.Results["ExchangeRate"] = row?.GetAttributeValue<decimal>("exchangerate") ?? throw new FaultException($"transactioncurrency With Id = {request.TransactionCurrencyId} Does Not Exist");
             return resp;
         }
     }

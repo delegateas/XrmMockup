@@ -489,7 +489,7 @@ namespace DG.Tools.XrmMockup
 
             if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned))
             {
-                if (db.GetDbRowOrNull(owner) == null)
+                if (db.GetEntityOrNull(owner) == null)
                 {
                     throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
                 }
@@ -785,17 +785,17 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db)
+        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db,EntityMetadata metaData)
         {
             foreach (var attr in entity.Attributes)
             {
                 if (attr.Value is EntityReference eRef)
                 {
-                    var row = db.GetDbRowOrNull(eRef);
+                    var row = db.GetEntity(eRef);
                     if (row != null)
                     {
-                        var nameAttr = row.Metadata.PrimaryNameAttribute;
-                        eRef.Name = row.GetColumn<string>(nameAttr);
+                        var nameAttr =  metaData.PrimaryNameAttribute;
+                        eRef.Name = row.GetAttributeValue<string>(nameAttr);
                     }
                 }
             }
@@ -1086,6 +1086,7 @@ namespace DG.Tools.XrmMockup
         public static Entity CreateDefaultTeam(Entity rootBusinessUnit, EntityReference useReference)
         {
             var defaultTeam = new Entity(LogicalNames.Team);
+            defaultTeam.Id = Guid.NewGuid();
             defaultTeam["name"] = rootBusinessUnit.Attributes["name"];
 #if !(XRM_MOCKUP_2011)
             defaultTeam["teamtype"] = new OptionSetValue(0);

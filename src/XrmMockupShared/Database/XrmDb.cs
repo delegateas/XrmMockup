@@ -226,5 +226,10 @@ namespace DG.Tools.XrmMockup.Database {
 
             return clonedDB;
         }
+
+        public IEnumerable<Entity> GetEntities(string tableName)
+        {
+            return this[tableName].Select(x => x.ToEntity());
+        }
     }
 }

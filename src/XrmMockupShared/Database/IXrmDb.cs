@@ -18,12 +18,13 @@ namespace DG.Tools.XrmMockup.Database
         DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true);
         void Update(Entity xrmEntity, bool withReferenceChecks = true);
         bool HasRow(EntityReference entityReference);
-        IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
+       // IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
        // DbRow GetDbRow(Entity entity);
         DbRow GetDbRowOrNull(EntityReference entityReference);
         Entity GetEntityOrNull(EntityReference entityReference);
         bool IsValidEntity(string logicalName);
         //DbRow GetDbRow(EntityReference reference, bool v = true);
         void PrefillDBWithOnlineData(QueryExpression queryExpr);
+        IEnumerable<Entity> GetEntities(string tableName);
     }
 }

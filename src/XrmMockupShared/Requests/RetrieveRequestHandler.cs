@@ -44,9 +44,9 @@ namespace DG.Tools.XrmMockup {
             ExecuteCalculatedFields(row);
 #endif
             //row = db.GetDbRow(request.Target);
-            //var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
             var entity = core.GetEntity(request.Target);
-
+            entity = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(entity.LogicalName), request.ColumnSet);
+            
             Utility.SetFormmattedValues(db, entity, core.GetEntityMetadata(entity.LogicalName));
 
             if (!settings.SetUnsettableFields) {

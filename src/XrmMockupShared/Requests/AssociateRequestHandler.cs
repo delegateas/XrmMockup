@@ -56,9 +56,9 @@ namespace DG.Tools.XrmMockup {
                         linker.Attributes[manyToMany.Entity2IntersectAttribute] = request.Target.Id;
                     }
                     
-                    if (!db[linker.LogicalName].Any(x => 
-                        linker.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == x.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) &&
-                        linker.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == x.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute))) { 
+                    if (!db.GetEntities(linker.LogicalName).Any(x => 
+                        linker.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == x.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) &&
+                        linker.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == x.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute))) { 
                         db.Add(linker);
                     } else {
                         throw new FaultException("An existing relation contains the same link. N:N relation cannot be made.");

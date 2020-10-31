@@ -127,15 +127,20 @@ namespace DG.Tools.XrmMockup
             foreach (var entity in metadata.Currencies)
             {
                 Utility.RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby", "createdonbehalfby");
-                currencies.Add(entity);
+                if (db.GetEntityOrNull(entity.ToEntityReference()) == null)
+                {
+                    db.Add(entity);
+                }
             }
-            this.db.AddRange(currencies);
 
             // Setup root business unit
             var rootBu = metadata.RootBusinessUnit;
-            rootBu["name"] = "RootBusinessUnit";
-            rootBu.Attributes.Remove("organizationid");
-            this.db.Add(rootBu, false);
+            if (db.GetEntityOrNull(metadata.RootBusinessUnit.ToEntityReference()) == null)
+            {
+                rootBu["name"] = "RootBusinessUnit";
+                rootBu.Attributes.Remove("organizationid");
+                this.db.Add(rootBu, false);
+            }
             this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
             // Setup admin user
@@ -158,6 +163,7 @@ namespace DG.Tools.XrmMockup
             var teamMembership = new Entity(LogicalNames.TeamMembership);
             teamMembership["teamid"] = defaultTeam.Id;
             teamMembership["systemuserid"] = admin.Id;
+            teamMembership.Id = Guid.NewGuid();
             this.db.Add(teamMembership);
         }
 
@@ -276,6 +282,11 @@ namespace DG.Tools.XrmMockup
             return db[tableName];
         }
 
+        internal IEnumerable<Entity> GetEntities(string tableName)
+        {
+            return db.GetEntities(tableName);
+        }
+
         internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
         {
             if (HasType(entity.LogicalName))
@@ -283,7 +294,7 @@ namespace DG.Tools.XrmMockup
                 var typedEntity = GetEntity(entity.LogicalName);
                 typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db);
+                Utility.PopulateEntityReferenceNames(typedEntity, db,this.GetEntityMetadata(typedEntity.LogicalName));
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;
@@ -956,7 +967,15 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ResetWorkflows();
             }
             pluginManager.ResetPlugins();
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            if (this.db.GetType() == typeof(SQLDb))
+            {
+                this.db = new SQLDb(metadata.EntityMetadata, settings.DatabaseConnectionString, settings.RecreateDatabase);
+            }
+            else
+            {
+                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            }
+            
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);

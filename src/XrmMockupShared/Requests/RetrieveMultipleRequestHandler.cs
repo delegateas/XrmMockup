@@ -35,26 +35,23 @@ namespace DG.Tools.XrmMockup {
             FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetDBEntityRows(queryExpr.EntityName);
-            if (db[queryExpr.EntityName].Count() > 0)
+            var rows = db.GetEntities(queryExpr.EntityName);
+            foreach (var row in rows)
             {
-                foreach (var row in rows)
-                {
-                    var entity = row.ToEntity();
-                    var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
+                var entity = row;
+                var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null);
 
-                    Utility.SetFormmattedValues(db, toAdd, row.Metadata);
+                Utility.SetFormmattedValues(db, toAdd, core.GetEntityMetadata(queryExpr.EntityName));
 
-                    if (queryExpr.LinkEntities.Count > 0) {
-                        foreach (var linkEntity in queryExpr.LinkEntities) {
-                            var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
-                            collection.Entities.AddRange(
-                                alliasedValues
-                                .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
-                        }
-                    } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
-                        collection.Entities.Add(toAdd);
+                if (queryExpr.LinkEntities.Count > 0) {
+                    foreach (var linkEntity in queryExpr.LinkEntities) {
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
+                        collection.Entities.AddRange(
+                            alliasedValues
+                            .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                     }
+                } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
+                    collection.Entities.Add(toAdd);
                 }
             }
             var filteredEntities = new EntityCollection();

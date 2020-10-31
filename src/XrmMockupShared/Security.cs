@@ -352,8 +352,7 @@ namespace DG.Tools.XrmMockup
             var roles = secRoles
                 .Select(sr => SecurityRoleMapping.Where(srm => srm.Value == sr).Select(srm => srm.Key))
                 .Select(roleGuids =>
-                    Core.GetDbTable("role")
-                    .Select(x => x.ToEntity())
+                    Core.GetEntities("role")
                     .Where(r => roleGuids.Contains(r.Id))
                 )
                 .Select(roleEntities =>
