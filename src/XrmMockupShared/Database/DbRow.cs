@@ -155,7 +155,8 @@ namespace DG.Tools.XrmMockup.Database {
                 return money.Value;
             }
             if (value is EntityReference reference && db.IsValidEntity(reference.LogicalName)) {
-                return db.GetEntity(reference);
+                //return db.GetEntity(reference);
+                return value;
             }
             if (value is IEnumerable<Entity> entities) {
                 return entities

@@ -81,6 +81,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{D375A019-3229-4D24-955B-06248D1D12F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHarness", "TestHarness\TestHarness.csproj", "{799349FF-060D-48A0-ABE5-C1C337DA3037}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
@@ -215,6 +217,10 @@ Global
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D375A019-3229-4D24-955B-06248D1D12F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

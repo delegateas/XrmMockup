@@ -42,23 +42,33 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(IXrmDb db, EntityReference businessUnit)
         {
+            var allRoles = db.GetEntities("role");
+
             foreach (var sr in SecurityRoles.Values)
             {
-                var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
-                var role = new Entity("role")
+                if (!allRoles.Any(x => x.GetAttributeValue<string>("name") == sr.Name && x.GetAttributeValue<EntityReference>("businessunitid").Id == businessUnit.Id))
+
                 {
-                    Id = Guid.NewGuid()
-                };
-                role[roleMeta.PrimaryIdAttribute] = role.Id;
-                role["businessunitid"] = businessUnit;
-                role["name"] = sr.Name;
-                role["roletemplateid"] = sr.RoleTemplateId;
-                role["createdby"] = Core.AdminUserRef;
-                role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
-                role["modifiedby"] = Core.AdminUserRef;
-                role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
-                db.Add(role);
-                SecurityRoleMapping.Add(role.Id, sr.RoleId);
+                    var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
+                    var role = new Entity("role")
+                    {
+                        Id = Guid.NewGuid()
+                    };
+                    role[roleMeta.PrimaryIdAttribute] = role.Id;
+                    role["businessunitid"] = businessUnit;
+                    role["name"] = sr.Name;
+                    role["roletemplateid"] = sr.RoleTemplateId;
+                    role["createdby"] = Core.AdminUserRef;
+                    role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+                    role["modifiedby"] = Core.AdminUserRef;
+                    role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+                    db.Add(role);
+                    SecurityRoleMapping.Add(role.Id, sr.RoleId);
+                }
+                else
+                {
+                    SecurityRoleMapping.Add(allRoles.Single(x => x.GetAttributeValue<string>("name") == sr.Name && x.GetAttributeValue<EntityReference>("businessunitid").Id == businessUnit.Id).Id, sr.RoleId);
+                }
             }
         }
 
@@ -384,22 +394,21 @@ namespace DG.Tools.XrmMockup
 
         private bool IsMemberOfTeam(EntityReference team, EntityReference user)
         {
-            return Core.GetDbTable(LogicalNames.TeamMembership)
-                .Select(x => x.ToEntity())
+            return Core.GetEntities(LogicalNames.TeamMembership)
                 .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == user.Id && tm.GetAttributeValue<Guid>("teamid") == team.Id)
                 .Any();
         }
 
         private bool IsInBusinessUnit(EntityReference owner, Guid businessunitId)
         {
-            var usersInBusinessUnit = Core.GetDbTable(LogicalNames.SystemUser).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+            var usersInBusinessUnit = Core.GetEntities(LogicalNames.SystemUser).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
             if (usersInBusinessUnit.Any(u => owner.Id == u.Id))
             {
                 return true;
             }
             else
             {
-                var teamsInBusinessUnit = Core.GetDbTable(LogicalNames.Team).Select(x => x.ToEntity()).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
+                var teamsInBusinessUnit = Core.GetEntities(LogicalNames.Team).Where(u => u.GetAttributeValue<EntityReference>("businessunitid")?.Id == businessunitId);
                 return teamsInBusinessUnit.Any(u => owner.Id == u.Id);
             }
         }
@@ -408,7 +417,7 @@ namespace DG.Tools.XrmMockup
         {
             if (IsInBusinessUnit(owner, businessunitId)) return true;
 
-            var childBusinessUnits = Core.GetDbTable(LogicalNames.BusinessUnit).Select(x => x.ToEntity()).Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
+            var childBusinessUnits = Core.GetEntities(LogicalNames.BusinessUnit).Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == businessunitId);
             return childBusinessUnits.Any(b => IsInBusinessUnitTree(owner, b.Id));
         }
 
@@ -426,8 +435,7 @@ namespace DG.Tools.XrmMockup
             }
 
             // Check if any teams that the user is a member of have access 
-            var teamIds = Core.GetDbTable(LogicalNames.TeamMembership)
-            .Select(x => x.ToEntity())
+            var teamIds = Core.GetEntities(LogicalNames.TeamMembership)
             .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
             .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
             .ToList();
@@ -523,8 +531,8 @@ namespace DG.Tools.XrmMockup
                 .Where(r => entity.Attributes.ContainsKey(r.ReferencingAttribute));
 
             if (parentChangeRelationships.Any(r =>
-                Core.GetDbRowOrNull(new EntityReference(r.ReferencedEntity, Utility.GetGuidFromReference(entity[r.ReferencingAttribute])))
-                    ?.GetColumn<DbRow>("ownerid").Id == caller.Id))
+                Core.GetEntity(new EntityReference(r.ReferencedEntity, Utility.GetGuidFromReference(entity[r.ReferencingAttribute])))
+                    ?.GetAttributeValue<EntityReference>("ownerid").Id == caller.Id))
             {
                 return true;
             }

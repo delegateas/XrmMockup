@@ -49,6 +49,7 @@ namespace DG.Tools.XrmMockup
         public string DatabaseConnectionString { get; set; }
         public bool RecreateDatabase { get; set; }
 
+        public string[] RetainTables { get; set; }
 
 
     }

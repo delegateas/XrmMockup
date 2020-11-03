@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
@@ -17,11 +18,13 @@ namespace XrmMockupShared.Database
 
         private Dictionary<string, EntityMetadata> EntityMetadata;
         private string ConnectionString;
+        private string[] RetainTables;
 
-        public SQLDb(Dictionary<string, EntityMetadata> entityMetadata, string connectionString,bool recreateDatabase)
+        public SQLDb(Dictionary<string, EntityMetadata> entityMetadata, string connectionString,bool recreateDatabase,string[] retainTables)
         {
             this.EntityMetadata = entityMetadata;
             this.ConnectionString = connectionString;
+            this.RetainTables = retainTables;
 
             if (recreateDatabase)
             {
@@ -32,7 +35,7 @@ namespace XrmMockupShared.Database
 
         private void InitialiseDatabase()
         {
-            foreach (var entityMeta in this.EntityMetadata)
+            foreach (var entityMeta in this.EntityMetadata.Where(x=> !RetainTables.Contains(x.Key)))
             {
                 CreateTable(entityMeta);
             }
@@ -54,7 +57,9 @@ namespace XrmMockupShared.Database
             DropTableIfExists(entityMeta.Key);
 
             var primaryAttribute = entityMeta.Value.Attributes.Where(x => x.LogicalName == entityMeta.Value.PrimaryIdAttribute).Single();
-            
+
+            var createIndex = string.Empty;
+
             var createSQL = $"create table [{entityMeta.Key}] ( ";
 
             foreach (var attr in entityMeta.Value.Attributes
@@ -72,6 +77,11 @@ namespace XrmMockupShared.Database
 
                 //, 
 
+                if (attr.AttributeType == AttributeTypeCode.Customer || attr.AttributeType == AttributeTypeCode.Lookup || attr.AttributeType == AttributeTypeCode.Owner)
+                {
+                    createIndex += $"CREATE INDEX ix_{attr.LogicalName} ON {entityMeta.Key} ({attr.LogicalName});";
+                }
+
 
             }
 
@@ -79,6 +89,7 @@ namespace XrmMockupShared.Database
             createSQL += " )";
 
             ExecuteNonQuery(createSQL);
+            ExecuteNonQuery(createIndex);
         }
 
         private string GetFieldDataType(AttributeMetadata attr)
@@ -115,7 +126,7 @@ namespace XrmMockupShared.Database
                     }
 
                 case AttributeTypeCode.PartyList:
-                    return $"nvarchar (500)";
+                    return $"nvarchar (1500)";
                 case AttributeTypeCode.Memo:
                     return $"nvarchar (MAX)";
                 case AttributeTypeCode.Money:
@@ -146,7 +157,7 @@ namespace XrmMockupShared.Database
 
         }
 
-        private DataTable ExecuteReader(string sql)
+        private DataTable ExecuteReader(string sql, List<SqlParameter> paramValues = null)
         {
             using (var conn = new SqlConnection(this.ConnectionString))
             {
@@ -154,6 +165,10 @@ namespace XrmMockupShared.Database
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     conn.Open();
+                    if (paramValues != null)
+                    {
+                        cmd.Parameters.AddRange(paramValues.ToArray());
+                    }
                     SqlDataReader reader = cmd.ExecuteReader();
 
                     DataTable dt = new DataTable();
@@ -166,6 +181,12 @@ namespace XrmMockupShared.Database
 
         private void ExecuteNonQuery(string sql, List<SqlParameter> paramValues = null)
         {
+
+            if (string.IsNullOrEmpty(sql))
+            {
+                return;
+            }
+
             using (var conn = new SqlConnection(this.ConnectionString))
             {
                 using (var cmd = new SqlCommand(sql, conn))
@@ -194,6 +215,16 @@ namespace XrmMockupShared.Database
                 primaryAttributes = primaryAttributes.Where(x => x.LogicalName == xrmEntity.LogicalName + "id");
             }
             var primaryAttribute = primaryAttributes.SingleOrDefault();
+
+            if (xrmEntity.Id == null || xrmEntity.Id == Guid.Empty)
+            {
+                xrmEntity[primaryAttribute.LogicalName] = Guid.NewGuid();
+                xrmEntity.Id = (Guid) xrmEntity[primaryAttribute.LogicalName];
+            }
+            if (!xrmEntity.Contains(primaryAttribute.LogicalName) || xrmEntity[primaryAttribute.LogicalName] == null)
+            {
+            
+            }
 
             var sqlFields = new List<string>();
             var sqlValues = new List<string>();
@@ -272,6 +303,21 @@ namespace XrmMockupShared.Database
                         return xrmEntity.GetAttributeValue<OptionSetValue>(attr.LogicalName).Value;
                     case AttributeTypeCode.Money:
                         return xrmEntity.GetAttributeValue<Money>(attr.LogicalName).Value;
+                    case AttributeTypeCode.DateTime:
+                        if (xrmEntity.GetAttributeValue<DateTime>(attr.LogicalName) == null
+                             ||
+                             xrmEntity.GetAttributeValue<DateTime>(attr.LogicalName) == DateTime.MinValue)
+                        {
+                            return DBNull.Value;
+                        }
+                        else
+                        {
+                            return (xrmEntity[attr.LogicalName]);
+                        }
+                    case AttributeTypeCode.PartyList:
+
+                        return string.Join(",",(xrmEntity[attr.LogicalName] as EntityCollection).Entities.Select(x=>x.Id));
+
                     default:
                         return (xrmEntity[attr.LogicalName]);
                 }
@@ -347,7 +393,9 @@ namespace XrmMockupShared.Database
 
         public void Delete(Entity xrmEntity)
         {
-            var sql = $"delete from {xrmEntity.LogicalName} where {xrmEntity.LogicalName}id = '{xrmEntity.Id.ToString()}'";
+            var metaData = EntityMetadata[xrmEntity.LogicalName];
+
+            var sql = $"delete from [{xrmEntity.LogicalName}] where [{metaData.PrimaryIdAttribute}] = '{xrmEntity.Id.ToString()}'";
             ExecuteReader(sql);
             
         }
@@ -395,13 +443,45 @@ namespace XrmMockupShared.Database
 
         public Entity GetEntity(EntityReference reference)
         {
-            var sql = $"select * from {reference.LogicalName} where {reference.LogicalName}id = '{reference.Id.ToString()}'";
-            var data = ExecuteReader(sql);
-            if (data.Rows.Count == 0)
+
+            var metaData = EntityMetadata[reference.LogicalName];
+
+            DataRow row;
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+
+            if (reference.Id == null || reference.Id == Guid.Empty && reference.KeyAttributes.Any())
             {
-                throw new FaultException($"{reference.LogicalName} with {reference.LogicalName}id = '{reference.Id.ToString()}' not found");
+                var sql = $"select * from [{reference.LogicalName}] where ";
+                var sqlFields = new List<string>();
+                var sqlParams = new List<SqlParameter>();
+
+                foreach (var attr in reference.KeyAttributes)
+                {
+                    sqlFields.Add($"[{attr.Key}] = @{attr.Key}");
+                    sqlParams.Add(new SqlParameter($"@{attr.Key}", attr.Value));
+                }
+
+                sql += string.Join(" and ", sqlFields);
+
+                var data = ExecuteReader(sql,sqlParams);
+                if (data.Rows.Count == 0)
+                {
+                    throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id.ToString()}' does not exist.");
+                }
+                row = data.Rows[0];
             }
-            var row = data.Rows[0];
+            else
+#endif
+            {
+                var sql = $"select * from [{reference.LogicalName}] where [{metaData.PrimaryIdAttribute}] = '{reference.Id.ToString()}'";
+                var data = ExecuteReader(sql);
+                if (data.Rows.Count == 0)
+                {
+                    throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id.ToString()}' does not exist.");
+                }
+                row = data.Rows[0];
+            }
+            
             return RowToEntity(row,reference.LogicalName);
         }
 
@@ -417,7 +497,20 @@ namespace XrmMockupShared.Database
             var primaryAttribute = primaryAttributes.SingleOrDefault();
             entity.Id = (Guid)row[primaryAttribute.LogicalName];
 
-            foreach (var attr in this.EntityMetadata[logicalName].Attributes)
+            EntityReference owner = null;
+            if (row.Table.Columns.Contains("owningteam") && row["owningteam"] != DBNull.Value)
+            {
+                owner = new EntityReference("team", (Guid)row["owningteam"]);
+            }
+            else if (row.Table.Columns.Contains("ownerid") && row["ownerid"] != DBNull.Value)
+            {
+                owner = new EntityReference("systemuser", (Guid)row["ownerid"]); 
+            }
+
+            if (owner != null)
+                entity["ownerid"] = owner;
+
+            foreach (var attr in this.EntityMetadata[logicalName].Attributes.Where(x=>x.LogicalName != "ownerid"))
             {
                 if (row.Table.Columns.Contains(attr.LogicalName))
                 {
@@ -459,14 +552,12 @@ namespace XrmMockupShared.Database
             return GetEntity(new EntityReference(logicalName, id));
         }
 
-        public object GetEntityOrNull(EntityReference entityReference)
-        {
-            throw new NotImplementedException();
-        }
 
         public bool HasRow(EntityReference entityReference)
         {
-            var sql = $"select * from {entityReference.LogicalName} where {entityReference.LogicalName}id = '{entityReference.Id.ToString()}'";
+            var metaData = EntityMetadata[entityReference.LogicalName];
+
+            var sql = $"select * from [{entityReference.LogicalName}] where [{metaData.PrimaryIdAttribute}] = '{entityReference.Id.ToString()}'";
             var data = ExecuteReader(sql);
             return data.Rows.Count > 0;
         }
@@ -488,21 +579,96 @@ namespace XrmMockupShared.Database
 
         public void Update(Entity xrmEntity, bool withReferenceChecks = true)
         {
-            throw new NotImplementedException();
+            var entityMetadata = this.EntityMetadata[xrmEntity.LogicalName];
+            var sqlAttributes = entityMetadata.Attributes.Where(x => x.AttributeType != AttributeTypeCode.Virtual && x.AttributeType != AttributeTypeCode.EntityName && x.AttributeType != AttributeTypeCode.ManagedProperty);
+
+            var primaryAttributes = sqlAttributes.Where(x => x.IsPrimaryId.Value);
+            if (primaryAttributes.Count() > 1)
+            {
+                primaryAttributes = primaryAttributes.Where(x => x.LogicalName == xrmEntity.LogicalName + "id");
+            }
+            var primaryAttribute = primaryAttributes.SingleOrDefault();
+
+            var sqlFields = new List<string>();
+            var paramValues = new List<SqlParameter>();
+            
+            foreach (var attr in sqlAttributes.Except(new List<AttributeMetadata>() { primaryAttribute }))
+            {
+                if (xrmEntity.Contains(attr.LogicalName))
+                {
+
+                    sqlFields.Add($"[{attr.LogicalName}] = @{ attr.LogicalName}");
+                    paramValues.Add(new SqlParameter($"@{attr.LogicalName}", GetSqlValue(xrmEntity, attr)));
+                }
+            }
+
+            var fieldSQL = string.Join(",", sqlFields);
+            
+            var insertSQL = $"update [{xrmEntity.LogicalName}] set {fieldSQL} where {primaryAttribute.LogicalName} = '{xrmEntity.Id.ToString()}'";
+
+            try
+            {
+                ExecuteNonQuery(insertSQL, paramValues);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Cannot insert duplicate key"))
+                {
+                    throw new FaultException(ex.Message);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
-        Entity IXrmDb.GetEntityOrNull(EntityReference entityReference)
+        public Entity GetEntityOrNull(EntityReference reference)
         {
-            var sql = $"select * from {entityReference.LogicalName} where {entityReference.LogicalName}id = '{entityReference.Id.ToString()}'";
-            var data = ExecuteReader(sql);
-            if (data.Rows.Count == 0)
+            var metaData = EntityMetadata[reference.LogicalName];
+            DataRow row;
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+
+            if (reference.Id == null || reference.Id == Guid.Empty && reference.KeyAttributes.Any())
             {
-                return null;
+                var sql = $"select * from [{reference.LogicalName}] where ";
+                var sqlFields = new List<string>();
+                var sqlParams = new List<SqlParameter>();
+
+                foreach (var attr in reference.KeyAttributes)
+                {
+                    sqlFields.Add($"[{attr.Key}] = @{attr.Key}");
+                    sqlParams.Add(new SqlParameter($"@{attr.Key}", attr.Value));
+                }
+
+                sql += string.Join(" and ", sqlFields);
+
+                var data = ExecuteReader(sql,sqlParams);
+                if (data.Rows.Count == 0)
+                {
+                    return null;
+                }
+                row = data.Rows[0];
+                return RowToEntity(row, reference.LogicalName);
             }
             else
+#endif
             {
-                var row = data.Rows[0];
-                return RowToEntity(row, entityReference.LogicalName);
+                var sql = $"select * from {reference.LogicalName} where {metaData.PrimaryIdAttribute} = '{reference.Id.ToString()}'";
+                var data = ExecuteReader(sql);
+                if (data.Rows.Count == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    row = data.Rows[0];
+                    return RowToEntity(row, reference.LogicalName);
+                }
+
+                
+
             }
         }
     }

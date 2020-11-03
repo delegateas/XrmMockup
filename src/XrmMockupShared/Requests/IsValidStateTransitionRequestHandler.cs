@@ -33,14 +33,14 @@ namespace DG.Tools.XrmMockup
 
             var entityMetadata = metadata.EntityMetadata.GetMetadata(request.Entity.LogicalName);
 
-            var row = db.GetDbRowOrNull(request.Entity);
+            var row = db.GetEntity(request.Entity);
             if (row == null)
             {
                 throw new FaultException($"{request.Entity.LogicalName} With Id = {request.Entity.Id} Does Not Exist");
             }
 
-            var prevStatusCode = row.GetColumn<int>("statuscode");
-            var prevStateCode = row.GetColumn<int>("statecode");
+            var prevStatusCode = row.GetAttributeValue<OptionSetValue>("statuscode").Value;
+            var prevStateCode = row.GetAttributeValue<OptionSetValue>("statecode").Value;
 
             var stateOption = Utility.GetStateOptionMetadataFromInvariantName(request.NewState, entityMetadata);
             CheckEnforceStateTransitions(request, entityMetadata, stateOption);

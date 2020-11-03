@@ -655,6 +655,13 @@ namespace DG.Tools.XrmMockup
                 case ConditionOperator.NotEqual:
                     return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
+                case ConditionOperator.BeginsWith:
+                    if (attr == null)
+                    {
+                        return false;
+                    }
+                    return attr.ToString().StartsWith((string)ConvertTo(values.First(), attr?.GetType()));
+
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
                 case ConditionOperator.LessEqual:
@@ -785,13 +792,22 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db,EntityMetadata metaData)
+        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db,EntityMetadata metaData, Dictionary<string, IEnumerable<Entity>> lookups = null)
         {
             foreach (var attr in entity.Attributes)
             {
                 if (attr.Value is EntityReference eRef)
                 {
-                    var row = db.GetEntity(eRef);
+                    Entity row;
+                    if (lookups == null)
+                    {
+                        row = db.GetEntity(eRef);
+                    }
+                    else
+                    {
+                        row = lookups[eRef.LogicalName].SingleOrDefault(x => x.Id == eRef.Id);
+                    }
+                    
                     if (row != null)
                     {
                         var nameAttr =  metaData.PrimaryNameAttribute;
@@ -801,8 +817,20 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static object GetComparableAttribute(object attribute)
+        internal static object GetComparableAttribute(AttributeCollection attributes,string attributeName)
         {
+
+            if (!attributes.Contains(attributeName))
+            {
+                return null;
+            }
+
+            var attribute = attributes[attributeName];
+            if (attribute == null)
+            {
+                return null;
+            }
+
             if (attribute is Money money)
             {
                 return money.Value;
@@ -1085,6 +1113,8 @@ namespace DG.Tools.XrmMockup
 
         public static Entity CreateDefaultTeam(Entity rootBusinessUnit, EntityReference useReference)
         {
+
+            
             var defaultTeam = new Entity(LogicalNames.Team);
             defaultTeam.Id = Guid.NewGuid();
             defaultTeam["name"] = rootBusinessUnit.Attributes["name"];

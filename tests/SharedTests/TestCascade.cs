@@ -46,9 +46,11 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
+                var accountSet = context.AccountSet.ToList();
+
+                var fetchedAccount1 = accountSet.FirstOrDefault(x => x.Id == acc1.Id);
                 Assert.AreEqual(crm.AdminUser.Id, fetchedAccount1.OwnerId.Id);
-                var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
+                var fetchedAccount2 = accountSet.FirstOrDefault(x => x.Id == acc2.Id);
                 Assert.AreEqual(crm.AdminUser.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
                 Assert.AreEqual(crm.AdminUser.Id, fetchedContact.OwnerId.Id);
@@ -63,9 +65,11 @@ namespace DG.XrmMockupTest
             
             using (var context = new Xrm(orgAdminUIService))
             {
-                var fetchedAccount1 = context.AccountSet.FirstOrDefault(x => x.Id == acc1.Id);
+                var accountSet = context.AccountSet.ToList();
+
+                var fetchedAccount1 = accountSet.FirstOrDefault(x => x.Id == acc1.Id);
                 Assert.AreEqual(user1.Id, fetchedAccount1.OwnerId.Id);
-                var fetchedAccount2 = context.AccountSet.FirstOrDefault(x => x.Id == acc2.Id);
+                var fetchedAccount2 = accountSet.FirstOrDefault(x => x.Id == acc2.Id);
                 Assert.AreEqual(user1.Id, fetchedAccount2.OwnerId.Id);
                 var fetchedContact = context.ContactSet.FirstOrDefault(x => x.Id == contact.Id);
                 Assert.AreEqual(user1.Id, fetchedContact.OwnerId.Id);

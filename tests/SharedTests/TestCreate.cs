@@ -120,7 +120,10 @@ namespace DG.XrmMockupTest
                     Name = "Dauda"
                 };
                 crm.PopulateWith(acc);
-                crm.ContainsEntity(acc);
+                var checkacc = orgAdminService.Retrieve(acc.LogicalName, acc.Id, new ColumnSet(true));
+
+                Assert.AreEqual(acc.Name, checkacc.GetAttributeValue<string>("name"));
+                
             }
         }
 

@@ -46,27 +46,27 @@ namespace DG.Tools.XrmMockup {
             if (manyToMany != null) {
                 foreach (var relatedEntity in request.RelatedEntities) {
                     if (request.Target.LogicalName == manyToMany.Entity1LogicalName) {
-                        var link = db[manyToMany.IntersectEntityName]
+                        var link = db.GetEntities(manyToMany.IntersectEntityName)
                             .First(row =>
-                                row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == request.Target.Id &&
-                                row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == relatedEntity.Id
+                                row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == request.Target.Id &&
+                                row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == relatedEntity.Id
                             );
 
-                        db[manyToMany.IntersectEntityName].Remove(link.Id);
+                        db.Delete(link);
                     } else {
-                        var link = db[manyToMany.IntersectEntityName]
+                        var link = db.GetEntities(manyToMany.IntersectEntityName)
                             .First(row =>
-                                row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == relatedEntity.Id &&
-                                row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == request.Target.Id
+                                row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == relatedEntity.Id &&
+                                row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == request.Target.Id
                             );
-                        db[manyToMany.IntersectEntityName].Remove(link.Id);
+                        db.Delete(link);
                     }
                 }
             } else {
                 if (oneToMany.ReferencedEntity == request.Target.LogicalName) {
                     foreach (var relatedEntity in request.RelatedEntities) {
                         var dbEntity = db.GetEntity(relatedEntity);
-                        Utility.RemoveAttribute(dbEntity, oneToMany.ReferencingAttribute);
+                        dbEntity[oneToMany.ReferencingAttribute] = null;
                         Utility.Touch(dbEntity, metadata.EntityMetadata.GetMetadata(dbEntity.LogicalName), core.TimeOffset, userRef);
                         db.Update(dbEntity);
                     }
@@ -77,7 +77,7 @@ namespace DG.Tools.XrmMockup {
                     if (request.RelatedEntities.Count == 1) {
                         var related = request.RelatedEntities.First();
                         var dbEntity = db.GetEntity(request.Target);
-                        Utility.RemoveAttribute(dbEntity, oneToMany.ReferencingAttribute);
+                        dbEntity[oneToMany.ReferencingAttribute] = null;
                         Utility.Touch(dbEntity, metadata.EntityMetadata.GetMetadata(dbEntity.LogicalName), core.TimeOffset, userRef);
                         db.Update(dbEntity);
                     }

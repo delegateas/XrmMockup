@@ -44,6 +44,7 @@ namespace DG.XrmMockupTest
         [ExpectedException(typeof(KeyNotFoundException))]
         public void TestDeleteSnapshot()
         {
+
             crm.TakeSnapshot("test1");
             crm.RestoreToSnapshot("test1");
             crm.DeleteSnapshot("test1");

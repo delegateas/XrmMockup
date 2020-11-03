@@ -203,14 +203,7 @@ namespace DG.Tools.XrmMockup
             Core.AddWorkflow(workflow);
         }
 
-        /// <summary>
-        /// Returns true if an entity exists in the database with the same id, and has at least the attributes of the parameter.
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public bool ContainsEntity(Entity entity) {
-            return Core.ContainsEntity(entity);
-        }
+        
 
         /// <summary>
         /// Adds entities directly into the database, without modifying them

@@ -15,12 +15,12 @@ namespace DG.Tools.XrmMockup.Database
         void Delete(Entity xrmEntity);
         Entity GetEntity(EntityReference reference);
         Entity GetEntity(string logicalName, Guid id);
-        DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true);
+        //DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true);
         void Update(Entity xrmEntity, bool withReferenceChecks = true);
         bool HasRow(EntityReference entityReference);
        // IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
        // DbRow GetDbRow(Entity entity);
-        DbRow GetDbRowOrNull(EntityReference entityReference);
+        //DbRow GetDbRowOrNull(EntityReference entityReference);
         Entity GetEntityOrNull(EntityReference entityReference);
         bool IsValidEntity(string logicalName);
         //DbRow GetDbRow(EntityReference reference, bool v = true);

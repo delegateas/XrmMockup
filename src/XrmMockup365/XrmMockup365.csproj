@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net462</TargetFramework>
-    <DebugType>portable</DebugType>
+    <DebugType>full</DebugType>
     <Title>XrmMockup365</Title>
   </PropertyGroup>
   <PropertyGroup>
@@ -22,6 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;XRM_MOCKUP_365</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

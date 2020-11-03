@@ -98,7 +98,7 @@ namespace DG.Tools.XrmMockup
 
             if (!string.IsNullOrEmpty(Settings.DatabaseConnectionString))
             {
-                this.db = new SQLDb(metadata.EntityMetadata, Settings.DatabaseConnectionString,Settings.RecreateDatabase);
+                this.db = new SQLDb(metadata.EntityMetadata, Settings.DatabaseConnectionString,Settings.RecreateDatabase,Settings.RetainTables);
             }
             else
             {
@@ -156,15 +156,22 @@ namespace DG.Tools.XrmMockup
             this.db.Add(admin);
 
             // Setup default team for root business unit
-            var defaultTeam = Utility.CreateDefaultTeam(rootBu, AdminUserRef);
-            this.db.Add(defaultTeam);
+            var allTeams = db.GetEntities("team");
+            if (!allTeams.Any(x => x.GetAttributeValue<EntityReference>("businessunitid").Id == RootBusinessUnitRef.Id && x.GetAttributeValue<bool>("isdefault")))
+            {
+                var defaultTeam = Utility.CreateDefaultTeam(rootBu, AdminUserRef);
+                this.db.Add(defaultTeam);
+                
+                // Adding admin user to root business unit default team
+                var teamMembership = new Entity(LogicalNames.TeamMembership);
+                teamMembership["teamid"] = defaultTeam.Id;
+                teamMembership["systemuserid"] = admin.Id;
+                teamMembership.Id = Guid.NewGuid();
+                this.db.Add(teamMembership);
+            }
+            
 
-            // Adding admin user to root business unit default team
-            var teamMembership = new Entity(LogicalNames.TeamMembership);
-            teamMembership["teamid"] = defaultTeam.Id;
-            teamMembership["systemuserid"] = admin.Id;
-            teamMembership.Id = Guid.NewGuid();
-            this.db.Add(teamMembership);
+            
         }
 
         private List<RequestHandler> GetRequestHandlers(IXrmDb db) => new List<RequestHandler> {
@@ -272,10 +279,10 @@ namespace DG.Tools.XrmMockup
             return this.metadata.EntityMetadata[entityName];
         }
 
-        internal DbRow GetDbRowOrNull(EntityReference entityReference)
-        {
-            return db.GetDbRowOrNull(entityReference);
-        }
+        //internal DbRow GetDbRowOrNull(EntityReference entityReference)
+        //{
+        //    return db.GetDbRowOrNull(entityReference);
+        //}
 
         internal DbTable GetDbTable(string tableName)
         {
@@ -287,14 +294,14 @@ namespace DG.Tools.XrmMockup
             return db.GetEntities(tableName);
         }
 
-        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
+        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep, Dictionary<string, IEnumerable<Entity>> lookups = null)
         {
             if (HasType(entity.LogicalName))
             {
                 var typedEntity = GetEntity(entity.LogicalName);
                 typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db,this.GetEntityMetadata(typedEntity.LogicalName));
+                Utility.PopulateEntityReferenceNames(typedEntity, db,this.GetEntityMetadata(typedEntity.LogicalName), lookups);
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;
@@ -341,15 +348,16 @@ namespace DG.Tools.XrmMockup
 
                 if (manyToMany != null)
                 {
-                    if (db[manyToMany.IntersectEntityName].Count() > 0)
+                    //if (db[manyToMany.IntersectEntityName].Count() > 0)
+                    if (db.GetEntities(manyToMany.IntersectEntityName).Count() > 0)
                     {
                         var conditions = new FilterExpression(LogicalOperator.Or);
                         if (entity.LogicalName == manyToMany.Entity1LogicalName)
                         {
                             queryExpr.EntityName = manyToMany.Entity2LogicalName;
-                            var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == entity.Id)
-                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute));
+                            var relatedIds = db.GetEntities(manyToMany.IntersectEntityName)
+                                .Where(row => row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute));
 
                             foreach (var id in relatedIds)
                             {
@@ -360,9 +368,9 @@ namespace DG.Tools.XrmMockup
                         else
                         {
                             queryExpr.EntityName = manyToMany.Entity1LogicalName;
-                            var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == entity.Id)
-                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute));
+                            var relatedIds = db.GetEntities(manyToMany.IntersectEntityName)
+                                .Where(row => row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute));
 
                             foreach (var id in relatedIds)
                             {
@@ -761,7 +769,16 @@ namespace DG.Tools.XrmMockup
         {
             var dbentity = db.GetEntityOrNull(entity.ToEntityReference());
             if (dbentity == null) return false;
-            return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
+            foreach (var a in entity.Attributes)
+            {
+                if (!dbentity.Contains(a.Key))
+                    return false;
+
+                if (!dbentity.Attributes[a.Key].Equals(a.Value))
+                    return false;
+            }
+            //return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
+            return true;
         }
 
         internal void PopulateWith(Entity[] entities)
@@ -969,7 +986,7 @@ namespace DG.Tools.XrmMockup
             pluginManager.ResetPlugins();
             if (this.db.GetType() == typeof(SQLDb))
             {
-                this.db = new SQLDb(metadata.EntityMetadata, settings.DatabaseConnectionString, settings.RecreateDatabase);
+                this.db = new SQLDb(metadata.EntityMetadata, settings.DatabaseConnectionString, settings.RecreateDatabase,settings.RetainTables);
             }
             else
             {

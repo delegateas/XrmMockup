@@ -86,7 +86,7 @@ namespace DG.Tools.XrmMockup
             setStaterequest.Status = request.Status;
             core.Execute(setStaterequest, userRef);
 
-            var incidentResolution = db.GetDbRowOrNull(request.IncidentResolution.ToEntityReference());
+            var incidentResolution = db.GetEntityOrNull(request.IncidentResolution.ToEntityReference());
 
             if (incidentResolution != null)
             {

@@ -35,7 +35,10 @@ namespace DG.XrmMockupTest
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
                 Assert.AreEqual(OpportunityState.Won, retrieved.StateCode);
                 Assert.AreEqual(Opportunity_StatusCode.Won, retrieved.StatusCode);
-                Assert.IsTrue(crm.ContainsEntity(opclose));
+
+                var checkOpClose = orgAdminService.Retrieve(opclose.LogicalName, opclose.Id, new ColumnSet(true));
+
+
                 Assert.AreEqual("SetFromWinLose", retrieved.Description);
             }
         }
@@ -64,7 +67,7 @@ namespace DG.XrmMockupTest
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
                 Assert.AreEqual(OpportunityState.Lost, retrieved.StateCode);
                 Assert.AreEqual(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
-                Assert.IsTrue(crm.ContainsEntity(opclose));
+                var checkOpClose = orgAdminService.Retrieve(opclose.LogicalName, opclose.Id, new ColumnSet(true));
                 Assert.AreEqual("SetFromWinLose", retrieved.Description);
             }
         }

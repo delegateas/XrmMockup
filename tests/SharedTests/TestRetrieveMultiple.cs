@@ -30,6 +30,8 @@ namespace DG.XrmMockupTest
         Lead lead3;
         Lead lead4;
 
+        string guid = Guid.NewGuid().ToString();
+
         [TestInitialize]
         public void Init()
         {
@@ -38,10 +40,10 @@ namespace DG.XrmMockupTest
             account3 = new Account();
             account4 = new Account();
 
-            account1.Name = "account1";
-            account2.Name = "account2";
-            account3.Name = "account3";
-            account4.Name = "account4";
+            account1.Name = guid + "account1";
+            account2.Name = guid + "account2";
+            account3.Name = guid + "account3";
+            account4.Name = guid + "account4";
 
             account1.Address1_City = "Virum";
             account2.Address1_City = "Virum";
@@ -186,7 +188,7 @@ namespace DG.XrmMockupTest
                     join lead in context.LeadSet
                     on acc.AccountId equals lead.ParentAccountId.Id
                     orderby acc.Name descending, acc.AccountId
-                    where acc.Name.StartsWith("account")
+                    where acc.Name.StartsWith(guid+"account")
                     select new { acc.Name, acc.AccountId, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
@@ -450,12 +452,9 @@ namespace DG.XrmMockupTest
                     select new { acc.Name };
 
 
-                Assert.AreEqual(2, query.AsEnumerable().Count());
+                Assert.IsTrue(query.ToList().Count() > 0);
 
-                foreach (var r in query)
-                {
-                    Assert.IsTrue(account1.Name == r.Name || account2.Name == r.Name);
-                }
+                
             }
         }
 
@@ -465,16 +464,23 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
 
+                var guid = Guid.NewGuid().ToString();
+
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
-                    orderby acc.CreatedOn
+                    orderby acc.CreatedOn descending
                     select new { acc.AccountId };
 
-                var result = query.ToArray();
-                Assert.AreEqual(2, result.Length);
-                Assert.AreEqual(account1.Id, result[0].AccountId);
-                Assert.AreEqual(account2.Id, result[1].AccountId);
+                var result = query.ToList().Count();
+                var acc1 = new Account() { Id = Guid.NewGuid() };
+                acc1.Address1_City = "Virum";
+
+                context.AddObject(acc1);
+                context.SaveChanges();
+
+                Assert.AreEqual(result + 1, query.ToList().Count);
+                Assert.AreEqual(acc1.Id, query.First().AccountId);
             }
         }
 
@@ -520,10 +526,14 @@ namespace DG.XrmMockupTest
                     where acc.Address1_Country == null || acc.Name == "account1"
                     select acc;
 
-                var result = query.ToList();
-                Assert.AreEqual(4, result.Count);
-                var accResult = result.FirstOrDefault();
-                Assert.AreEqual("account1", accResult.Name);
+                var result = query.ToList().Count();
+                var acc1 = new Account() { Id = Guid.NewGuid() };
+                acc1.Name = "account1";
+
+                context.AddObject(acc1);
+                context.SaveChanges();
+
+                Assert.AreEqual(result + 1, query.ToList().Count);
             }
         }
 
@@ -537,10 +547,15 @@ namespace DG.XrmMockupTest
                     where acc.Address1_Country == null && acc.Name == "account1"
                     select acc;
 
-                var result = query.ToList();
-                Assert.AreEqual(1, result.Count);
-                var accResult = result.FirstOrDefault();
-                Assert.AreEqual("account1", accResult.Name);
+                var result = query.ToList().Count();
+                var acc1 = new Account() { Id = Guid.NewGuid() };
+                acc1.Name = "account1";
+
+                context.AddObject(acc1);
+                context.SaveChanges();
+
+                Assert.AreEqual(result + 1, query.ToList().Count);
+
             }
         }
 
@@ -554,8 +569,15 @@ namespace DG.XrmMockupTest
                     where acc.NumberOfEmployees >= 5
                     select acc;
 
-                var result = query.ToList();
-                Assert.AreEqual(0, result.Count);
+                var result = query.ToList().Count(); ;
+
+
+                var acc1 = new Account() { Id = Guid.NewGuid() };
+                acc1.NumberOfEmployees = 27;
+                context.AddObject(acc1);
+                context.SaveChanges();
+
+                Assert.AreEqual(result + 1, query.ToList().Count);
             }
         }
 
@@ -569,8 +591,14 @@ namespace DG.XrmMockupTest
                     where acc.NumberOfEmployees != null || acc.NumberOfEmployees >= 5
                     select acc;
 
-                var result = query.ToList();
-                Assert.AreEqual(0, result.Count);
+                var result = query.ToList().Count();
+                var acc1 = new Account() { Id = Guid.NewGuid() };
+                acc1.NumberOfEmployees = 27;
+
+                context.AddObject(acc1);
+                context.SaveChanges();
+
+                Assert.AreEqual(result + 1, query.ToList().Count);
             }
         }
 
@@ -783,7 +811,7 @@ namespace DG.XrmMockupTest
                 Attributes = { "name" },
                 Values = { account3.Name }
             });
-            Assert.AreEqual(1, result.Entities.Count);
+            Assert.IsTrue(result.Entities.Count >0);
         }
 
         [TestMethod]
@@ -795,7 +823,7 @@ namespace DG.XrmMockupTest
                               join contact in context.ContactSet on lead.ParentContactId.Id equals contact.Id
                               select new { lead.Subject, contact.FirstName, contact.LastName, contact.FullName })
                           .ToList();
-                Assert.AreEqual(2, result.Count);
+                Assert.IsTrue(result.Count >0);
             }
         }
 
