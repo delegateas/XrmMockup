@@ -25,12 +25,14 @@ namespace XrmMockupShared.Database
             this.EntityMetadata = entityMetadata;
             this.ConnectionString = connectionString;
             this.RetainTables = retainTables;
+            if (RetainTables == null)
+                RetainTables = new string[0];
 
             if (recreateDatabase)
             {
                 InitialiseDatabase();
             }
-
+            
         }
 
         private void InitialiseDatabase()
@@ -39,6 +41,12 @@ namespace XrmMockupShared.Database
             {
                 CreateTable(entityMeta);
             }
+
+            if (!EntityMetadata.ContainsKey("roletemplate"))
+            {
+                CreateTable("roletemplate");
+            }
+
         }
 
         private void DropTableIfExists(string tableName)
@@ -63,10 +71,10 @@ namespace XrmMockupShared.Database
             var createSQL = $"create table [{entityMeta.Key}] ( ";
 
             foreach (var attr in entityMeta.Value.Attributes
-                                                    .Where(x => x.AttributeType != AttributeTypeCode.Virtual 
-                                                             && x.AttributeType != AttributeTypeCode.EntityName 
+                                                    .Where(x => x.AttributeType != AttributeTypeCode.Virtual
+                                                             && x.AttributeType != AttributeTypeCode.EntityName
                                                              && x.AttributeType != AttributeTypeCode.ManagedProperty
-                                                             && x.AttributeOf == null).OrderBy(x=>x.LogicalName))
+                                                             && x.AttributeOf == null).OrderBy(x => x.LogicalName))
             {
                 createSQL += $" [{attr.LogicalName}] {GetFieldDataType(attr)}, ";
 
@@ -90,6 +98,20 @@ namespace XrmMockupShared.Database
 
             ExecuteNonQuery(createSQL);
             ExecuteNonQuery(createIndex);
+        }
+
+        private void CreateTable(string tableName)
+        {
+            DropTableIfExists(tableName);
+
+            var createSQL = $"create table [{tableName}] ( ";
+            createSQL += $" [{tableName}id] uniqueidentifier, ";
+            createSQL += $"CONSTRAINT PK_{tableName}_{tableName}2id PRIMARY KEY CLUSTERED({tableName}id),";
+            createSQL += $" [name] nvarchar(250), ";
+            createSQL = createSQL.Trim().TrimEnd(new char[] { ',' });
+            createSQL += " )";
+
+            ExecuteNonQuery(createSQL);
         }
 
         private string GetFieldDataType(AttributeMetadata attr)
@@ -328,6 +350,10 @@ namespace XrmMockupShared.Database
         {
             return sql.Trim().TrimEnd(new char[] { ',' });
         }
+        private string TrimTrailingAND(string sql)
+        {
+            return sql.Trim().TrimEnd(new char[] { 'A', 'N', 'D' });
+        }
 
         private string GetFieldValue(Entity xrmEntity, AttributeMetadata attr)
         {
@@ -388,7 +414,7 @@ namespace XrmMockupShared.Database
 
         public IXrmDb Clone()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void Delete(Entity xrmEntity)
@@ -429,10 +455,64 @@ namespace XrmMockupShared.Database
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Entity> GetEntities(string tableName)
+        private string GetSqlConditionOperator(ConditionOperator op)
         {
-            var sql = $"select * from {tableName}";
-            var data = ExecuteReader(sql);
+            switch (op)
+            {
+                case ConditionOperator.Like:
+                    return " like ";
+                case ConditionOperator.NotLike:
+                    return " not like ";
+                case ConditionOperator.Equal:
+                    return " = ";
+                case ConditionOperator.NotEqual:
+                    return " <> ";
+                case ConditionOperator.NotNull:
+                    return " is not null ";
+                case ConditionOperator.Null:
+                    return " is null ";
+                default:
+                    return string.Empty;
+
+            }
+        }
+
+        public IEnumerable<Entity> GetEntities(string tableName, IEnumerable<ConditionExpression> filters = null)
+        {
+            var sql = $"select * from [{tableName}]";
+            
+            var sqlParams = new List<SqlParameter>();
+
+
+            if (filters != null && filters.Count() > 0)
+            {
+                filters = filters.Where(x => !string.IsNullOrEmpty(x.AttributeName));
+                filters = filters.Where(x => !string.IsNullOrEmpty(GetSqlConditionOperator(x.Operator)));
+
+                if (filters.Any())
+                {
+                    sql += " where ";
+
+                    foreach (var filter in filters)
+                    {
+                        if (filter.Operator == ConditionOperator.NotNull || filter.Operator == ConditionOperator.Null)
+                        {
+                            sql += $" [{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} AND";
+                        }
+                        else
+                        {
+                            sql += $" [{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} @{filter.AttributeName} AND";
+                            sqlParams.Add(new SqlParameter($"@{filter.AttributeName}", filter.Values[0]));
+                        }
+                        
+                    }
+                }
+            }
+
+            sql = TrimTrailingAND(sql);
+
+
+            var data = ExecuteReader(sql,sqlParams);
             var entities = new List<Entity>();
             foreach (var row in data.Rows)
             {

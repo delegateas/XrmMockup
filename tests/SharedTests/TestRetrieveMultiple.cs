@@ -62,10 +62,10 @@ namespace DG.XrmMockupTest
             contact3 = new Contact();
             contact4 = new Contact();
 
-            contact1.LastName = "contact1";
-            contact2.LastName = "contact2";
-            contact3.LastName = "contact3";
-            contact4.LastName = "contact4";
+            contact1.LastName = guid + "contact1";
+            contact2.LastName = guid + "contact2";
+            contact3.LastName = guid + "contact3";
+            contact4.LastName = guid + "contact4";
 
             contact1.Id = orgAdminUIService.Create(contact1);
             contact2.Id = orgAdminUIService.Create(contact2);
@@ -75,21 +75,21 @@ namespace DG.XrmMockupTest
             var rand = new Random();
             lead1 = new Lead()
             {
-                Subject = "Some contact lead " + rand.Next(0, 1000),
+                Subject = guid + "Some contact lead " + rand.Next(0, 1000),
                 ParentContactId = contact1.ToEntityReference()
             };
             lead2 = new Lead()
             {
-                Subject = "Some contact lead " + rand.Next(0, 1000),
+                Subject = guid + "Some contact lead " + rand.Next(0, 1000),
                 ParentContactId = contact2.ToEntityReference()
             };
             lead3 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000)
+                Subject = guid + "Some new lead " + rand.Next(0, 1000)
             };
             lead4 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000)
+                Subject = guid + "Some new lead " + rand.Next(0, 1000)
             };
 
             lead1.Id = orgAdminUIService.Create(lead1);
@@ -136,7 +136,7 @@ namespace DG.XrmMockupTest
                     from con in context.ContactSet
                     join lead in context.LeadSet
                     on con.ContactId equals lead.ParentContactId.Id
-                    where lead.Subject.StartsWith("Some") && con.LastName.StartsWith("contact")
+                    where lead.Subject.StartsWith(guid + "Some") && con.LastName.StartsWith(guid + "contact")
                     select new { con.LastName, lead.Subject };
 
                 var result = query.ToArray();
@@ -169,6 +169,7 @@ namespace DG.XrmMockupTest
                 var query =
                     from con in context.ContactSet
                     where con.StateCode == ContactState.Inactive
+                    & con.LastName.StartsWith(guid)
                     select con;
 
                 var result = query.First();
@@ -352,6 +353,7 @@ namespace DG.XrmMockupTest
                     join lead in context.LeadSet
                     on con.ContactId equals lead.ParentContactId.Id into ls
                     from lead in ls.DefaultIfEmpty()
+                    where con.LastName.StartsWith(guid)
                     select new { con.ContactId, lead.Subject };
 
                 Assert.AreEqual(4, query.AsEnumerable().Count());
@@ -359,7 +361,7 @@ namespace DG.XrmMockupTest
                 foreach (var r in query)
                 {
                     Assert.IsTrue(r.Subject == null && (r.ContactId == contact3.Id || r.ContactId == contact4.Id) ||
-                        r.Subject.StartsWith("Some contact lead") && (r.ContactId == contact1.Id || r.ContactId == contact2.Id));
+                        r.Subject.StartsWith(guid+"Some contact lead") && (r.ContactId == contact1.Id || r.ContactId == contact2.Id));
                 }
             }
         }
@@ -718,7 +720,7 @@ namespace DG.XrmMockupTest
                 ColumnSet = new ColumnSet("lastname")
             };
             var filter = new FilterExpression(LogicalOperator.And);
-            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, guid + "contact%"));
             query.Criteria = filter;
 
             var linkEntity = new LinkEntity()
@@ -731,7 +733,7 @@ namespace DG.XrmMockupTest
                 EntityAlias = "lead"
             };
             var linkFilter = new FilterExpression(LogicalOperator.And);
-            linkFilter.AddCondition(new ConditionExpression("lead", "subject", ConditionOperator.Like, "Some%"));
+            linkFilter.AddCondition(new ConditionExpression("lead", "subject", ConditionOperator.Like, guid + "Some%"));
             linkEntity.LinkCriteria = linkFilter;
 
             query.LinkEntities.Add(linkEntity);
@@ -749,7 +751,7 @@ namespace DG.XrmMockupTest
                 ColumnSet = new ColumnSet("lastname")
             };
             var filter = new FilterExpression(LogicalOperator.And);
-            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, guid + "contact%"));
             query.Criteria = filter;
 
             var linkEntity = new LinkEntity()
@@ -761,7 +763,7 @@ namespace DG.XrmMockupTest
                 Columns = new ColumnSet("subject"),
             };
             var linkFilter = new FilterExpression(LogicalOperator.And);
-            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, "Some%"));
+            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, guid + "Some%"));
             linkEntity.LinkCriteria = linkFilter;
 
             query.LinkEntities.Add(linkEntity);
@@ -778,7 +780,7 @@ namespace DG.XrmMockupTest
                 ColumnSet = new ColumnSet("lastname")
             };
             var filter = new FilterExpression(LogicalOperator.And);
-            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, guid + "contact%"));
             query.Criteria = filter;
 
             var linkEntity = new LinkEntity()
@@ -791,7 +793,7 @@ namespace DG.XrmMockupTest
                 EntityAlias = "lead"
             };
             var linkFilter = new FilterExpression(LogicalOperator.And);
-            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, "Some%"));
+            linkFilter.AddCondition(new ConditionExpression("subject", ConditionOperator.Like, guid + "Some%"));
             linkEntity.LinkCriteria = linkFilter;
 
             query.LinkEntities.Add(linkEntity);
@@ -830,38 +832,40 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestLINQContains()
         {
+            var guid = Guid.NewGuid().ToString();
+
             var account = new Account()
             {
-                Name = "NotIn",
+                Name = guid,
 
             };
             account.Id = orgAdminService.Create(account);
 
-            var searchstring = "a";
             using (var xrm = new Xrm(orgAdminService))
             {
                 var query =
                     from c in xrm.AccountSet
-                    where c.Name.Contains(searchstring)
+                    where c.Name.Contains(guid)
                     select new
                     {
                         c.Name
                     };
                 var queryList = query.ToList();
-                Assert.IsTrue(queryList.Count > 0);
+                Assert.IsTrue(queryList.Count == 1);
             }
 
             using (var xrm = new Xrm(orgAdminService))
             {
                 var query =
                     from c in xrm.AccountSet
-                    where !c.Name.Contains(searchstring)
+                    where !c.Name.Contains(guid) 
                     select new
                     {
                         c.AccountId
                     };
-                var queryNotA = query.FirstOrDefault();
-                Assert.AreEqual(account.Id, queryNotA.AccountId);
+                var queryNotA = query.ToList();
+                var all = (from c in xrm.AccountSet where c.Name != null select c).ToList();
+                Assert.AreEqual(all.Count()-1, queryNotA.Count);
             }
         }
 
@@ -875,6 +879,7 @@ namespace DG.XrmMockupTest
                     ColumnSet = new ColumnSet(true),
                     PageInfo = new PagingInfo() { ReturnTotalRecordCount = true }
                 };
+                query.Criteria.AddCondition("name", ConditionOperator.BeginsWith, guid);
 
                 var res = orgAdminService.RetrieveMultiple(query);
 

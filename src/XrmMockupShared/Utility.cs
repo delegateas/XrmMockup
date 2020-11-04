@@ -1048,13 +1048,14 @@ namespace DG.Tools.XrmMockup
 
             if (metadataAtt is LookupAttributeMetadata)
             {
-                try
+
+                if (value is EntityReference)
                 {
                     return (value as EntityReference).Name;
                 }
-                catch (NullReferenceException e)
+                else
                 {
-                    Console.WriteLine("No lookup entity exists: " + e.Message);
+                    Console.WriteLine("No lookup entity exists: ");
                 }
             }
 

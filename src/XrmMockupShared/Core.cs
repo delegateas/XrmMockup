@@ -314,6 +314,8 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)
         {
+            Dictionary<string, EntityCollection> retrievedEntities = new Dictionary<string, EntityCollection>();
+
             foreach (var relQuery in relatedEntityQuery)
             {
                 var relationship = relQuery.Key;
@@ -390,8 +392,19 @@ namespace DG.Tools.XrmMockup
                     {
                         Query = queryExpr
                     };
-                    var resp = handler.Execute(req, userRef) as RetrieveMultipleResponse;
-                    entities = resp.EntityCollection;
+                    
+                    if (retrievedEntities.ContainsKey(queryExpr.EntityName))
+                    {
+                        entities = retrievedEntities[queryExpr.EntityName];
+                    }
+                    else
+                    {
+                        var resp = handler.Execute(req, userRef) as RetrieveMultipleResponse;
+                        entities = resp.EntityCollection;
+                        retrievedEntities.Add(queryExpr.EntityName, entities);
+                    }
+
+                    
                 }
 
                 if (entities.Entities.Count() > 0)
@@ -997,5 +1010,11 @@ namespace DG.Tools.XrmMockup
             InitializeDB();
             security.ResetEnvironment(db);
         }
+
+        public bool UsingSQL
+        {
+            get { return db is SQLDb; }
+        }
+
     }
 }

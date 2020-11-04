@@ -365,6 +365,11 @@ namespace DG.Tools.XrmMockup
             Core.TakeSnapshot(snapshotName);
         }
 
+        public bool UsingSQL
+        {
+            get { return Core.UsingSQL; }
+        }
+
         /// <summary>
         /// Retore the XrmMockup database from a snapshot
         /// </summary>

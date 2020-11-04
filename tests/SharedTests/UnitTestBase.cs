@@ -68,8 +68,8 @@ namespace DG.XrmMockupTest
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata"
                 , DatabaseConnectionString = "Server=.;Database=XrmMockup;Trusted_Connection=True;"
-                , RecreateDatabase = false,
-                RetainTables = new string[] { "fax" ,"goal","lead"}
+                , RecreateDatabase = false
+                //,RetainTables = new string[] { "fax" ,"goal","lead"}
             };
 
 #if XRM_MOCKUP_TEST_2011

@@ -19,14 +19,18 @@ namespace DG.XrmMockupTest
         Contact contact1;
         Contact contact2;
 
+        string guid;
+
         [TestInitialize]
         public void Init()
         {
-            contact1 = new Contact { FirstName = "Hans" };
-            contact2 = new Contact { FirstName = "John" };
-            account1 = new Account { Name = "Account 1" };
-            account2 = new Account { Name = "Account 2" };
-            account3 = new Account { Name = "Account 3" };
+            guid = Guid.NewGuid().ToString();
+
+            contact1 = new Contact { FirstName = guid + "Hans" };
+            contact2 = new Contact { FirstName = guid + "John" };
+            account1 = new Account { Name = guid + "Account 1" };
+            account2 = new Account { Name = guid + "Account 2" };
+            account3 = new Account { Name = guid + "Account 3" };
 
             contact1.Id = orgAdminUIService.Create(contact1);
             contact2.Id = orgAdminUIService.Create(contact2);
@@ -52,7 +56,7 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship,
                     relatedEntities);
 
-                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
+                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith(guid + "Account")))
                 {
                     Assert.AreEqual(contact1.Id, acc.PrimaryContactId.Id);
                     Assert.AreEqual(Contact.EntityLogicalName, acc.PrimaryContactId.LogicalName);
@@ -63,7 +67,7 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Disassociate(Contact.EntityLogicalName, contact1.Id, relationship,
                     relatedEntities);
 
-                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
+                foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith(guid + "Account")))
                 {
                     Assert.IsNull(acc.PrimaryContactId);
                 }

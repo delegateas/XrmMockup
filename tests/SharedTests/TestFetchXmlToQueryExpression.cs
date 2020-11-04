@@ -16,10 +16,14 @@ namespace DG.XrmMockupTest
         Guid _contact2Id;
         Guid _opportunity1Id;
         Guid _opportunity2Id;
+        string guid;
 
         [TestInitialize]
         public void Init()
         {
+
+            guid = Guid.NewGuid().ToString();
+
             accountName = "Litware, Inc.";
             // Create an account.
             var acc = new Account
@@ -49,7 +53,7 @@ namespace DG.XrmMockupTest
                     FirstName = "Colin",
                     LastName = "Wilcox",
                     EMailAddress1 = "sample@example.com",
-                    Address1_City = "Bellevue",
+                    Address1_City = guid+"Bellevue",
                     Address1_StateOrProvince = "WA",
                     Address1_Telephone1 = "(425)555-5555",
                     ParentCustomerId = acc.ToEntityReference()
@@ -83,7 +87,7 @@ namespace DG.XrmMockupTest
 
                 // Create a Fetch query that we will convert into a query expression.
                 var fetchXml =
-                    @"<fetch mapping='logical' version='1.0'>
+                    $@"<fetch mapping='logical' version='1.0'>
                     <entity name='opportunity'>
                         <attribute name='name' />
                         <filter>
@@ -93,7 +97,7 @@ namespace DG.XrmMockupTest
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
                                 <attribute name='firstname' />
                                 <filter>
-                                    <condition attribute='address1_city' operator='eq' value='Bellevue' />
+                                    <condition attribute='address1_city' operator='eq' value='{guid}Bellevue' />
                                     <condition attribute='address1_stateorprovince' operator='eq' value='WA' />
                                 </filter>
                             </link-entity>
@@ -135,7 +139,7 @@ namespace DG.XrmMockupTest
             {
                 // Create a Fetch Expression
                 var fetchXml =
-                    @"<fetch mapping='logical' version='1.0'>
+                    $@"<fetch mapping='logical' version='1.0'>
                     <entity name='opportunity'>
                         <attribute name='name' />
                         <filter>
@@ -145,7 +149,7 @@ namespace DG.XrmMockupTest
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
                                 <attribute name='firstname' />
                                 <filter>
-                                    <condition attribute='address1_city' operator='eq' value='Bellevue' />
+                                    <condition attribute='address1_city' operator='eq' value='{guid}Bellevue' />
                                     <condition attribute='address1_stateorprovince' operator='eq' value='WA' />
                                 </filter>
                             </link-entity>

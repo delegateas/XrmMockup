@@ -25,6 +25,6 @@ namespace DG.Tools.XrmMockup.Database
         bool IsValidEntity(string logicalName);
         //DbRow GetDbRow(EntityReference reference, bool v = true);
         void PrefillDBWithOnlineData(QueryExpression queryExpr);
-        IEnumerable<Entity> GetEntities(string tableName);
+        IEnumerable<Entity> GetEntities(string tableName, IEnumerable<ConditionExpression> filters = null);
     }
 }

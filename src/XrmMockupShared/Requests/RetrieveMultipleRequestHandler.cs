@@ -35,7 +35,9 @@ namespace DG.Tools.XrmMockup {
             FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetEntities(queryExpr.EntityName);
+
+            var rows = db.GetEntities(queryExpr.EntityName, queryExpr.Criteria.Conditions);
+            
             var lookupAttributes = rows.SelectMany(x => x.Attributes.Where(y => y.Value is EntityReference)).GroupBy(z => (z.Value as EntityReference).LogicalName);
             var lookups = new Dictionary<string, IEnumerable<Entity>>();
             foreach (var g in lookupAttributes)
@@ -43,9 +45,16 @@ namespace DG.Tools.XrmMockup {
                 lookups.Add(g.Key, db.GetEntities(g.Key));
             }
 
+            var linkEntities = new Dictionary<string, IEnumerable<Entity>>();
+            var linkToEntities = queryExpr.LinkEntities.GroupBy(x => x.LinkToEntityName);
+            foreach (var linkToEntity in linkToEntities)
+            {
+                linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+            }
+
+
             foreach (var row in rows)
             {
-
                 
                 var entity = row;
                 var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null,lookups);
@@ -53,8 +62,10 @@ namespace DG.Tools.XrmMockup {
                 Utility.SetFormmattedValues(db, toAdd, core.GetEntityMetadata(queryExpr.EntityName));
 
                 if (queryExpr.LinkEntities.Count > 0) {
+
+
                     foreach (var linkEntity in queryExpr.LinkEntities) {
-                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,lookups);
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,lookups,linkEntities);
                         collection.Entities.AddRange(
                             alliasedValues
                             .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
@@ -122,9 +133,10 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> lookups) {
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> lookups, Dictionary<string, IEnumerable<Entity>> linkEntities) {
             var collection = new List<Entity>();
-            foreach (var linkedRow in db.GetEntities(linkEntity.LinkToEntityName)) {
+            var allLinkEntities = linkEntities[linkEntity.LinkToEntityName];
+            foreach (var linkedRow in allLinkEntities) {
                 var linkedEntity = linkedRow;
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
@@ -140,10 +152,19 @@ namespace DG.Tools.XrmMockup {
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
+
+                            var nestlinkEntities = new Dictionary<string, IEnumerable<Entity>>();
+                            var nestlinkToEntities = linkEntity.LinkEntities.GroupBy(x => x.LinkToEntityName);
+                            foreach (var linkToEntity in nestlinkToEntities)
+                            {
+                                nestlinkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+                            }
+
                             foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
+
                                 var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,lookups);
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,lookups,nestlinkEntities);
                                 subEntities.AddRange(alliasedLinkValues
                                         .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
