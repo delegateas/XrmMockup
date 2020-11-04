@@ -23,4 +23,4 @@ jobs:
         run: dotnet pack src\\XrmMockup365\\XrmMockup365.csproj -o artifacts
         
       - name: Publish package
-        run: dotnet nuget push artifacts\\XrmMockup365*.nupkg --source https://nuget.pkg.github.com/thygesteffensen/index.json --api-key $env:GH_TOKEN"
+        run: dotnet nuget push artifacts\\XrmMockup365*.nupkg --source https://nuget.pkg.github.com/thygesteffensen/index.json --api-key $env:GH_TOKEN
