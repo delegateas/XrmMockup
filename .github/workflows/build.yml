@@ -18,15 +18,6 @@ jobs:
 
       - name: Run tests
         run: ./build.cmd test
-  
-  release:
-    runs-on: windows-latest
-    name: Release to GitHub
-    needs:
-      - test
-    steps:
-      - name: Checkout code base
-        uses: actions/checkout@v2
 
       - name: Pack package
         run: dotnet pack src\\XrmMockup365\\XrmMockup365.csproj -o artifacts
