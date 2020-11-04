@@ -196,8 +196,12 @@ namespace DG.XrmMockupTest
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata",
-                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata, additionalPluginMetadata2 }
+                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata, additionalPluginMetadata2 },
                 //MetadataDirectoryPath = @"C:\dev\MOD\CAMS\Plugins\XrmMockupTests\Metadata"
+                MetadataDirectoryPath = "../../../Metadata"
+                , DatabaseConnectionString = "Server=.;Database=XrmMockup;Trusted_Connection=True;"
+                , RecreateDatabase = false
+                //,RetainTables = new string[] { "fax" ,"goal","lead"}
             };
 
 #if XRM_MOCKUP_TEST_2011

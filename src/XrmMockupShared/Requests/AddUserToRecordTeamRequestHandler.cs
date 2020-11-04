@@ -15,7 +15,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class AddUserToRecordTeamRequestHandler : RequestHandler
     {
-        internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
+        internal AddUserToRecordTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

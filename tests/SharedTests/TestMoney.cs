@@ -45,7 +45,7 @@ namespace DG.XrmMockupTest
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.AreEqual(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
                 Assert.AreEqual(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
-                Assert.AreEqual(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
+                Assert.AreEqual(0,(bus.dg_Udkoerselsdato.Value.AddDays(2) - retrieved.dg_DateTimeUdregnet).Value.Seconds);
                 Assert.AreEqual(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
                 Assert.IsNotNull(retrieved.dg_AllConditions);
             }

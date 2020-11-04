@@ -11,13 +11,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
+using System.Web.WebSockets;
+using Microsoft.Xrm.Sdk.Metadata;
+using WorkflowExecuter;
+using DG.Tools.XrmMockup.Database;
+using Microsoft.Xrm.Sdk.Client;
+using XrmMockupShared.Database;
 
 namespace DG.Tools.XrmMockup
 {
 
     internal class Snapshot
     {
-        public XrmDb db;
+        public IXrmDb db;
         public Security security;
         public EntityReference AdminUserRef;
         public EntityReference RootBusinessUnitRef;
@@ -48,7 +54,7 @@ namespace DG.Tools.XrmMockup
         private Security security;
         private XrmMockupSettings settings;
         private MetadataSkeleton metadata;
-        private XrmDb db;
+        private IXrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
         private OrganizationServiceProxy OnlineProxy;
@@ -90,7 +96,14 @@ namespace DG.Tools.XrmMockup
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            if (!string.IsNullOrEmpty(Settings.DatabaseConnectionString))
+            {
+                this.db = new SQLDb(metadata.EntityMetadata, Settings.DatabaseConnectionString,Settings.RecreateDatabase,Settings.RetainTables);
+            }
+            else
+            {
+                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            }
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles,this.db);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
@@ -132,15 +145,20 @@ namespace DG.Tools.XrmMockup
             foreach (var entity in metadata.Currencies)
             {
                 Utility.RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby", "createdonbehalfby");
-                currencies.Add(entity);
+                if (db.GetEntityOrNull(entity.ToEntityReference()) == null)
+                {
+                    db.Add(entity);
+                }
             }
-            this.db.AddRange(currencies);
 
             // Setup root business unit
             var rootBu = metadata.RootBusinessUnit;
-            rootBu["name"] = "RootBusinessUnit";
-            rootBu.Attributes.Remove("organizationid");
-            this.db.Add(rootBu, false);
+            if (db.GetEntityOrNull(metadata.RootBusinessUnit.ToEntityReference()) == null)
+            {
+                rootBu["name"] = "RootBusinessUnit";
+                rootBu.Attributes.Remove("organizationid");
+                this.db.Add(rootBu, false);
+            }
             this.RootBusinessUnitRef = rootBu.ToEntityReference();
 
             // Setup admin user
@@ -156,17 +174,25 @@ namespace DG.Tools.XrmMockup
             this.db.Add(admin);
 
             // Setup default team for root business unit
-            var defaultTeam = Utility.CreateDefaultTeam(rootBu, AdminUserRef);
-            this.db.Add(defaultTeam);
+            var allTeams = db.GetEntities("team");
+            if (!allTeams.Any(x => x.GetAttributeValue<EntityReference>("businessunitid").Id == RootBusinessUnitRef.Id && x.GetAttributeValue<bool>("isdefault")))
+            {
+                var defaultTeam = Utility.CreateDefaultTeam(rootBu, AdminUserRef);
+                this.db.Add(defaultTeam);
+                
+                // Adding admin user to root business unit default team
+                var teamMembership = new Entity(LogicalNames.TeamMembership);
+                teamMembership["teamid"] = defaultTeam.Id;
+                teamMembership["systemuserid"] = admin.Id;
+                teamMembership.Id = Guid.NewGuid();
+                this.db.Add(teamMembership);
+            }
+            
 
-            // Adding admin user to root business unit default team
-            var teamMembership = new Entity(LogicalNames.TeamMembership);
-            teamMembership["teamid"] = defaultTeam.Id;
-            teamMembership["systemuserid"] = admin.Id;
-            this.db.Add(teamMembership);
+            
         }
 
-        private List<RequestHandler> GetRequestHandlers(XrmDb db) => new List<RequestHandler> {
+        private List<RequestHandler> GetRequestHandlers(IXrmDb db) => new List<RequestHandler> {
                 new CreateRequestHandler(this, db, metadata, security),
                 new UpdateRequestHandler(this, db, metadata, security),
                 new RetrieveMultipleRequestHandler(this, db, metadata, security),
@@ -262,29 +288,43 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal DbRow GetDbRow(EntityReference entityReference)
+        //internal DbRow GetDbRow(EntityReference entityReference)
+        //{
+        //    return db.GetDbRow(entityReference);
+        //}
+        internal Entity GetEntity(EntityReference entityReference)
         {
-            return db.GetDbRow(entityReference);
+            return db.GetEntity(entityReference);
         }
 
-        internal DbRow GetDbRowOrNull(EntityReference entityReference)
+        internal EntityMetadata GetEntityMetadata(string entityName)
         {
-            return db.GetDbRowOrNull(entityReference);
+            return this.metadata.EntityMetadata[entityName];
         }
+
+        //internal DbRow GetDbRowOrNull(EntityReference entityReference)
+        //{
+        //    return db.GetDbRowOrNull(entityReference);
+        //}
 
         internal DbTable GetDbTable(string tableName)
         {
             return db[tableName];
         }
 
-        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
+        internal IEnumerable<Entity> GetEntities(string tableName)
+        {
+            return db.GetEntities(tableName);
+        }
+
+        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep, Dictionary<string, IEnumerable<Entity>> lookups = null)
         {
             if (HasType(entity.LogicalName))
             {
                 var typedEntity = GetEntity(entity.LogicalName);
                 typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db);
+                Utility.PopulateEntityReferenceNames(typedEntity, db,this.GetEntityMetadata(typedEntity.LogicalName), lookups);
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;
@@ -297,6 +337,8 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)
         {
+            Dictionary<string, EntityCollection> retrievedEntities = new Dictionary<string, EntityCollection>();
+
             foreach (var relQuery in relatedEntityQuery)
             {
                 var relationship = relQuery.Key;
@@ -339,15 +381,16 @@ namespace DG.Tools.XrmMockup
 
                 if (manyToMany != null)
                 {
-                    if (db[manyToMany.IntersectEntityName].Count() > 0)
+                    //if (db[manyToMany.IntersectEntityName].Count() > 0)
+                    if (db.GetEntities(manyToMany.IntersectEntityName).Count() > 0)
                     {
                         var conditions = new FilterExpression(LogicalOperator.Or);
                         if (entity.LogicalName == manyToMany.Entity1LogicalName)
                         {
                             queryExpr.EntityName = manyToMany.Entity2LogicalName;
-                            var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute) == entity.Id)
-                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute));
+                            var relatedIds = db.GetEntities(manyToMany.IntersectEntityName)
+                                .Where(row => row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute));
 
                             foreach (var id in relatedIds)
                             {
@@ -358,9 +401,9 @@ namespace DG.Tools.XrmMockup
                         else
                         {
                             queryExpr.EntityName = manyToMany.Entity1LogicalName;
-                            var relatedIds = db[manyToMany.IntersectEntityName]
-                                .Where(row => row.GetColumn<Guid>(manyToMany.Entity2IntersectAttribute) == entity.Id)
-                                .Select(row => row.GetColumn<Guid>(manyToMany.Entity1IntersectAttribute));
+                            var relatedIds = db.GetEntities(manyToMany.IntersectEntityName)
+                                .Where(row => row.GetAttributeValue<Guid>(manyToMany.Entity2IntersectAttribute) == entity.Id)
+                                .Select(row => row.GetAttributeValue<Guid>(manyToMany.Entity1IntersectAttribute));
 
                             foreach (var id in relatedIds)
                             {
@@ -380,8 +423,19 @@ namespace DG.Tools.XrmMockup
                     {
                         Query = queryExpr
                     };
-                    var resp = handler.Execute(req, userRef) as RetrieveMultipleResponse;
-                    entities = resp.EntityCollection;
+                    
+                    if (retrievedEntities.ContainsKey(queryExpr.EntityName))
+                    {
+                        entities = retrievedEntities[queryExpr.EntityName];
+                    }
+                    else
+                    {
+                        var resp = handler.Execute(req, userRef) as RetrieveMultipleResponse;
+                        entities = resp.EntityCollection;
+                        retrievedEntities.Add(queryExpr.EntityName, entities);
+                    }
+
+                    
                 }
 
                 if (entities.Entities.Count() > 0)
@@ -770,7 +824,16 @@ namespace DG.Tools.XrmMockup
         {
             var dbentity = db.GetEntityOrNull(entity.ToEntityReference());
             if (dbentity == null) return false;
-            return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
+            foreach (var a in entity.Attributes)
+            {
+                if (!dbentity.Contains(a.Key))
+                    return false;
+
+                if (!dbentity.Attributes[a.Key].Equals(a.Value))
+                    return false;
+            }
+            //return entity.Attributes.All(a => dbentity.Attributes.ContainsKey(a.Key) && dbentity.Attributes[a.Key].Equals(a.Value));
+            return true;
         }
 
         internal void PopulateWith(Entity[] entities)
@@ -993,7 +1056,15 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ResetWorkflows();
             }
             pluginManager.ResetPlugins();
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            if (this.db.GetType() == typeof(SQLDb))
+            {
+                this.db = new SQLDb(metadata.EntityMetadata, settings.DatabaseConnectionString, settings.RecreateDatabase,settings.RetainTables);
+            }
+            else
+            {
+                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            }
+            
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
@@ -1003,5 +1074,10 @@ namespace DG.Tools.XrmMockup
         {
             this.db.ResetAccessTeams();
         }
+        public bool UsingSQL
+        {
+            get { return db is SQLDb; }
+        }
+
     }
 }

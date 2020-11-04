@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class RemoveMembersTeamRequestHandler : RequestHandler
     {
-        internal RemoveMembersTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveMembersTeam") { }
+        internal RemoveMembersTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveMembersTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup
                 throw new MockupException($"Team with id {request.TeamId} does not exist");
             }
 
-            var teamMembers = db.GetDBEntityRows(LogicalNames.TeamMembership).Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
+            var teamMembers = db.GetEntities(LogicalNames.TeamMembership).Where(x => x.GetAttributeValue<Guid>("teamid") == request.TeamId);
 
             foreach (var userId in request.MemberIds)
             {

@@ -60,9 +60,7 @@ namespace DG.XrmMockupTest
             catch (FaultException e)
             {
                 // Test error message
-                Assert.AreEqual(
-                    $"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
-                    e.Message);
+                Assert.IsTrue(e.Message.StartsWith($"The record of type 'team' with id '{fetchedTeam.Id}' does not exist."));
                 return;
             }
             Assert.Fail("Exception when trying to fetch deleted team isn't thrown.");

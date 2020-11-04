@@ -128,12 +128,12 @@ namespace DG.Tools.XrmMockup.Database {
             return xrmEntity;
         }
 
-        internal static DbRow MakeDBRowRef(EntityReference reference, XrmDb db)
+        internal static DbRow MakeDBRowRef(EntityReference reference, IXrmDb db)
         {
             return new DbRow(db[reference.LogicalName], reference.Id, new List<KeyValuePair<string, object>>());
         }
 
-        internal static DbRow FromEntity(Entity xrmEntity, XrmDb db, bool withReferenceChecks = true) {
+        internal static DbRow FromEntity(Entity xrmEntity, IXrmDb db, bool withReferenceChecks = true) {
             IEnumerable<KeyValuePair<string, object>> columns = xrmEntity.Attributes;
 
             if (withReferenceChecks == true) { // Convert EntityReferences to actual references if db is given
@@ -143,11 +143,11 @@ namespace DG.Tools.XrmMockup.Database {
             return new DbRow(db[xrmEntity.LogicalName], xrmEntity.Id, columns);
         }
 
-        internal static KeyValuePair<string, object> ConvertToDbKeyValue(KeyValuePair<string, object> xrmAttribute, XrmDb db) {
+        internal static KeyValuePair<string, object> ConvertToDbKeyValue(KeyValuePair<string, object> xrmAttribute, IXrmDb db) {
             return new KeyValuePair<string, object>(xrmAttribute.Key, ConvertToDbValue(xrmAttribute.Value, db));
         }
 
-        internal static object ConvertToDbValue(object value, XrmDb db) {
+        internal static object ConvertToDbValue(object value, IXrmDb db) {
             if (value is OptionSetValue osv) {
                 return osv.Value;
             }
@@ -155,12 +155,13 @@ namespace DG.Tools.XrmMockup.Database {
                 return money.Value;
             }
             if (value is EntityReference reference && db.IsValidEntity(reference.LogicalName)) {
-                return db.GetDbRow(reference, false);
+                //return db.GetEntity(reference);
+                return value;
             }
             if (value is IEnumerable<Entity> entities) {
                 return entities
                     .Where(e => db.IsValidEntity(e.LogicalName))
-                    .Select(e => db.GetDbRow(e))
+                    .Select(e => db.GetEntity(e.ToEntityReference()))
                     .ToArray();
             }
 

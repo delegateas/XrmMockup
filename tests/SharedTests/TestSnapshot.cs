@@ -12,6 +12,11 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestTakeSnapshot()
         {
+            if (crm.UsingSQL)
+            {
+                return;
+            }
+
             var contact = new Contact()
             {
                 FirstName = "John"
@@ -44,6 +49,10 @@ namespace DG.XrmMockupTest
         [ExpectedException(typeof(KeyNotFoundException))]
         public void TestDeleteSnapshot()
         {
+            if (crm.UsingSQL)
+            {
+                throw new KeyNotFoundException();
+            }
             crm.TakeSnapshot("test1");
             crm.RestoreToSnapshot("test1");
             crm.DeleteSnapshot("test1");
@@ -53,6 +62,10 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestMultipleSnapshot()
         {
+            if (crm.UsingSQL)
+            {
+                return;
+            }
             var contactJ = new Contact()
             {
                 FirstName = "John"
@@ -102,6 +115,10 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestMultipleSnapshotIncremental()
         {
+            if (crm.UsingSQL)
+            {
+                return;
+            }
             var contactJ = new Contact()
             {
                 FirstName = "John"
@@ -136,6 +153,10 @@ namespace DG.XrmMockupTest
         [TestMethod]
         public void TestTakeActionAfterRestore()
         {
+            if (crm.UsingSQL)
+            {
+                return;
+            }
             var contactJ = new Contact()
             {
                 FirstName = "John"

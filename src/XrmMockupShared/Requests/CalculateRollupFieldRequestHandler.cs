@@ -14,7 +14,7 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class CalculateRollupFieldRequestHandler : RequestHandler {
-        internal CalculateRollupFieldRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "CalculateRollupField") {}
+        internal CalculateRollupFieldRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "CalculateRollupField") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<CalculateRollupFieldRequest>(orgRequest);

@@ -6,7 +6,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class RetrievePrincipalAccessRequestHandler : RequestHandler
     {
-        internal RetrievePrincipalAccessRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrievePrincipalAccess") { }
+        internal RetrievePrincipalAccessRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrievePrincipalAccess") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

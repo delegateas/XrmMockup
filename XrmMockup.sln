@@ -84,6 +84,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedDirectPlugins", "tests\SharedDirectPlugins\SharedDirectPlugins.shproj", "{ABE2430E-A924-488D-9469-E7C1695C5873}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockupConfig", "src\XrmMockupConfig\XrmMockupConfig.csproj", "{9D886DCB-5415-4AE3-8344-92017B821CC0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHarness", "TestHarness\TestHarness.csproj", "{799349FF-060D-48A0-ABE5-C1C337DA3037}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -224,6 +225,10 @@ Global
 		{9D886DCB-5415-4AE3-8344-92017B821CC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D886DCB-5415-4AE3-8344-92017B821CC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D886DCB-5415-4AE3-8344-92017B821CC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{799349FF-060D-48A0-ABE5-C1C337DA3037}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

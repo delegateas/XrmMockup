@@ -97,7 +97,7 @@ namespace DG.Tools.XrmMockup {
                 var workflowContext = pendingAsyncWorkflows.Dequeue();
 
 
-                Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
+                Entity primaryEntity = core.GetEntity(workflowContext.primaryRef);
 
                 var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
 

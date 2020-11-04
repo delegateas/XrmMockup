@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class CreateRequestHandler : RequestHandler
     {
-        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") { }
+        internal CreateRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

@@ -14,7 +14,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class RetrieveEntityRequestHandler : RequestHandler
     {
-        internal RetrieveEntityRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveEntity") { }
+        internal RetrieveEntityRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveEntity") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {

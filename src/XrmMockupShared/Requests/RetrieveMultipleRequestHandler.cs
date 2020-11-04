@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveMultipleRequestHandler : RequestHandler {
-        internal RetrieveMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
+        internal RetrieveMultipleRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
@@ -35,26 +35,43 @@ namespace DG.Tools.XrmMockup {
             FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetDBEntityRows(queryExpr.EntityName);
-            if (db[queryExpr.EntityName].Count() > 0)
+
+            var rows = db.GetEntities(queryExpr.EntityName, queryExpr.Criteria.Conditions);
+            
+            var lookupAttributes = rows.SelectMany(x => x.Attributes.Where(y => y.Value is EntityReference)).GroupBy(z => (z.Value as EntityReference).LogicalName);
+            var lookups = new Dictionary<string, IEnumerable<Entity>>();
+            foreach (var g in lookupAttributes)
             {
-                foreach (var row in rows)
-                {
-                    var entity = row.ToEntity();
-                    var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
+                lookups.Add(g.Key, db.GetEntities(g.Key));
+            }
 
-                    Utility.SetFormattedValues(db, toAdd, row.Metadata,metadata);
+            var linkEntities = new Dictionary<string, IEnumerable<Entity>>();
+            var linkToEntities = queryExpr.LinkEntities.GroupBy(x => x.LinkToEntityName);
+            foreach (var linkToEntity in linkToEntities)
+            {
+                linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+            }
 
-                    if (queryExpr.LinkEntities.Count > 0) {
-                        foreach (var linkEntity in queryExpr.LinkEntities) {
-                            var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
-                            collection.Entities.AddRange(
-                                alliasedValues
-                                .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
-                        }
-                    } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
-                        collection.Entities.Add(toAdd);
+
+            foreach (var row in rows)
+            {
+                
+                var entity = row;
+                var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null,lookups);
+
+                Utility.SetFormmattedValues(db, toAdd, core.GetEntityMetadata(queryExpr.EntityName));
+
+                if (queryExpr.LinkEntities.Count > 0) {
+
+
+                    foreach (var linkEntity in queryExpr.LinkEntities) {
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,lookups,linkEntities);
+                        collection.Entities.AddRange(
+                            alliasedValues
+                            .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                     }
+                } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
+                    collection.Entities.Add(toAdd);
                 }
             }
             var filteredEntities = new EntityCollection();
@@ -67,29 +84,29 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("Number of orders are greater than 2, unsupported in crm");
             } else if (orders.Count == 1) {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName)));
                 else
-                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName)));
             } else if (orders.Count == 2) {
                 if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
             }
 
             var colToReturn = new EntityCollection();
@@ -116,10 +133,11 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> lookups, Dictionary<string, IEnumerable<Entity>> linkEntities) {
             var collection = new List<Entity>();
-            foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
-                var linkedEntity = linkedRow.ToEntity();
+            var allLinkEntities = linkEntities[linkEntity.LinkToEntityName];
+            foreach (var linkedRow in allLinkEntities) {
+                var linkedEntity = linkedRow;
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
                     parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) {
@@ -130,14 +148,23 @@ namespace DG.Tools.XrmMockup {
 
                     if (linkedAttr.Equals(entAttr)) {
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
+                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes,lookups);
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
+
+                            var nestlinkEntities = new Dictionary<string, IEnumerable<Entity>>();
+                            var nestlinkToEntities = linkEntity.LinkEntities.GroupBy(x => x.LinkToEntityName);
+                            foreach (var linkToEntity in nestlinkToEntities)
+                            {
+                                nestlinkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+                            }
+
                             foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
+
                                 var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db);
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,lookups,nestlinkEntities);
                                 subEntities.AddRange(alliasedLinkValues
                                         .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
@@ -155,8 +182,8 @@ namespace DG.Tools.XrmMockup {
             return collection;
         }
 
-        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes) {
-            var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
+        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes,Dictionary<string, IEnumerable<Entity>> lookups) {
+            var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null,lookups);
             foreach (var attr in attributes.Keys) {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }

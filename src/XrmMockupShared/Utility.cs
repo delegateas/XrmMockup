@@ -354,7 +354,7 @@ namespace DG.Tools.XrmMockup
             return metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
         }
 
-        private static void HandleBaseCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        private static void HandleBaseCurrencies(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
@@ -390,7 +390,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void HandlePrecision(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        internal static void HandlePrecision(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             if (entity.LogicalName == LogicalNames.TransactionCurrency) return;
             var transAttr = "transactioncurrencyid";
@@ -443,7 +443,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void HandleCurrencies(MetadataSkeleton metadata, XrmDb db, Entity entity)
+        internal static void HandleCurrencies(MetadataSkeleton metadata, IXrmDb db, Entity entity)
         {
             HandleBaseCurrencies(metadata, db, entity);
             HandlePrecision(metadata, db, entity);
@@ -479,7 +479,7 @@ namespace DG.Tools.XrmMockup
             return false;
         }
 
-        internal static void SetOwner(XrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner)
+        internal static void SetOwner(IXrmDb db, Security dataMethods, MetadataSkeleton metadata, Entity entity, EntityReference owner)
         {
             var ownershipType = metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
 
@@ -490,7 +490,7 @@ namespace DG.Tools.XrmMockup
 
             if (ownershipType.Value.HasFlag(OwnershipTypes.UserOwned) || ownershipType.Value.HasFlag(OwnershipTypes.TeamOwned))
             {
-                if (db.GetDbRowOrNull(owner) == null)
+                if (db.GetEntityOrNull(owner) == null)
                 {
                     throw new FaultException($"Owner referenced with id '{owner.Id}' does not exist");
                 }
@@ -529,7 +529,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static EntityReference GetBusinessUnit(XrmDb db, EntityReference owner)
+        internal static EntityReference GetBusinessUnit(IXrmDb db, EntityReference owner)
         {
             var user = db.GetEntityOrNull(owner);
             if (user == null)
@@ -667,6 +667,13 @@ namespace DG.Tools.XrmMockup
                     return !Matches(attr, ConditionOperator.Equal, values);
                         //Equals(ConvertTo(values.First(), attr?.GetType()), attr);
 
+                case ConditionOperator.BeginsWith:
+                    if (attr == null)
+                    {
+                        return false;
+                    }
+                    return attr.ToString().StartsWith((string)ConvertTo(values.First(), attr?.GetType()));
+
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
                 case ConditionOperator.LessEqual:
@@ -797,24 +804,45 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal static void PopulateEntityReferenceNames(Entity entity, XrmDb db)
+        internal static void PopulateEntityReferenceNames(Entity entity, IXrmDb db,EntityMetadata metaData, Dictionary<string, IEnumerable<Entity>> lookups = null)
         {
             foreach (var attr in entity.Attributes)
             {
                 if (attr.Value is EntityReference eRef)
                 {
-                    var row = db.GetDbRowOrNull(eRef);
+                    Entity row;
+                    if (lookups == null)
+                    {
+                        row = db.GetEntity(eRef);
+                    }
+                    else
+                    {
+                        row = lookups[eRef.LogicalName].SingleOrDefault(x => x.Id == eRef.Id);
+                    }
+                    
                     if (row != null)
                     {
-                        var nameAttr = row.Metadata.PrimaryNameAttribute;
-                        eRef.Name = row.GetColumn<string>(nameAttr);
+                        var nameAttr =  metaData.PrimaryNameAttribute;
+                        eRef.Name = row.GetAttributeValue<string>(nameAttr);
                     }
                 }
             }
         }
 
-        internal static object GetComparableAttribute(object attribute)
+        internal static object GetComparableAttribute(AttributeCollection attributes,string attributeName)
         {
+
+            if (!attributes.Contains(attributeName))
+            {
+                return null;
+            }
+
+            var attribute = attributes[attributeName];
+            if (attribute == null)
+            {
+                return null;
+            }
+
             if (attribute is Money money)
             {
                 return money.Value;
@@ -1048,7 +1076,8 @@ namespace DG.Tools.XrmMockup
 
             if (metadataAtt is LookupAttributeMetadata)
             {
-                try
+
+                if (value is EntityReference)
                 {
                     if (string.IsNullOrEmpty((value as EntityReference).Name))
                     {
@@ -1068,9 +1097,9 @@ namespace DG.Tools.XrmMockup
                     }
                     
                 }
-                catch (NullReferenceException e)
+                else
                 {
-                    Console.WriteLine("No lookup entity exists: " + e.Message);
+                    Console.WriteLine("No lookup entity exists: ");
                 }
             }
 
@@ -1086,7 +1115,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal static void SetFormattedValues(XrmDb db, Entity entity, EntityMetadata entityMetadata,MetadataSkeleton metadata)
+        internal static void SetFormmattedValues(IXrmDb db, Entity entity, EntityMetadata metadata)
         {
             var validMetadata = entityMetadata.Attributes
                 .Where(a => IsValidForFormattedValues(a));
@@ -1140,7 +1169,10 @@ namespace DG.Tools.XrmMockup
 
         public static Entity CreateDefaultTeam(Entity rootBusinessUnit, EntityReference useReference)
         {
+
+            
             var defaultTeam = new Entity(LogicalNames.Team);
+            defaultTeam.Id = Guid.NewGuid();
             defaultTeam["name"] = rootBusinessUnit.Attributes["name"];
 #if !(XRM_MOCKUP_2011)
             defaultTeam["teamtype"] = new OptionSetValue(0);

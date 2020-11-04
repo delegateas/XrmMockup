@@ -1,4 +1,5 @@
-﻿using Microsoft.Xrm.Sdk.Metadata;
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,14 +21,18 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.Status, typeof(int) },
 
             { AttributeTypeCode.Integer, typeof(int) },
-            { AttributeTypeCode.Lookup,  typeof(DbRow) },
+           // { AttributeTypeCode.Lookup,  typeof(DbRow) },
+            { AttributeTypeCode.Lookup,  typeof(EntityReference) },
             // TODO: Figure out type
             //{ AttributeTypeCode.ManagedProperty, typeof(object) },
             { AttributeTypeCode.Memo, typeof(string) },
             { AttributeTypeCode.Money, typeof(decimal) },
-            { AttributeTypeCode.Owner, typeof(DbRow) },
-            { AttributeTypeCode.Customer, typeof(DbRow) },
-            { AttributeTypeCode.PartyList, typeof(DbRow[]) },
+            //{ AttributeTypeCode.Owner, typeof(DbRow) },
+            //{ AttributeTypeCode.Customer, typeof(DbRow) },
+            //{AttributeTypeCode.PartyList, typeof(DbRow[]) },
+            { AttributeTypeCode.Owner, typeof(EntityReference) },
+            { AttributeTypeCode.Customer, typeof(EntityReference) },
+            {AttributeTypeCode.PartyList, typeof(EntityReference[]) },
             { AttributeTypeCode.String, typeof(string) },
             { AttributeTypeCode.Uniqueidentifier, typeof(Guid) },
         };
