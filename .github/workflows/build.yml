@@ -1,4 +1,4 @@
-name: Build
+name: Build, Test and Release
 
 on:
   push:
@@ -8,13 +8,25 @@ on:
 jobs:
   test:
     runs-on: windows-latest
-    name: Testing
+    name: Build and Test
     steps:
       - name: Checkout code base
         uses: actions/checkout@v2
-      
+
       - name: Setup nuget (required by XrmMockup)
         uses: nuget/setup-nuget@v1
 
       - name: Run tests
         run: ./build.cmd test
+  
+  release:
+    runs-on: windows-latest
+    name: Release to GitHub
+    needs:
+      - test
+    steps:
+      - name: Pack package
+        run: dotnet pack src\\XrmMockup365\\XrmMockup365.csproj -o artifacts
+        
+      - name: Publish package
+        run: dotnet nuget push artifacts\\XrmMockup365*.nupkg --source https://nuget.pkg.github.com/thygesteffensen/index.json --api-key $env:GH_TOKEN"
