@@ -16,7 +16,7 @@
         <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
         <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
         <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
-        <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
+<!--        <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>-->
         <RepositoryType>git</RepositoryType>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     </PropertyGroup>
