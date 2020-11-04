@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, dev ]
+    pull_request: [ master, dev ]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    name: Testing
+    steps:
+      - name: Checkout code base
+        uses: actions/checkout@v2
+      
+      - name: Setup nuget (required by XrmMockup)
+        uses: nuget/setup-nuget@v1
+
+      - name: Run tests
+        run: ./build.cmd test
