@@ -23,7 +23,7 @@ jobs:
         run: dotnet pack src\\XrmMockup365\\XrmMockup365.csproj -o artifacts
 
       - name: Pack interface pacakge
-        run: dotnet pack src\\IXrmMocupExtension\\IXrmMockupExtension.csproj -o artifacts
+        run: dotnet pack src\\IXrmMockupExtension\\IXrmMockupExtension\\IXrmMockupExtension.csproj -o artifacts
         
       - name: Publish package
         run: dotnet nuget push .\artifacts\*.nupkg --source https://nuget.pkg.github.com/thygesteffensen/index.json --api-key ${{ secrets.GH_TOKEN }}
