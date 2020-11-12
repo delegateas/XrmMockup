@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
@@ -60,6 +56,9 @@ namespace DG.Tools.XrmMockup {
 
                 db.Delete(entity);
             }
+#if XRM_MOCKUP_365
+            core.TriggerExtension(null, request, null, userRef);
+#endif
             return new DeleteResponse();
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
@@ -14,7 +13,10 @@ namespace DG.Tools.XrmMockup
 {
     internal class CreateRequestHandler : RequestHandler
     {
-        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") { }
+        internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core,
+            db, metadata, security, "Create")
+        {
+        }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -35,8 +37,9 @@ namespace DG.Tools.XrmMockup
                 if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
                 {
                     throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
+                                             $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
                 }
+
                 if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
                 {
                     var references = clonedEntity.Attributes
@@ -48,22 +51,24 @@ namespace DG.Tools.XrmMockup
                         if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
                         {
                             throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
-                                $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                                                     $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
                         }
                     }
 
                     foreach (var attr in references)
                     {
                         var reference = attr.Value as EntityReference;
-                        if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                        if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                            !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
                         {
                             throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                                                     $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
                         }
+
                         if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
                         {
                             throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                                                     $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
                         }
                     }
                 }
@@ -71,7 +76,8 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {
-                throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
+                throw new FaultException(
+                    $"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");
             }
 
             var transactioncurrencyId = "transactioncurrencyid";
@@ -80,8 +86,9 @@ namespace DG.Tools.XrmMockup
                 Utility.IsValidAttribute(transactioncurrencyId, entityMetadata) &&
                 entityMetadata.Attributes.Any(m => m is MoneyAttributeMetadata) &&
                 (settings.ServiceRole == MockupServiceSettings.Role.UI ||
-                (settings.ServiceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
-                    attr => entityMetadata.Attributes.Where(a => a is MoneyAttributeMetadata).Any(m => m.LogicalName == attr.Key)))))
+                 (settings.ServiceRole == MockupServiceSettings.Role.SDK && clonedEntity.Attributes.Any(
+                     attr => entityMetadata.Attributes.Where(a => a is MoneyAttributeMetadata)
+                         .Any(m => m.LogicalName == attr.Key)))))
             {
                 var user = db.GetEntityOrNull(userRef);
                 if (user.Attributes.ContainsKey(transactioncurrencyId))
@@ -120,23 +127,27 @@ namespace DG.Tools.XrmMockup
                     else
                     {
                         var statusmeta =
-                            (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as StatusAttributeMetadata)
+                            (entityMetadata.Attributes.FirstOrDefault(a => a.LogicalName == "statuscode") as
+                                StatusAttributeMetadata)
                             ?.OptionSet.Options
                             .Cast<StatusOptionMetadata>()
-                            .FirstOrDefault(o => o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
+                            .FirstOrDefault(o =>
+                                o.Value == clonedEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
                         if (clonedEntity.LogicalName != "opportunityclose" && // is allowed to be created inactive 
                             ((clonedEntity.Attributes.ContainsKey("statecode") &&
-                            clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
-                            (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState)))
+                              clonedEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value != defaultState) ||
+                             (clonedEntity.Attributes.ContainsKey("statuscode") && statusmeta?.State != defaultState)))
                         {
                             clonedEntity["statecode"] = new OptionSetValue(defaultState);
                             clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
                         }
-                        else if (!clonedEntity.Contains("statecode") || clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
+                        else if (!clonedEntity.Contains("statecode") ||
+                                 clonedEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
                         {
                             clonedEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
                         }
-                        else if (!clonedEntity.Contains("statuscode") || clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
+                        else if (!clonedEntity.Contains("statuscode") ||
+                                 clonedEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
                         {
                             clonedEntity["statuscode"] = new OptionSetValue(defaultStateStatus[defaultState]);
                         }
@@ -144,7 +155,8 @@ namespace DG.Tools.XrmMockup
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new KeyNotFoundException($"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
+                    throw new KeyNotFoundException(
+                        $"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
                         $"This might be due to unsaved default status reason changes. Please update, save, and publish the relevant status reason field on {clonedEntity.LogicalName} and generate new metadata");
                 }
             }
@@ -153,6 +165,7 @@ namespace DG.Tools.XrmMockup
             {
                 clonedEntity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
             }
+
             if (Utility.IsValidAttribute("createdby", entityMetadata))
             {
                 clonedEntity["createdby"] = userRef;
@@ -170,6 +183,7 @@ namespace DG.Tools.XrmMockup
             {
                 owner = clonedEntity.GetAttributeValue<EntityReference>("ownerid");
             }
+
             Utility.SetOwner(db, security, metadata, clonedEntity, owner);
 
             if (!clonedEntity.Attributes.ContainsKey("businessunitid") &&
@@ -183,7 +197,8 @@ namespace DG.Tools.XrmMockup
                 CheckBusinessUnitAttributes(clonedEntity, settings);
             }
 
-            foreach (var attr in entityMetadata.Attributes.Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList())
+            foreach (var attr in entityMetadata.Attributes
+                .Where(a => (a as BooleanAttributeMetadata)?.DefaultValue != null).ToList())
             {
                 if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName))
                 {
@@ -192,21 +207,24 @@ namespace DG.Tools.XrmMockup
             }
 
             foreach (var attr in entityMetadata.Attributes.Where(a =>
-                (a as PicklistAttributeMetadata)?.DefaultFormValue != null && (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList())
+                (a as PicklistAttributeMetadata)?.DefaultFormValue != null &&
+                (a as PicklistAttributeMetadata)?.DefaultFormValue.Value != -1).ToList())
             {
                 if (!clonedEntity.Attributes.Any(a => a.Key == attr.LogicalName))
                 {
-                    clonedEntity[attr.LogicalName] = new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
+                    clonedEntity[attr.LogicalName] =
+                        new OptionSetValue((attr as PicklistAttributeMetadata).DefaultFormValue.Value);
                 }
             }
 
-            if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead || clonedEntity.LogicalName == LogicalNames.SystemUser)
+            if (clonedEntity.LogicalName == LogicalNames.Contact || clonedEntity.LogicalName == LogicalNames.Lead ||
+                clonedEntity.LogicalName == LogicalNames.SystemUser)
             {
                 Utility.SetFullName(metadata, clonedEntity);
             }
 
             clonedEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
                 .ToList()
                 .ForEach(x => clonedEntity[x.Key] = null);
 
@@ -233,10 +251,13 @@ namespace DG.Tools.XrmMockup
             {
                 foreach (var relatedEntities in entity.RelatedEntities)
                 {
-                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata, relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
+                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata,
+                        relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
                     {
-                        throw new FaultException($"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
+                        throw new FaultException(
+                            $"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
+
                     foreach (var relatedEntity in relatedEntities.Value.Entities)
                     {
                         var req = new CreateRequest()
@@ -245,16 +266,24 @@ namespace DG.Tools.XrmMockup
                         };
                         core.Execute(req, userRef);
                     }
+
                     var associateReq = new AssociateRequest
                     {
                         Target = entity.ToEntityReference(),
                         Relationship = relatedEntities.Key,
-                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities.Select(e => e.ToEntityReference()).ToList())
+                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities
+                            .Select(e => e.ToEntityReference()).ToList())
                     };
                     core.Execute(associateReq, userRef);
                 }
             }
+
             resp.Results.Add("id", clonedEntity.Id);
+#if XRM_MOCKUP_365
+            core.ServiceFactory.CreateOrganizationService(userRef.Id);
+
+            core.TriggerExtension(null, request, clonedEntity, userRef);
+#endif
             return resp;
         }
 
@@ -285,7 +314,8 @@ namespace DG.Tools.XrmMockup
             {
                 Target = Utility.CreateDefaultTeam(clonedEntity, userRef)
             };
-            req.Parameters[MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
+            req.Parameters[MockupExecutionContext.Key] =
+                new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
             core.Execute(req, userRef);
         }
     }
