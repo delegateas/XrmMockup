@@ -3,7 +3,9 @@ using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
@@ -19,13 +21,27 @@ namespace DG.XrmMockupTest
         public void Init()
         {
             crm.DisableRegisteredPlugins(true);
-            var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
-            var buLevel2 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1), Name = "Business Level 2" });
+            var allBU = orgAdminService.RetrieveMultiple(new QueryExpression("businessunit"));
+
+            var bu1Id = Guid.Parse("bc6b78f4-adb2-4fb5-9af6-8623144d4c1a");
+            var bu2Id = Guid.Parse("cc6b78f4-adb2-4fb5-9af6-8623144d4c1a");
+
+            Entity buLevel1;
+            Entity buLevel2;
+
+            buLevel1 = allBU.Entities.SingleOrDefault(x => x.Id == bu1Id);
+            if (buLevel1 == null)
+                orgAdminService.Create(new BusinessUnit() { Id = bu1Id, ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
+
+
+            buLevel2 = allBU.Entities.SingleOrDefault(x => x.Id == bu2Id);
+            if (buLevel2 == null)
+                orgAdminService.Create(new BusinessUnit() { Id = bu2Id, ParentBusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, bu1Id), Name = "Business Level 2" });
 
             UserBURoot = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userRoot@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, crm.RootBusinessUnit.Id) }) as SystemUser;
-            UserBULvl11 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl11@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1) }) as SystemUser;
-            UserBULvl12 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl12@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1) }) as SystemUser;
-            UserBULvl2 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl2@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel2) }) as SystemUser;
+            UserBULvl11 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl11@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, bu1Id) }) as SystemUser;
+            UserBULvl12 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl12@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, bu1Id) }) as SystemUser;
+            UserBULvl2 = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "userBULvl2@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, bu2Id) }) as SystemUser;
 
             // Add account append privilege with basic level
             crm.AddPrivileges(

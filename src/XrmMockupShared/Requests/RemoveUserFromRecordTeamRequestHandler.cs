@@ -15,7 +15,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class RemoveUserFromRecordTeamRequestHandler : RequestHandler
     {
-        internal RemoveUserFromRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveUserFromRecordTeam") { }
+        internal RemoveUserFromRecordTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveUserFromRecordTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -41,7 +41,7 @@ namespace DG.Tools.XrmMockup
                     int mask = 0;
                     foreach (var remainingAccessTeam in remainingAccessTeams)
                     {
-                        var ttRow = core.GetDbRow(new EntityReference("teamtemplate", remainingAccessTeam.GetAttributeValue<EntityReference>("teamtemplateid").Id)).ToEntity();
+                        var ttRow = core.GetEntity(new EntityReference("teamtemplate", remainingAccessTeam.GetAttributeValue<EntityReference>("teamtemplateid").Id));
                         var remainingTeamMembership = security.GetTeamMembership(remainingAccessTeam.Id, (Guid)orgRequest["SystemUserId"]);
                         if (remainingTeamMembership != null)
                         {

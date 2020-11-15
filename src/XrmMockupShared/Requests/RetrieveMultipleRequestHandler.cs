@@ -9,6 +9,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
+using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveMultipleRequestHandler : RequestHandler {
@@ -36,15 +37,6 @@ namespace DG.Tools.XrmMockup {
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
 
-            var rows = db.GetEntities(queryExpr.EntityName, queryExpr.Criteria.Conditions);
-            
-            var lookupAttributes = rows.SelectMany(x => x.Attributes.Where(y => y.Value is EntityReference)).GroupBy(z => (z.Value as EntityReference).LogicalName);
-            var lookups = new Dictionary<string, IEnumerable<Entity>>();
-            foreach (var g in lookupAttributes)
-            {
-                lookups.Add(g.Key, db.GetEntities(g.Key));
-            }
-
             var linkEntities = new Dictionary<string, IEnumerable<Entity>>();
             var linkToEntities = queryExpr.LinkEntities.GroupBy(x => x.LinkToEntityName);
             foreach (var linkToEntity in linkToEntities)
@@ -52,20 +44,20 @@ namespace DG.Tools.XrmMockup {
                 linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
             }
 
+            var rows = db.GetEntities(queryExpr.EntityName, queryExpr.Criteria.Conditions);
+
 
             foreach (var row in rows)
             {
                 
                 var entity = row;
-                var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null,lookups);
-
-                Utility.SetFormmattedValues(db, toAdd, core.GetEntityMetadata(queryExpr.EntityName));
+                var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null);
 
                 if (queryExpr.LinkEntities.Count > 0) {
 
 
                     foreach (var linkEntity in queryExpr.LinkEntities) {
-                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,lookups,linkEntities);
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,linkEntities);
                         collection.Entities.AddRange(
                             alliasedValues
                             .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
@@ -123,6 +115,14 @@ namespace DG.Tools.XrmMockup {
                 colToReturn = filteredEntities;
             }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            foreach (var enitity in colToReturn.Entities)
+            {
+                ExecuteCalculatedFields(enitity);
+            }
+#endif
+
+
             // According to docs, should return -1 if ReturnTotalRecordCount set to false
             colToReturn.TotalRecordCount = queryExpr.PageInfo.ReturnTotalRecordCount ? colToReturn.Entities.Count : -1;
 
@@ -133,7 +133,39 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> lookups, Dictionary<string, IEnumerable<Entity>> linkEntities) {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        private void ExecuteCalculatedFields(Entity row)
+        {
+
+            var metadata = core.GetEntityMetadata(row.LogicalName);
+
+            var attributes = metadata.Attributes.Where(
+                m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
+
+            foreach (var attr in attributes)
+            {
+                string definition = (attr as BooleanAttributeMetadata)?.FormulaDefinition;
+                if (attr is BooleanAttributeMetadata) definition = (attr as BooleanAttributeMetadata).FormulaDefinition;
+                else if (attr is DateTimeAttributeMetadata) definition = (attr as DateTimeAttributeMetadata).FormulaDefinition;
+                else if (attr is DecimalAttributeMetadata) definition = (attr as DecimalAttributeMetadata).FormulaDefinition;
+                else if (attr is IntegerAttributeMetadata) definition = (attr as IntegerAttributeMetadata).FormulaDefinition;
+                else if (attr is MoneyAttributeMetadata) definition = (attr as MoneyAttributeMetadata).FormulaDefinition;
+                else if (attr is PicklistAttributeMetadata) definition = (attr as PicklistAttributeMetadata).FormulaDefinition;
+                else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
+
+                if (definition == null)
+                {
+                    throw new NotImplementedException("Unknown type when parsing calculated attr");
+                }
+                var tree = WorkflowConstructor.ParseCalculated(definition);
+                var factory = core.ServiceFactory;
+                tree.Execute(row, core.TimeOffset, core.GetWorkflowService(),
+                    factory, factory.GetService(typeof(ITracingService)) as ITracingService,true);
+            }
+        }
+#endif
+
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> linkEntities) {
             var collection = new List<Entity>();
             var allLinkEntities = linkEntities[linkEntity.LinkToEntityName];
             foreach (var linkedRow in allLinkEntities) {
@@ -148,23 +180,25 @@ namespace DG.Tools.XrmMockup {
 
                     if (linkedAttr.Equals(entAttr)) {
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes,lookups);
+                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
                         if (linkEntity.LinkEntities.Count > 0) {
                             var subEntities = new List<Entity>();
 
-                            var nestlinkEntities = new Dictionary<string, IEnumerable<Entity>>();
                             var nestlinkToEntities = linkEntity.LinkEntities.GroupBy(x => x.LinkToEntityName);
                             foreach (var linkToEntity in nestlinkToEntities)
                             {
-                                nestlinkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+                                if (!linkEntities.ContainsKey(linkToEntity.Key))
+                                {
+                                    linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+                                }
                             }
 
                             foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
 
                                 var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,lookups,nestlinkEntities);
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,linkEntities);
                                 subEntities.AddRange(alliasedLinkValues
                                         .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
@@ -182,8 +216,8 @@ namespace DG.Tools.XrmMockup {
             return collection;
         }
 
-        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes,Dictionary<string, IEnumerable<Entity>> lookups) {
-            var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null,lookups);
+        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes) {
+            var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
             foreach (var attr in attributes.Keys) {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }

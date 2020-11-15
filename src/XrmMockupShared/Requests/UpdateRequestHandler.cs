@@ -54,7 +54,7 @@ namespace DG.Tools.XrmMockup
 
             if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
             {
-                throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
+                throw new FaultException($"Trying to update entity '{row.LogicalName}'" +
                      $", but calling user with id '{userRef.Id}' does not have write access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 

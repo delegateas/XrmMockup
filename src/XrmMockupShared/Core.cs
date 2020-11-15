@@ -12,10 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
 using System.Web.WebSockets;
-using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
-using DG.Tools.XrmMockup.Database;
-using Microsoft.Xrm.Sdk.Client;
 using XrmMockupShared.Database;
 
 namespace DG.Tools.XrmMockup
@@ -128,9 +125,13 @@ namespace DG.Tools.XrmMockup
             {
                 foreach (var att in metadata.AccessTeamTemplates)
                 {
-                    var create = new CreateRequest();
-                    create.Target = att;
-                    this.Execute(create, AdminUserRef);
+                    if (!db.HasRow(att.ToEntityReference()))
+                    {
+                        var create = new CreateRequest();
+                        create.Target = att;
+                        this.Execute(create, AdminUserRef);
+                    }
+                    
                 }
             }
         }
@@ -175,7 +176,9 @@ namespace DG.Tools.XrmMockup
 
             // Setup default team for root business unit
             var allTeams = db.GetEntities("team");
-            if (!allTeams.Any(x => x.GetAttributeValue<EntityReference>("businessunitid").Id == RootBusinessUnitRef.Id && x.GetAttributeValue<bool>("isdefault")))
+            if (!allTeams.Any(x =>(!x.Contains("teamtype") || x.GetAttributeValue<OptionSetValue>("teamtype").Value == 0 )
+                &&  x.GetAttributeValue<EntityReference>("businessunitid").Id == RootBusinessUnitRef.Id 
+                && x.GetAttributeValue<bool>("isdefault")))
             {
                 var defaultTeam = Utility.CreateDefaultTeam(rootBu, AdminUserRef);
                 this.db.Add(defaultTeam);
@@ -297,6 +300,11 @@ namespace DG.Tools.XrmMockup
             return db.GetEntity(entityReference);
         }
 
+        internal bool EntityExists(EntityReference entityReference)
+        {
+            return db.HasRow(entityReference);
+        }
+
         internal EntityMetadata GetEntityMetadata(string entityName)
         {
             return this.metadata.EntityMetadata[entityName];
@@ -317,21 +325,37 @@ namespace DG.Tools.XrmMockup
             return db.GetEntities(tableName);
         }
 
-        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep, Dictionary<string, IEnumerable<Entity>> lookups = null)
+        internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
         {
             if (HasType(entity.LogicalName))
             {
                 var typedEntity = GetEntity(entity.LogicalName);
                 typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db,this.GetEntityMetadata(typedEntity.LogicalName), lookups);
+                //copy over the formatted values as well
+                foreach (var fv in entity.FormattedValues)
+                {
+                    typedEntity.FormattedValues.Add(new KeyValuePair<string, string>(fv.Key, fv.Value));
+                }
+
+
                 typedEntity.Id = entity.Id;
                 typedEntity.EntityState = entity.EntityState;
                 return typedEntity;
             }
             else
             {
-                return entity.CloneEntity(metadata, colsToKeep);
+                var clone = entity.CloneEntity(metadata, colsToKeep);
+
+                foreach (var fv in entity.FormattedValues)
+                {
+                    if (colsToKeep == null || colsToKeep.AllColumns || colsToKeep.Columns.Contains(fv.Key))
+                    {
+                        clone.FormattedValues.Add(new KeyValuePair<string, string>(fv.Key, fv.Value));
+                    }
+                }
+
+                return clone;
             }
         }
 
@@ -424,16 +448,18 @@ namespace DG.Tools.XrmMockup
                         Query = queryExpr
                     };
                     
-                    if (retrievedEntities.ContainsKey(queryExpr.EntityName))
-                    {
-                        entities = retrievedEntities[queryExpr.EntityName];
-                    }
-                    else
-                    {
+                    
+
+                   // if (retrievedEntities.ContainsKey(queryExpr.EntityName))
+                    //{
+                        //entities = retrievedEntities[queryExpr.EntityName];
+                    //}
+                    //else
+                    //{
                         var resp = handler.Execute(req, userRef) as RetrieveMultipleResponse;
                         entities = resp.EntityCollection;
-                        retrievedEntities.Add(queryExpr.EntityName, entities);
-                    }
+                      //  retrievedEntities.Add(queryExpr.EntityName, entities);
+                    //}
 
                     
                 }
@@ -532,10 +558,6 @@ namespace DG.Tools.XrmMockup
                     return new KeyValuePair<Relationship, QueryBase>(rel, query);
                 }));
 
-
-            foreach (var relationshipMeta in relationsMetadata)
-            {
-            }
 
             if (cascadeSelection == null)
             {
@@ -703,6 +725,11 @@ namespace DG.Tools.XrmMockup
             return response;
         }
 
+        internal IEnumerable<Entity> GetCallerTeamMembership(Guid callerId)
+        {
+            return db.GetCallerTeamMembership(callerId);
+        }
+
         private void CopySystemAttributes(Entity postImage, Entity item1)
         {
             if (item1 == null)
@@ -868,6 +895,10 @@ namespace DG.Tools.XrmMockup
         internal void AddPrivileges(EntityReference entRef, Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> privileges)
         {
             security.AddPrinciplePrivileges(entRef.Id, privileges);
+        }
+        internal void AddPrivileges(EntityReference entRef, Guid[] roleIds)
+        {
+            security.AddPrinciplePrivileges(entRef.Id, roleIds);
         }
 
         internal void SetSecurityRoles(EntityReference entRef, Guid[] securityRoles)

@@ -34,21 +34,18 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException("The columnset parameter must not be null");
             }
 #endif
-            var row = db.GetEntity(request.Target);
+            var entity = db.GetEntity(request.Target);
 
-            if (!security.HasPermission(row, AccessRights.ReadAccess, userRef)) {
-                throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.LogicalName}'");
+            if (!security.HasPermission(entity, AccessRights.ReadAccess, userRef)) {
+                throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{entity.LogicalName}'");
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            ExecuteCalculatedFields(row);
+            ExecuteCalculatedFields(entity);
 #endif
-            //row = db.GetDbRow(request.Target);
-            var entity = core.GetEntity(request.Target);
             entity = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(entity.LogicalName), request.ColumnSet);
             
-            Utility.SetFormmattedValues(db, entity, core.GetEntityMetadata(entity.LogicalName));
-
+            
             if (!settings.SetUnsettableFields) {
                 Utility.RemoveUnsettableAttributes("Retrieve", core.GetEntityMetadata(entity.LogicalName), entity);
             }
@@ -89,7 +86,7 @@ namespace DG.Tools.XrmMockup {
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
                 var factory = core.ServiceFactory;
-                tree.Execute(row.CloneEntity(metadata, new ColumnSet(true)), core.TimeOffset, core.GetWorkflowService(), 
+                tree.Execute(row, core.TimeOffset, core.GetWorkflowService(), 
                     factory, factory.GetService(typeof(ITracingService)) as ITracingService);
             }
         }

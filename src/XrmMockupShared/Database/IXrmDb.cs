@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
@@ -18,13 +19,17 @@ namespace DG.Tools.XrmMockup.Database
         //DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true);
         void Update(Entity xrmEntity, bool withReferenceChecks = true);
         bool HasRow(EntityReference entityReference);
-       // IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
-       // DbRow GetDbRow(Entity entity);
+        // IEnumerable<DbRow> GetDBEntityRows(string teamMembership);
+        // DbRow GetDbRow(Entity entity);
         //DbRow GetDbRowOrNull(EntityReference entityReference);
         Entity GetEntityOrNull(EntityReference entityReference);
         bool IsValidEntity(string logicalName);
         //DbRow GetDbRow(EntityReference reference, bool v = true);
         void PrefillDBWithOnlineData(QueryExpression queryExpr);
+
+        void ResetAccessTeams();
         IEnumerable<Entity> GetEntities(string tableName, IEnumerable<ConditionExpression> filters = null);
+        IEnumerable<Entity> GetUnformattedEntities(string tableName);
+        IEnumerable<Entity> GetCallerTeamMembership(Guid callerId);
     }
 }

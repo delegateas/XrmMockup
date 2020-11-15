@@ -32,7 +32,7 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-                Assert.IsNull(retrieved.dg_Udregnet);
+                Assert.AreEqual(0,retrieved.dg_Udregnet);
                 Assert.IsNull(bus.dg_AllConditions);
             }
 

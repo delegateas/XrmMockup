@@ -1,4 +1,5 @@
-﻿using DG.Tools.XrmMockup.Database;
+﻿using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
@@ -35,6 +36,12 @@ namespace XrmMockupShared.Database
             
         }
 
+        public void ResetAccessTeams()
+        {
+            string sql = "delete from team where teamtype = 1;delete from teammembership";
+            ExecuteNonQuery(sql);
+        }
+
         private void InitialiseDatabase()
         {
             foreach (var entityMeta in this.EntityMetadata.Where(x=> !RetainTables.Contains(x.Key)))
@@ -42,10 +49,7 @@ namespace XrmMockupShared.Database
                 CreateTable(entityMeta);
             }
 
-            if (!EntityMetadata.ContainsKey("roletemplate"))
-            {
-                CreateTable("roletemplate");
-            }
+            
 
         }
 
@@ -85,7 +89,7 @@ namespace XrmMockupShared.Database
 
                 //, 
 
-                if (attr.AttributeType == AttributeTypeCode.Customer || attr.AttributeType == AttributeTypeCode.Lookup || attr.AttributeType == AttributeTypeCode.Owner)
+                if (attr.AttributeType == AttributeTypeCode.Customer || attr.AttributeType == AttributeTypeCode.Lookup || attr.AttributeType == AttributeTypeCode.Owner || GetFieldDataType(attr) == "uniqueidentifier")
                 {
                     createIndex += $"CREATE INDEX ix_{attr.LogicalName} ON {entityMeta.Key} ({attr.LogicalName});";
                 }
@@ -338,7 +342,31 @@ namespace XrmMockupShared.Database
                         }
                     case AttributeTypeCode.PartyList:
 
-                        return string.Join(",",(xrmEntity[attr.LogicalName] as EntityCollection).Entities.Select(x=>x.Id));
+                        string field = string.Empty;
+                        if (xrmEntity[attr.LogicalName] is EntityReference)
+                        {
+                            field += $"{(xrmEntity[attr.LogicalName] as EntityReference).LogicalName};{(xrmEntity[attr.LogicalName] as EntityReference).Id.ToString()}";
+                        }
+                        else
+                        {
+                            foreach (var e in (xrmEntity[attr.LogicalName] as EntityCollection).Entities)
+                            {
+                                if (e.LogicalName == "systemuser")
+                                {
+                                    field += $"{e.LogicalName};{e.Id.ToString()},";
+                                }
+                                else
+                                {
+                                    var party = e.Attributes["partyid"] as EntityReference;
+                                    field += $"{party.LogicalName};{party.Id.ToString()},";
+                                }
+
+
+                            }
+                        }
+                        field = TrimTrailingComma(field);
+
+                        return field;
 
                     default:
                         return (xrmEntity[attr.LogicalName]);
@@ -479,10 +507,29 @@ namespace XrmMockupShared.Database
 
         public IEnumerable<Entity> GetEntities(string tableName, IEnumerable<ConditionExpression> filters = null)
         {
-            var sql = $"select * from [{tableName}]";
-            
+            return InternalGetEntities(tableName, filters, true);
+        }
+
+
+        private IEnumerable<Entity> InternalGetEntities(string tableName, IEnumerable<ConditionExpression> filters = null, bool formatted = true)
+        {
+
+            var lookupAttributes = EntityMetadata[tableName]
+                                        .Attributes
+                                        .Where(x => (x is LookupAttributeMetadata)
+                                                && !((x as LookupAttributeMetadata).AttributeType == AttributeTypeCode.PartyList)
+                                                && !((x as LookupAttributeMetadata).LogicalName.ToLower() == "regardingobjectid"))
+                                        .Select(x => x as LookupAttributeMetadata);
+
+            var sql = $"select [{tableName}0].*, ";
+
             var sqlParams = new List<SqlParameter>();
 
+            //left join to all the lookups to get the formatted value attributes
+            string joins = GetLookupJoins(tableName, lookupAttributes, ref sql);
+            sql = TrimTrailingComma(sql);
+            sql += $" from [{tableName}] as [{tableName}0] ";
+            sql += joins;
 
             if (filters != null && filters.Count() > 0)
             {
@@ -497,14 +544,14 @@ namespace XrmMockupShared.Database
                     {
                         if (filter.Operator == ConditionOperator.NotNull || filter.Operator == ConditionOperator.Null)
                         {
-                            sql += $" [{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} AND";
+                            sql += $" [{tableName}0].[{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} AND";
                         }
                         else
                         {
-                            sql += $" [{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} @{filter.AttributeName} AND";
+                            sql += $" [{tableName}0].[{filter.AttributeName}] {GetSqlConditionOperator(filter.Operator)} @{filter.AttributeName} AND";
                             sqlParams.Add(new SqlParameter($"@{filter.AttributeName}", filter.Values[0]));
                         }
-                        
+
                     }
                 }
             }
@@ -512,19 +559,85 @@ namespace XrmMockupShared.Database
             sql = TrimTrailingAND(sql);
 
 
-            var data = ExecuteReader(sql,sqlParams);
+            var data = ExecuteReader(sql, sqlParams);
             var entities = new List<Entity>();
             foreach (var row in data.Rows)
             {
-                entities.Add(RowToEntity((DataRow)row,tableName));
+
+                var toAdd = RowToEntity((DataRow)row, tableName);
+                
+                if (formatted)
+                    SetFormattedValues(toAdd, (DataRow)row);
+
+                entities.Add(toAdd);
             }
             return entities;
         }
 
+        private string GetLookupJoins(string tableName, IEnumerable<LookupAttributeMetadata> lookupAttributes, ref string sql)
+        {
+            var joins = string.Empty;
+            if (lookupAttributes != null)
+            {
+                int i = 0;
+                foreach (var lookupAttr in lookupAttributes.Where(x=>x.Targets.Any()))
+                {
+                    i++;
+
+                    if (this.EntityMetadata.ContainsKey(lookupAttr.Targets[0]))
+                    {
+                        if (lookupAttr.LogicalName.ToLower() == "regardingobjectid")
+                        {
+                            var a = 1;
+                        }
+
+                        sql += $"[{lookupAttr.Targets[0]}{i.ToString()}].[{this.EntityMetadata[lookupAttr.Targets[0]].PrimaryNameAttribute}] as {lookupAttr.LogicalName}_formatted , ";
+
+                        joins += $" left join [{lookupAttr.Targets[0]}] as [{lookupAttr.Targets[0]}{i.ToString()}] ";
+                        joins += $" on [{tableName}0].[{lookupAttr.LogicalName }]  = ";
+                        joins += $" [{lookupAttr.Targets[0]}{i.ToString()}].[{this.EntityMetadata[lookupAttr.Targets[0]].PrimaryIdAttribute}] ";
+
+                        if (lookupAttr.LogicalName == "transactioncurrencyid")
+                        {
+                            sql += $"[transactioncurrency_a_{i.ToString()}].[currencysymbol] as {lookupAttr.LogicalName}_currencysymbol_formatted , ";
+                        
+                            joins += $" left join [transactioncurrency] as [transactioncurrency_a_{i.ToString()}] ";
+                            joins += $" on [{tableName}0].[{lookupAttr.LogicalName }]  = ";
+                            joins += $" [transactioncurrency_a_{i.ToString()}].[transactioncurrencyid] ";
+
+                        }
+
+                    }
+                }
+            }
+
+            return joins;
+        }
+
         public Entity GetEntity(EntityReference reference)
+        {
+            return InternalGetEntity(reference, true);
+        }
+
+        private Entity GetUnformattedEntity(EntityReference reference)
+        {
+            return InternalGetEntity(reference, false);
+        }
+
+        public IEnumerable<Entity> GetUnformattedEntities(string tableName)
+        {
+            return InternalGetEntities(tableName,null, false);
+        }
+
+        private Entity InternalGetEntity(EntityReference reference, bool formatted)
         {
 
             var metaData = EntityMetadata[reference.LogicalName];
+            var lookupAttributes = EntityMetadata[reference.LogicalName]
+                                        .Attributes
+                                        .Where(x => (x is LookupAttributeMetadata)
+                                                && !((x as LookupAttributeMetadata).AttributeType == AttributeTypeCode.PartyList))
+                                        .Select(x => x as LookupAttributeMetadata);
 
             DataRow row;
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
@@ -553,7 +666,12 @@ namespace XrmMockupShared.Database
             else
 #endif
             {
-                var sql = $"select * from [{reference.LogicalName}] where [{metaData.PrimaryIdAttribute}] = '{reference.Id.ToString()}'";
+                var sql = $"select [{reference.LogicalName}0].* , ";
+                string joins = GetLookupJoins(reference.LogicalName, lookupAttributes, ref sql);
+                sql = TrimTrailingComma(sql);
+                sql += $" from [{reference.LogicalName}] as [{reference.LogicalName}0] ";
+                sql += joins;
+                sql += $" where [{reference.LogicalName}0].[{metaData.PrimaryIdAttribute}] = '{reference.Id.ToString()}'";
                 var data = ExecuteReader(sql);
                 if (data.Rows.Count == 0)
                 {
@@ -561,8 +679,116 @@ namespace XrmMockupShared.Database
                 }
                 row = data.Rows[0];
             }
+
+            var e = RowToEntity(row, reference.LogicalName);
             
-            return RowToEntity(row,reference.LogicalName);
+            if (formatted)
+                SetFormattedValues(e);
+            
+            return e;
+        }
+
+        internal void SetFormattedValues(Entity entity, DataRow row = null)
+        {
+            var validMetadata = this.EntityMetadata[entity.LogicalName].Attributes
+                .Where(a => Utility.IsValidForFormattedValues(a));
+
+            validMetadata = validMetadata.Except(validMetadata.Where(x => x.AttributeType == AttributeTypeCode.PartyList));
+
+            var formattedValues = new List<KeyValuePair<string, string>>();
+            foreach (var a in entity.Attributes)
+            {
+                if (a.Value == null) continue;
+                var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
+
+                if (metadataAtt != null)
+                {
+                    if (metadataAtt is LookupAttributeMetadata)
+                    {
+                        if (entity[metadataAtt.LogicalName] is string && (string)entity[metadataAtt.LogicalName] == Guid.Empty.ToString())
+                        {
+                            //shouldnt happen as lookups should be entity references...
+                            continue;
+                        }
+
+                        var entityRef = entity[metadataAtt.LogicalName] as EntityReference;
+                        if (entityRef != null)
+                        {
+
+                            if (row != null && row.Table.Columns.Contains($"{metadataAtt.LogicalName}_formatted"))
+                            {
+                                if (row[$"{metadataAtt.LogicalName}_formatted"] != DBNull.Value)
+                                {
+                                    var LookupPair = new KeyValuePair<string, string>(a.Key, (string)row[$"{metadataAtt.LogicalName}_formatted"]);
+                                    formattedValues.Add(LookupPair);
+
+                                    (a.Value as EntityReference).Name = (string)row[$"{metadataAtt.LogicalName}_formatted"];
+
+                                }
+                            }
+
+                        }
+
+                    }
+
+                    else if (metadataAtt is MoneyAttributeMetadata)
+                    {
+                        //{lookupAttr.LogicalName}_currencysymbol_formatted
+                        var symbol = (string)row[$"transactioncurrencyid_currencysymbol_formatted"];
+                        var value = (a.Value as Money).Value.ToString();
+
+                        var formattedValuePair = new KeyValuePair<string, string>(a.Key, symbol + value);
+                        formattedValues.Add(formattedValuePair);
+                    }
+
+                    else
+                    {
+                        var formattedValuePair = new KeyValuePair<string, string>(a.Key, GetFormattedValueLabel(metadataAtt, a.Value, entity));
+                        if (formattedValuePair.Value != null)
+                        {
+                            formattedValues.Add(formattedValuePair);
+                        }
+                    }
+                    
+                }
+
+
+            }
+
+            if (formattedValues.Count > 0)
+            {
+                entity.FormattedValues.AddRange(formattedValues);
+            }
+        }
+
+        internal string GetFormattedValueLabel(AttributeMetadata metadataAtt, object value, Entity entity)
+        {
+            if (metadataAtt is PicklistAttributeMetadata)
+            {
+                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
+                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
+                return optionset.Label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is BooleanAttributeMetadata)
+            {
+                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
+                return label.UserLocalizedLabel.Label;
+            }
+
+            
+
+            if (metadataAtt is IntegerAttributeMetadata ||
+                metadataAtt is DateTimeAttributeMetadata ||
+                metadataAtt is MemoAttributeMetadata ||
+                metadataAtt is DoubleAttributeMetadata ||
+                metadataAtt is DecimalAttributeMetadata)
+            {
+                return value.ToString();
+            }
+
+            return null;
         }
 
         private Entity RowToEntity(DataRow row,string logicalName)
@@ -621,6 +847,20 @@ namespace XrmMockupShared.Database
                     return new OptionSetValue((int)row[attr.LogicalName]);
                 case AttributeTypeCode.Money:
                     return new Money((decimal)row[attr.LogicalName]);
+                case AttributeTypeCode.PartyList:
+
+                    var partyList = new List<Entity>();
+
+                    foreach (var p in (row[attr.LogicalName] as string).Split(new char[] { ',' }))
+                    {
+                        var parts = p.Split(new char[] { ';' });
+                        var er = new EntityReference(parts[0], Guid.Parse(parts[1]));
+                        var ap = new Entity("activityparty");
+                        ap["partyid"] = er;
+                        partyList.Add(ap);
+                    }
+
+                    return partyList;
                 default:
                     return (row[attr.LogicalName]);
 
@@ -735,6 +975,12 @@ namespace XrmMockupShared.Database
             else
 #endif
             {
+
+                if (reference.Id == Guid.Empty)
+                {
+                    return null;
+                }
+
                 var sql = $"select * from {reference.LogicalName} where {metaData.PrimaryIdAttribute} = '{reference.Id.ToString()}'";
                 var data = ExecuteReader(sql);
                 if (data.Rows.Count == 0)
@@ -750,6 +996,25 @@ namespace XrmMockupShared.Database
                 
 
             }
+        }
+
+        public IEnumerable<Entity> GetCallerTeamMembership(Guid callerId)
+        {
+            var sql = "select tm.*,t.teamtype as team_teamtype from teammembership tm left join team t on tm.teamid = t.teamid where tm.systemuserid = @systemuserid";
+            var sqlParams = new List<SqlParameter>();
+            sqlParams.Add(new SqlParameter("@systemuserid", callerId));
+            var rows = ExecuteReader(sql, sqlParams);
+
+            var entities = new List<Entity>();
+
+            foreach (var row in rows.Rows)
+            {
+                var e = RowToEntity((DataRow)row, "teammembership");
+                e.Attributes["team_teamtype"] = (row as DataRow)["team_teamtype"];
+                entities.Add(e); 
+            }
+
+            return entities;
         }
     }
 }

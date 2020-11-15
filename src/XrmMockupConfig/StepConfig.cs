@@ -14,11 +14,12 @@ namespace DG.Tools.XrmMockup.Config
             ExecutionStage = executionStage;
             EventOperation = eventOperation.ToLower();
             LogicalName = logicalName;
+            if (LogicalName == "none")
+                LogicalName = string.Empty;  //shouldnt happend but the metadata generator can spit out "none" as the entity name for associate/disassociate plugins
             
         }
         public string ClassName { get; set; }
         public int ExecutionStage { get; set; }
-        private string _operation;
         public string EventOperation { get; private set; }
         public string LogicalName { get; set; }
     }

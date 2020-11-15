@@ -7,8 +7,10 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
+using System.Threading.Tasks;
 
-namespace DG.Tools.XrmMockup.Database {
+namespace DG.Tools.XrmMockup.Database
+{
 
     internal class XrmDb : IXrmDb
     {
@@ -93,7 +95,27 @@ namespace DG.Tools.XrmMockup.Database {
 
         public bool HasRow(EntityReference reference)
         {
-            return this[reference.LogicalName][reference.Id] != null;
+            var entityRef = this[reference.LogicalName][reference.Id];
+            if (entityRef != null)
+            {
+                return true;
+            }
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+            // Try fetching with key attributes if any
+            else if (reference?.KeyAttributes?.Count > 0)
+            {
+                var currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
+
+                if (currentDbRow != null)
+                {
+                    return true;
+                }
+            }
+#endif
+
+            return false;
+
         }
 
         internal bool HasTable(string tableName)
@@ -148,10 +170,12 @@ namespace DG.Tools.XrmMockup.Database {
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
-            else if (reference?.KeyAttributes?.Count > 0) {
+            else if (reference?.KeyAttributes?.Count > 0)
+            {
                 currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
 
-                if (currentDbRow == null) {
+                if (currentDbRow == null)
+                {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with key attributes '{reference.KeyAttributes.ToPrettyString()}' " +
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
@@ -171,7 +195,7 @@ namespace DG.Tools.XrmMockup.Database {
         {
             return GetDbRow(xrmEntity.ToEntityReferenceWithKeyAttributes());
         }
-        
+
 
 
         public DbRow GetDbRow(string logicalName, Guid id)
@@ -186,21 +210,39 @@ namespace DG.Tools.XrmMockup.Database {
 
         public Entity GetEntity(EntityReference reference)
         {
-            return GetDbRow(reference).ToEntity();
+            var e = GetDbRow(reference).ToEntity();
+            SetFormattedValues(e);
+            return e;
+
+        }
+        private Entity GetUnformattedEntity(EntityReference reference)
+        {
+            var e = GetDbRow(reference).ToEntity();
+            return e;
+
         }
 
 
         #region GetOrNull
-        internal DbRow GetDbRowOrNull(EntityReference reference) {
+        internal DbRow GetDbRowOrNull(EntityReference reference)
+        {
             if (HasRow(reference))
                 return GetDbRow(reference);
             else
                 return null;
         }
 
-        internal Entity GetEntityOrNull(EntityReference reference) {
+        public Entity GetEntityOrNull(EntityReference reference)
+        {
             if (HasRow(reference))
                 return GetEntity(reference);
+            else
+                return null;
+        }
+        private Entity GetUnformattedEntityOrNull(EntityReference reference)
+        {
+            if (HasRow(reference))
+                return GetUnformattedEntity(reference);
             else
                 return null;
         }
@@ -221,7 +263,7 @@ namespace DG.Tools.XrmMockup.Database {
         {
             var accessteams = TableDict["team"]
                                 .Where(x => x.ToEntity().GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
-                                .Select(x=>x.Id)
+                                .Select(x => x.Id)
                                 .ToList();
             foreach (var at in accessteams)
             {
@@ -233,7 +275,147 @@ namespace DG.Tools.XrmMockup.Database {
 
         public IEnumerable<Entity> GetEntities(string tableName, IEnumerable<ConditionExpression> filters = null)
         {
-            return this[tableName].Select(x => x.ToEntity());
+
+            var rows = this[tableName];
+            var entities = rows.Select(x => x.ToEntity()).ToList();
+            Parallel.ForEach(entities, e =>
+           {
+               SetFormattedValues(e);
+           });
+            return entities;
+        }
+
+        internal void SetFormattedValues(Entity entity)
+        {
+            var validMetadata = this.EntityMetadata[entity.LogicalName].Attributes
+                .Where(a => Utility.IsValidForFormattedValues(a));
+
+            validMetadata = validMetadata.Except(validMetadata.Where(x => x.AttributeType == AttributeTypeCode.PartyList));
+
+            var formattedValues = new List<KeyValuePair<string, string>>();
+            foreach (var a in entity.Attributes)
+            {
+                if (a.Value == null) continue;
+                var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
+
+                if (metadataAtt != null)
+                {
+                    EntityMetadata lookupMetadata = null;
+                    if (metadataAtt is LookupAttributeMetadata)
+                    {
+                        if (entity[metadataAtt.LogicalName] is string && (string)entity[metadataAtt.LogicalName] == Guid.Empty.ToString())
+                        {
+                            //shouldnt happen as lookups should be entity references...
+                            continue;
+                        }
+
+                        if (EntityMetadata.ContainsKey((metadataAtt as LookupAttributeMetadata).Targets[0]))
+                        {
+                            lookupMetadata = EntityMetadata[(metadataAtt as LookupAttributeMetadata).Targets[0]];
+                        }
+
+                    }
+                    var label = GetFormattedValueLabel( metadataAtt, a.Value, entity, lookupMetadata);
+                    if (label != null)
+                    {
+                        var formattedValuePair = new KeyValuePair<string, string>(a.Key, label);
+                        formattedValues.Add(formattedValuePair);
+                        if (a.Value is EntityReference)
+                        {
+                            (a.Value as EntityReference).Name = label;
+                        }
+                    }
+                }
+            }
+
+            if (formattedValues.Count > 0)
+            {
+                entity.FormattedValues.AddRange(formattedValues);
+            }
+        }
+        
+
+        internal string GetFormattedValueLabel(AttributeMetadata metadataAtt, object value, Entity entity, EntityMetadata lookupMetadata = null)
+        {
+            if (metadataAtt is PicklistAttributeMetadata)
+            {
+                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
+                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
+                return optionset.Label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is BooleanAttributeMetadata)
+            {
+                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
+                return label.UserLocalizedLabel.Label;
+            }
+
+            if (metadataAtt is MoneyAttributeMetadata)
+            {
+                var currencysymbol =
+                    GetUnformattedEntity(
+                        GetUnformattedEntity(entity.ToEntityReference())
+                        .GetAttributeValue<EntityReference>("transactioncurrencyid"))
+                    .GetAttributeValue<string>("currencysymbol");
+
+                return currencysymbol + (value as Money).Value.ToString();
+            }
+
+            if (metadataAtt is LookupAttributeMetadata)
+            {
+
+                if (value is EntityReference)
+                {
+                    if (string.IsNullOrEmpty((value as EntityReference).Name))
+                    {
+
+                        var lookupEnt = GetUnformattedEntityOrNull(value as EntityReference);
+                        if (lookupEnt != null)
+                        {
+                            var primaryAttr = lookupMetadata.Attributes.SingleOrDefault(x => x.IsPrimaryName.HasValue && x.IsPrimaryName.Value);
+                            if (primaryAttr != null)
+                            {
+                                return lookupEnt.GetAttributeValue<string>(primaryAttr.LogicalName);
+                            }
+                        }
+
+
+                    }
+                    else
+                    {
+                        return (value as EntityReference).Name;
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("No lookup entity exists: ");
+                }
+            }
+
+            if (metadataAtt is IntegerAttributeMetadata ||
+                metadataAtt is DateTimeAttributeMetadata ||
+                metadataAtt is MemoAttributeMetadata ||
+                metadataAtt is DoubleAttributeMetadata ||
+                metadataAtt is DecimalAttributeMetadata)
+            {
+                return value.ToString();
+            }
+
+            return null;
+        }
+
+        public IEnumerable<Entity> GetCallerTeamMembership(Guid callerId)
+        {
+            return this["teammembership"].Select(x => x.ToEntity()).Where(x => x.GetAttributeValue<Guid>("systemuserid") == callerId);
+        }
+
+        public IEnumerable<Entity> GetUnformattedEntities(string tableName)
+        {
+            var rows = this[tableName];
+            return rows.Select(x => x.ToEntity()).ToList();
+            
         }
     }
 }

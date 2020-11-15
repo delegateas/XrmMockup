@@ -284,8 +284,19 @@ namespace DG.Tools.XrmMockup
             if (user.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a user with security roles, but did not specify a businessunit in the user's attributes");
             }
-            user.Id = service.Create(user);
-            Core.SetSecurityRoles(new EntityReference(LogicalNames.SystemUser, user.Id), securityRoles);
+            var q = new QueryExpression("systemuser");
+            q.Criteria.AddCondition("systemuserid", ConditionOperator.Equal, user.Id);
+            var users = service.RetrieveMultiple(q);
+
+            if (!users.Entities.Any())
+            {
+                user.Id = service.Create(user);
+                Core.SetSecurityRoles(user.ToEntityReference(), securityRoles);
+            }
+            else
+            {
+                Core.AddPrivileges(user.ToEntityReference(), securityRoles);
+            }
             return service.Retrieve(LogicalNames.SystemUser, user.Id, new ColumnSet(true));
         }
 
@@ -316,9 +327,22 @@ namespace DG.Tools.XrmMockup
             if (team.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
-            team["teamtype"] = new OptionSetValue(0);
+
+            var q = new QueryExpression("team");
+            q.Criteria.AddCondition("teamid", ConditionOperator.Equal, team.Id);
+            var teams = service.RetrieveMultiple(q);
+
+
+            if (!teams.Entities.Any())
+            {
+                team["teamtype"] = new OptionSetValue(0);
                 team.Id = service.Create(team);
-            Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+                Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+            }
+            else
+            {
+                Core.AddPrivileges(team.ToEntityReference(), securityRoles);
+            }
 
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }

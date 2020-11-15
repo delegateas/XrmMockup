@@ -21,7 +21,7 @@ namespace DG.Tools.XrmMockup
         {
             //validate that the team template exists
             var ttId = (Guid)orgRequest["TeamTemplateId"];
-            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
+            var ttRow = core.GetEntity(new EntityReference("teamtemplate", ttId));
 
             var record = orgRequest["Record"] as EntityReference;
 

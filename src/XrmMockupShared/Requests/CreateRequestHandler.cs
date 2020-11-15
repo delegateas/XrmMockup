@@ -35,7 +35,7 @@ namespace DG.Tools.XrmMockup
                 if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
                 {
                     throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
+                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity (SecLib::AccessCheckEx2 failed)");
                 }
                 if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
                 {

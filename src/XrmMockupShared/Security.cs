@@ -24,10 +24,10 @@ namespace DG.Tools.XrmMockup
         private Dictionary<Guid, Guid> SecurityRoleMapping;
         private Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>> Shares;
         private Dictionary<Guid, Privileges> PrinciplePrivilages = new Dictionary<Guid, Privileges>();
-        private XrmDb db;
+        private IXrmDb db;
         private List<Guid> addedRoles;
 
-        internal Security(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles,XrmDb db)
+        internal Security(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles,IXrmDb db)
         {
             this.Core = core;
             this.Metadata = metadata;
@@ -46,7 +46,10 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(IXrmDb db, EntityReference businessUnit)
         {
-            var allRoles = db.GetEntities("role");
+
+            AddRoleTemplatesForBusinessUnit(db, businessUnit);
+
+            var allRoles = db.GetUnformattedEntities("role");
 
             foreach (var sr in SecurityRoles.Values)
             {
@@ -61,7 +64,10 @@ namespace DG.Tools.XrmMockup
                     role[roleMeta.PrimaryIdAttribute] = role.Id;
                     role["businessunitid"] = businessUnit;
                     role["name"] = sr.Name;
-                    role["roletemplateid"] = sr.RoleTemplateId;
+                    if (sr.RoleTemplateId != Guid.Empty)
+                    {
+                        role["roletemplateid"] = new EntityReference("roletemplate", sr.RoleTemplateId);
+                    }
                     role["createdby"] = Core.AdminUserRef;
                     role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                     role["modifiedby"] = Core.AdminUserRef;
@@ -75,6 +81,28 @@ namespace DG.Tools.XrmMockup
                 }
             }
         }
+
+        internal void AddRoleTemplatesForBusinessUnit(IXrmDb db, EntityReference businessUnit)
+        {
+            var allRoleTemplates = db.GetEntities("roletemplate");
+
+            foreach (var sr in SecurityRoles.Values.Where(x=>x.RoleTemplateId != Guid.Empty).GroupBy(x => x.RoleTemplateId).Select(x=>x.Key))
+            {
+                if (!allRoleTemplates.Any(x=>x.Id == sr))
+
+                {
+                    var roleTemplate = new Entity("roletemplate")
+                    {
+                        Id = sr
+                    };
+                    
+                    db.Add(roleTemplate);
+                    
+                }
+            }
+        }
+
+
 
         internal void InitializeSecurityRoles(IXrmDb db)
         {
@@ -167,8 +195,7 @@ namespace DG.Tools.XrmMockup
 
         internal Entity GetAccessTeam(Guid teamTemplateId, Guid recordId)
         {
-            return Core.GetDbTable("team")
-                        .Select(x => x.ToEntity())
+            return Core.GetEntities("team")
                         .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                         .Where(x => (x.GetAttributeValue<EntityReference>("teamtemplateid").Id == teamTemplateId))
                         .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId))
@@ -176,8 +203,7 @@ namespace DG.Tools.XrmMockup
         }
         internal IEnumerable<Entity> GetAccessTeams(Guid recordId)
         {
-            return Core.GetDbTable("team")
-                        .Select(x => x.ToEntity())
+            return Core.GetEntities("team")
                         .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                         .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId));
         }
@@ -197,16 +223,14 @@ namespace DG.Tools.XrmMockup
 
         internal Entity GetTeamMembership(Guid teamId, Guid systemuserId)
         {
-            return Core.GetDbTable("teammembership")
-                        .Select(x => x.ToEntity())
+            return Core.GetEntities("teammembership")
                         .Where(x => x.GetAttributeValue<Guid>("teamid") == teamId)
                         .Where(x => x.GetAttributeValue<Guid>("systemuserid") == systemuserId)
                         .SingleOrDefault();
         }
         internal Entity GetPOA(Guid principalId, Guid objectId)
         {
-            return Core.GetDbTable("principalobjectaccess")
-                        .Select(x => x.ToEntity())
+            return Core.GetEntities("principalobjectaccess")
                         .Where(x => x.GetAttributeValue<Guid>("principalid") == principalId)
                         .Where(x => x.GetAttributeValue<Guid>("objectid") == objectId)
                         .SingleOrDefault();
@@ -237,13 +261,13 @@ namespace DG.Tools.XrmMockup
         }
         internal void UpdatePOAMask(Guid poaId, int accessRightsMask)
         {
-            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            var existing = db.GetEntity("principalobjectaccess", poaId);
             existing["accessrightsmask"] = existing.GetAttributeValue<int>("accessrightsmask") | accessRightsMask;
             db.Update(existing);
         }
         internal void OverwritePOAMask(Guid poaId, int accessRightsMask)
         {
-            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            var existing = db.GetEntity("principalobjectaccess", poaId);
             existing["accessrightsmask"] = accessRightsMask;
             db.Update(existing);
         }
@@ -407,7 +431,7 @@ namespace DG.Tools.XrmMockup
             PrinciplePrivilages.Add(principleId, currentPrivileges);
         } 
 
-        private void AddPrinciplePrivlieges(Guid principleId, Guid[] roles)
+        internal void AddPrinciplePrivileges(Guid principleId, Guid[] roles)
         {
             if (!roles.Any())
             {
@@ -444,7 +468,7 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            AddPrinciplePrivlieges(entRef.Id, secRoles);
+            AddPrinciplePrivileges(entRef.Id, secRoles);
             if (secRoles.Any(s => !SecurityRoles.ContainsKey(s)))
             {
                 throw new MockupException($"Unknown security role");
@@ -497,12 +521,40 @@ namespace DG.Tools.XrmMockup
 
         internal void AddSecurityRole(SecurityRole role)
         {
-            SecurityRoles.Add(role.RoleId,role);
-            addedRoles.Add(role.RoleId);
-            AddRoleToDb(this.db, role, Core.RootBusinessUnitRef);
+            var existing = this.db.GetEntityOrNull(new EntityReference("role", role.RoleId));
+            if (existing == null)
+            {
+                AddRoleToDb(this.db, role, Core.RootBusinessUnitRef);
+            }
+
+            if (!SecurityRoles.ContainsKey(role.RoleId))
+            {
+                SecurityRoles.Add(role.RoleId, role);
+                addedRoles.Add(role.RoleId);
+            }
+
         }
 
-        private bool IsMemberOfTeam(EntityReference team, EntityReference user)
+        internal void AddRoleToDb(IXrmDb db, SecurityRole newRole, EntityReference businessUnit)
+        {
+            var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
+            var role = new Entity("role")
+            {
+                Id = newRole.RoleId
+            };
+            role[roleMeta.PrimaryIdAttribute] = role.Id;
+            role["businessunitid"] = businessUnit;
+            role["name"] = newRole.Name;
+            role["roletemplateid"] = newRole.RoleTemplateId;
+            role["createdby"] = Core.AdminUserRef;
+            role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+            role["modifiedby"] = Core.AdminUserRef;
+            role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+            db.Add(role);
+            SecurityRoleMapping.Add(role.Id, newRole.RoleId);
+        }
+
+            private bool IsMemberOfTeam(EntityReference team, EntityReference user)
         {
             return Core.GetEntities(LogicalNames.TeamMembership)
                 .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == user.Id && tm.GetAttributeValue<Guid>("teamid") == team.Id)
@@ -543,19 +595,19 @@ namespace DG.Tools.XrmMockup
             {
                 return HasPermission(entity, access, owner);
             }
+            var teamMemberships = Core.GetCallerTeamMembership(caller.Id).Where(x => x.GetAttributeValue<int>("team_teamtype") != 1);
+            
 
-            // Check if any teams that the user is a member of have access 
-            var teamIds = Core.GetEntities(LogicalNames.TeamMembership)
-            .Where(tm => tm.GetAttributeValue<Guid>("systemuserid") == caller.Id)
-            .Select(tm => tm.GetAttributeValue<Guid>("teamid"))
-            .ToList();
-
-            return teamIds.Any(teamId => !IsAccessTeam(teamId) &&  HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId)));
+            return teamMemberships.Any(teamId => HasPermission(entity, access, new EntityReference(LogicalNames.Team, teamId.GetAttributeValue<Guid>("teamid"))));
         }
 
         internal bool IsAccessTeam(Guid teamId)
         {
-            var team = Core.GetDbRow(new EntityReference("team", teamId)).ToEntity();
+            if (!Core.EntityExists(new EntityReference("team", teamId)))
+                return false;
+
+            var team = Core.GetEntity(new EntityReference("team", teamId));
+
             if (!team.Contains("teamtype"))
             {
                 return false;
@@ -569,16 +621,14 @@ namespace DG.Tools.XrmMockup
         internal bool HasAccessTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
         {
             //check if an access team exists for this entity
-            var accessTeams = Core.GetDbTable(LogicalNames.Team)
-                              .Select(x => x.ToEntity())
+            var accessTeams = Core.GetEntities(LogicalNames.Team)
                               .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
                               .Where(x => x.GetAttributeValue<EntityReference>("regardingobjectid").Id == entity.Id);
 
             if (!accessTeams.Any())
                 return false;
 
-            var accessTeamMemberships = Core.GetDbTable(LogicalNames.TeamMembership)
-                                        .Select(x => x.ToEntity())
+            var accessTeamMemberships = Core.GetEntities(LogicalNames.TeamMembership)
                                         .Where(x => x.GetAttributeValue<Guid>("systemuserid") == caller.Id)
                                         .Where(x => accessTeams.Select(y=>y.Id).Contains(x.GetAttributeValue<Guid>("teamid")));
 
@@ -697,14 +747,14 @@ namespace DG.Tools.XrmMockup
             {
                 if (entity.Contains(pcr.ReferencingAttribute) && entity[pcr.ReferencingAttribute] != null)
                 {
-                    var refEntity = Core.GetDbRowOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
+                    var refEntity = db.GetEntityOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
                     if (refEntity != null)
                     {
-                        if (!refEntity.AttributeMetadata.ContainsKey("ownerid"))
+                        if (! Core.GetEntityMetadata(refEntity.LogicalName).Attributes.Any(x=>x.LogicalName == "ownerid"))
                         {
                             return false;
                         }
-                        else if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
+                        else if (refEntity.GetAttributeValue<EntityReference>("ownerid").Id == caller.Id)
                         {
                             return true;
                         }

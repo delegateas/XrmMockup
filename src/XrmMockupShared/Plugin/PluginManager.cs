@@ -31,7 +31,8 @@ namespace DG.Tools.XrmMockup {
         {
             new SystemPlugins.UpdateInactiveIncident(),
             new SystemPlugins.DefaultBusinessUnitTeams(),
-            new SystemPlugins.DefaultBusinessUnitTeamMembers()
+            new SystemPlugins.DefaultBusinessUnitTeamMembers(),
+            new SystemPlugins.SetIsDocumentOnAnnotation()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)

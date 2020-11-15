@@ -6,6 +6,9 @@ using Microsoft.Xrm.Sdk.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Microsoft.Crm.Sdk.Messages;
+using System.Diagnostics;
+using Microsoft.Xrm.Sdk.Query;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
@@ -78,9 +81,13 @@ namespace DG.XrmMockupTest
 
         private void InitialiseAccessTeamConfiguration()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             //create a new security role with basic level only on all contact privileges
             var accessTeamTestRole = crm.CloneSecurityRole("Salesperson");
             accessTeamTestRole.Name = "AccessTeamTest";
+            accessTeamTestRole.RoleId = Guid.Parse("c8357b35-8a17-4601-997a-5d011960ba2b");
             var contactPriv = accessTeamTestRole.Privileges["contact"];
             var newPriv = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
             foreach (var priv in contactPriv)
@@ -109,6 +116,7 @@ namespace DG.XrmMockupTest
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
+            user.Id = Guid.Parse("d8357b35-8a17-4601-997a-5d011960ba2b");
             testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser1Service = crm.CreateOrganizationService(testUser1.Id);
 
@@ -116,6 +124,7 @@ namespace DG.XrmMockupTest
             user2["internalemailaddress"] = "camstestuser2@official.mod.uk";
             user2["businessunitid"] = crm.RootBusinessUnit;
             user2["islicensed"] = true;
+            user2.Id = Guid.Parse("e8357b35-8a17-4601-997a-5d011960ba2b");
             testUser2 = crm.CreateUser(orgAdminService, user2, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser2Service = crm.CreateOrganizationService(testUser2.Id);
 
@@ -123,6 +132,7 @@ namespace DG.XrmMockupTest
             user3["internalemailaddress"] = "camstestuser3@official.mod.uk";
             user3["businessunitid"] = crm.RootBusinessUnit;
             user3["islicensed"] = true;
+            user3.Id = Guid.Parse("f8357b35-8a17-4601-997a-5d011960ba2b");
             testUser3 = crm.CreateUser(orgAdminService, user3, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser3Service = crm.CreateOrganizationService(testUser3.Id);
 
@@ -130,22 +140,42 @@ namespace DG.XrmMockupTest
             salesUser["internalemailaddress"] = "camstestuser4@official.mod.uk";
             salesUser["businessunitid"] = crm.RootBusinessUnit;
             salesUser["islicensed"] = true;
+            salesUser.Id = Guid.Parse("09357b35-8a17-4601-997a-5d011960ba2b");
             crm.CreateUser(orgAdminService, salesUser, new Guid[] { SecurityRoles.Salesperson });
             salesUserService = crm.CreateOrganizationService(salesUser.Id);
 
             //create some access team templates
-            CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);
-            CreateAccessTeamTemplate("TestReadContact", 2, AccessRights.ReadAccess);
-            CreateAccessTeamTemplate("TestDeleteContact", 2, AccessRights.DeleteAccess);
-            CreateAccessTeamTemplate("TestAppendContact", 2, AccessRights.AppendAccess);
-            CreateAccessTeamTemplate("TestAssignContact", 2, AccessRights.AssignAccess);
-            CreateAccessTeamTemplate("TestShareContact", 2, AccessRights.ShareAccess);
-            CreateAccessTeamTemplate("TestAppendToAccount", 1, AccessRights.AppendToAccess);
-            CreateAccessTeamTemplate("TestMultipleContact", 2, AccessRights.WriteAccess, AccessRights.ReadAccess, AccessRights.DeleteAccess);
+            var q = new QueryExpression("teamtemplate");
+            q.ColumnSet = new ColumnSet("teamtemplatename");
+            var existing = orgAdminService.RetrieveMultiple(q);
+
+            
+
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestWriteContact"))
+                CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestReadContact"))
+                CreateAccessTeamTemplate("TestReadContact", 2, AccessRights.ReadAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestDeleteContact"))
+                CreateAccessTeamTemplate("TestDeleteContact", 2, AccessRights.DeleteAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestAppendContact"))
+                CreateAccessTeamTemplate("TestAppendContact", 2, AccessRights.AppendAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestAssignContact"))
+                CreateAccessTeamTemplate("TestAssignContact", 2, AccessRights.AssignAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestShareContact"))
+                CreateAccessTeamTemplate("TestShareContact", 2, AccessRights.ShareAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestAppendToAccount"))
+                CreateAccessTeamTemplate("TestAppendToAccount", 1, AccessRights.AppendToAccess);
+            if (!existing.Entities.Any(x => x.GetAttributeValue<string>("teamtemplatename") == "TestMultipleContact"))
+                CreateAccessTeamTemplate("TestMultipleContact", 2, AccessRights.WriteAccess, AccessRights.ReadAccess, AccessRights.DeleteAccess);
+
+            Console.WriteLine(sw.ElapsedMilliseconds.ToString());
+            sw.Stop();
         }
 
         private void CreateAccessTeamTemplate(string name,int objectTypeCode,params AccessRights[] access)
         {
+
+
             var contactWriteAccessTeamTemplate = new Entity("teamtemplate");
             contactWriteAccessTeamTemplate["teamtemplatename"] = name;
             contactWriteAccessTeamTemplate["objecttypecode"] = objectTypeCode;
@@ -196,12 +226,12 @@ namespace DG.XrmMockupTest
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
                 MetadataDirectoryPath = "../../../Metadata",
-                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata, additionalPluginMetadata2 },
+                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata, additionalPluginMetadata2 }
                 //MetadataDirectoryPath = @"C:\dev\MOD\CAMS\Plugins\XrmMockupTests\Metadata"
-                MetadataDirectoryPath = "../../../Metadata"
                 , DatabaseConnectionString = "Server=.;Database=XrmMockup;Trusted_Connection=True;"
                 , RecreateDatabase = false
                 //,RetainTables = new string[] { "fax" ,"goal","lead"}
+              //  ,AppendAndAppendToPrivilegeCheck = false
             };
 
 #if XRM_MOCKUP_TEST_2011

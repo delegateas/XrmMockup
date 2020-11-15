@@ -21,6 +21,7 @@ using System.IO;
 using DG.Tools.XrmMockup.Database;
 using System.Xml.Linq;
 using DG.Tools.XrmMockup.Config;
+using System.Data;
 
 namespace DG.Tools.XrmMockup
 {
@@ -568,6 +569,17 @@ namespace DG.Tools.XrmMockup
                     criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
+        private static string GetNumberFromEnd(string text)
+        {
+            int i = text.Length - 1;
+            while (i >= 0)
+            {
+                if (!char.IsNumber(text[i])) break;
+                i--;
+            }
+            return text.Substring(i + 1);
+        }
+
         private static bool EvaluateCondition(Entity row, ConditionExpression condition)
         {
             object attr = null;
@@ -577,10 +589,22 @@ namespace DG.Tools.XrmMockup
                     return Matches(row.Id, condition.Operator, condition.Values);
 #if !XRM_MOCKUP_2011
                 case var c when condition.EntityName != null:
-                    var key = $"{condition.EntityName}.{condition.AttributeName}";
-                    if (row != null && row.Contains(key))
+                    
+                    var num = GetNumberFromEnd(condition.EntityName);
+                    if (Int32.TryParse(num, out int i))
                     {
-                        attr = row[key];
+                        var key = $"{condition.EntityName}.{condition.AttributeName}";
+                        if (row != null && row.Contains(key))
+                        {
+                            attr = row[key];
+                        }
+                    }
+                    else
+                    {
+                        if (row != null && row.Contains(condition.AttributeName))
+                        {
+                            attr = row[condition.AttributeName];
+                        }
                     }
                     break;
 #endif
@@ -654,7 +678,8 @@ namespace DG.Tools.XrmMockup
                     if (attr == null) return false;
                     if (attr.GetType() == typeof(string))
                     {
-                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                        //ignore trailing whitespace and case
+                        return (attr as string).TrimEnd().Equals((ConvertTo(values.First(), attr?.GetType()) as string).TrimEnd(), StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
@@ -1033,7 +1058,7 @@ namespace DG.Tools.XrmMockup
             return pointer;
         }
 
-        private static Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata)
+        internal static Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata)
         {
             return
                 attributeMetadata is PicklistAttributeMetadata ||
@@ -1047,107 +1072,9 @@ namespace DG.Tools.XrmMockup
                 attributeMetadata is DecimalAttributeMetadata;
         }
 
-        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity,EntityMetadata lookupMetadata = null)
-        {
-            if (metadataAtt is PicklistAttributeMetadata)
-            {
-                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
-                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
-                return optionset.Label.UserLocalizedLabel.Label;
-            }
+        
 
-            if (metadataAtt is BooleanAttributeMetadata)
-            {
-                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
-                var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
-                return label.UserLocalizedLabel.Label;
-            }
-
-            if (metadataAtt is MoneyAttributeMetadata)
-            {
-                var currencysymbol =
-                    db.GetEntity(
-                        db.GetEntity(entity.ToEntityReference())
-                        .GetAttributeValue<EntityReference>("transactioncurrencyid"))
-                    .GetAttributeValue<string>("currencysymbol");
-
-                return currencysymbol + (value as Money).Value.ToString();
-            }
-
-            if (metadataAtt is LookupAttributeMetadata)
-            {
-
-                if (value is EntityReference)
-                {
-                    if (string.IsNullOrEmpty((value as EntityReference).Name))
-                    {
-
-                        var lookupEnt = db.GetEntity(value as EntityReference);
-                        var primaryAttr = lookupMetadata.Attributes.SingleOrDefault(x => x.IsPrimaryName.HasValue && x.IsPrimaryName.Value);
-                        if (primaryAttr != null)
-                        {
-                            return lookupEnt.GetAttributeValue<string>(primaryAttr.LogicalName);
-                        }
-
-
-                    }
-                    else
-                    {
-                        return (value as EntityReference).Name; 
-                    }
-                    
-                }
-                else
-                {
-                    Console.WriteLine("No lookup entity exists: ");
-                }
-            }
-
-            if (metadataAtt is IntegerAttributeMetadata ||
-                metadataAtt is DateTimeAttributeMetadata ||
-                metadataAtt is MemoAttributeMetadata ||
-                metadataAtt is DoubleAttributeMetadata ||
-                metadataAtt is DecimalAttributeMetadata)
-            {
-                return value.ToString();
-            }
-
-            return null;
-        }
-
-        internal static void SetFormmattedValues(IXrmDb db, Entity entity, EntityMetadata metadata)
-        {
-            var validMetadata = entityMetadata.Attributes
-                .Where(a => IsValidForFormattedValues(a));
-
-            var formattedValues = new List<KeyValuePair<string, string>>();
-            foreach (var a in entity.Attributes)
-            {
-                if (a.Value == null) continue;
-                var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
-
-                if (metadataAtt != null)
-                {
-                    EntityMetadata lookupMetadata = null;
-                    if (metadataAtt is LookupAttributeMetadata)
-                    {
-                        lookupMetadata = metadata.EntityMetadata[(metadataAtt as LookupAttributeMetadata).Targets[0]];
-                    }
-                    var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity, lookupMetadata));
-                    if (formattedValuePair.Value != null)
-                    {
-                        formattedValues.Add(formattedValuePair);
-                    }
-                }
-
-                
-            }
-
-            if (formattedValues.Count > 0)
-            {
-                entity.FormattedValues.AddRange(formattedValues);
-            }
-        }
+       
 
         public static QueryExpression QueryByAttributeToQueryExpression(QueryByAttribute query)
         {
