@@ -40,7 +40,7 @@ namespace DG.XrmMockupTest
                     FirstName = "Ben",
                     LastName = "Andrews",
                     EMailAddress1 = "sample@example.com",
-                    Address1_City = "Redmond",
+                    Address1_City = guid+"Redmond",
                     Address1_StateOrProvince = "WA",
                     Address1_Telephone1 = "(206)555-5555",
                     ParentCustomerId = acc.ToEntityReference()

@@ -57,7 +57,7 @@ namespace DG.Tools.XrmMockup {
 
 
                     foreach (var linkEntity in queryExpr.LinkEntities) {
-                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db,linkEntities);
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
                         collection.Entities.AddRange(
                             alliasedValues
                             .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
@@ -165,45 +165,38 @@ namespace DG.Tools.XrmMockup {
         }
 #endif
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db, Dictionary<string, IEnumerable<Entity>> linkEntities) {
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db) {
             var collection = new List<Entity>();
-            var allLinkEntities = linkEntities[linkEntity.LinkToEntityName];
-            foreach (var linkedRow in allLinkEntities) {
+            foreach (var linkedRow in db.GetEntities(linkEntity.LinkToEntityName)) 
+            {
                 var linkedEntity = linkedRow;
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
-                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) {
-                    var linkedAttr = Utility.ConvertToComparableObject(
-                        linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
-                    var entAttr = Utility.ConvertToComparableObject(
-                            parent.Attributes[linkEntity.LinkFromAttributeName]);
+                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) 
+                {
+                    var linkedAttr = Utility.ConvertToComparableObject(linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
+                    var entAttr = Utility.ConvertToComparableObject(parent.Attributes[linkEntity.LinkFromAttributeName]);
 
-                    if (linkedAttr.Equals(entAttr)) {
-                        var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
+                    if (linkedAttr.Equals(entAttr)) 
+                    {
+                        var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
-                        if (linkEntity.LinkEntities.Count > 0) {
+                        if (linkEntity.LinkEntities.Count > 0) 
+                        {
                             var subEntities = new List<Entity>();
 
-                            var nestlinkToEntities = linkEntity.LinkEntities.GroupBy(x => x.LinkToEntityName);
-                            foreach (var linkToEntity in nestlinkToEntities)
+                            foreach (var nestedLinkEntity in linkEntity.LinkEntities) 
                             {
-                                if (!linkEntities.ContainsKey(linkToEntity.Key))
-                                {
-                                    linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
-                                }
-                            }
-
-                            foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
 
-                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db,linkEntities);
-                                subEntities.AddRange(alliasedLinkValues
-                                        .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
+                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(nestedLinkEntity, linkedEntity, aliasedEntity, db);
+                                subEntities.AddRange(alliasedLinkValues.Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
+                            
                             collection.AddRange(subEntities);
-                        } else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) {
+                        } 
+                        else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) 
+                        {
                             collection.Add(aliasedEntity);
                         }
 

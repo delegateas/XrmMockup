@@ -13,7 +13,7 @@ using System.Reflection;
 using System.ServiceModel;
 using System.Web.WebSockets;
 using WorkflowExecuter;
-using XrmMockupShared.Database;
+
 
 namespace DG.Tools.XrmMockup
 {
@@ -93,14 +93,7 @@ namespace DG.Tools.XrmMockup
             baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            if (!string.IsNullOrEmpty(Settings.DatabaseConnectionString))
-            {
-                this.db = new SQLDb(metadata.EntityMetadata, Settings.DatabaseConnectionString,Settings.RecreateDatabase,Settings.RetainTables);
-            }
-            else
-            {
-                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
-            }
+            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles,this.db);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
@@ -1087,14 +1080,7 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ResetWorkflows();
             }
             pluginManager.ResetPlugins();
-            if (this.db.GetType() == typeof(SQLDb))
-            {
-                this.db = new SQLDb(metadata.EntityMetadata, settings.DatabaseConnectionString, settings.RecreateDatabase,settings.RetainTables);
-            }
-            else
-            {
-                this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
-            }
+            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -1105,10 +1091,7 @@ namespace DG.Tools.XrmMockup
         {
             this.db.ResetAccessTeams();
         }
-        public bool UsingSQL
-        {
-            get { return db is SQLDb; }
-        }
+        
 
     }
 }

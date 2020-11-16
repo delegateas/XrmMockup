@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\IXrmDb.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Database\SQLDb.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\XrmDb.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginExecutionProvider.cs" />

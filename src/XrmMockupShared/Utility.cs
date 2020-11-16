@@ -569,17 +569,6 @@ namespace DG.Tools.XrmMockup
                     criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
-        private static string GetNumberFromEnd(string text)
-        {
-            int i = text.Length - 1;
-            while (i >= 0)
-            {
-                if (!char.IsNumber(text[i])) break;
-                i--;
-            }
-            return text.Substring(i + 1);
-        }
-
         private static bool EvaluateCondition(Entity row, ConditionExpression condition)
         {
             object attr = null;
@@ -590,21 +579,10 @@ namespace DG.Tools.XrmMockup
 #if !XRM_MOCKUP_2011
                 case var c when condition.EntityName != null:
                     
-                    var num = GetNumberFromEnd(condition.EntityName);
-                    if (Int32.TryParse(num, out int i))
+                    var key = $"{condition.EntityName}.{condition.AttributeName}";
+                    if (row != null && row.Contains(key))
                     {
-                        var key = $"{condition.EntityName}.{condition.AttributeName}";
-                        if (row != null && row.Contains(key))
-                        {
-                            attr = row[key];
-                        }
-                    }
-                    else
-                    {
-                        if (row != null && row.Contains(condition.AttributeName))
-                        {
-                            attr = row[condition.AttributeName];
-                        }
+                        attr = row[key];
                     }
                     break;
 #endif
