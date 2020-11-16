@@ -31,7 +31,8 @@ namespace DG.Tools.XrmMockup {
         {
             new SystemPlugins.UpdateInactiveIncident(),
             new SystemPlugins.DefaultBusinessUnitTeams(),
-            new SystemPlugins.DefaultBusinessUnitTeamMembers()
+            new SystemPlugins.DefaultBusinessUnitTeamMembers(),
+            new SystemPlugins.SetIsDocumentOnAnnotation()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
@@ -122,13 +123,27 @@ namespace DG.Tools.XrmMockup {
             }
             else
             { // Retrieve registration from CRM metadata
-                var metaSteps = plugins.Where(x => x.AssemblyName == basePluginType.FullName).ToList();
+                var pluginFullName = basePluginType.FullName;
+
+                var metaSteps1 = plugins.Where(x => string.IsNullOrEmpty(x.PluginTypeAssemblyName))
+                                       .Where(x => x.AssemblyName == basePluginType.FullName)
+                                       .ToList();
+
+
+                var metaSteps2 = plugins.Where(x => !string.IsNullOrEmpty(x.PluginTypeAssemblyName))
+                                       .Where(x => x.AssemblyName == basePluginType.FullName)
+                                       .Where(x => x.PluginTypeAssemblyName == basePluginType.GetTypeInfo().Assembly.GetName().Name)
+                                       .ToList();
+
+                var metaSteps = metaSteps1.Union(metaSteps2).ToList();
+
                 if (metaSteps == null || metaSteps.Count == 0)
                 {
                     throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
                 }
+                
 
-                foreach(var metaStep in metaSteps) { 
+                foreach(var metaStep in metaSteps) {
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId);
                     var imageConfig = metaStep.Images?.Select(x => new ImageConfig(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageConfig>();
@@ -138,8 +153,21 @@ namespace DG.Tools.XrmMockup {
                         .GetMethod("Execute")
                         .Invoke(plugin, new object[] { provider });
                     };
+
+                    if (metaStep.MessageName.ToLower() == "setstatedynamicentity")
+                    {
+                        var stepConfig2 = new StepConfig(metaStep.AssemblyName, metaStep.Stage, "setstate", metaStep.PrimaryEntity);
+                        stepConfigs.Add(new PluginStepConfig(stepConfig2, extendedConfig, imageConfig));
+                        pluginExecute = (provider) => {
+                            basePluginType
+                            .GetMethod("Execute")
+                            .Invoke(plugin, new object[] { provider });
+                        };
+                    }
                 }
             }
+
+
 
             // Add discovered plugin triggers
             foreach (var stepConfig in stepConfigs)

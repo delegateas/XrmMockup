@@ -51,6 +51,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="8.0.2.1" />
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="8.0.2.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XrmMockupConfig\XrmMockupConfig.csproj" />

@@ -15,57 +15,42 @@ namespace DG.Tools.XrmMockup
 {
     internal class AddUserToRecordTeamRequestHandler : RequestHandler
     {
-        internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
+        internal AddUserToRecordTeamRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
-            var request = MakeRequest<AddUserToRecordTeamRequest>(orgRequest);
+            //validate that the team template exists
+            var ttId = (Guid)orgRequest["TeamTemplateId"];
+            var ttRow = core.GetEntity(new EntityReference("teamtemplate", ttId));
+
+            var record = orgRequest["Record"] as EntityReference;
+
+            var accessTeam = security.GetAccessTeam(ttId, record.Id);
+            if (accessTeam == null)
+            {
+                accessTeam = security.AddAccessTeam(ttId, record);
+            }
+            
+            var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+            if (membershiprow==null)
+            {
+                membershiprow = security.AddTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+
+                var poa = security.GetPOA((Guid)orgRequest["SystemUserId"], record.Id);
+
+                if (poa == null)
+                {
+                    poa = security.AddPOA((Guid)orgRequest["SystemUserId"], record, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
+                }
+                else
+                {
+                    //update the existing poa to include the new privlege
+                    security.UpdatePOAMask(poa.Id, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
+                }
+            }
+
             var resp = new AddUserToRecordTeamResponse();
-            var settings = MockupExecutionContext.GetSettings(request);
-
-            //check to see if the access team exists
-            //where regarding object id = request.record.id
-            //and teamtemplateid = request.teamtemplated
-
-            var currentTeams = db.GetDBEntityRows("team");
-
-            currentTeams = currentTeams.Where(x => x.GetColumn("regardingobjectid") != null);
-            currentTeams = currentTeams.Where(x => (x.ToEntity().GetAttributeValue<EntityReference>("regardingobjectid").Id == request.Record.Id));
-            currentTeams = currentTeams.Where(x => x.GetColumn("teamtemplateid") != null);
-            currentTeams = currentTeams.Where(x => (x.ToEntity().GetAttributeValue<EntityReference>("teamtemplateid").Id == request.TeamTemplateId));
-
-            Entity team;
-
-            if (!currentTeams.Any())
-            {
-                team = new Entity("team");
-                team.Id = Guid.NewGuid();
-                team["regardingobjectid"] = request.Record;
-                team["teamtemplateid"] = new EntityReference("teamtemplate", request.TeamTemplateId);
-                team["teamtype"] = new OptionSetValue(1); //access team
-                db.Add(team);
-                resp.Results["AccessTeamId"] = team.Id;
-            }
-            else
-            {
-                team = currentTeams.Single().ToEntity();
-            }
-
-            //and check to see if the user is a member of it
-            var currentTeamMembers = db.GetDBEntityRows("teammembership");
-            currentTeamMembers = currentTeamMembers.Where(x => x.GetColumn("teamid") != null);
-            currentTeamMembers = currentTeamMembers.Where(x => (x.ToEntity().GetAttributeValue<Guid>("teamid") == team.Id));
-            currentTeamMembers = currentTeamMembers.Where(x => x.GetColumn("systemuserid") != null);
-            currentTeamMembers = currentTeamMembers.Where(x => (x.ToEntity().GetAttributeValue<Guid>("systemuserid") == request.SystemUserId));
-
-            if (!currentTeamMembers.Any())
-            {
-                var teamMember = new Entity("teammembership");
-                teamMember["teamid"] = team.Id;
-                teamMember["systemuserid"] = request.SystemUserId;
-                db.Add(teamMember);
-            }
-
+            resp.Results["AccessTeamId"] = accessTeam.Id;
             return resp;
         }
     }

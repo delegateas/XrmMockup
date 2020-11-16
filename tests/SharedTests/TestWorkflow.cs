@@ -290,7 +290,7 @@ namespace DG.XrmMockupTest
                 {
                     EntityName = Email.EntityLogicalName,
                     ColumnSet = new ColumnSet(true)
-                }).Entities.FirstOrDefault() as Email;
+                }).Entities.OrderByDescending(x=>x.GetAttributeValue<DateTime>("createdon")).FirstOrDefault() as Email;
 
                 Assert.IsNotNull(email);
                 Assert.AreEqual("&lt;span&gt;&lt;span&gt;Some kind of email&lt;/span&gt;&lt;/span&gt;", email.Description);

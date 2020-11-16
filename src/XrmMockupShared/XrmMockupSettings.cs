@@ -45,9 +45,19 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public bool? AppendAndAppendToPrivilegeCheck { get; set; }
         /// <summary>
+        /// Database Connection String
+        /// </summary>
+        public string DatabaseConnectionString { get; set; }
+        public bool RecreateDatabase { get; set; }
+
+        public string[] RetainTables { get; set; }
+
+        /// <summary>
         /// Additional Plugin Metatdata for IPlugin direct plugin registration
         /// </summary>
         public MetaPlugin[] IPluginMetadata { get; set; }
+
+
     }
 
     public struct Env {

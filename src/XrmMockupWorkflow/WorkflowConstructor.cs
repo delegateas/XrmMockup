@@ -133,7 +133,10 @@ namespace WorkflowExecuter
                 {
                     if (variable.Default != null)
                     {
-                        nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variable.Type.Split(':')[1], variable.Name));
+                        //variable type == everything after the first :
+                        var variableType = string.Join(":", variable.Type.Split(':').Skip(1));
+
+                        nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variableType, variable.Name));
                     }
                     else if (variable.DefaultList != null)
                     {

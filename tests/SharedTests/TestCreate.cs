@@ -120,7 +120,10 @@ namespace DG.XrmMockupTest
                     Name = "Dauda"
                 };
                 crm.PopulateWith(acc);
-                crm.ContainsEntity(acc);
+                var checkacc = orgAdminService.Retrieve(acc.LogicalName, acc.Id, new ColumnSet(true));
+
+                Assert.AreEqual(acc.Name, checkacc.GetAttributeValue<string>("name"));
+                
             }
         }
 
@@ -149,11 +152,13 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var contact = new Contact();
                 var account1 = new Account();
                 var account2 = new Account();
-                account1.Name = "AccountRelated 1";
-                account2.Name = "AccountRelated 2";
+                account1.Name = guid + "AccountRelated 1";
+                account2.Name = guid + "AccountRelated 2";
 
                 var accounts = new EntityCollection(new List<Entity>() { account1, account2 });
 
@@ -191,7 +196,7 @@ namespace DG.XrmMockupTest
                 };
 
                 contact.Id = (orgAdminUIService.Execute(request) as CreateResponse).id;
-                var accountSet = context.AccountSet.Where(x => x.Name.StartsWith("AccountRelated")).ToList();
+                var accountSet = context.AccountSet.Where(x => x.Name.StartsWith(guid + "AccountRelated")).ToList();
                 Assert.AreEqual(2, accountSet.Count);
                 foreach (var acc in accountSet)
                 {

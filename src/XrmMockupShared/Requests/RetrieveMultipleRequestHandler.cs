@@ -9,10 +9,11 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
+using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveMultipleRequestHandler : RequestHandler {
-        internal RetrieveMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
+        internal RetrieveMultipleRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
@@ -35,26 +36,34 @@ namespace DG.Tools.XrmMockup {
             FillAliasIfEmpty(queryExpr);
             var collection = new EntityCollection();
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetDBEntityRows(queryExpr.EntityName);
-            if (db[queryExpr.EntityName].Count() > 0)
+
+            var linkEntities = new Dictionary<string, IEnumerable<Entity>>();
+            var linkToEntities = queryExpr.LinkEntities.GroupBy(x => x.LinkToEntityName);
+            foreach (var linkToEntity in linkToEntities)
             {
-                foreach (var row in rows)
-                {
-                    var entity = row.ToEntity();
-                    var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
+                linkEntities.Add(linkToEntity.Key, db.GetEntities(linkToEntity.Key));
+            }
 
-                    Utility.SetFormmattedValues(db, toAdd, row.Metadata);
+            var rows = db.GetEntities(queryExpr.EntityName, queryExpr.Criteria.Conditions);
 
-                    if (queryExpr.LinkEntities.Count > 0) {
-                        foreach (var linkEntity in queryExpr.LinkEntities) {
-                            var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
-                            collection.Entities.AddRange(
-                                alliasedValues
-                                .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
-                        }
-                    } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
-                        collection.Entities.Add(toAdd);
+
+            foreach (var row in rows)
+            {
+                
+                var entity = row;
+                var toAdd = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(queryExpr.EntityName), null);
+
+                if (queryExpr.LinkEntities.Count > 0) {
+
+
+                    foreach (var linkEntity in queryExpr.LinkEntities) {
+                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
+                        collection.Entities.AddRange(
+                            alliasedValues
+                            .Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria)));
                     }
+                } else if(Utility.MatchesCriteria(toAdd, queryExpr.Criteria)) {
+                    collection.Entities.Add(toAdd);
                 }
             }
             var filteredEntities = new EntityCollection();
@@ -67,29 +76,29 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("Number of orders are greater than 2, unsupported in crm");
             } else if (orders.Count == 1) {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName)));
                 else
-                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName])));
+                    orderedCollection.Entities.AddRange(filteredEntities.Entities.OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName)));
             } else if (orders.Count == 2) {
                 if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderBy(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(filteredEntities.Entities
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes[orders[1].AttributeName])));
+                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[0].AttributeName))
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Attributes, orders[1].AttributeName)));
             }
 
             var colToReturn = new EntityCollection();
@@ -106,6 +115,14 @@ namespace DG.Tools.XrmMockup {
                 colToReturn = filteredEntities;
             }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            foreach (var enitity in colToReturn.Entities)
+            {
+                ExecuteCalculatedFields(enitity);
+            }
+#endif
+
+
             // According to docs, should return -1 if ReturnTotalRecordCount set to false
             colToReturn.TotalRecordCount = queryExpr.PageInfo.ReturnTotalRecordCount ? colToReturn.Entities.Count : -1;
 
@@ -116,33 +133,70 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        private void ExecuteCalculatedFields(Entity row)
+        {
+
+            var metadata = core.GetEntityMetadata(row.LogicalName);
+
+            var attributes = metadata.Attributes.Where(
+                m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
+
+            foreach (var attr in attributes)
+            {
+                string definition = (attr as BooleanAttributeMetadata)?.FormulaDefinition;
+                if (attr is BooleanAttributeMetadata) definition = (attr as BooleanAttributeMetadata).FormulaDefinition;
+                else if (attr is DateTimeAttributeMetadata) definition = (attr as DateTimeAttributeMetadata).FormulaDefinition;
+                else if (attr is DecimalAttributeMetadata) definition = (attr as DecimalAttributeMetadata).FormulaDefinition;
+                else if (attr is IntegerAttributeMetadata) definition = (attr as IntegerAttributeMetadata).FormulaDefinition;
+                else if (attr is MoneyAttributeMetadata) definition = (attr as MoneyAttributeMetadata).FormulaDefinition;
+                else if (attr is PicklistAttributeMetadata) definition = (attr as PicklistAttributeMetadata).FormulaDefinition;
+                else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
+
+                if (definition == null)
+                {
+                    throw new NotImplementedException("Unknown type when parsing calculated attr");
+                }
+                var tree = WorkflowConstructor.ParseCalculated(definition);
+                var factory = core.ServiceFactory;
+                tree.Execute(row, core.TimeOffset, core.GetWorkflowService(),
+                    factory, factory.GetService(typeof(ITracingService)) as ITracingService,true);
+            }
+        }
+#endif
+
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, IXrmDb db) {
             var collection = new List<Entity>();
-            foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
-                var linkedEntity = linkedRow.ToEntity();
+            foreach (var linkedRow in db.GetEntities(linkEntity.LinkToEntityName)) 
+            {
+                var linkedEntity = linkedRow;
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
-                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) {
-                    var linkedAttr = Utility.ConvertToComparableObject(
-                        linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
-                    var entAttr = Utility.ConvertToComparableObject(
-                            parent.Attributes[linkEntity.LinkFromAttributeName]);
+                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) 
+                {
+                    var linkedAttr = Utility.ConvertToComparableObject(linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
+                    var entAttr = Utility.ConvertToComparableObject(parent.Attributes[linkEntity.LinkFromAttributeName]);
 
-                    if (linkedAttr.Equals(entAttr)) {
-                        var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
-                                metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
+                    if (linkedAttr.Equals(entAttr)) 
+                    {
+                        var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
-                        if (linkEntity.LinkEntities.Count > 0) {
+                        if (linkEntity.LinkEntities.Count > 0) 
+                        {
                             var subEntities = new List<Entity>();
-                            foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
+
+                            foreach (var nestedLinkEntity in linkEntity.LinkEntities) 
+                            {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
-                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db);
-                                subEntities.AddRange(alliasedLinkValues
-                                        .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
+
+                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(nestedLinkEntity, linkedEntity, aliasedEntity, db);
+                                subEntities.AddRange(alliasedLinkValues.Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
+                            
                             collection.AddRange(subEntities);
-                        } else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) {
+                        } 
+                        else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) 
+                        {
                             collection.Add(aliasedEntity);
                         }
 

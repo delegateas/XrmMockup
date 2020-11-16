@@ -10,11 +10,11 @@ namespace DG.Tools.XrmMockup {
     internal abstract class RequestHandler {
         protected Security security;
         protected Core core;
-        protected XrmDb db;
+        protected IXrmDb db;
         protected MetadataSkeleton metadata;
         internal string RequestName;
 
-        internal RequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security, string RequestName) {
+        internal RequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security, string RequestName) {
             this.security = security;
             this.core = core;
             this.db = db;

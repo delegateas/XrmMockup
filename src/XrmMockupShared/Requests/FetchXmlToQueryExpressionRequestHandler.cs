@@ -12,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class FetchXmlToQueryExpressionRequestHandler : RequestHandler {
-        internal FetchXmlToQueryExpressionRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : 
+        internal FetchXmlToQueryExpressionRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : 
             base(core, db, metadata, security, "FetchXmlToQueryExpression") {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {

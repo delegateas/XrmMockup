@@ -128,6 +128,12 @@ namespace DG.Tools.XrmMockup
             Core.ResetEnvironment();
         }
 
+        public void ResetAccessTeams()
+        {
+            Core.ResetAccessTeams();
+        }
+
+
 
         internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef, PluginContext pluginContext) {
             return Core.Execute(request, userRef, pluginContext);
@@ -204,14 +210,7 @@ namespace DG.Tools.XrmMockup
             Core.AddWorkflow(workflow);
         }
 
-        /// <summary>
-        /// Returns true if an entity exists in the database with the same id, and has at least the attributes of the parameter.
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public bool ContainsEntity(Entity entity) {
-            return Core.ContainsEntity(entity);
-        }
+        
 
         /// <summary>
         /// Adds entities directly into the database, without modifying them
@@ -285,8 +284,19 @@ namespace DG.Tools.XrmMockup
             if (user.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a user with security roles, but did not specify a businessunit in the user's attributes");
             }
-            user.Id = service.Create(user);
-            Core.SetSecurityRoles(new EntityReference(LogicalNames.SystemUser, user.Id), securityRoles);
+            var q = new QueryExpression("systemuser");
+            q.Criteria.AddCondition("systemuserid", ConditionOperator.Equal, user.Id);
+            var users = service.RetrieveMultiple(q);
+
+            if (!users.Entities.Any())
+            {
+                user.Id = service.Create(user);
+                Core.SetSecurityRoles(user.ToEntityReference(), securityRoles);
+            }
+            else
+            {
+                Core.AddPrivileges(user.ToEntityReference(), securityRoles);
+            }
             return service.Retrieve(LogicalNames.SystemUser, user.Id, new ColumnSet(true));
         }
 
@@ -317,9 +327,22 @@ namespace DG.Tools.XrmMockup
             if (team.GetAttributeValue<EntityReference>("businessunitid") == null) {
                 throw new MockupException("You tried to create a team with security roles, but did not specify a businessunit in the team's attributes");
             }
-            team["teamtype"] = new OptionSetValue(0);
+
+            var q = new QueryExpression("team");
+            q.Criteria.AddCondition("teamid", ConditionOperator.Equal, team.Id);
+            var teams = service.RetrieveMultiple(q);
+
+
+            if (!teams.Entities.Any())
+            {
+                team["teamtype"] = new OptionSetValue(0);
                 team.Id = service.Create(team);
-            Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+                Core.SetSecurityRoles(new EntityReference(LogicalNames.Team, team.Id), securityRoles);
+            }
+            else
+            {
+                Core.AddPrivileges(team.ToEntityReference(), securityRoles);
+            }
 
             return service.Retrieve(LogicalNames.Team, team.Id, new ColumnSet(true));
         }
@@ -373,6 +396,7 @@ namespace DG.Tools.XrmMockup
             Core.TakeSnapshot(snapshotName);
         }
 
+        
         /// <summary>
         /// Retore the XrmMockup database from a snapshot
         /// </summary>
@@ -420,7 +444,20 @@ namespace DG.Tools.XrmMockup
         {
             return Core.GetPrivilege(principleId);
         }
-        
+
+        public SecurityRole GetSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName);
+        }
+        public SecurityRole CloneSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName).Clone();
+        }
+        public void AddSecurityRole(SecurityRole role)
+        {
+            Core.AddSecurityRole(role);
+        }
+
         /// <summary>
         /// Checks if a principle has the given access right to an entity
         /// </summary>

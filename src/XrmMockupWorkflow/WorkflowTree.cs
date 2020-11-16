@@ -109,7 +109,7 @@ namespace WorkflowExecuter
         }
 
         public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace,bool asCalculated = false)
         {
             if (primaryEntity.Id == Guid.Empty)
             {
@@ -126,7 +126,7 @@ namespace WorkflowExecuter
                 var currency = orgService.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(exchangerate));
                 Variables["ExchangeRate"] = currency[exchangerate];
             }
-            StartActivity.Execute(ref Variables, timeOffset, orgService, factory, trace);
+            StartActivity.Execute(ref Variables, timeOffset, orgService, factory, trace,asCalculated);
             return this;
         }
 
@@ -197,7 +197,7 @@ namespace WorkflowExecuter
 
     public interface IWorkflowNode
     {
-        void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace);
+        void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset, IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated);
     }
 
     [DataContract]
@@ -218,7 +218,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             switch (TargetType)
             {
@@ -317,6 +317,11 @@ namespace WorkflowExecuter
                         variables[VariableName] = new EntityCollection(entities.ToList());
                     }
                     break;
+                case "Dictionary(x:String, x:Object)":
+                    {
+                        variables[VariableName] = new Dictionary<string, object>();
+                    }
+                    break;
                 default:
                     throw new WorkflowException($"Unknown target type: {TargetType}.");
             }
@@ -331,7 +336,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             variables["Wait"] = null;
         }
@@ -352,7 +357,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             object value = null;
             foreach (var param in Parameters)
@@ -390,7 +395,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var var1 = variables[Parameters[0][0]];
             var var2 = variables[Parameters[0][1]];
@@ -424,11 +429,15 @@ namespace WorkflowExecuter
                 return;
             }
 
-            if (var1 == null || var2 == null)
+            if (TargetType == "XrmTimeSpan")
             {
-                variables[VariableName] = null;
-                return;
+                if (var1 == null || var2 == null)
+                {
+                    variables[VariableName] = null;
+                    return;
+                }
             }
+            
 
             if (TargetType == "DateTime")
             {
@@ -452,23 +461,69 @@ namespace WorkflowExecuter
             decimal? dec1 = null;
             decimal? dec2 = null;
 
+
             switch (TargetType)
             {
                 case "Money":
-                    dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
-                    dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
+                    }
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    }
                     break;
                 case "Int32":
-                    dec1 = (int)var1;
-                    dec2 = (int)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = (int)var1;
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = (int)var2;
+                    }
                     break;
                 case "Decimal":
-                    dec1 = (decimal)var1;
-                    dec2 = (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = (decimal)var1;
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = (decimal)var2;
+                    }
                     break;
                 default:
                     break;
             }
+            
 
             if (!dec1.HasValue || !dec2.HasValue)
             {
@@ -534,7 +589,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var parameterKey = Parameters[0][0];
             var parameters = variables[parameterKey] as IEnumerable<object>;
@@ -629,7 +684,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var variablesInstance = variables;
             var strings = Parameters[0].Select(p => (string)variablesInstance[p]).ToArray();
@@ -655,7 +710,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var toAdd = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
@@ -705,7 +760,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var toSubtract = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
@@ -755,7 +810,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var date1 = variables[Parameters[0][0]] as DateTime?;
             var date2 = variables[Parameters[0][1]] as DateTime?;
@@ -809,7 +864,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var word = (string)variables[Parameters[0][0]];
             var trimLength = int.Parse((string)variables[Parameters[0][1]]);
@@ -839,7 +894,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             variables[VariableName] = variables["ExecutionTime"];
         }
@@ -857,7 +912,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             variables[VariableName] = DateTime.Now.Add(timeOffset);
         }
@@ -878,7 +933,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var variableName = "{" + Parameters[0][0] + "(Arguments)}";
             variables[VariableName] = variables.ContainsKey(variableName) ? variables[variableName] : null;
@@ -889,7 +944,7 @@ namespace WorkflowExecuter
     internal class Skip : IWorkflowNode
     {
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
         }
     }
@@ -918,7 +973,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             Entity entity = null;
             if (EntityId.Contains("related_"))
@@ -937,7 +992,10 @@ namespace WorkflowExecuter
                     variables[VariableName] = null;
                     return;
                 }
-                entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
+                if (entRef.LogicalName == EntityLogicalName)
+                {
+                    entity = orgService.Retrieve(EntityLogicalName, entRef.Id, new ColumnSet(true));
+                }
 
             }
             else
@@ -1004,6 +1062,10 @@ namespace WorkflowExecuter
                     // TODO: should respect user format preferences
                     attr = $"{((int)attr):N0}";
                 }
+                else if (attr is Guid)
+                {
+                    attr = attr.ToString();
+                }
                 else if (attr != null && !(attr is string))
                 {
                     throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
@@ -1036,7 +1098,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var operand = variables[Operand];
             var variablesInstance = variables;
@@ -1188,15 +1250,20 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
-            if (variables[GuardId] != null && (bool)variables[GuardId])
+            if (asCalculated && GuardId == "True" && variables[GuardId] != null && !(bool)variables[GuardId])
+            { 
+                 //this looks to be a special case for calculated fields with no conditions...
+                Then.Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
+            }
+            else if (variables[GuardId] != null && (bool)variables[GuardId])
             {
-                Then.Execute(ref variables, timeOffset, orgService, factory, trace);
+                Then.Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
             }
             else
             {
-                Otherwise.Execute(ref variables, timeOffset, orgService, factory, trace);
+                Otherwise.Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
             }
         }
     }
@@ -1222,7 +1289,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var left = (bool?)variables[LeftOperand];
             var right = (bool?)variables[RightOperand];
@@ -1262,7 +1329,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var comparaters = new string[] { "<", "<=", "==", ">=", ">" };
             if (comparaters.Any(c => Value.Contains(c)))
@@ -1301,8 +1368,32 @@ namespace WorkflowExecuter
             if (Value.Contains(".Id"))
             {
                 var toEntity = variables[To.Replace(".Id", "")] as Entity;
-                var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
-                toEntity.Id = valueEntity.Id;
+
+                if (Value.Contains("related_"))
+                {
+                    var regex = new Regex(@"_.+#");
+                    var relatedAttr = regex.Match(Value).Value.TrimEdge();
+                    var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
+                    if (!primaryEntity.Attributes.ContainsKey(relatedAttr))
+                    {
+                       // variables[VariableName] = null;
+                        return;
+                    }
+                    var entRef = primaryEntity.Attributes[relatedAttr] as EntityReference;
+                    if (entRef == null)
+                    {
+                      //  variables[VariableName] = null;
+                        return;
+                    }
+                    var entity = orgService.Retrieve(entRef.LogicalName, entRef.Id, new ColumnSet(true));
+                    toEntity.Id = entity.Id;
+                }
+                else
+                {
+                    var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
+                    toEntity.Id = valueEntity.Id;
+                }
+
                 return;
             }
 
@@ -1350,7 +1441,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             if (BlockExecution == "True")
             {
@@ -1377,7 +1468,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
 
             if (!variables.ContainsKey(Input))
@@ -1431,7 +1522,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             if (!variables.ContainsKey(VariableId))
             {
@@ -1464,7 +1555,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var relatedlinked = "relatedlinked";
             if (VariableId.Contains(relatedlinked))
@@ -1503,7 +1594,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var entity = variables[VariableId] as Entity;
             entity.Id = EntityId == null ? Guid.NewGuid() : new Guid(EntityId);
@@ -1527,7 +1618,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             orgService.Update(variables[VariableId] as Entity);
         }
@@ -1548,7 +1639,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             if (!variables.ContainsKey(OwnerId))
             {
@@ -1590,7 +1681,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var entity = variables[EntityId] as Entity;
             if (entity.LogicalName != EntityName)
@@ -1624,13 +1715,13 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
-            Execute(0, ref variables, timeOffset, orgService, factory, trace);
+            Execute(0, ref variables, timeOffset, orgService, factory, trace, asCalculated);
         }
 
         public void Execute(int loopStart, ref Dictionary<string, object> variables, TimeSpan timeOffset,
-             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             foreach (var variableName in VariableNames)
             {
@@ -1647,7 +1738,7 @@ namespace WorkflowExecuter
                     var primaryEntityreference = (variables["InputEntities(\"primaryEntity\")"] as Entity).ToEntityReference();
                     variables["Wait"] = new WaitInfo(this, i, new Dictionary<string, object>(variables), primaryEntityreference);
                 }
-                Activities[i].Execute(ref variables, timeOffset, orgService, factory, trace);
+                Activities[i].Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
             }
         }
     }
@@ -1658,7 +1749,7 @@ namespace WorkflowExecuter
         public WaitStart() { }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
 
         }
@@ -1679,7 +1770,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var sb = new StringBuilder($"Workflow exited with status '{status}'");
             if (variables[messageId] != null && (variables[messageId] as string != ""))
@@ -1725,11 +1816,11 @@ namespace WorkflowExecuter
 
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var primaryEntityKey = "InputEntities(\"primaryEntity\")";
             var relation = Filter.First(x => x is SetAttributeValue) as SetAttributeValue;
-            relation.Execute(ref variables, timeOffset, orgService, factory, trace);
+            relation.Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
             var relatedEntities = Util.GetRelatedEntities(relation.EntityName, variables, orgService);
             foreach (var entity in relatedEntities)
             {
@@ -1737,7 +1828,7 @@ namespace WorkflowExecuter
                 tmpVariables[primaryEntityKey] = entity;
                 foreach (var node in Filter)
                 {
-                    node.Execute(ref tmpVariables, timeOffset, null, factory, trace);
+                    node.Execute(ref tmpVariables, timeOffset, null, factory, trace, asCalculated);
                 }
                 if (FilterResult == null || (bool)tmpVariables[FilterResult])
                 {
@@ -1769,7 +1860,7 @@ namespace WorkflowExecuter
                 variables[filteredLocation] = Filtered.Select(e => e.Attributes.ContainsKey(relatedField) ? e.Attributes[relatedField] : null).ToList();
             }
 
-            Aggregation[1].Execute(ref variables, timeOffset, orgService, factory, trace);
+            Aggregation[1].Execute(ref variables, timeOffset, orgService, factory, trace, asCalculated);
         }
     }
 
@@ -1792,7 +1883,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             var variablesInstance = variables;
             var arguments = this.inArguments.Where(arg => !outArguments.ContainsKey(arg.Value) && variablesInstance[arg.Value] != null)
@@ -1844,7 +1935,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace, bool asCalculated)
         {
             if (EntityId == "{x:Null}")
             {

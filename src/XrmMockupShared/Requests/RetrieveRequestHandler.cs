@@ -13,7 +13,7 @@ using WorkflowExecuter;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveRequestHandler : RequestHandler {
-        internal RetrieveRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Retrieve") { }
+        internal RetrieveRequestHandler(Core core, IXrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Retrieve") { }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<RetrieveRequest>(orgRequest);
@@ -34,22 +34,20 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException("The columnset parameter must not be null");
             }
 #endif
-            var row = db.GetDbRow(request.Target);
+            var entity = db.GetEntity(request.Target);
 
-            if (!security.HasPermission(row.ToEntity(), AccessRights.ReadAccess, userRef)) {
-                throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
+            if (!security.HasPermission(entity, AccessRights.ReadAccess, userRef)) {
+                throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{entity.LogicalName}'");
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            ExecuteCalculatedFields(row);
+            ExecuteCalculatedFields(entity);
 #endif
-            row = db.GetDbRow(request.Target);
-            var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
-
-            Utility.SetFormmattedValues(db, entity, row.Metadata);
-
+            entity = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(entity.LogicalName), request.ColumnSet);
+            
+            
             if (!settings.SetUnsettableFields) {
-                Utility.RemoveUnsettableAttributes("Retrieve", row.Metadata, entity);
+                Utility.RemoveUnsettableAttributes("Retrieve", core.GetEntityMetadata(entity.LogicalName), entity);
             }
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
@@ -66,8 +64,11 @@ namespace DG.Tools.XrmMockup {
 
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-        private void ExecuteCalculatedFields(DbRow row) {
-            var attributes = row.Metadata.Attributes.Where(
+        private void ExecuteCalculatedFields(Entity row) {
+
+            var metadata = core.GetEntityMetadata(row.LogicalName);
+
+            var attributes = metadata.Attributes.Where(
                 m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
             foreach (var attr in attributes) {
@@ -85,7 +86,7 @@ namespace DG.Tools.XrmMockup {
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
                 var factory = core.ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), core.TimeOffset, core.GetWorkflowService(), 
+                tree.Execute(row, core.TimeOffset, core.GetWorkflowService(), 
                     factory, factory.GetService(typeof(ITracingService)) as ITracingService);
             }
         }

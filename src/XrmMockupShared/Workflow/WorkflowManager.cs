@@ -79,18 +79,14 @@ namespace DG.Tools.XrmMockup {
         /// <param name="postImage"></param>
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
-        public void Trigger(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) 
-        {    
-            synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
-                    preImage, postImage, pluginContext, core)));
-        }
-
         public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            synchronousWorkflows.ForEach((x => ExecuteIfMatch(x, operation, stage, entity,
-                    preImage, postImage, pluginContext, core)));
+            var toExecute = synchronousWorkflows.Where(x => ShouldExecute(x, operation, stage, entity, pluginContext)).ToList();
+            foreach (var workflow in toExecute)
+            {
+                Execute(workflow, operation, entity, preImage, postImage, pluginContext, core);
+            }
         }
 
 
@@ -101,7 +97,7 @@ namespace DG.Tools.XrmMockup {
                 var workflowContext = pendingAsyncWorkflows.Dequeue();
 
 
-                Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
+                Entity primaryEntity = core.GetEntity(workflowContext.primaryRef);
 
                 var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
 
@@ -129,7 +125,7 @@ namespace DG.Tools.XrmMockup {
 
                 var primaryEntity = shadowService.Retrieve(waitInfo.PrimaryEntity.LogicalName, waitInfo.PrimaryEntity.Id, new ColumnSet(true));
                 variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
-                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, core.TimeOffset, service, provider, new TracingService());
+                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, core.TimeOffset, service, provider, new TracingService(),false);
                 if (variables["Wait"] != null) {
                     waitingWorkflows.Add(variables["Wait"] as WaitInfo);
                 }
@@ -223,8 +219,63 @@ namespace DG.Tools.XrmMockup {
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
         }
 
+        private bool ShouldExecute(Entity workflow, string operation, ExecutionStage stage, object entityObject, PluginContext pluginContext)
+        {
+            // Check if it is supposed to execute. Returns preemptively, if it should not.
+            if (workflow.LogicalName != "workflow") return false;
+            var entity = entityObject as Entity;
+            var entityRef = entityObject as EntityReference;
+
+            var guid = entity?.Id ?? entityRef.Id;
+            var logicalName = entity?.LogicalName ?? entityRef.LogicalName;
+
+
+            if (workflow.GetAttributeValue<string>("primaryentity") != "" && workflow.GetAttributeValue<string>("primaryentity") != logicalName) return false;
+
+            checkInfiniteRecursion(pluginContext);
+
+            var isCreate = operation.ToLower() == EventOperationStrings.Create;
+            var isUpdate = operation.ToLower() == EventOperationStrings.Update;
+            var isDelete = operation.ToLower() == EventOperationStrings.Delete;
+
+            if (!isCreate && !isUpdate && !isDelete) return false;
+
+            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return false;
+            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return false;
+            var triggerFields = new HashSet<string>();
+            if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
+            {
+                foreach (var field in workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(','))
+                {
+                    triggerFields.Add(field);
+                }
+            }
+            if (isUpdate && (
+                workflow.GetAttributeValue<string>("triggeronupdateattributelist") == null ||
+                workflow.GetAttributeValue<string>("triggeronupdateattributelist") == "" ||
+                !entity.Attributes.Any(a => workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(',').Any(f => a.Key == f)))) return false;
+
+            var thisStage = isCreate ? workflow.GetOptionSetValue<workflow_stage>("createstage") :
+                (isDelete ? workflow.GetOptionSetValue<workflow_stage>("deletestage") : workflow.GetOptionSetValue<workflow_stage>("updatestage"));
+            if (thisStage == null)
+            {
+                thisStage = workflow_stage.Postoperation;
+            }
+
+            if ((int)thisStage != (int)stage) return false;
+
+            var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
+                        
+            var parsedWorkflow = ParseWorkflow(workflow);
+            if (parsedWorkflow == null) return false;
+
+            return true;
+
+        }
+
         private void ExecuteIfMatch(Entity workflow, string operation, ExecutionStage stage,
-            object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
+            object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             if (workflow.LogicalName != "workflow") return;
             var entity = entityObject as Entity;
@@ -247,8 +298,10 @@ namespace DG.Tools.XrmMockup {
             if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return;
             if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return;
             var triggerFields = new HashSet<string>();
-            if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null) {
-                foreach (var field in workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(',')) {
+            if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
+            {
+                foreach (var field in workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(','))
+                {
                     triggerFields.Add(field);
                 }
             }
@@ -259,7 +312,8 @@ namespace DG.Tools.XrmMockup {
 
             var thisStage = isCreate ? workflow.GetOptionSetValue<workflow_stage>("createstage") :
                 (isDelete ? workflow.GetOptionSetValue<workflow_stage>("deletestage") : workflow.GetOptionSetValue<workflow_stage>("updatestage"));
-            if (thisStage == null) {
+            if (thisStage == null)
+            {
                 thisStage = workflow_stage.Postoperation;
             }
 
@@ -270,14 +324,73 @@ namespace DG.Tools.XrmMockup {
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
 
-            WorkflowTree postExecution = null; 
-            if (thisStage == workflow_stage.Preoperation) {
+            WorkflowTree postExecution = null;
+            if (thisStage == workflow_stage.Preoperation)
+            {
                 postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext, core);
-            } else {
+            }
+            else
+            {
                 postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext, core);
             }
 
-            if (postExecution.Variables["Wait"] != null) {
+            if (postExecution.Variables["Wait"] != null)
+            {
+                waitingWorkflows.Add(postExecution.Variables["Wait"] as WaitInfo);
+            }
+        }
+
+        private void Execute(Entity workflow, string operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        {
+            // Check if it is supposed to execute. Returns preemptively, if it should not.
+            var entity = entityObject as Entity;
+            var entityRef = entityObject as EntityReference;
+
+            var guid = entity?.Id ?? entityRef.Id;
+            var logicalName = entity?.LogicalName ?? entityRef.LogicalName;
+            
+            checkInfiniteRecursion(pluginContext);
+
+            var isCreate = operation.ToLower() == EventOperationStrings.Create;
+            var isUpdate = operation.ToLower() == EventOperationStrings.Update;
+            var isDelete = operation.ToLower() == EventOperationStrings.Delete;
+
+            
+            var triggerFields = new HashSet<string>();
+            if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
+            {
+                foreach (var field in workflow.GetAttributeValue<string>("triggeronupdateattributelist").Split(','))
+                {
+                    triggerFields.Add(field);
+                }
+            }
+            
+
+            var thisStage = isCreate ? workflow.GetOptionSetValue<workflow_stage>("createstage") :
+                (isDelete ? workflow.GetOptionSetValue<workflow_stage>("deletestage") : workflow.GetOptionSetValue<workflow_stage>("updatestage"));
+            
+            if (thisStage == null)
+            {
+                thisStage = workflow_stage.Postoperation;
+            }
+
+
+            var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
+
+            var parsedWorkflow = ParseWorkflow(workflow);
+
+            WorkflowTree postExecution = null;
+            if (thisStage == workflow_stage.Preoperation)
+            {
+                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext, core);
+            }
+            else
+            {
+                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext, core);
+            }
+
+            if (postExecution.Variables["Wait"] != null)
+            {
                 waitingWorkflows.Add(postExecution.Variables["Wait"] as WaitInfo);
             }
         }

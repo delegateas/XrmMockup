@@ -15,18 +15,20 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var contact1 = new Contact()
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = "Fred",
-                    LastName = "Bloggs",
+                    FirstName = guid + "Fred",
+                    LastName = guid + "Bloggs",
                     AnnualIncome = 12345m,
                     TransactionCurrencyId = crm.BaseCurrency
                 };
                 var contact2 = new Contact()
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = "Jo",
+                    FirstName = guid+"Jo",
                     LastName = "Bloggs",
                     AnnualIncome = 678910m,
                     TransactionCurrencyId = crm.BaseCurrency
@@ -36,6 +38,7 @@ namespace DG.XrmMockupTest
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("annualincome", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
@@ -49,10 +52,12 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var contact1 = new Contact
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = "Fred",
+                    FirstName = guid+"Fred",
                     LastName = "Bloggs",
                     AnnualIncome = 12345m,
                     TransactionCurrencyId = crm.BaseCurrency
@@ -61,7 +66,7 @@ namespace DG.XrmMockupTest
                 var contact2 = new Contact
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = "Jo",
+                    FirstName = guid+"Jo",
                     LastName = "Bloggs",
                     AnnualIncome = 678910m,
                     TransactionCurrencyId = crm.BaseCurrency
@@ -72,6 +77,7 @@ namespace DG.XrmMockupTest
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("annualincome", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
@@ -85,6 +91,8 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var lead1 = new Lead();
                 lead1.LastName = "Jordi";
                 lead1.Id = orgAdminService.Create(lead1);
@@ -94,13 +102,13 @@ namespace DG.XrmMockupTest
                 lead2.Id = orgAdminService.Create(lead2);
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.LastName = "Bloggs";
                 contact1.OriginatingLeadId = lead1.ToEntityReference();
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.LastName = "Bloggs";
                 contact2.OriginatingLeadId = lead2.ToEntityReference();
                 contact2.Id = orgAdminService.Create(contact2);
@@ -108,6 +116,7 @@ namespace DG.XrmMockupTest
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("originatingleadid", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
@@ -121,6 +130,8 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var lead1 = new Lead();
                 lead1.LastName = "Jordi";
                 lead1.Id = orgAdminService.Create(lead1);
@@ -130,13 +141,13 @@ namespace DG.XrmMockupTest
                 lead2.Id = orgAdminService.Create(lead2);
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.LastName = "Bloggs";
                 contact1.OriginatingLeadId = lead1.ToEntityReference();
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.LastName = "Bloggs";
                 contact2.OriginatingLeadId = lead2.ToEntityReference();
                 contact2.Id = orgAdminService.Create(contact2);
@@ -144,6 +155,7 @@ namespace DG.XrmMockupTest
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("originatingleadid", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
@@ -157,20 +169,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.GenderCode = Contact_GenderCode.Male;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.GenderCode = Contact_GenderCode.Female;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("gendercode", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
@@ -184,20 +198,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.GenderCode = Contact_GenderCode.Male;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.GenderCode = Contact_GenderCode.Female;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("gendercode", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
@@ -211,20 +227,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.NumberOfChildren = 2;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.NumberOfChildren = 5;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("numberofchildren", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
@@ -238,20 +256,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.NumberOfChildren = 2;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.NumberOfChildren = 5;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("numberofchildren", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
@@ -265,25 +285,28 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var now = DateTime.Now;
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.LastOnHoldTime = now;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.LastOnHoldTime = now.AddDays(1);
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("lastonholdtime", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-                Assert.AreEqual(now, firstResultValue.Value);
+                Assert.IsTrue((now - firstResultValue.Value).Seconds == 0);
             }
         }
 
@@ -292,25 +315,29 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var now = DateTime.Now;
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.LastOnHoldTime = now;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.LastOnHoldTime = now.AddDays(1);
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("lastonholdtime", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-                Assert.AreEqual(now.AddDays(1), firstResultValue.Value);
+                
+                Assert.IsTrue((now.AddDays(1) - firstResultValue.Value).Seconds == 0);
             }
         }
 
@@ -319,21 +346,24 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var g1 = new Guid(1, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
                 var g2 = new Guid(2, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.Address1_AddressId = g1;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.Address1_AddressId = g2;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("address1_addressid", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
@@ -347,21 +377,24 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var g1 = new Guid(1, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
                 var g2 = new Guid(2, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.Address1_AddressId = g1;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.Address1_AddressId = g2;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("address1_addressid", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
@@ -375,19 +408,24 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
+                
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid + "Fred";
                 contact1["exchangerate"] = 20m;
                 contact1.Id = orgGodService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid + "Jo";
                 contact2["exchangerate"] = 50m;
                 contact2.Id = orgGodService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("exchangerate", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
+                
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
@@ -401,19 +439,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
+
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1["exchangerate"] = 20m;
                 contact1.Id = orgGodService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2["exchangerate"] = 50m;
                 contact2.Id = orgGodService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("exchangerate", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
@@ -427,20 +468,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.Address1_Latitude = 2;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.Address1_Latitude = 5;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("address1_latitude", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
@@ -454,20 +497,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.Address1_Latitude = 2;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.Address1_Latitude = 5;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("address1_latitude", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
@@ -481,20 +526,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.DoNotEMail = false;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.DoNotEMail = true;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("donotemail", OrderType.Ascending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).DoNotEMail;
@@ -508,20 +555,22 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
                 var contact1 = new Contact();
-                contact1.FirstName = "Fred";
+                contact1.FirstName = guid+"Fred";
                 contact1.DoNotEMail = false;
                 contact1.Id = orgAdminService.Create(contact1);
 
                 var contact2 = new Contact();
-                contact2.FirstName = "Jo";
+                contact2.FirstName = guid+"Jo";
                 contact2.DoNotEMail = true;
                 contact2.Id = orgAdminService.Create(contact2);
 
                 QueryExpression qry = new QueryExpression(Contact.EntityLogicalName);
                 qry.ColumnSet = new ColumnSet(true);
                 qry.AddOrder("donotemail", OrderType.Descending);
+                qry.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, guid);
                 var results = orgAdminService.RetrieveMultiple(qry);
 
                 var firstResultValue = (results.Entities[0] as Contact).DoNotEMail;
@@ -535,13 +584,14 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
-                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
-                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
-                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
-                var account22 = new Account() { Name = "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
-                var account31 = new Account() { Name = "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
-                var account32 = new Account() { Name = "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
+                var account11 = new Account() { Name = guid + "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = guid + "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = guid + "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account22 = new Account() { Name = guid + "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
+                var account31 = new Account() { Name = guid + "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
+                var account32 = new Account() { Name = guid + "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
 
                 crm.PopulateWith(account11, account12, account21, account22, account31, account32);
 
@@ -555,16 +605,17 @@ namespace DG.XrmMockupTest
                     new OrderExpression("numberofemployees", OrderType.Descending)
                 }
                 };
+                query.Criteria.AddCondition("name", ConditionOperator.BeginsWith, guid);
 
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.IsTrue(names[0].Equals("12"), "Test 12 failed");
-                Assert.IsTrue(names[1].Equals("11"), "Test 11 failed");
-                Assert.IsTrue(names[2].Equals("22"), "Test 22 failed");
-                Assert.IsTrue(names[3].Equals("21"), "Test 21 failed");
-                Assert.IsTrue(names[4].Equals("32"), "Test 32 failed");
-                Assert.IsTrue(names[5].Equals("31"), "Test 31 failed");
+                Assert.IsTrue(names[0].Equals(guid + "12"), "Test 12 failed");
+                Assert.IsTrue(names[1].Equals(guid + "11"), "Test 11 failed");
+                Assert.IsTrue(names[2].Equals(guid + "22"), "Test 22 failed");
+                Assert.IsTrue(names[3].Equals(guid + "21"), "Test 21 failed");
+                Assert.IsTrue(names[4].Equals(guid + "32"), "Test 32 failed");
+                Assert.IsTrue(names[5].Equals(guid + "31"), "Test 31 failed");
             }
         }
 
@@ -574,12 +625,14 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
 
-                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
-                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
-                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
-                var account22 = new Account() { Name = "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
-                var account31 = new Account() { Name = "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
-                var account32 = new Account() { Name = "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
+                var guid = Guid.NewGuid().ToString();
+
+                var account11 = new Account() { Name = guid + "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = guid + "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = guid + "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account22 = new Account() { Name = guid + "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
+                var account31 = new Account() { Name = guid + "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
+                var account32 = new Account() { Name = guid + "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
 
                 crm.PopulateWith(account11, account12, account21, account22, account31, account32);
 
@@ -591,17 +644,20 @@ namespace DG.XrmMockupTest
                     {
                     new OrderExpression("importsequencenumber", OrderType.Ascending),
                     new OrderExpression("numberofemployees", OrderType.Ascending)
-                }
+                    },
+                    
+
                 };
+                query.Criteria.AddCondition("name", ConditionOperator.BeginsWith, guid);
 
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
-                Assert.IsTrue(names[0].Equals("11"), "Test 11 failed");
-                Assert.IsTrue(names[1].Equals("12"), "Test 12 failed");
-                Assert.IsTrue(names[2].Equals("21"), "Test 21 failed");
-                Assert.IsTrue(names[3].Equals("22"), "Test 22 failed");
-                Assert.IsTrue(names[4].Equals("31"), "Test 31 failed");
-                Assert.IsTrue(names[5].Equals("32"), "Test 32 failed");
+                Assert.IsTrue(names[0].Equals(guid + "11"), "Test 11 failed");
+                Assert.IsTrue(names[1].Equals(guid + "12"), "Test 12 failed");
+                Assert.IsTrue(names[2].Equals(guid + "21"), "Test 21 failed");
+                Assert.IsTrue(names[3].Equals(guid + "22"), "Test 22 failed");
+                Assert.IsTrue(names[4].Equals(guid + "31"), "Test 31 failed");
+                Assert.IsTrue(names[5].Equals(guid + "32"), "Test 32 failed");
             }
         }
 
@@ -610,14 +666,14 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
-                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
-                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
-                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
-                var account22 = new Account() { Name = "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
-                var account31 = new Account() { Name = "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
-                var account32 = new Account() { Name = "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
-
+                var account11 = new Account() { Name = guid + "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = guid + "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = guid + "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account22 = new Account() { Name = guid + "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
+                var account31 = new Account() { Name = guid + "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
+                var account32 = new Account() { Name = guid + "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
                 crm.PopulateWith(account11, account12, account21, account22, account31, account32);
 
                 QueryExpression query = new QueryExpression()
@@ -630,16 +686,17 @@ namespace DG.XrmMockupTest
                     new OrderExpression("numberofemployees", OrderType.Descending)
                 }
                 };
+                query.Criteria.AddCondition("name", ConditionOperator.BeginsWith, guid);
 
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.IsTrue(names[0].Equals("32"), "Test 32 failed");
-                Assert.IsTrue(names[1].Equals("31"), "Test 31 failed");
-                Assert.IsTrue(names[2].Equals("22"), "Test 22 failed");
-                Assert.IsTrue(names[3].Equals("21"), "Test 21 failed");
-                Assert.IsTrue(names[4].Equals("12"), "Test 12 failed");
-                Assert.IsTrue(names[5].Equals("11"), "Test 11 failed");
+                Assert.IsTrue(names[0].Equals(guid + "32"), "Test 32 failed");
+                Assert.IsTrue(names[1].Equals(guid + "31"), "Test 31 failed");
+                Assert.IsTrue(names[2].Equals(guid + "22"), "Test 22 failed");
+                Assert.IsTrue(names[3].Equals(guid + "21"), "Test 21 failed");
+                Assert.IsTrue(names[4].Equals(guid + "12"), "Test 12 failed");
+                Assert.IsTrue(names[5].Equals(guid + "11"), "Test 11 failed");
             }
         }
 
@@ -648,14 +705,14 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminService))
             {
+                var guid = Guid.NewGuid().ToString();
 
-                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
-                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
-                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
-                var account22 = new Account() { Name = "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
-                var account31 = new Account() { Name = "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
-                var account32 = new Account() { Name = "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
-
+                var account11 = new Account() { Name = guid + "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = guid + "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = guid + "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account22 = new Account() { Name = guid + "22", ImportSequenceNumber = 2, NumberOfEmployees = 2 };
+                var account31 = new Account() { Name = guid + "31", ImportSequenceNumber = 3, NumberOfEmployees = 1 };
+                var account32 = new Account() { Name = guid + "32", ImportSequenceNumber = 3, NumberOfEmployees = 2 };
                 crm.PopulateWith(account11, account12, account21, account22, account31, account32);
 
                 QueryExpression query = new QueryExpression()
@@ -668,16 +725,17 @@ namespace DG.XrmMockupTest
                     new OrderExpression("numberofemployees", OrderType.Ascending)
                 }
                 };
+                query.Criteria.AddCondition("name", ConditionOperator.BeginsWith, guid);
 
                 EntityCollection ec = orgAdminService.RetrieveMultiple(query);
                 var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
 
-                Assert.IsTrue(names[0].Equals("31"), "Test 31 failed");
-                Assert.IsTrue(names[1].Equals("32"), "Test 32 failed");
-                Assert.IsTrue(names[2].Equals("21"), "Test 21 failed");
-                Assert.IsTrue(names[3].Equals("22"), "Test 22 failed");
-                Assert.IsTrue(names[4].Equals("11"), "Test 11 failed");
-                Assert.IsTrue(names[5].Equals("12"), "Test 12 failed");
+                Assert.IsTrue(names[0].Equals(guid + "31"), "Test 31 failed");
+                Assert.IsTrue(names[1].Equals(guid + "32"), "Test 32 failed");
+                Assert.IsTrue(names[2].Equals(guid + "21"), "Test 21 failed");
+                Assert.IsTrue(names[3].Equals(guid + "22"), "Test 22 failed");
+                Assert.IsTrue(names[4].Equals(guid + "11"), "Test 11 failed");
+                Assert.IsTrue(names[5].Equals(guid + "12"), "Test 12 failed");
             }
         }
     }

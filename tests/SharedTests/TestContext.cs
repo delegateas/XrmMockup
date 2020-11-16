@@ -57,18 +57,18 @@ namespace DG.XrmMockupTest
                     FirstName = "Before"
                 };
                 orgAdminUIService.Create(lead);
-                var leadFromContext = context.LeadSet.First();
+                var leadFromContext = context.LeadSet.Single(x => x.Id == lead.Id);
                 leadFromContext.FirstName = "After";
                 context.SaveChanges();
 
-                Assert.AreEqual(lead.FirstName, context.LeadSet.First().FirstName);
+                Assert.AreEqual(lead.FirstName, context.LeadSet.Single(x => x.Id == lead.Id).FirstName);
                 context.ClearChanges();
 
                 context.Attach(leadFromContext);
                 context.UpdateObject(leadFromContext);
                 context.SaveChanges();
 
-                Assert.AreEqual(leadFromContext.FirstName, context.LeadSet.First().FirstName);
+                Assert.AreEqual(leadFromContext.FirstName, context.LeadSet.Single(x => x.Id == lead.Id).FirstName);
                 context.ClearChanges();
             }
         }
