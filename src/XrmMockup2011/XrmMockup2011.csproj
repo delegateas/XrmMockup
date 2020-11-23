@@ -51,6 +51,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="5.0.18" />
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="5.0.18" />
+    <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
   <ItemGroup>

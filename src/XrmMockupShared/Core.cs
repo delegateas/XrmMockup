@@ -6,8 +6,10 @@ using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
@@ -1080,11 +1082,46 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ResetWorkflows();
             }
             pluginManager.ResetPlugins();
+            
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("xrmmockup.redis.cache.windows.net:6380,password=TqJAAIXDJn0Mna8dtHgrO94d2DSSlNYvxo5LJ6jMi5w=,ssl=True,abortConnect=False");
+            var redisDB = redis.GetDatabase();
+
+            redisDB.StringSet("test", "hello");
+            redisDB.HashSet("cams_year", new HashEntry[] { new HashEntry("id", this.db.GetEntities("cams_year").First().Id.ToString()) });
+            var sw = new Stopwatch();
+            sw.Start();
+            var years = db.GetEntities("cams_year");
+            foreach (var year in years)
+            {
+                var entries = new List<HashEntry>();
+                foreach (var attr in year.Attributes.Where(x=>x.Value != null))
+                {
+                    if (attr.Value is EntityReference)
+                    {
+                        entries.Add(new HashEntry(attr.Key, $"{(attr.Value as EntityReference).LogicalName.ToString()}:{(attr.Value as EntityReference).Id.ToString()}"));
+                    }
+                    else if (attr.Value is OptionSetValue)
+                    {
+                        entries.Add(new HashEntry(attr.Key, (attr.Value as OptionSetValue).Value.ToString()));
+                    }
+                    else
+                    {
+                        entries.Add(new HashEntry(attr.Key, attr.Value.ToString()));
+                    }
+                    
+                }
+                redisDB.HashSet($"cams_year:{year.Id.ToString()}", entries.ToArray());
+
+            }
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds.ToString());
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
+
+
         }
 
         internal void ResetAccessTeams()
