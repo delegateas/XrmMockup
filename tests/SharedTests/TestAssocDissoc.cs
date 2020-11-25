@@ -107,7 +107,6 @@ namespace DG.XrmMockupTest
                 {
                     Assert.IsInstanceOfType(e, typeof(FaultException));
                 }
-
             }
         }
 
@@ -154,7 +153,6 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
                 Assert.AreEqual(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
 
-
                 orgAdminUIService.Disassociate(Contact.EntityLogicalName, contact1.Id, relationship, relatedAccounts);
 
                 relationQuery = new RelationshipQueryCollection();
@@ -190,7 +188,6 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(account1.Id, related.FirstOrDefault(e => (e as Account).Name == account1.Name).Id);
                 Assert.AreEqual(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
                 Assert.AreEqual(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
-
             }
         }
 
@@ -232,7 +229,6 @@ namespace DG.XrmMockupTest
                 Assert.AreEqual(2, related.Count());
                 Assert.AreEqual(contact1.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact1.FirstName).Id);
                 Assert.AreEqual(contact2.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact2.FirstName).Id);
-
             }
         }
 
@@ -301,7 +297,6 @@ namespace DG.XrmMockupTest
                     new EntityReference(Account.EntityLogicalName, account3.Id)
                 };
 
-
                 Relationship relationship1 = new Relationship(dg_account_contact.EntityLogicalName);
 
                 orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship1, relatedAccounts); //contact 1 associated to all accounts
@@ -319,5 +314,57 @@ namespace DG.XrmMockupTest
                 }
             }
         }
+
+        #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [TestMethod]
+        public void TestAssociateWOPrimaryNamePlugin()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
+
+                dg_bus bus = new dg_bus { dg_Ticketprice = 1 };
+                bus.Id = orgAdminService.Create(bus);
+                
+                dg_child child = new dg_child { dg_name = "Margrethe" };
+                child.Id = orgAdminService.Create(child);
+
+                relatedEntities.Add(new EntityReference(dg_child.EntityLogicalName, child.Id));
+                Relationship relationship = new Relationship("dg_bus_parental");
+
+                orgAdminUIService.Associate(dg_bus.EntityLogicalName, bus.Id, relationship,
+                    relatedEntities);
+
+                var retrievedBus = dg_bus.Retrieve(orgAdminService, bus.Id, x => x.dg_Ticketprice); 
+                Assert.AreEqual(25, retrievedBus.dg_Ticketprice);
+            }
+        }
+        #endif
+
+        #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [TestMethod]
+        public void TestDisassociateWOPrimaryNamePlugin()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                EntityReferenceCollection relatedEntities = new EntityReferenceCollection();
+
+                dg_bus bus = new dg_bus { dg_Ticketprice = 1 };
+                bus.Id = orgAdminService.Create(bus);
+
+                dg_child child = new dg_child { dg_name = "Margrethe", dg_parentBusId = bus.ToEntityReference() };
+                child.Id = orgAdminService.Create(child);
+
+                relatedEntities.Add(new EntityReference(dg_child.EntityLogicalName, child.Id));
+                Relationship relationship = new Relationship("dg_bus_parental");
+
+                orgAdminUIService.Disassociate(dg_bus.EntityLogicalName, bus.Id, relationship,
+                    relatedEntities);
+
+                var retrievedBus = dg_bus.Retrieve(orgAdminService, bus.Id, x => x.dg_Ticketprice);
+                Assert.AreEqual(26, retrievedBus.dg_Ticketprice);
+            }
+        }
+        #endif
     }
 }
