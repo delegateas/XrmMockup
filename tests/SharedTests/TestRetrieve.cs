@@ -251,6 +251,18 @@ namespace DG.XrmMockupTest
 
             }
         }
-    }
 
+
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [TestMethod]
+        public void TestEmptyCalculatedFieldss()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var id1 = this.orgAdminUIService.Create(new dg_animal());
+                dg_animal.Retrieve(orgAdminService, id1, x => x.dg_EmptyCalculatedField);
+            }
+        }
+#endif
+    }
 }

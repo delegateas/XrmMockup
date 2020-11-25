@@ -81,7 +81,9 @@ namespace DG.Tools.XrmMockup {
                 else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
 
                 if (definition == null) {
-                    throw new NotImplementedException("Unknown type when parsing calculated attr");
+                    var trace = core.ServiceFactory.GetService(typeof(ITracingService)) as ITracingService;
+                    trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
+                    return;
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
                 var factory = core.ServiceFactory;

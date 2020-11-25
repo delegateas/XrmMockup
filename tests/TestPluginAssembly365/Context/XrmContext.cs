@@ -78446,6 +78446,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: EmptyCalculatedField</para>
+        /// </summary>
+        [AttributeLogicalName("dg_emptycalculatedfield")]
+        public string dg_EmptyCalculatedField {
+            get {
+                return GetAttributeValue<string>("dg_emptycalculatedfield");
+            }
+        }
+        
+        /// <summary>
         /// <para>The name of the custom entity.</para>
         /// <para>Display Name: Name</para>
         /// </summary>
