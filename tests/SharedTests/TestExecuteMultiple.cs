@@ -3,11 +3,10 @@ using System.Linq;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestExecuteMultiple : UnitTestBase
     {
         private Account account1;
@@ -16,8 +15,7 @@ namespace DG.XrmMockupTest
         private Account account4;
         private Account account5;
 
-        [TestInitialize]
-        public void Init()
+        public TestExecuteMultiple(XrmMockupFixture fixture) : base(fixture)
         {
             account1 = new Account { Name = "Account 1" };
             account2 = new Account { Name = "Account 2" };
@@ -31,7 +29,7 @@ namespace DG.XrmMockupTest
             account5.Id = orgAdminUIService.Create(account5);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithResults()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -73,24 +71,24 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithResults =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithResults);
 
-                Assert.AreEqual(5, responseWithResults.Responses.Count);
-                Assert.IsFalse(responseWithResults.IsFaulted);
+                Assert.Equal(5, responseWithResults.Responses.Count);
+                Assert.False(responseWithResults.IsFaulted);
                 // Display the results returned in the responses.
                 foreach (var responseItem in responseWithResults.Responses)
                 {
                     var response = responseItem.Response;
-                    Assert.IsNotNull(response);
-                    Assert.IsNull(responseItem.Fault);
-                    Assert.IsInstanceOfType(response, typeof(CreateResponse));
+                    Assert.NotNull(response);
+                    Assert.Null(responseItem.Fault);
+                    Assert.IsType<CreateResponse>(response);
 
                     // make this Test work, values are the same, but any is not allowed for some reason
-                    //Assert.IsTrue(context.AccountSet.Any(x => x.Id.Equals(response.Results["id"])));
+                    //Assert.True(context.AccountSet.Any(x => x.Id.Equals(response.Results["id"])));
 
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithNoResults()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -130,13 +128,13 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithNoResults =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithNoResults);
 
-                Assert.AreEqual(0, responseWithNoResults.Responses.Count);
-                Assert.IsFalse(responseWithNoResults.IsFaulted);
+                Assert.Empty(responseWithNoResults.Responses);
+                Assert.False(responseWithNoResults.IsFaulted);
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithContinueOnError()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -175,16 +173,16 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithContinueOnError =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithContinueOnError);
 
-                Assert.AreEqual(2, responseWithContinueOnError.Responses.Count);
-                Assert.IsTrue(responseWithContinueOnError.IsFaulted);
-                Assert.IsTrue(responseWithContinueOnError.Responses.All(
+                Assert.Equal(2, responseWithContinueOnError.Responses.Count);
+                Assert.True(responseWithContinueOnError.IsFaulted);
+                Assert.True(responseWithContinueOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
 
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithStopOnError()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -222,16 +220,16 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithStopOnError =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithStopOnError);
 
-                Assert.AreEqual(1, responseWithStopOnError.Responses.Count);
-                Assert.IsTrue(responseWithStopOnError.IsFaulted);
-                Assert.IsTrue(responseWithStopOnError.Responses.All(
+                Assert.Single(responseWithStopOnError.Responses);
+                Assert.True(responseWithStopOnError.IsFaulted);
+                Assert.True(responseWithStopOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
 
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithContinueOnErrorAndReturn()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -269,18 +267,18 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithContinueOnErrorAndReturns =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithContinueOnErrorAndReturns);
 
-                Assert.AreEqual(5, responseWithContinueOnErrorAndReturns.Responses.Count);
-                Assert.AreEqual(2, responseWithContinueOnErrorAndReturns.Responses.Count(
-                    x => x.Response == null && x.Fault != null && x.Fault.Message != null));
-                Assert.AreEqual(3, responseWithContinueOnErrorAndReturns.Responses.Count(
-                    x => x.Response != null && x.Fault == null));
-                Assert.IsTrue(responseWithContinueOnErrorAndReturns.IsFaulted);
+                Assert.Equal(5, responseWithContinueOnErrorAndReturns.Responses.Count);
+                Assert.Equal(2, responseWithContinueOnErrorAndReturns.Responses.Count(
+                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
+                Assert.Equal(3, responseWithContinueOnErrorAndReturns.Responses.Count(
+                     x => x.Response != null && x.Fault == null));
+                Assert.True(responseWithContinueOnErrorAndReturns.IsFaulted);
 
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestExecuteMultipleWithStopOnErrorAndReturn()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -318,12 +316,12 @@ namespace DG.XrmMockupTest
                 ExecuteMultipleResponse responseWithStopOnErrorAndReturns =
                     (ExecuteMultipleResponse)orgAdminUIService.Execute(requestWithStopOnErrorAndReturns);
 
-                Assert.AreEqual(2, responseWithStopOnErrorAndReturns.Responses.Count);
-                Assert.AreEqual(1, responseWithStopOnErrorAndReturns.Responses.Count(
-                    x => x.Response == null && x.Fault != null && x.Fault.Message != null));
-                Assert.AreEqual(1, responseWithStopOnErrorAndReturns.Responses.Count(
-                    x => x.Response != null && x.Fault == null));
-                Assert.IsTrue(responseWithStopOnErrorAndReturns.IsFaulted);
+                Assert.Equal(2, responseWithStopOnErrorAndReturns.Responses.Count);
+                Assert.Equal(1, responseWithStopOnErrorAndReturns.Responses.Count(
+                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
+                Assert.Equal(1, responseWithStopOnErrorAndReturns.Responses.Count(
+                     x => x.Response != null && x.Fault == null));
+                Assert.True(responseWithStopOnErrorAndReturns.IsFaulted);
             }
         }
 

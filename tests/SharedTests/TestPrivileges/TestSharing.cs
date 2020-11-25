@@ -4,14 +4,16 @@ using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestSharing : UnitTestBase
     {
-        [TestMethod]
+        public TestSharing(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestSharingAccess()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -30,11 +32,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     otherService.Retrieve(Contact.EntityLogicalName, contact.Id, new ColumnSet(true));
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
                 var req = new GrantAccessRequest
                 {

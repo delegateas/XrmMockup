@@ -2,23 +2,24 @@
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
 using DG.XrmContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestWhoAmI : UnitTestBase
     {
-        [TestMethod]
+        public TestWhoAmI(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void WhoAmIRequestForAdmin()
         {
             var whoAmI = (WhoAmIResponse)orgAdminService.Execute(new WhoAmIRequest());
             var admin = orgAdminService.Retrieve<SystemUser>(crm.AdminUser.Id);
-            Assert.AreEqual(whoAmI.UserId, admin.Id);
-            Assert.AreEqual(whoAmI.BusinessUnitId, admin.BusinessUnitId.Id);
+           Assert.Equal(whoAmI.UserId, admin.Id);
+           Assert.Equal(whoAmI.BusinessUnitId, admin.BusinessUnitId.Id);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhoAmIRequestForOtherUser()
         {
             var bu = new BusinessUnit { Name = "child bu", ParentBusinessUnitId = crm.RootBusinessUnit };
@@ -26,8 +27,8 @@ namespace DG.XrmMockupTest
             var user = crm.CreateUser(orgAdminService, new SystemUser { BusinessUnitId = bu.ToEntityReference() }, SecurityRoles.SalesManager) as SystemUser;
             var service = crm.CreateOrganizationService(user.Id);
             var whoAmI = (WhoAmIResponse)service.Execute(new WhoAmIRequest());
-            Assert.AreEqual(whoAmI.UserId, user.Id);
-            Assert.AreEqual(whoAmI.BusinessUnitId, bu.Id);
+           Assert.Equal(whoAmI.UserId, user.Id);
+           Assert.Equal(whoAmI.BusinessUnitId, bu.Id);
         }
     }
 }

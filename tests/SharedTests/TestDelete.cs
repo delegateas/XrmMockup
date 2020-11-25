@@ -2,14 +2,16 @@
 using DG.XrmContext;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestDelete : UnitTestBase
     {
-        [TestMethod]
+        public TestDelete(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void DeleteTest()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -18,24 +20,24 @@ namespace DG.XrmMockupTest
                 var guid = orgAdminUIService.Create(new Contact());
 
                 var firstRetrieve = orgAdminUIService.Retrieve<Contact>(guid, null);
-                Assert.IsNotNull(firstRetrieve);
+                Assert.NotNull(firstRetrieve);
 
                 orgAdminUIService.Delete(Contact.EntityLogicalName, guid);
 
                 try
                 {
                     orgAdminUIService.Retrieve<Contact>(guid, null);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestDeleteNonExistingEntity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -43,11 +45,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Delete(Contact.EntityLogicalName, Guid.NewGuid());
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
             }

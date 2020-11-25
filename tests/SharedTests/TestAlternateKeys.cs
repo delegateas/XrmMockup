@@ -2,14 +2,15 @@
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestAlternateKeys : UnitTestBase
     {
-        [TestMethod]
+        public TestAlternateKeys(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestAlternateKeysAll()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -33,8 +34,8 @@ namespace DG.XrmMockupTest
                 
                 var resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var entity = resp.Entity as Account;
-                Assert.AreEqual("Burgers", entity.Name);
-                Assert.AreEqual("Virum", entity.Address1_City);
+               Assert.Equal("Burgers", entity.Name);
+               Assert.Equal("Virum", entity.Address1_City);
 
                 var newAttributes = new AttributeCollection {
                     { "name", "Toast" }
@@ -51,13 +52,13 @@ namespace DG.XrmMockupTest
                 };
                 resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var updatedEntity = resp.Entity as Account;
-                Assert.AreEqual("Toast", updatedEntity.Name);
-                Assert.AreEqual("Virum", updatedEntity.Address1_City);
+               Assert.Equal("Toast", updatedEntity.Name);
+               Assert.Equal("Virum", updatedEntity.Address1_City);
                 
             }
         }
 
-        [TestMethod]
+        [Fact]
 
         public void AltKeyRetrieveWithoutEntityTypeInDb() {
 

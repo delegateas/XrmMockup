@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestSnapshot : UnitTestBase
     {
-        [TestMethod]
+        public TestSnapshot(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestTakeSnapshot()
         {
             var contact = new Contact()
@@ -21,7 +22,7 @@ namespace DG.XrmMockupTest
             crm.TakeSnapshot("test1");
 
             var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
-            Assert.AreEqual(contact.FirstName, dbContact.FirstName);
+            Assert.Equal(contact.FirstName, dbContact.FirstName);
 
             crm.ResetEnvironment();
 
@@ -31,26 +32,25 @@ namespace DG.XrmMockupTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(ex.Message, $"The record of type '{contact.LogicalName}' with id '{contact.Id.ToString()}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
+                Assert.Equal(ex.Message, $"The record of type '{contact.LogicalName}' with id '{contact.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
             }
 
             crm.RestoreToSnapshot("test1");
 
             var dbContact2 = Contact.Retrieve(orgAdminService, contact.Id);
-            Assert.AreEqual(contact.FirstName, dbContact2.FirstName);
+            Assert.Equal(contact.FirstName, dbContact2.FirstName);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(KeyNotFoundException))]
+        [Fact]
         public void TestDeleteSnapshot()
         {
             crm.TakeSnapshot("test1");
             crm.RestoreToSnapshot("test1");
             crm.DeleteSnapshot("test1");
-            crm.RestoreToSnapshot("test1");
+            Assert.Throws<KeyNotFoundException>(() => crm.RestoreToSnapshot("test1"));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMultipleSnapshot()
         {
             var contactJ = new Contact()
@@ -73,7 +73,7 @@ namespace DG.XrmMockupTest
             crm.RestoreToSnapshot("test1");
 
             var dbContactJ = Contact.Retrieve(orgAdminService, contactJ.Id);
-            Assert.AreEqual(contactJ.FirstName, dbContactJ.FirstName);
+            Assert.Equal(contactJ.FirstName, dbContactJ.FirstName);
 
             try
             {
@@ -81,13 +81,13 @@ namespace DG.XrmMockupTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(ex.Message, $"The record of type '{contactP.LogicalName}' with id '{contactP.Id.ToString()}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
+                Assert.Equal(ex.Message, $"The record of type '{contactP.LogicalName}' with id '{contactP.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
             }
 
             crm.RestoreToSnapshot("test2");
 
             var dbContactP = Contact.Retrieve(orgAdminService, contactP.Id);
-            Assert.AreEqual(contactP.FirstName, dbContactP.FirstName);
+            Assert.Equal(contactP.FirstName, dbContactP.FirstName);
 
             try
             {
@@ -95,11 +95,11 @@ namespace DG.XrmMockupTest
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(ex.Message, $"The record of type '{contactJ.LogicalName}' with id '{contactJ.Id.ToString()}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
+                Assert.Equal(ex.Message, $"The record of type '{contactJ.LogicalName}' with id '{contactJ.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMultipleSnapshotIncremental()
         {
             var contactJ = new Contact()
@@ -122,18 +122,18 @@ namespace DG.XrmMockupTest
             crm.RestoreToSnapshot("test1");
 
             var dbContactJ = Contact.Retrieve(orgAdminService, contactJ.Id);
-            Assert.AreEqual(contactJ.FirstName, dbContactJ.FirstName);
-            Assert.IsNull(contactJ.LastName);
+            Assert.Equal(contactJ.FirstName, dbContactJ.FirstName);
+            Assert.Null(contactJ.LastName);
 
             crm.ResetEnvironment();
             crm.RestoreToSnapshot("test2");
 
             var dbContactJ2 = Contact.Retrieve(orgAdminService, contactJ.Id);
-            Assert.AreEqual(contactJ.FirstName, dbContactJ2.FirstName);
-            Assert.AreEqual(contactUpd.LastName, dbContactJ2.LastName);
+            Assert.Equal(contactJ.FirstName, dbContactJ2.FirstName);
+            Assert.Equal(contactUpd.LastName, dbContactJ2.LastName);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestTakeActionAfterRestore()
         {
             var contactJ = new Contact()
@@ -162,10 +162,10 @@ namespace DG.XrmMockupTest
             contactP.Id = orgAdminService.Create(contactP);
 
             var dbContactJ = Contact.Retrieve(orgAdminService, contactJ.Id);
-            Assert.AreEqual(contactJ.FirstName, dbContactJ.FirstName);
+            Assert.Equal(contactJ.FirstName, dbContactJ.FirstName);
 
             var dbContactP = Contact.Retrieve(orgAdminService, contactP.Id);
-            Assert.AreEqual(contactP.FirstName, dbContactP.FirstName);
+            Assert.Equal(contactP.FirstName, dbContactP.FirstName);
 
             // Create Account
 
@@ -176,7 +176,7 @@ namespace DG.XrmMockupTest
             acc.Id = orgAdminUIService.Create(acc);
 
             var accFetch = Account.Retrieve(orgAdminService, acc.Id);
-            Assert.AreEqual(acc.Name, accFetch.Name);
+            Assert.Equal(acc.Name, accFetch.Name);
 
             // Set Owner
             var ownerUpd = new Contact(contactP.Id)
