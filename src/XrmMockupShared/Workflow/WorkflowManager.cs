@@ -47,7 +47,7 @@ namespace DG.Tools.XrmMockup {
             if (codeActivityInstances != null) {
                 foreach (var codeActivityInstance in codeActivityInstances) {
                     foreach (var type in codeActivityInstance.Assembly.GetTypes()) {
-                        if (type.BaseType != codeActivityInstance.BaseType || type.Module.Name.StartsWith("System")) continue;
+                        if (type.BaseType != codeActivityInstance.BaseType || type.Module.Name.StartsWith("System") || type.IsAbstract) continue;
                         var codeActivity = (CodeActivity)Activator.CreateInstance(type);
 
                         if (!codeActivityTriggers.ContainsKey(type.Name)) {
