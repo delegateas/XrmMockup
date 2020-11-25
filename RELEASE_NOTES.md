@@ -1,3 +1,7 @@
+### 1.4.0 - 25 November 2020
+* CodeActivities are now allowed to extend abstract classes.
+* Plugins without a base class will now be found if any class from the dll is referenced in the basePluginTypes setting.
+
 ### 1.3.3 - 25 November 2020
 * Fixed issue where empty calculated fields caused retrieves to fail.
 * Fixed issue with retrieving plugins registered on AnyEntity, that was not registered with DAXIF.
