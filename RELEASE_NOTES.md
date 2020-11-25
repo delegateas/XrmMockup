@@ -1,3 +1,7 @@
+### 1.3.3 - 25 November 2020
+* Fixed issue where empty calculated fields caused retrieves to fail.
+* Fixed issue with retrieving plugins registered on AnyEntity, that was not registered with DAXIF.
+
 ### 1.3.2 - 12 October 2020
 * Fix issue in published nuget package where latest version of metadata generator was not added.
 
