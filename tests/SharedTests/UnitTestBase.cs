@@ -59,6 +59,20 @@ namespace DG.XrmMockupTest
 
         public static void InitializeMockup(TestContext context)
         {
+            var additionalPluginMetadata = new MetaPlugin();
+            additionalPluginMetadata.AssemblyName = "DG.Some.Namespace.ContactIPluginDirectPreOp";
+            additionalPluginMetadata.MessageName = "Create";
+            additionalPluginMetadata.PrimaryEntity = "contact";
+            additionalPluginMetadata.Rank = 10;
+            additionalPluginMetadata.Stage = 20; //pre op as it only updates a field name
+
+            var additionalPluginMetadata2 = new MetaPlugin();
+            additionalPluginMetadata2.AssemblyName = "DG.Some.Namespace.ContactIPluginDirectPostOp";
+            additionalPluginMetadata2.MessageName = "Create";
+            additionalPluginMetadata2.PrimaryEntity = "contact";
+            additionalPluginMetadata2.Rank = 10;
+            additionalPluginMetadata2.Stage = 40; //pre op as it only updates a field name
+
             var settings = new XrmMockupSettings
             {
                 BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
@@ -66,7 +80,8 @@ namespace DG.XrmMockupTest
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
                 ExceptionFreeRequests = new string[] { "TestWrongRequest" },
-                MetadataDirectoryPath = "../../../Metadata"
+                MetadataDirectoryPath = "../../../Metadata",
+                IPluginMetadata = new MetaPlugin[] { additionalPluginMetadata , additionalPluginMetadata2 }
             };
 
 #if XRM_MOCKUP_TEST_2011
