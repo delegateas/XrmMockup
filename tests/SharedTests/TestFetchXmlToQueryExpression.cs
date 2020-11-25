@@ -40,7 +40,6 @@ namespace DG.XrmMockupTest
                     ParentCustomerId = acc.ToEntityReference()
                 });
 
-
             _contact2Id = orgAdminUIService.Create(
                 new Contact()
                 {
