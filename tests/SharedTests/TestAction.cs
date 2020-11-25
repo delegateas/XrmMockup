@@ -106,6 +106,5 @@ namespace DG.XrmMockupTest
             }
         }
     }
-
 }
 #endif

@@ -17,8 +17,6 @@ namespace DG.XrmMockupTest
         public TestSyncAsyncPlugin(XrmMockupFixture fixture) : base(fixture) { }
         /* Tests for Sync and Async plugins. Relevant plugins can be found in folder "SyncAsyncTest" */
 
-
-
         /*-------------------------------- Order of plugin declaration --------------------------
          * Registration order of plugins should not interfere with execution. Sync should
          * always execute before Async. */
@@ -49,7 +47,7 @@ namespace DG.XrmMockupTest
 
             var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
 
-           Assert.Equal(newFirstName, retrievedPersonel.FirstName);
+            Assert.Equal(newFirstName, retrievedPersonel.FirstName);
         }
 
         [Fact]
@@ -79,7 +77,7 @@ namespace DG.XrmMockupTest
 
             var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
 
-           Assert.Equal(newFirstName, retrievedPersonel.FirstName);
+            Assert.Equal(newFirstName, retrievedPersonel.FirstName);
         }
 
         /* Plugin with lowest executionOrder should execute first. If no order given, it is in order of declaration. 
@@ -110,7 +108,7 @@ namespace DG.XrmMockupTest
 
             var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
 
-           Assert.Equal(newFirstName, retrievedPersonel.FirstName);
+            Assert.Equal(newFirstName, retrievedPersonel.FirstName);
         }
 
 
@@ -142,7 +140,7 @@ namespace DG.XrmMockupTest
 
             var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
 
-           Assert.Equal(newFirstName, retrievedPersonel.FirstName);
+            Assert.Equal(newFirstName, retrievedPersonel.FirstName);
         }
 
 
@@ -175,7 +173,7 @@ namespace DG.XrmMockupTest
 
             var retrievedPersonel = Contact.Retrieve(orgAdminService, personel.Id, x => x.FirstName);
 
-           Assert.Equal(newFirstName, retrievedPersonel.FirstName);
+            Assert.Equal(newFirstName, retrievedPersonel.FirstName);
         }
 
         //--------------------------------------------- Test plugin execution order --------------------------------------------
@@ -206,7 +204,7 @@ namespace DG.XrmMockupTest
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-           Assert.Equal(newAccountName, retrievedAccount.Name);
+            Assert.Equal(newAccountName, retrievedAccount.Name);
         }
 
         [Fact]
@@ -235,7 +233,7 @@ namespace DG.XrmMockupTest
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-           Assert.Equal(newAccountName, retrievedAccount.Name);
+            Assert.Equal(newAccountName, retrievedAccount.Name);
         }
 
         [Fact]
@@ -265,7 +263,7 @@ namespace DG.XrmMockupTest
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-           Assert.Equal(newAccountName, retrievedAccount.Name);
+            Assert.Equal(newAccountName, retrievedAccount.Name);
         }
 
         [Fact]
@@ -294,7 +292,7 @@ namespace DG.XrmMockupTest
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-           Assert.Equal(newAccountName, retrievedAccount.Name);
+            Assert.Equal(newAccountName, retrievedAccount.Name);
         }
 
 
@@ -324,7 +322,7 @@ namespace DG.XrmMockupTest
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-           Assert.Equal(newAccountName, retrievedAccount.Name);
+            Assert.Equal(newAccountName, retrievedAccount.Name);
         }
     }
 }

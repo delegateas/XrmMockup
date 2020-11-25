@@ -25,17 +25,19 @@ namespace DG.XrmMockupTest
                     { "name", "Burgers" },
                     { "address1_city", "Virum" }
                 };
-                var req = new RetrieveRequest {
-                    Target = new EntityReference {
+                var req = new RetrieveRequest
+                {
+                    Target = new EntityReference
+                    {
                         LogicalName = Account.EntityLogicalName,
                         KeyAttributes = keyAttributes
                     }
                 };
-                
+
                 var resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var entity = resp.Entity as Account;
-               Assert.Equal("Burgers", entity.Name);
-               Assert.Equal("Virum", entity.Address1_City);
+                Assert.Equal("Burgers", entity.Name);
+                Assert.Equal("Virum", entity.Address1_City);
 
                 var newAttributes = new AttributeCollection {
                     { "name", "Toast" }
@@ -44,27 +46,27 @@ namespace DG.XrmMockupTest
 
                 keyAttributes["name"] = "Toast";
 
-                req = new RetrieveRequest {
-                    Target = new EntityReference {
+                req = new RetrieveRequest
+                {
+                    Target = new EntityReference
+                    {
                         LogicalName = Account.EntityLogicalName,
                         KeyAttributes = keyAttributes
                     }
                 };
                 resp = orgAdminUIService.Execute(req) as RetrieveResponse;
                 var updatedEntity = resp.Entity as Account;
-               Assert.Equal("Toast", updatedEntity.Name);
-               Assert.Equal("Virum", updatedEntity.Address1_City);
-                
+                Assert.Equal("Toast", updatedEntity.Name);
+                Assert.Equal("Virum", updatedEntity.Address1_City);
             }
         }
 
         [Fact]
 
-        public void AltKeyRetrieveWithoutEntityTypeInDb() {
-
+        public void AltKeyRetrieveWithoutEntityTypeInDb()
+        {
             var y = Account.Retrieve_dg_name(orgAdminUIService, "woop", x => x.AccountNumber);
         }
     }
-
 }
 #endif

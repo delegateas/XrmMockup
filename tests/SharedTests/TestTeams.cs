@@ -84,7 +84,6 @@ namespace DG.XrmMockupTest
             account2 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 2", ParentAccountId = parent2, OwnerId = team2.ToEntityReference() }));
             account3 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 3", ParentAccountId = parent1, OwnerId = team2.ToEntityReference() }));
             account4 = new EntityReference(Account.EntityLogicalName, orgGodService.Create(new Account { Name = "Child 4", ParentAccountId = parent2, OwnerId = team3.ToEntityReference() }));
-
         }
 
         [Fact]
@@ -295,6 +294,5 @@ namespace DG.XrmMockupTest
             }
             return true;
         }
-
     }
 }

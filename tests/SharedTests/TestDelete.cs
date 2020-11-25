@@ -16,7 +16,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var guid = orgAdminUIService.Create(new Contact());
 
                 var firstRetrieve = orgAdminUIService.Retrieve<Contact>(guid, null);
@@ -33,7 +32,6 @@ namespace DG.XrmMockupTest
                 {
                     Assert.IsType<FaultException>(e);
                 }
-
             }
         }
 
@@ -51,9 +49,7 @@ namespace DG.XrmMockupTest
                 {
                     Assert.IsType<FaultException>(e);
                 }
-
             }
         }
     }
-
 }

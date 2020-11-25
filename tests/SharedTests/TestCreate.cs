@@ -26,7 +26,7 @@ namespace DG.XrmMockupTest
             contact.Id = orgAdminService.Create(contact);
 
             var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
-           Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.Equal(contact.FirstName, dbContact.FirstName);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace DG.XrmMockupTest
             var resp = orgAdminService.Execute(req) as CreateResponse;
 
             var dbContact = Contact.Retrieve(orgAdminService, resp.id);
-           Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.Equal(contact.FirstName, dbContact.FirstName);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace DG.XrmMockupTest
             var resp = orgAdminService.Execute(req) as CreateResponse;
 
             var dbContact = Contact.Retrieve(orgAdminService, resp.id);
-           Assert.Equal(contact.FirstName, dbContact.FirstName);
+            Assert.Equal(contact.FirstName, dbContact.FirstName);
         }
 
 
@@ -74,7 +74,7 @@ namespace DG.XrmMockupTest
             child.Id = orgAdminUIService.Create(child);
 
             var resp = dg_child.Retrieve(orgAdminService, child.Id);
-           Assert.Equal("Micky Mouse", resp.dg_name);
+            Assert.Equal("Micky Mouse", resp.dg_name);
         }
 
 
@@ -92,11 +92,11 @@ namespace DG.XrmMockupTest
                 var userid = orgAdminUIService.Create(user);
 
                 var retrievedUser = orgAdminUIService.Retrieve("systemuser", userid, new ColumnSet(true));
-               Assert.Equal(user.Attributes["firstname"], retrievedUser.Attributes["firstname"]);
+                Assert.Equal(user.Attributes["firstname"], retrievedUser.Attributes["firstname"]);
                 var businessunitid = retrievedUser.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var businessunit = orgAdminUIService.Retrieve("businessunit", businessunitid, new ColumnSet("name"));
 
-               Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
+                Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
             }
         }
 
@@ -105,22 +105,20 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var adminUser = orgAdminUIService.Retrieve("systemuser", crm.AdminUser.Id, new ColumnSet("businessunitid"));
                 var adminBusinessunitid = adminUser.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var adminBusinessunit = orgAdminUIService.Retrieve("businessunit", adminBusinessunitid, new ColumnSet("name"));
-
 
                 var user = new Entity("team");
                 user.Attributes["name"] = "Test Team";
                 var userid = orgAdminUIService.Create(user);
 
                 var retrievedTeam = orgAdminUIService.Retrieve("team", userid, new ColumnSet(true));
-               Assert.Equal(user.Attributes["name"], retrievedTeam.Attributes["name"]);
+                Assert.Equal(user.Attributes["name"], retrievedTeam.Attributes["name"]);
                 var businessunitid = retrievedTeam.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var businessunit = orgAdminUIService.Retrieve("businessunit", businessunitid, new ColumnSet("name"));
 
-               Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
+                Assert.Equal(adminBusinessunit.Attributes["name"], businessunit.Attributes["name"]);
             }
         }
 
@@ -155,7 +153,6 @@ namespace DG.XrmMockupTest
                 {
                     Assert.IsType<FaultException>(e);
                 }
-
             }
         }
 
@@ -207,10 +204,10 @@ namespace DG.XrmMockupTest
 
                 contact.Id = (orgAdminUIService.Execute(request) as CreateResponse).id;
                 var accountSet = context.AccountSet.Where(x => x.Name.StartsWith("AccountRelated")).ToList();
-               Assert.Equal(2, accountSet.Count);
+                Assert.Equal(2, accountSet.Count);
                 foreach (var acc in accountSet)
                 {
-                   Assert.Equal(contact.Id, acc.PrimaryContactId.Id);
+                    Assert.Equal(contact.Id, acc.PrimaryContactId.Id);
                 }
             }
         }

@@ -26,7 +26,7 @@ namespace DG.XrmMockupTest
                 account.Name = "SDK can do";
                 orgAdminService.Update(account);
                 var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, account.Id, new ColumnSet(true)) as Account;
-               Assert.Equal(account.Name, retrieved.Name);
+                Assert.Equal(account.Name, retrieved.Name);
 
                 try
                 {
@@ -41,7 +41,7 @@ namespace DG.XrmMockupTest
         }
 
 
-        [Fact(Skip= "Disagreement over test")]
+        [Fact(Skip = "Disagreement over test")]
         // majakubowski: 
         // I don't agree with this test - I don't have experience with earlier version than 2015, 
         // but from this version all boolean attributes are set to default values also when created via SDK 

@@ -41,7 +41,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
 
@@ -73,7 +73,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
 
@@ -103,7 +103,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
 
@@ -133,7 +133,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
 
@@ -164,7 +164,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
 
@@ -195,7 +195,7 @@ namespace DG.XrmMockupTest
 
                 var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-               Assert.Equal(newAccountName, retrievedAccount.Name);
+                Assert.Equal(newAccountName, retrievedAccount.Name);
             }
         }
     }

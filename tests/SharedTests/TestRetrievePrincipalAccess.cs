@@ -9,7 +9,8 @@ namespace DG.XrmMockupTest
     {
         public SystemUser TestUser;
 
-        public TestRetrievePrincipalAccess(XrmMockupFixture fixture) : base(fixture) {
+        public TestRetrievePrincipalAccess(XrmMockupFixture fixture) : base(fixture)
+        {
             TestUser = crm.CreateUser(orgAdminService, new SystemUser { BusinessUnitId = crm.RootBusinessUnit }, SecurityRoles._000TestingRole) as SystemUser;
         }
 
@@ -19,7 +20,7 @@ namespace DG.XrmMockupTest
             var lead = new Lead();
             lead.Id = orgAdminService.Create(lead);
 
-            var principalAccess = (RetrievePrincipalAccessResponse) orgAdminService.Execute(new RetrievePrincipalAccessRequest
+            var principalAccess = (RetrievePrincipalAccessResponse)orgAdminService.Execute(new RetrievePrincipalAccessRequest
             {
                 Principal = TestUser.ToEntityReference(),
                 Target = lead.ToEntityReference()

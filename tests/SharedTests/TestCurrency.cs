@@ -33,14 +33,14 @@ namespace DG.XrmMockupTest
                 bus.Id = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(bus.TransactionCurrencyId, retrieved.TransactionCurrencyId);
+                Assert.Equal(bus.TransactionCurrencyId, retrieved.TransactionCurrencyId);
 
                 // test base value gets updated
                 bus.dg_Ticketprice = 100m;
                 orgAdminUIService.Update(bus);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 // test currency doesn't update before record gets updated
                 var oldExchangeRate = currency.ExchangeRate;
@@ -48,14 +48,14 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Update(currency);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / oldExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / oldExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 // test base value gets updated when record field value changes
                 bus.dg_Ticketprice = 120m;
                 orgAdminUIService.Update(bus);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 // test base value gets updated when transactioncurrencyid changes
                 var newCurrency = new TransactionCurrency
@@ -66,13 +66,13 @@ namespace DG.XrmMockupTest
                 newCurrency.Id = orgAdminUIService.Create(newCurrency);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / currency.ExchangeRate.Value, currency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 bus.TransactionCurrencyId = newCurrency.ToEntityReference();
                 orgAdminUIService.Update(bus);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / newCurrency.ExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / newCurrency.ExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 // test base value gets updated when state of record changes
                 oldExchangeRate = newCurrency.ExchangeRate;
@@ -80,13 +80,12 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Update(newCurrency);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / oldExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / oldExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
 
                 bus.SetState(orgAdminUIService, dg_busState.Inactive);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / newCurrency.ExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
-
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / newCurrency.ExchangeRate.Value, newCurrency.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base);
             }
         }
 
@@ -103,7 +102,6 @@ namespace DG.XrmMockupTest
                 var dollarId = orgAdminUIService.Create(dollar);
                 dollar.Id = dollarId;
 
-
                 var bus = new dg_bus
                 {
                     dg_Ticketprice = 10m,
@@ -113,7 +111,7 @@ namespace DG.XrmMockupTest
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
                 Assert.True(retrieved.dg_ticketprice_Base.HasValue);
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / dollar.ExchangeRate.Value, dollar.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base.Value);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value / dollar.ExchangeRate.Value, dollar.CurrencyPrecision.Value), retrieved.dg_ticketprice_Base.Value);
             }
         }
 
@@ -130,7 +128,6 @@ namespace DG.XrmMockupTest
                 var dollarId = orgAdminUIService.Create(dollar);
                 dollar.Id = dollarId;
 
-
                 var bus = new dg_bus
                 {
                     dg_Ticketprice = 10m,
@@ -140,7 +137,7 @@ namespace DG.XrmMockupTest
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
                 Assert.True(retrieved.ExchangeRate.HasValue);
-               Assert.Equal(dollar.ExchangeRate, retrieved.ExchangeRate);
+                Assert.Equal(dollar.ExchangeRate, retrieved.ExchangeRate);
             }
         }
 
@@ -160,12 +157,12 @@ namespace DG.XrmMockupTest
                 var currency = resp.Entities.First().ToEntity<TransactionCurrency>();
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
+                Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
 
                 bus.dg_Ticketprice = 10m;
                 orgAdminUIService.Update(bus);
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
+                Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
             }
         }
 
@@ -191,12 +188,12 @@ namespace DG.XrmMockupTest
                 var busId = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
+                Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
 
                 bus.dg_Ticketprice = 20m;
                 orgAdminUIService.Update(bus);
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
+                Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
             }
         }
 
@@ -216,7 +213,7 @@ namespace DG.XrmMockupTest
                     TransactionCurrencyId = dollar.Id
                 };
                 var response = orgAdminUIService.Execute(request) as RetrieveExchangeRateResponse;
-               Assert.Equal(dollar.ExchangeRate, response.ExchangeRate);
+                Assert.Equal(dollar.ExchangeRate, response.ExchangeRate);
             }
         }
 
@@ -241,5 +238,4 @@ namespace DG.XrmMockupTest
             }
         }
     }
-
 }

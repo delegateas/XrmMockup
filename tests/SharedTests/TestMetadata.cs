@@ -100,7 +100,7 @@ namespace DG.XrmMockupTest
 
             Assert.NotNull(resp);
             Assert.NotNull(resp.EntityMetadata);
-           Assert.Equal(req.LogicalName, resp.EntityMetadata.LogicalName);
+            Assert.Equal(req.LogicalName, resp.EntityMetadata.LogicalName);
         }
 
         [Fact]

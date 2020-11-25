@@ -49,7 +49,8 @@ namespace DG.XrmMockupTest
             {
                 userService.Update(updateContact);
                 throw new XunitException();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Assert.IsType<FaultException>(e);
             }
@@ -59,8 +60,8 @@ namespace DG.XrmMockupTest
             // Update contact using the user service
             userService.Update(updateContact);
             // Assert success
-            contact = (Contact) orgAdminUIService.Retrieve(Contact.EntityLogicalName, contactId, new ColumnSet(true));
-           Assert.Equal("CEO", contact.GetAttributeValue<string>("jobtitle"));
+            contact = (Contact)orgAdminUIService.Retrieve(Contact.EntityLogicalName, contactId, new ColumnSet(true));
+            Assert.Equal("CEO", contact.GetAttributeValue<string>("jobtitle"));
         }
     }
 }

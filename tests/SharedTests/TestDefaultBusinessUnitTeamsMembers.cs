@@ -12,9 +12,9 @@ namespace DG.XrmMockupTest
         private BusinessUnit _businessUnit1;
         private BusinessUnit _businessUnit2;
         private BusinessUnit _businessUnit3;
-        private   BusinessUnit _businessUnit4;
+        private BusinessUnit _businessUnit4;
         private SystemUser _user1;
-        private  SystemUser _user2;
+        private SystemUser _user2;
 
         public TestDefaultBusinessUnitTeamMembers(XrmMockupFixture fixture) : base(fixture)
         {
@@ -22,7 +22,7 @@ namespace DG.XrmMockupTest
 
             _businessUnit1 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 1" };
             _businessUnit1.Id = orgAdminService.Create(_businessUnit1);
-            
+
             _businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
             _businessUnit2.Id = orgAdminService.Create(_businessUnit2);
             _user1 = crm.CreateUser(orgAdminService, _businessUnit2.ToEntityReference(), SecurityRoles.SystemCustomizer) as SystemUser;
@@ -44,7 +44,7 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-               Assert.Single(fetchedTeam);
+                Assert.Single(fetchedTeam);
             }
         }
 
@@ -58,7 +58,7 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team.Id).ToList();
-               Assert.Empty(fetchedTeam);
+                Assert.Empty(fetchedTeam);
             }
         }
 
@@ -78,13 +78,13 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team3.Id).ToList();
-               Assert.Empty(fetchedTeam);
+                Assert.Empty(fetchedTeam);
             }
 
             using (var context = new Xrm(orgAdminService))
             {
                 var fetchedTeam = context.TeamMembershipSet.Where(x => x.TeamId == team4.Id).ToList();
-               Assert.Single(fetchedTeam);
+                Assert.Single(fetchedTeam);
             }
         }
 
@@ -108,15 +108,15 @@ namespace DG.XrmMockupTest
         {
             businessUnit = (BusinessUnit)orgAdminService.Retrieve(LogicalNames.BusinessUnit, businessUnit.Id, new ColumnSet("name", "createdby"));
 
-           Assert.Equal(businessUnit.Name, fetchedTeam.Name);
+            Assert.Equal(businessUnit.Name, fetchedTeam.Name);
 #if !(XRM_MOCKUP_2011)
-           Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
+            Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
 #endif
-           Assert.Equal(true, fetchedTeam.IsDefault);
-           Assert.Equal("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
-                fetchedTeam.Description);
-           Assert.Equal(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
-           Assert.Equal(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
+            Assert.Equal(true, fetchedTeam.IsDefault);
+            Assert.Equal("Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.",
+                 fetchedTeam.Description);
+            Assert.Equal(businessUnit.CreatedBy.Id, fetchedTeam.AdministratorId.Id);
+            Assert.Equal(businessUnit.Id, fetchedTeam.BusinessUnitId.Id);
         }
     }
 }

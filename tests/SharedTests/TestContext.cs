@@ -31,7 +31,6 @@ namespace DG.XrmMockupTest
                 var acc3 = orgAdminUIService.Create(new Account());
                 var con = orgAdminUIService.Create(new Contact());
 
-
                 var relatedAccounts = new EntityReferenceCollection
                 {
                     new EntityReference(Account.EntityLogicalName, acc1),
@@ -43,7 +42,7 @@ namespace DG.XrmMockupTest
 
                 orgAdminUIService.Associate(Contact.EntityLogicalName, con, relationship, relatedAccounts);
 
-               Assert.Equal(3, context.dg_account_contactSet.Where(x => x.contactid == con).ToList().Count());
+                Assert.Equal(3, context.dg_account_contactSet.Where(x => x.contactid == con).ToList().Count());
             }
         }
 
@@ -62,14 +61,14 @@ namespace DG.XrmMockupTest
                 leadFromContext.FirstName = "After";
                 context.SaveChanges();
 
-               Assert.Equal(lead.FirstName, context.LeadSet.First().FirstName);
+                Assert.Equal(lead.FirstName, context.LeadSet.First().FirstName);
                 context.ClearChanges();
 
                 context.Attach(leadFromContext);
                 context.UpdateObject(leadFromContext);
                 context.SaveChanges();
 
-               Assert.Equal(leadFromContext.FirstName, context.LeadSet.First().FirstName);
+                Assert.Equal(leadFromContext.FirstName, context.LeadSet.First().FirstName);
                 context.ClearChanges();
             }
         }

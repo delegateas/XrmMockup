@@ -15,17 +15,19 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                var _account1Id= orgAdminUIService.Create(
-                    new Account {
+                var _account1Id = orgAdminUIService.Create(
+                    new Account
+                    {
                         Name = "Fourth Coffee",
                         Description = "Coffee House"
                     });
                 var _account2Id = orgAdminUIService.Create(
-                    new Account {
+                    new Account
+                    {
                         Name = "Fourth Coffee",
                         NumberOfEmployees = 55,
                     });
-                
+
                 var target = new EntityReference
                 {
                     Id = _account1Id,
@@ -38,7 +40,8 @@ namespace DG.XrmMockupTest
                     NumberOfEmployees = 45
                 };
 
-                var req = new MergeRequest {
+                var req = new MergeRequest
+                {
                     Target = target,
                     SubordinateId = _account2Id,
                     UpdateContent = updateContent,
@@ -47,7 +50,7 @@ namespace DG.XrmMockupTest
 
                 // Execute the request.
                 MergeResponse merged = (MergeResponse)orgAdminUIService.Execute(req);
-                
+
 
                 Account mergeeAccount =
                     (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName,
@@ -61,10 +64,10 @@ namespace DG.XrmMockupTest
                     (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName,
                     _account1Id, new ColumnSet(true));
 
-               Assert.Equal("Fourth Coffee", mergedAccount.Name);
-               Assert.Equal("Coffee House", mergedAccount.Description);
-               Assert.Equal(updateContent.NumberOfEmployees, mergedAccount.NumberOfEmployees);
-               Assert.Equal(updateContent.Address1_Line1, mergedAccount.Address1_Line1);
+                Assert.Equal("Fourth Coffee", mergedAccount.Name);
+                Assert.Equal("Coffee House", mergedAccount.Description);
+                Assert.Equal(updateContent.NumberOfEmployees, mergedAccount.NumberOfEmployees);
+                Assert.Equal(updateContent.Address1_Line1, mergedAccount.Address1_Line1);
 
             }
         }

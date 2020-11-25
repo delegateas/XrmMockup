@@ -15,8 +15,8 @@ namespace DG.XrmMockupTest
         {
             var whoAmI = (WhoAmIResponse)orgAdminService.Execute(new WhoAmIRequest());
             var admin = orgAdminService.Retrieve<SystemUser>(crm.AdminUser.Id);
-           Assert.Equal(whoAmI.UserId, admin.Id);
-           Assert.Equal(whoAmI.BusinessUnitId, admin.BusinessUnitId.Id);
+            Assert.Equal(whoAmI.UserId, admin.Id);
+            Assert.Equal(whoAmI.BusinessUnitId, admin.BusinessUnitId.Id);
         }
 
         [Fact]
@@ -27,8 +27,8 @@ namespace DG.XrmMockupTest
             var user = crm.CreateUser(orgAdminService, new SystemUser { BusinessUnitId = bu.ToEntityReference() }, SecurityRoles.SalesManager) as SystemUser;
             var service = crm.CreateOrganizationService(user.Id);
             var whoAmI = (WhoAmIResponse)service.Execute(new WhoAmIRequest());
-           Assert.Equal(whoAmI.UserId, user.Id);
-           Assert.Equal(whoAmI.BusinessUnitId, bu.Id);
+            Assert.Equal(whoAmI.UserId, user.Id);
+            Assert.Equal(whoAmI.BusinessUnitId, bu.Id);
         }
     }
 }

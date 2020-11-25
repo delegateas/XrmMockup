@@ -44,10 +44,10 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
-               Assert.Equal(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
-               Assert.Equal(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
-               Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
+                Assert.Equal(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
+                Assert.Equal(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
+                Assert.Equal(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
+                Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
                 Assert.NotNull(retrieved.dg_AllConditions);
             }
         }
@@ -130,7 +130,7 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(req);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(130, retrieved.dg_Totalallowance);
+                Assert.Equal(130, retrieved.dg_Totalallowance);
                 Assert.Null(retrieved.dg_MaxAllowance);
                 Assert.Null(retrieved.dg_MinAllowance);
                 Assert.Null(retrieved.dg_AvgAllowance);
@@ -139,8 +139,8 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(req);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(130, retrieved.dg_Totalallowance);
-               Assert.Equal(60, retrieved.dg_MaxAllowance);
+                Assert.Equal(130, retrieved.dg_Totalallowance);
+                Assert.Equal(60, retrieved.dg_MaxAllowance);
                 Assert.Null(retrieved.dg_MinAllowance);
                 Assert.Null(retrieved.dg_AvgAllowance);
 
@@ -148,19 +148,19 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(req);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(130, retrieved.dg_Totalallowance);
-               Assert.Equal(60, retrieved.dg_MaxAllowance);
-               Assert.Equal(20, retrieved.dg_MinAllowance);
+                Assert.Equal(130, retrieved.dg_Totalallowance);
+                Assert.Equal(60, retrieved.dg_MaxAllowance);
+                Assert.Equal(20, retrieved.dg_MinAllowance);
                 Assert.Null(retrieved.dg_AvgAllowance);
 
                 req.FieldName = "dg_avgallowance";
                 orgAdminUIService.Execute(req);
 
                 retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(130, retrieved.dg_Totalallowance.Value);
-               Assert.Equal(60, retrieved.dg_MaxAllowance.Value);
-               Assert.Equal(20, retrieved.dg_MinAllowance.Value);
-               Assert.Equal(43.33m, retrieved.dg_AvgAllowance.Value);
+                Assert.Equal(130, retrieved.dg_Totalallowance.Value);
+                Assert.Equal(60, retrieved.dg_MaxAllowance.Value);
+                Assert.Equal(20, retrieved.dg_MinAllowance.Value);
+                Assert.Equal(43.33m, retrieved.dg_AvgAllowance.Value);
             }
         }
 
@@ -185,9 +185,9 @@ namespace DG.XrmMockupTest
                 bus.Id = orgAdminUIService.Create(bus);
 
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-               Assert.Equal(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value), retrieved.dg_Ticketprice.Value);
-               Assert.Equal(Math.Round(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value) * 20, 2), retrieved.dg_Udregnet.Value);
-               Assert.Equal(Math.Round(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value) * 20, 1), retrieved.dg_EndnuUdregnet.Value);
+                Assert.Equal(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value), retrieved.dg_Ticketprice.Value);
+                Assert.Equal(Math.Round(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value) * 20, 2), retrieved.dg_Udregnet.Value);
+                Assert.Equal(Math.Round(Math.Round(bus.dg_Ticketprice.Value, currency.CurrencyPrecision.Value) * 20, 1), retrieved.dg_EndnuUdregnet.Value);
             }
         }
     }

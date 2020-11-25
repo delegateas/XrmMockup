@@ -33,7 +33,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [Fact(Skip="Using real data")]
+        [Fact(Skip = "Using real data")]
         public void TestRealDataRetrieve()
         {
             var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68"))
@@ -42,11 +42,11 @@ namespace DG.XrmMockupTest
             };
             orgRealDataService.Update(acc);
             var retrieved = orgRealDataService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(acc.Name, retrieved.Name);
-           Assert.Equal("12321123312", retrieved.AccountNumber);
+            Assert.Equal(acc.Name, retrieved.Name);
+            Assert.Equal("12321123312", retrieved.AccountNumber);
         }
 
-        [Fact(Skip= "Using real data")]
+        [Fact(Skip = "Using real data")]
         public void TestRealDataRetrieveMultiple()
         {
             var query = new QueryExpression(Account.EntityLogicalName)

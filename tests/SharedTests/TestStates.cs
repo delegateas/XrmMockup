@@ -24,7 +24,7 @@ namespace DG.XrmMockupTest
             acc.SetState(orgAdminUIService, AccountState.Inactive, Account_StatusCode.Inactive);
 
             var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)) as Account;
-           Assert.Equal(AccountState.Inactive, retrieved.StateCode);
+            Assert.Equal(AccountState.Inactive, retrieved.StateCode);
         }
 
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
@@ -40,8 +40,8 @@ namespace DG.XrmMockupTest
             man.SetState(orgAdminUIService, dg_manState.Inactive, dg_man_statuscode.Inactive);
 
             var retrieved = orgAdminUIService.Retrieve(dg_man.EntityLogicalName, man.Id, new ColumnSet(true)) as dg_man;
-           Assert.Equal(dg_manState.Inactive, retrieved.statecode);
-           Assert.Equal(dg_man_statuscode.Inactive, retrieved.statuscode);
+            Assert.Equal(dg_manState.Inactive, retrieved.statecode);
+            Assert.Equal(dg_man_statuscode.Inactive, retrieved.statuscode);
 
             try
             {
@@ -69,7 +69,7 @@ namespace DG.XrmMockupTest
             var request = new IsValidStateTransitionRequest
             {
                 Entity = retrieved.ToEntityReference(),
-                NewState = dg_manState.Inactive.ToString(), 
+                NewState = dg_manState.Inactive.ToString(),
                 NewStatus = (int)dg_man_statuscode.Inactive
             };
 
@@ -293,18 +293,18 @@ namespace DG.XrmMockupTest
         {
             var incidentId = orgAdminService.Create(new Incident { });
             var incident = orgAdminService.Retrieve(Incident.EntityLogicalName, incidentId, new ColumnSet(true)).ToEntity<Incident>();
-           Assert.Equal(IncidentState.Active, incident.StateCode);
-           Assert.Equal(Incident_StatusCode.OnHold, incident.StatusCode);
+            Assert.Equal(IncidentState.Active, incident.StateCode);
+            Assert.Equal(Incident_StatusCode.OnHold, incident.StatusCode);
 
             var accId = orgAdminService.Create(new Account { StateCode = AccountState.Inactive });
             var acc = orgAdminService.Retrieve(Account.EntityLogicalName, accId, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(AccountState.Active, acc.StateCode);
-           Assert.Equal(Account_StatusCode.Somestatus, acc.StatusCode);
+            Assert.Equal(AccountState.Active, acc.StateCode);
+            Assert.Equal(Account_StatusCode.Somestatus, acc.StatusCode);
 
             accId = orgAdminService.Create(new Account { StatusCode = Account_StatusCode.Active });
             acc = orgAdminService.Retrieve(Account.EntityLogicalName, accId, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(AccountState.Active, acc.StateCode);
-           Assert.Equal(Account_StatusCode.Active, acc.StatusCode);
+            Assert.Equal(AccountState.Active, acc.StateCode);
+            Assert.Equal(Account_StatusCode.Active, acc.StatusCode);
         }
 
 
@@ -314,22 +314,22 @@ namespace DG.XrmMockupTest
             var acc = new Account { };
             acc.Id = orgAdminService.Create(acc);
             var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(AccountState.Active, retrieved.StateCode);
-           Assert.Equal(Account_StatusCode.Somestatus, retrieved.StatusCode);
+            Assert.Equal(AccountState.Active, retrieved.StateCode);
+            Assert.Equal(Account_StatusCode.Somestatus, retrieved.StatusCode);
 
             acc.StateCode = AccountState.Inactive;
             orgAdminService.Update(acc);
             retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(AccountState.Inactive, retrieved.StateCode);
-           Assert.Equal(Account_StatusCode.Inactive, retrieved.StatusCode);
+            Assert.Equal(AccountState.Inactive, retrieved.StateCode);
+            Assert.Equal(Account_StatusCode.Inactive, retrieved.StatusCode);
 
             acc.StateCode = null;
             acc.StatusCode = Account_StatusCode.Active;
             orgAdminService.Update(acc);
 
             retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-           Assert.Equal(AccountState.Active, retrieved.StateCode);
-           Assert.Equal(Account_StatusCode.Active, retrieved.StatusCode);
+            Assert.Equal(AccountState.Active, retrieved.StateCode);
+            Assert.Equal(Account_StatusCode.Active, retrieved.StatusCode);
         }
     }
 }

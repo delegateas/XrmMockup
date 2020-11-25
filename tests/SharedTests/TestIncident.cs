@@ -44,8 +44,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-               Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-               Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
+                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
 
                 var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
                 Assert.NotNull(retrievedIncidentResolution);
@@ -83,8 +83,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-               Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-               Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
+                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
 
                 var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
                 Assert.NotNull(retrievedIncidentResolution);
@@ -504,7 +504,7 @@ namespace DG.XrmMockupTest
             }
 
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-           Assert.Equal(incident.Title, retrievedIncident.Title);
+            Assert.Equal(incident.Title, retrievedIncident.Title);
         }
 
         [Fact]
@@ -537,7 +537,7 @@ namespace DG.XrmMockupTest
             orgAdminService.Update(incidentUpdate);
 
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-           Assert.Equal(IncidentState.Active,retrievedIncident.StateCode);
+            Assert.Equal(IncidentState.Active, retrievedIncident.StateCode);
         }
     }
 }

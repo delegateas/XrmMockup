@@ -88,7 +88,6 @@ namespace DG.XrmMockupTest
 
                 Assert.Equal(contact1.Id, retrieved.PrimaryContactId.Id);
 
-
                 orgAdminUIService.Disassociate(Account.EntityLogicalName, account1.Id, relationship,
                     relatedEntities);
 

@@ -83,7 +83,6 @@ namespace DG.XrmMockupTest
 
                     // make this Test work, values are the same, but any is not allowed for some reason
                     //Assert.True(context.AccountSet.Any(x => x.Id.Equals(response.Results["id"])));
-
                 }
             }
         }
@@ -130,7 +129,6 @@ namespace DG.XrmMockupTest
 
                 Assert.Empty(responseWithNoResults.Responses);
                 Assert.False(responseWithNoResults.IsFaulted);
-
             }
         }
 
@@ -177,8 +175,6 @@ namespace DG.XrmMockupTest
                 Assert.True(responseWithContinueOnError.IsFaulted);
                 Assert.True(responseWithContinueOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
-
-
             }
         }
 
@@ -224,8 +220,6 @@ namespace DG.XrmMockupTest
                 Assert.True(responseWithStopOnError.IsFaulted);
                 Assert.True(responseWithStopOnError.Responses.All(
                     x => x.Response == null && x.Fault != null && x.Fault.Message != null));
-
-
             }
         }
 
@@ -273,8 +267,6 @@ namespace DG.XrmMockupTest
                 Assert.Equal(3, responseWithContinueOnErrorAndReturns.Responses.Count(
                      x => x.Response != null && x.Fault == null));
                 Assert.True(responseWithContinueOnErrorAndReturns.IsFaulted);
-
-
             }
         }
 
@@ -324,6 +316,5 @@ namespace DG.XrmMockupTest
                 Assert.True(responseWithStopOnErrorAndReturns.IsFaulted);
             }
         }
-
     }
 }

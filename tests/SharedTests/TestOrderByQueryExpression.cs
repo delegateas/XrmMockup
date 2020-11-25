@@ -43,7 +43,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
 
-               Assert.Equal(12345m, firstResultValue.Value);
+                Assert.Equal(12345m, firstResultValue.Value);
             }
         }
 
@@ -81,7 +81,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).AnnualIncome;
 
-               Assert.Equal(678910M, firstResultValue.Value);
+                Assert.Equal(678910M, firstResultValue.Value);
             }
         }
 
@@ -127,7 +127,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
 
-               Assert.Equal("Jordi", firstResultValue.Name);
+                Assert.Equal("Jordi", firstResultValue.Name);
             }
         }
 
@@ -173,7 +173,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).OriginatingLeadId;
 
-               Assert.Equal("Skuba", firstResultValue.Name);
+                Assert.Equal("Skuba", firstResultValue.Name);
             }
         }
 
@@ -206,7 +206,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
 
-               Assert.Equal(Contact_GenderCode.Male, firstResultValue.Value);
+                Assert.Equal(Contact_GenderCode.Male, firstResultValue.Value);
             }
         }
 
@@ -239,7 +239,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).GenderCode;
 
-               Assert.Equal(Contact_GenderCode.Female, firstResultValue.Value);
+                Assert.Equal(Contact_GenderCode.Female, firstResultValue.Value);
             }
         }
 
@@ -272,7 +272,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
 
-               Assert.Equal(2, firstResultValue.Value);
+                Assert.Equal(2, firstResultValue.Value);
             }
         }
 
@@ -305,7 +305,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).NumberOfChildren;
 
-               Assert.Equal(5, firstResultValue.Value);
+                Assert.Equal(5, firstResultValue.Value);
             }
         }
 
@@ -338,7 +338,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-               Assert.Equal(now, firstResultValue.Value);
+                Assert.Equal(now, firstResultValue.Value);
             }
         }
 
@@ -371,7 +371,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).LastOnHoldTime;
 
-               Assert.Equal(now.AddDays(1), firstResultValue.Value);
+                Assert.Equal(now.AddDays(1), firstResultValue.Value);
             }
         }
 
@@ -405,7 +405,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
 
-               Assert.Equal(g1, firstResultValue.Value);
+                Assert.Equal(g1, firstResultValue.Value);
             }
         }
 
@@ -439,7 +439,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_AddressId;
 
-               Assert.Equal(g2, firstResultValue.Value);
+                Assert.Equal(g2, firstResultValue.Value);
             }
         }
 
@@ -471,7 +471,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
 
-               Assert.Equal(20m, firstResultValue);
+                Assert.Equal(20m, firstResultValue);
             }
         }
 
@@ -503,7 +503,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact)["exchangerate"];
 
-               Assert.Equal(50m, firstResultValue);
+                Assert.Equal(50m, firstResultValue);
             }
         }
 
@@ -536,7 +536,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
 
-               Assert.Equal(2, firstResultValue.Value);
+                Assert.Equal(2, firstResultValue.Value);
             }
         }
 
@@ -568,7 +568,7 @@ namespace DG.XrmMockupTest
 
                 var firstResultValue = (results.Entities[0] as Contact).Address1_Latitude;
 
-               Assert.Equal(5, firstResultValue.Value);
+                Assert.Equal(5, firstResultValue.Value);
             }
         }
 

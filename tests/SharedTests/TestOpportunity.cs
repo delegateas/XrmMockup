@@ -34,10 +34,10 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(winReq);
 
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
-               Assert.Equal(OpportunityState.Won, retrieved.StateCode);
-               Assert.Equal(Opportunity_StatusCode.Won, retrieved.StatusCode);
+                Assert.Equal(OpportunityState.Won, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Won, retrieved.StatusCode);
                 Assert.True(crm.ContainsEntity(opclose));
-               Assert.Equal("SetFromWinLose", retrieved.Description);
+                Assert.Equal("SetFromWinLose", retrieved.Description);
             }
         }
 
@@ -63,10 +63,10 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(loseReq);
 
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
-               Assert.Equal(OpportunityState.Lost, retrieved.StateCode);
-               Assert.Equal(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
+                Assert.Equal(OpportunityState.Lost, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
                 Assert.True(crm.ContainsEntity(opclose));
-               Assert.Equal("SetFromWinLose", retrieved.Description);
+                Assert.Equal("SetFromWinLose", retrieved.Description);
             }
         }
     }
