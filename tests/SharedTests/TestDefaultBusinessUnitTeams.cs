@@ -1,10 +1,10 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
@@ -16,7 +16,7 @@ namespace DG.XrmMockupTest
         private BusinessUnit _businessUnit3;
 
         [TestInitialize]
-        public void Initialize()
+        public void Init()
         {
             EntityReference businessUnitId = crm.RootBusinessUnit;
             
@@ -59,8 +59,10 @@ namespace DG.XrmMockupTest
             }
             catch (FaultException e)
             {
-                Assert.AreEqual($"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
-                    e.Message, "Error message doesn't match expected error message, maybe a different error is thrown?");
+                // Test error message
+                Assert.AreEqual(
+                    $"The record of type 'team' with id '{fetchedTeam.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.", 
+                    e.Message);
                 return;
             }
             Assert.Fail("Exception when trying to fetch deleted team isn't thrown.");

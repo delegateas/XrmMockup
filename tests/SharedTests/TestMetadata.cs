@@ -1,24 +1,17 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestMetadata : UnitTestBase
     {
-
         [TestMethod]
         public void TestRetrieveOptionSet()
         {
@@ -81,11 +74,11 @@ namespace DG.XrmMockupTest
                 acc.Id = orgAdminUIService.Create(acc);
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
-                Assert.AreNotEqual(retrieved.OpenDeals_State, 22);
+                Assert.AreNotEqual(22, retrieved.OpenDeals_State);
 
                 orgAdminUIService.Update(acc);
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("opendeals_state")) as Account;
-                Assert.AreNotEqual(retrieved.OpenDeals_State, 22);
+                Assert.AreNotEqual(22, retrieved.OpenDeals_State);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("isprivate")) as Account;
                 Assert.IsFalse(retrieved.Attributes.ContainsKey("isprivate"));

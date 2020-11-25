@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestFetchXmlToQueryExpression : UnitTestBase
     {
@@ -23,10 +18,12 @@ namespace DG.XrmMockupTest
         Guid _opportunity2Id;
 
         [TestInitialize]
-        public void TestInitialize() {
+        public void Init()
+        {
             accountName = "Litware, Inc.";
             // Create an account.
-            var acc = new Account {
+            var acc = new Account
+            {
                 Name = accountName,
                 Address1_StateOrProvince = "Colorado"
             };
@@ -34,7 +31,8 @@ namespace DG.XrmMockupTest
 
             // Create the two contacts.
             _contact1Id = orgAdminUIService.Create(
-                new Contact() {
+                new Contact()
+                {
                     FirstName = "Ben",
                     LastName = "Andrews",
                     EMailAddress1 = "sample@example.com",
@@ -46,7 +44,8 @@ namespace DG.XrmMockupTest
 
 
             _contact2Id = orgAdminUIService.Create(
-                new Contact() {
+                new Contact()
+                {
                     FirstName = "Colin",
                     LastName = "Wilcox",
                     EMailAddress1 = "sample@example.com",
@@ -58,14 +57,16 @@ namespace DG.XrmMockupTest
 
             // Create two opportunities.
             _opportunity1Id = orgAdminUIService.Create(
-                new Opportunity() {
+                new Opportunity()
+                {
                     Name = "Litware, Inc. Opportunity 1",
                     EstimatedCloseDate = DateTime.Now.AddMonths(6),
                     CustomerId = acc.ToEntityReference()
                 });
 
             _opportunity2Id = orgAdminUIService.Create(
-                new Opportunity() {
+                new Opportunity()
+                {
                     Name = "Litware, Inc. Opportunity 2",
                     EstimatedCloseDate = DateTime.Now.AddYears(4),
                     CustomerId = acc.ToEntityReference()
@@ -101,7 +102,7 @@ namespace DG.XrmMockupTest
                 </fetch>";
 
 
-                var conversionResponse = (FetchXmlToQueryExpressionResponse) orgAdminUIService.Execute(
+                var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(
                     new FetchXmlToQueryExpressionRequest { FetchXml = fetchXml });
 
                 // Use the newly converted query expression to make a retrieve multiple
@@ -122,14 +123,16 @@ namespace DG.XrmMockupTest
 
                 Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
                 Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
-                Assert.AreEqual("Colin",  entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
+                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
 
             }
         }
 
         [TestMethod]
-        public void TestFetchXmlToQueryExpressionFromExpr() {
-            using(var context = new Xrm(orgAdminUIService)) {
+        public void TestFetchXmlToQueryExpressionFromExpr()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 // Create a Fetch Expression
                 var fetchXml =
                     @"<fetch mapping='logical' version='1.0'>

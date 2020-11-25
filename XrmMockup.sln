@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
 		build.fsx = build.fsx
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
@@ -17,25 +18,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup11Test", "tests\XrmMockup11Test\XrmMockup11Test.csproj", "{A7594771-2B0A-43ED-9335-343598ED1C7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup11Test", "tests\XrmMockup11Test\XrmMockup11Test.csproj", "{A7594771-2B0A-43ED-9335-343598ED1C7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly11", "tests\TestPluginAssembly11\TestPluginAssembly11.csproj", "{40554299-9809-470A-A04A-7829D6F4DB70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly11", "tests\TestPluginAssembly11\TestPluginAssembly11.csproj", "{40554299-9809-470A-A04A-7829D6F4DB70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup2016", "src\XrmMockup2016\XrmMockup2016.csproj", "{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup2016", "src\XrmMockup2016\XrmMockup2016.csproj", "{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup16Test", "tests\XrmMockup16Test\XrmMockup16Test.csproj", "{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup16Test", "tests\XrmMockup16Test\XrmMockup16Test.csproj", "{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup2011", "src\XrmMockup2011\XrmMockup2011.csproj", "{840E0606-07FE-4D79-8D23-A5F6FB7BCA0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup2011", "src\XrmMockup2011\XrmMockup2011.csproj", "{840E0606-07FE-4D79-8D23-A5F6FB7BCA0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup2013", "src\XrmMockup2013\XrmMockup2013.csproj", "{1EB6478C-67F4-475D-8650-AA10C933419C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup2013", "src\XrmMockup2013\XrmMockup2013.csproj", "{1EB6478C-67F4-475D-8650-AA10C933419C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup2015", "src\XrmMockup2015\XrmMockup2015.csproj", "{65E375A9-FBC7-4264-A3FD-059F4770942E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup2015", "src\XrmMockup2015\XrmMockup2015.csproj", "{65E375A9-FBC7-4264-A3FD-059F4770942E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup13Test", "tests\XrmMockup13Test\XrmMockup13Test.csproj", "{A0C49D15-D911-42AB-B6D3-116EF7F452DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup13Test", "tests\XrmMockup13Test\XrmMockup13Test.csproj", "{A0C49D15-D911-42AB-B6D3-116EF7F452DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup15Test", "tests\XrmMockup15Test\XrmMockup15Test.csproj", "{BF19D931-3322-40AC-8E90-98417B1CE132}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup15Test", "tests\XrmMockup15Test\XrmMockup15Test.csproj", "{BF19D931-3322-40AC-8E90-98417B1CE132}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly16", "tests\TestPluginAssembly16\TestPluginAssembly16.csproj", "{3A74D109-C538-4DF5-B277-CC39FFACE93F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly16", "tests\TestPluginAssembly16\TestPluginAssembly16.csproj", "{3A74D109-C538-4DF5-B277-CC39FFACE93F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MetadataGen", "MetadataGen", "{E75407BE-AEA4-480C-8307-1C41851DB58B}"
 EndProject
@@ -51,27 +52,27 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedPluginsAndCodeactivit
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataShared", "src\MetadataShared\MetadataShared.shproj", "{3C2BBE8A-2ACE-44CA-9994-49C768B2CA1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly13", "tests\TestPluginAssembly13\TestPluginAssembly13.csproj", "{8EA1358F-B522-4D84-996B-23663682FE3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly13", "tests\TestPluginAssembly13\TestPluginAssembly13.csproj", "{8EA1358F-B522-4D84-996B-23663682FE3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly15", "tests\TestPluginAssembly15\TestPluginAssembly15.csproj", "{130FE820-97D0-4369-837C-7AAF6EF58DCE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly15", "tests\TestPluginAssembly15\TestPluginAssembly15.csproj", "{130FE820-97D0-4369-837C-7AAF6EF58DCE}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataSkeleton", "src\MetadataSkeleton\MetadataSkeleton.shproj", "{FDDB9BF5-4D33-495D-91A4-DFE919CF96CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator11", "src\MetadataGen\MetadataGenerator11\MetadataGenerator11.csproj", "{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator11", "src\MetadataGen\MetadataGenerator11\MetadataGenerator11.csproj", "{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator13", "src\MetadataGen\MetadataGenerator13\MetadataGenerator13.csproj", "{F57425C1-13CB-483B-BDDE-605D9A712F4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator13", "src\MetadataGen\MetadataGenerator13\MetadataGenerator13.csproj", "{F57425C1-13CB-483B-BDDE-605D9A712F4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator15", "src\MetadataGen\MetadataGenerator15\MetadataGenerator15.csproj", "{02A76886-689C-4F6D-BEF2-08DCBC040249}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator15", "src\MetadataGen\MetadataGenerator15\MetadataGenerator15.csproj", "{02A76886-689C-4F6D-BEF2-08DCBC040249}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator16", "src\MetadataGen\MetadataGenerator16\MetadataGenerator16.csproj", "{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator16", "src\MetadataGen\MetadataGenerator16\MetadataGenerator16.csproj", "{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataGenerator365", "src\MetadataGen\MetadataGenerator365\MetadataGenerator365.csproj", "{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator365", "src\MetadataGen\MetadataGenerator365\MetadataGenerator365.csproj", "{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPluginAssembly365", "tests\TestPluginAssembly365\TestPluginAssembly365.csproj", "{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly365", "tests\TestPluginAssembly365\TestPluginAssembly365.csproj", "{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup365Test", "tests\XrmMockup365Test\XrmMockup365Test.csproj", "{54E48688-CE01-4310-90D9-0902E0A51814}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup365Test", "tests\XrmMockup365Test\XrmMockup365Test.csproj", "{54E48688-CE01-4310-90D9-0902E0A51814}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XrmMockup365", "src\XrmMockup365\XrmMockup365.csproj", "{8D6B46F6-D7BD-480D-9D63-3B00285079DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup365", "src\XrmMockup365\XrmMockup365.csproj", "{8D6B46F6-D7BD-480D-9D63-3B00285079DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2-DE25-4F25-98CA-04B2B397911E}"
 	ProjectSection(SolutionItems) = preProject
@@ -82,46 +83,46 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 4
+		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
 		tests\SharedTests\SharedTests.projitems*{0d9bfa02-4e2d-4229-9256-7d4bf438b917}*SharedItemsImports = 13
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{130fe820-97d0-4369-837c-7aaf6ef58dce}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 4
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{3a74d109-c538-4df5-b277-cc39fface93f}*SharedItemsImports = 4
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{130fe820-97d0-4369-837c-7aaf6ef58dce}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{1eb6478c-67f4-475d-8650-aa10c933419c}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{3a74d109-c538-4df5-b277-cc39fface93f}*SharedItemsImports = 5
 		src\MetadataShared\MetadataShared.projitems*{3c2bbe8a-2ace-44ca-9994-49c768b2ca1d}*SharedItemsImports = 13
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{40554299-9809-470a-a04a-7829d6f4db70}*SharedItemsImports = 4
-		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 4
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 4
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{40554299-9809-470a-a04a-7829d6f4db70}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 5
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{60cdd422-5f52-4d1f-b61c-b2bcef09302b}*SharedItemsImports = 13
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 4
-		src\MetadataShared\MetadataShared.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 4
-		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
-		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 4
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{8ea1358f-b522-4d84-996b-23663682fe3e}*SharedItemsImports = 4
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{65e375a9-fbc7-4264-a3fd-059f4770942e}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{840e0606-07fe-4d79-8d23-a5f6fb7bca0e}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
+		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{8ea1358f-b522-4d84-996b-23663682fe3e}*SharedItemsImports = 5
 		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{90c1c72b-c544-485a-b718-acfaee516106}*SharedItemsImports = 13
-		tests\SharedTests\SharedTests.projitems*{a0c49d15-d911-42ab-b6d3-116ef7f452de}*SharedItemsImports = 4
-		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 4
-		tests\SharedTests\SharedTests.projitems*{a7594771-2b0a-43ed-9335-343598ed1c7d}*SharedItemsImports = 4
-		tests\SharedTests\SharedTests.projitems*{bf19d931-3322-40ac-8e90-98417b1ce132}*SharedItemsImports = 4
-		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 4
+		tests\SharedTests\SharedTests.projitems*{a0c49d15-d911-42ab-b6d3-116ef7f452de}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{a7594771-2b0a-43ed-9335-343598ed1c7d}*SharedItemsImports = 5
+		tests\SharedTests\SharedTests.projitems*{bf19d931-3322-40ac-8e90-98417b1ce132}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
 		src\XrmMockupShared\XrmMockupShared.projitems*{d4f99f23-a452-4f6f-abf4-54fc5c792d5a}*SharedItemsImports = 13
-		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 4
+		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -241,5 +242,8 @@ Global
 		{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{54E48688-CE01-4310-90D9-0902E0A51814} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{8D6B46F6-D7BD-480D-9D63-3B00285079DD} = {DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7565DA42-40CA-442E-B85C-DB64B497DFAB}
 	EndGlobalSection
 EndGlobal

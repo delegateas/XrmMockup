@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
@@ -39,7 +33,7 @@ namespace DG.XrmMockupTest
             {
                 Assert.AreEqual(ex.Message, $"The record of type '{contact.LogicalName}' with id '{contact.Id.ToString()}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
             }
-            
+
             crm.RestoreToSnapshot("test1");
 
             var dbContact2 = Contact.Retrieve(orgAdminService, contact.Id);
@@ -47,7 +41,7 @@ namespace DG.XrmMockupTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(KeyNotFoundException),"A Snapshot with that name does not exist")]
+        [ExpectedException(typeof(KeyNotFoundException))]
         public void TestDeleteSnapshot()
         {
             crm.TakeSnapshot("test1");
@@ -148,7 +142,8 @@ namespace DG.XrmMockupTest
             };
             contactJ.Id = orgAdminService.Create(contactJ);
 
-            var testUser = new SystemUser() {
+            var testUser = new SystemUser()
+            {
                 LastName = "test",
                 BusinessUnitId = crm.RootBusinessUnit
             };
@@ -181,7 +176,7 @@ namespace DG.XrmMockupTest
             acc.Id = orgAdminUIService.Create(acc);
 
             var accFetch = Account.Retrieve(orgAdminService, acc.Id);
-            Assert.AreEqual(acc.Name,accFetch.Name);
+            Assert.AreEqual(acc.Name, accFetch.Name);
 
             // Set Owner
             var ownerUpd = new Contact(contactP.Id)

@@ -1,3 +1,9 @@
+### 1.3.2 - 12 October 2020
+* Fix issue in published nuget package where latest version of metadata generator was not added.
+
+### 1.3.1 - 10 October 2020
+* Fixed error with sales solution which had a role without a businessunit
+
 ### 1.3.0 - 07 September 2020
 * Added support for RetrieveMultiple plugins
 * Made some system attributes available in plugins

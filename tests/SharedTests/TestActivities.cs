@@ -1,39 +1,39 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
-using DG.Some.Namespace;
 using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestActivities : UnitTestBase {
+    public class TestActivities : UnitTestBase
+    {
         [TestMethod]
-        public void TestCreateEmail() {
+        public void TestCreateEmail()
+        {
             var senderList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
             var receivingList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
-            var email = new Email() {
+            var email = new Email()
+            {
                 Subject = "subject",
                 Description = "description",
                 From = senderList,
                 To = receivingList
             };
             Guid emailId = orgAdminService.Create(email);
-            Assert.IsNotNull(emailId);
+            Assert.AreNotEqual(Guid.Empty, emailId);
         }
 
         //Ignored until ActivityPointer-functionality has been implemented
         [TestMethod]
-        public void TestActivityPointer() {
+        public void TestActivityPointer()
+        {
             var senderList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
             var receivingList = new List<ActivityParty>() { new ActivityParty() { PartyId = crm.AdminUser } };
-            var email = new Email() {
+            var email = new Email()
+            {
                 Subject = "subject",
                 Description = "description",
                 From = senderList,
@@ -43,7 +43,8 @@ namespace DG.XrmMockupTest {
 
             var retrieved = orgAdminService.Retrieve(email.LogicalName, email.Id, new ColumnSet(true)).ToEntity<Email>();
 
-            using (var context = new Xrm(orgAdminService)) {
+            using (var context = new Xrm(orgAdminService))
+            {
                 var ap = context.ActivityPointerSet.FirstOrDefault(a => a.Id == email.Id);
                 Assert.IsNotNull(ap);
                 Assert.AreEqual(retrieved.Subject, ap.Subject);
@@ -55,7 +56,8 @@ namespace DG.XrmMockupTest {
             email.Subject = "updated subject";
             orgAdminService.Update(email);
             retrieved = orgAdminService.Retrieve(email.LogicalName, email.Id, new ColumnSet(true)).ToEntity<Email>();
-            using (var context = new Xrm(orgAdminService)) {
+            using (var context = new Xrm(orgAdminService))
+            {
                 var ap = context.ActivityPointerSet.FirstOrDefault(a => a.Id == email.Id);
                 Assert.IsNotNull(ap);
                 Assert.AreEqual(retrieved.Subject, ap.Subject);

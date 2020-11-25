@@ -1,22 +1,14 @@
 ﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
-using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
 using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {
-
     [TestClass]
     public class TestAlternateKeys : UnitTestBase
     {
-
         [TestMethod]
         public void TestAlternateKeysAll()
         {

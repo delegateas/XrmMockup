@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DG.XrmMockupTest
 {

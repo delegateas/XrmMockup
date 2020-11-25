@@ -29,7 +29,7 @@ namespace DG.Some.Namespace {
 
             var accRef = name.Get(executionContext);
             var account = orgService.Retrieve(Account.EntityLogicalName, accRef.Id, new ColumnSet("name")) as Account;
-            account.Name = account.Name + "setFromCodeActivity";
+            account.Name += "setFromCodeActivity";
             orgService.Update(account);
             this.doubleName.Set(executionContext, account.ToEntityReference());            
         }

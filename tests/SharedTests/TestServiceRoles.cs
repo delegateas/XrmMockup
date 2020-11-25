@@ -1,25 +1,19 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using DG.Some.Namespace;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Diagnostics;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.ServiceModel;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DG.XrmMockupTest {
-
+namespace DG.XrmMockupTest
+{
     [TestClass]
-    public class TestServiceRoles : UnitTestBase {
-
+    public class TestServiceRoles : UnitTestBase
+    {
         [TestMethod]
-        public void TestUpdateInactiveRecords() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestUpdateInactiveRecords()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var account = new Account();
                 account.Id = orgAdminService.Create(account);
 
@@ -32,23 +26,27 @@ namespace DG.XrmMockupTest {
                 var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, account.Id, new ColumnSet(true)) as Account;
                 Assert.AreEqual(account.Name, retrieved.Name);
 
-                try {
+                try
+                {
                     orgAdminUIService.Update(account);
                     Assert.Fail();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Assert.IsInstanceOfType(e, typeof(MockupException));
                 }
             }
         }
 
 
-        [TestMethod]
-        [Ignore]
+        [TestMethod, Ignore( "Disagreement over test")]
         // majakubowski: 
         // I don't agree with this test - I don't have experience with earlier version than 2015, 
         // but from this version all boolean attributes are set to default values also when created via SDK 
-        public void TestCreateDefaultValues() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestCreateDefaultValues()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var account = new Account();
                 account.Id = orgAdminService.Create(account);
 
@@ -65,8 +63,10 @@ namespace DG.XrmMockupTest {
         }
 
         [TestMethod]
-        public void TestCreateCurrency() {
-            using (var context = new Xrm(orgAdminUIService)) {
+        public void TestCreateCurrency()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
                 var account = new Account();
                 account.Id = orgAdminService.Create(account);
                 var retrieved = orgAdminService.Retrieve(Account.EntityLogicalName, account.Id, new ColumnSet(true)) as Account;
