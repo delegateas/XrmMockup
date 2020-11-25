@@ -62,15 +62,28 @@ namespace DG.XrmMockupTest
 
 
         [TestMethod]
+        public void TestCreateWithUpdate()
+        {
+            var child = new dg_child()
+            {
+                dg_name = "Donald Duck"
+            };
+
+            child.Id = orgAdminUIService.Create(child);
+
+            var resp = dg_child.Retrieve(orgAdminService, child.Id);
+            Assert.AreEqual(resp.dg_name, "Micky Mouse");
+        }
+
+
+        [TestMethod]
         public void TestUserCreation()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var adminUser = orgAdminUIService.Retrieve("systemuser", crm.AdminUser.Id, new ColumnSet("businessunitid"));
                 var adminBusinessunitid = adminUser.GetAttributeValue<EntityReference>("businessunitid").Id;
                 var adminBusinessunit = orgAdminUIService.Retrieve("businessunit", adminBusinessunitid, new ColumnSet("name"));
-
 
                 var user = new Entity("systemuser");
                 user.Attributes["firstname"] = "Test User";
