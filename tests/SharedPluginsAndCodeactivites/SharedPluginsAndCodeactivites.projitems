@@ -12,6 +12,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContactPostPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPostOp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPreOp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync2WithExecutionOrder - Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\AsyncWithExecutionOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync1WithExecutionOrder.cs" />

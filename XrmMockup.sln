@@ -80,8 +80,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{D375A019-3229-4D24-955B-06248D1D12F5}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedDirectPlugins", "tests\SharedDirectPlugins\SharedDirectPlugins.shproj", "{ABE2430E-A924-488D-9469-E7C1695C5873}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
@@ -118,7 +116,6 @@ Global
 		tests\SharedTests\SharedTests.projitems*{a0c49d15-d911-42ab-b6d3-116ef7f452de}*SharedItemsImports = 5
 		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 5
 		tests\SharedTests\SharedTests.projitems*{a7594771-2b0a-43ed-9335-343598ed1c7d}*SharedItemsImports = 5
-		tests\SharedDirectPlugins\SharedDirectPlugins.projitems*{abe2430e-a924-488d-9469-e7c1695c5873}*SharedItemsImports = 13
 		tests\SharedTests\SharedTests.projitems*{bf19d931-3322-40ac-8e90-98417b1ce132}*SharedItemsImports = 5
 		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
@@ -244,7 +241,6 @@ Global
 		{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{54E48688-CE01-4310-90D9-0902E0A51814} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{8D6B46F6-D7BD-480D-9D63-3B00285079DD} = {DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}
-		{ABE2430E-A924-488D-9469-E7C1695C5873} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7565DA42-40CA-442E-B85C-DB64B497DFAB}

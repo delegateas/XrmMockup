@@ -41,5 +41,4 @@
     <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="5.0.18" />
   </ItemGroup>
   <Import Project="..\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems" Label="Shared" />
-  <Import Project="..\SharedDirectPlugins\SharedDirectPlugins.projitems" Label="Shared" />
 </Project>
