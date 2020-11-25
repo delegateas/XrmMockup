@@ -75,7 +75,7 @@ namespace DG.XrmMockupTest
 
             var settings = new XrmMockupSettings
             {
-                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(ContactIPluginDirectPreOp) },
+                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
                 CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                 EnableProxyTypes = true,
                 IncludeAllWorkflows = false,
