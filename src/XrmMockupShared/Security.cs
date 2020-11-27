@@ -42,6 +42,9 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
+
+            AddRoleTemplatesForBusinessUnit(db, businessUnit);
+
             foreach (var sr in SecurityRoles.Values)
             {
                 var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
@@ -52,13 +55,30 @@ namespace DG.Tools.XrmMockup
                 role[roleMeta.PrimaryIdAttribute] = role.Id;
                 role["businessunitid"] = businessUnit;
                 role["name"] = sr.Name;
-                role["roletemplateid"] = sr.RoleTemplateId;
+                if (sr.RoleTemplateId != Guid.Empty)
+                {
+                    role["roletemplateid"] = new EntityReference("roletemplate", sr.RoleTemplateId);
+                }
                 role["createdby"] = Core.AdminUserRef;
                 role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 role["modifiedby"] = Core.AdminUserRef;
                 role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 db.Add(role);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
+            }
+        }
+
+        internal void AddRoleTemplatesForBusinessUnit(XrmDb db, EntityReference businessUnit)
+        {
+            
+            foreach (var sr in SecurityRoles.Values.Where(x => x.RoleTemplateId != Guid.Empty).GroupBy(x => x.RoleTemplateId).Select(x => x.Key))
+            {
+                var roleTemplate = new Entity("roletemplate")
+                {
+                    Id = sr
+                };
+
+                db.Add(roleTemplate);
             }
         }
 
