@@ -3,11 +3,11 @@ using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPrivilegesWrite : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -15,8 +15,7 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        [TestInitialize]
-        public void Init()
+        public TestPrivilegesWrite(XrmMockupFixture fixture) : base(fixture)
         {
             crm.DisableRegisteredPlugins(true);
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
@@ -31,7 +30,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test user write account on basic level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestWriteUserLevel()
         {
             // add account to database
@@ -48,11 +47,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -72,11 +71,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated basic" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated basic", account.Name);
+                Assert.Equal("Account Updated basic", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with local level
@@ -95,11 +94,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated local" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated local", account.Name);
+                Assert.Equal("Account Updated local", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with deep level
@@ -118,11 +117,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated local" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated local", account.Name);
+                Assert.Equal("Account Updated local", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with global level
@@ -140,18 +139,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated global" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated global", account.Name);
+                Assert.Equal("Account Updated global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
         }
 
         /// <summary>
         /// Test user write account on local level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestWriteBULevel()
         {
             // add account to database
@@ -167,11 +166,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -190,17 +189,17 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
             // Add account write privilege with local level
             crm.AddPrivileges(
-                UserBULvl11.ToEntityReference(), 
+                UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
@@ -214,11 +213,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated local" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated local", account.Name);
+                Assert.Equal("Account Updated local", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with deep level
@@ -237,11 +236,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated deep" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated deep", account.Name);
+                Assert.Equal("Account Updated deep", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with global level
@@ -259,18 +258,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated global" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated global", account.Name);
+                Assert.Equal("Account Updated global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
         }
 
         /// <summary>
         /// Test user write account on deep level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestWriteBUChildLevel()
         {
             // add account to database
@@ -286,11 +285,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -309,11 +308,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -332,17 +331,17 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
             // Add account write privilege with deep level
             crm.AddPrivileges(
-                UserBULvl11.ToEntityReference(), 
+                UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
@@ -356,11 +355,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated deep" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated deep", account.Name);
+                Assert.Equal("Account Updated deep", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
 
             // Add account write privilege with global level
@@ -378,18 +377,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated global" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated global", account.Name);
+                Assert.Equal("Account Updated global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
         }
 
         /// <summary>
         /// Test user write account on global level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestWriteGlobalLevel()
         {
             // add account to database
@@ -405,11 +404,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -428,11 +427,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -451,11 +450,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -474,11 +473,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated" });
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to write");
+                throw new XunitException("User should not be able to write");
             }
             catch (Exception) { }
 
@@ -497,11 +496,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { Name = "Account Updated global" });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual("Account Updated global", account.Name);
+                Assert.Equal("Account Updated global", account.Name);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to write");
+                throw new XunitException("User should be able to write");
             }
         }
     }

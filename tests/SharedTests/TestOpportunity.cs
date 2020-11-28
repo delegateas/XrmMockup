@@ -3,14 +3,15 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestOpportunity : UnitTestBase
     {
-        [TestMethod]
+        public TestOpportunity(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestWinOpportunity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -33,14 +34,14 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(winReq);
 
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
-                Assert.AreEqual(OpportunityState.Won, retrieved.StateCode);
-                Assert.AreEqual(Opportunity_StatusCode.Won, retrieved.StatusCode);
-                Assert.IsTrue(crm.ContainsEntity(opclose));
-                Assert.AreEqual("SetFromWinLose", retrieved.Description);
+                Assert.Equal(OpportunityState.Won, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Won, retrieved.StatusCode);
+                Assert.True(crm.ContainsEntity(opclose));
+                Assert.Equal("SetFromWinLose", retrieved.Description);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestLoseOpportunity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -62,10 +63,10 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Execute(loseReq);
 
                 var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
-                Assert.AreEqual(OpportunityState.Lost, retrieved.StateCode);
-                Assert.AreEqual(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
-                Assert.IsTrue(crm.ContainsEntity(opclose));
-                Assert.AreEqual("SetFromWinLose", retrieved.Description);
+                Assert.Equal(OpportunityState.Lost, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
+                Assert.True(crm.ContainsEntity(opclose));
+                Assert.Equal("SetFromWinLose", retrieved.Description);
             }
         }
     }
