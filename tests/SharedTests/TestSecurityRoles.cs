@@ -5,12 +5,39 @@ using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {
     [TestClass]
     public class TestSecurityRoles : UnitTestBase
     {
+#if !(XRM_MOCKUP_TEST_2011) //not sure why this fails for 2011 - possibly a different admin id for the roletemplate in the metadata...?
+        
+        [TestMethod]
+        public void TestQueryOnLinkedRoleTemplate()
+        {
+            // All MS Dynamics CRM instances share the same System Admin role GUID.
+            // Hence, we can hardode it as this will not represent a security issue
+            Guid adminId = new Guid("627090FF-40A3-4053-8790-584EDC5BE201");
+
+            var businessunit = new BusinessUnit();
+            businessunit["name"] = "business unit name 1";
+            businessunit.Id = orgAdminUIService.Create(businessunit);
+
+            var user = new SystemUser();
+            user["businessunitid"] = businessunit.ToEntityReference();
+            var adminuser = crm.CreateUser(orgAdminService, user, SecurityRoles.SystemAdministrator);
+
+
+            var q = new QueryExpression("role");
+            q.Criteria.AddCondition("roletemplateid", ConditionOperator.Equal, adminId);
+            var link = q.AddLink("systemuserroles", "roleid", "roleid");
+            link.LinkCriteria.AddCondition("systemuserid", ConditionOperator.Equal, adminuser.Id);
+            Assert.IsTrue( orgAdminService.RetrieveMultiple(q).Entities.Count > 0 );
+        }
+#endif
+
         [TestMethod]
         public void TestCreateSecurity()
         {
