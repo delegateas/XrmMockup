@@ -29,7 +29,6 @@ namespace DG.XrmMockupTest
             user["businessunitid"] = businessunit.ToEntityReference();
             var adminuser = crm.CreateUser(orgAdminService, user, SecurityRoles.SystemAdministrator);
 
-
             var q = new QueryExpression("role");
             q.Criteria.AddCondition("roletemplateid", ConditionOperator.Equal, adminId);
             var link = q.AddLink("systemuserroles", "roleid", "roleid");

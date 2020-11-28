@@ -25,7 +25,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
         }
-
     }
 
     public class MetaPlugin {

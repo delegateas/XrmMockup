@@ -42,7 +42,6 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
-
             AddRoleTemplatesForBusinessUnit(db, businessUnit);
 
             foreach (var sr in SecurityRoles.Values)
@@ -76,15 +75,12 @@ namespace DG.Tools.XrmMockup
             foreach (var sr in SecurityRoles.Values.Where(x => x.RoleTemplateId != Guid.Empty).GroupBy(x => x.RoleTemplateId).Select(x => x.Key))
             {
                 if (!allRoleTemplates.Any(x => x.Id == sr))
-
                 {
                     var roleTemplate = new Entity("roletemplate")
                     {
                         Id = sr
                     };
-
                     db.Add(roleTemplate);
-
                 }
             }
         }
