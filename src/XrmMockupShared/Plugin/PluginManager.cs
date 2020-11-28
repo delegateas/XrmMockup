@@ -15,10 +15,10 @@ using XrmMockupShared.Plugin;
 namespace DG.Tools.XrmMockup {
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes
+    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes,impersonating user id
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = Tuple<string, int, string, string>;
-    using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
+    using ExtendedStepConfig = Tuple<int, int, string, int, string, Guid?>;
     using ImageTuple = Tuple<string, string, int, string>;
 
     internal class PluginManager {
@@ -136,7 +136,7 @@ namespace DG.Tools.XrmMockup {
 
                 foreach(var metaStep in metaSteps) { 
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
-                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, Guid.Empty.ToString());
+                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId);
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
                     stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
                     pluginExecute = (provider) => {
@@ -315,6 +315,7 @@ namespace DG.Tools.XrmMockup {
             ExecutionMode mode;
             int order = 0;
             Dictionary<string, EntityMetadata> metadata;
+            Guid? impersonatingUserId;
 
             HashSet<string> attributes;
             IEnumerable<ImageTuple> images;
@@ -330,6 +331,7 @@ namespace DG.Tools.XrmMockup {
                 this.order = stepConfig.Item2.Item4;
                 this.images = stepConfig.Item3;
                 this.metadata = metadata;
+                this.impersonatingUserId = stepConfig.Item2.Item6;
 
                 var attrs = stepConfig.Item2.Item5 ?? "";
                 this.attributes = String.IsNullOrWhiteSpace(attrs) ? new HashSet<string>() : new HashSet<string>(attrs.Split(','));
@@ -473,6 +475,11 @@ namespace DG.Tools.XrmMockup {
                     thisPluginContext.PrimaryEntityId = guid;
                 }
                 thisPluginContext.PrimaryEntityName = logicalName;
+                if (this.impersonatingUserId != null)
+                {
+                    thisPluginContext.UserId = this.impersonatingUserId.Value;
+                }
+
 
                 foreach (var image in this.images)
                 {

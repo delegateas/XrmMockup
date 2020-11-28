@@ -9,10 +9,10 @@
     using Microsoft.Xrm.Sdk;
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
+    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, ImpersonatingUserId
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = System.Tuple<string, int, string, string>;
-    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
+    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, System.Guid?>;
     using ImageTuple = System.Tuple<string, string, int, string>;
     using System.Reflection;
 
@@ -262,7 +262,7 @@
                 yield return
                     new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(
                         new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
-                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext.ToString()),
+                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext),
                         config.GetImages());
             }
         }
@@ -309,7 +309,7 @@
         int _ExecutionMode { get; }
         int _ExecutionOrder { get; }
         string _FilteredAttributes { get; }
-        Guid _UserContext { get; }
+        Guid? _UserContext { get; }
         IEnumerable<ImageTuple> GetImages();
     }
 
@@ -327,7 +327,7 @@
         public int _Deployment { get; private set; }
         public int _ExecutionMode { get; private set; }
         public int _ExecutionOrder { get; private set; }
-        public Guid _UserContext { get; private set; }
+        public Guid? _UserContext { get; private set; }
 
         public Collection<PluginStepImage> _Images = new Collection<PluginStepImage>();
         public Collection<string> _FilteredAttributesCollection = new Collection<string>();
