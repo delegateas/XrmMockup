@@ -14,6 +14,18 @@ namespace DG.Tools.XrmMockup {
         public List<MetaPlugin> Plugins;
         public OptionSetMetadataBase[] OptionSets;
         public Dictionary<string, Dictionary<int,int>> DefaultStateStatus;
+
+        public void Merge(MetadataSkeleton metadata)
+        {
+            foreach (var kvp in metadata.EntityMetadata)
+            {
+                if (!this.EntityMetadata.ContainsKey(kvp.Key))
+                {
+                    this.EntityMetadata.Add(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
     }
 
     public class MetaPlugin {
