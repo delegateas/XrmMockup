@@ -5,11 +5,11 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestAssocDissoc : UnitTestBase
     {
         Account account1;
@@ -19,8 +19,7 @@ namespace DG.XrmMockupTest
         Contact contact1;
         Contact contact2;
 
-        [TestInitialize]
-        public void Init()
+        public TestAssocDissoc(XrmMockupFixture fixture) : base(fixture)
         {
             contact1 = new Contact { FirstName = "Hans" };
             contact2 = new Contact { FirstName = "John" };
@@ -35,7 +34,7 @@ namespace DG.XrmMockupTest
             account3.Id = orgAdminUIService.Create(account3);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssocDissoc1N()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -54,8 +53,8 @@ namespace DG.XrmMockupTest
 
                 foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
                 {
-                    Assert.AreEqual(contact1.Id, acc.PrimaryContactId.Id);
-                    Assert.AreEqual(Contact.EntityLogicalName, acc.PrimaryContactId.LogicalName);
+                    Assert.Equal(contact1.Id, acc.PrimaryContactId.Id);
+                    Assert.Equal(Contact.EntityLogicalName, acc.PrimaryContactId.LogicalName);
                 }
 
                 context.ClearChanges();
@@ -65,12 +64,12 @@ namespace DG.XrmMockupTest
 
                 foreach (var acc in context.AccountSet.Where(x => x.Name.StartsWith("Account")))
                 {
-                    Assert.IsNull(acc.PrimaryContactId);
+                    Assert.Null(acc.PrimaryContactId);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssocDissocN1()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -87,30 +86,29 @@ namespace DG.XrmMockupTest
 
                 var retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, account1.Id, new ColumnSet(true)) as Account;
 
-                Assert.AreEqual(contact1.Id, retrieved.PrimaryContactId.Id);
-
+                Assert.Equal(contact1.Id, retrieved.PrimaryContactId.Id);
 
                 orgAdminUIService.Disassociate(Account.EntityLogicalName, account1.Id, relationship,
                     relatedEntities);
 
                 retrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, account1.Id, new ColumnSet(true)) as Account;
 
-                Assert.IsNull(retrieved.PrimaryContactId);
+                Assert.Null(retrieved.PrimaryContactId);
 
                 relatedEntities.Add(new EntityReference(Contact.EntityLogicalName, contact2.Id));
                 try
                 {
                     orgAdminUIService.Associate(Account.EntityLogicalName, account1.Id, relationship, relatedEntities);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssocDissocNN()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -148,10 +146,10 @@ namespace DG.XrmMockupTest
                 };
                 var retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
                 var related = retrievedContact.RelatedEntities[relationship].Entities;
-                Assert.AreEqual(3, related.Count());
-                Assert.AreEqual(account1.Id, related.FirstOrDefault(e => (e as Account).Name == account1.Name).Id);
-                Assert.AreEqual(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
-                Assert.AreEqual(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
+                Assert.Equal(3, related.Count());
+                Assert.Equal(account1.Id, related.FirstOrDefault(e => (e as Account).Name == account1.Name).Id);
+                Assert.Equal(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
+                Assert.Equal(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
 
                 orgAdminUIService.Disassociate(Contact.EntityLogicalName, contact1.Id, relationship, relatedAccounts);
 
@@ -168,7 +166,7 @@ namespace DG.XrmMockupTest
                     Target = new EntityReference(Contact.EntityLogicalName, contact1.Id)
                 };
                 retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
-                Assert.AreEqual(0, retrievedContact.RelatedEntities.Count);
+                Assert.Equal(0, retrievedContact.RelatedEntities.Count);
 
                 relationQuery = new RelationshipQueryCollection();
                 query = new QueryExpression(Account.EntityLogicalName)
@@ -184,14 +182,14 @@ namespace DG.XrmMockupTest
                 };
                 retrievedContact = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Contact;
                 related = retrievedContact.RelatedEntities[relationship].Entities;
-                Assert.AreEqual(3, related.Count());
-                Assert.AreEqual(account1.Id, related.FirstOrDefault(e => (e as Account).Name == account1.Name).Id);
-                Assert.AreEqual(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
-                Assert.AreEqual(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
+                Assert.Equal(3, related.Count());
+                Assert.Equal(account1.Id, related.FirstOrDefault(e => (e as Account).Name == account1.Name).Id);
+                Assert.Equal(account2.Id, related.FirstOrDefault(e => (e as Account).Name == account2.Name).Id);
+                Assert.Equal(account3.Id, related.FirstOrDefault(e => (e as Account).Name == account3.Name).Id);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssocNNTwoWay()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -226,13 +224,13 @@ namespace DG.XrmMockupTest
                 };
                 var retrievedAccount = (orgAdminUIService.Execute(req) as RetrieveResponse).Entity as Account;
                 var related = retrievedAccount.RelatedEntities[relationship].Entities;
-                Assert.AreEqual(2, related.Count());
-                Assert.AreEqual(contact1.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact1.FirstName).Id);
-                Assert.AreEqual(contact2.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact2.FirstName).Id);
+                Assert.Equal(2, related.Count());
+                Assert.Equal(contact1.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact1.FirstName).Id);
+                Assert.Equal(contact2.Id, related.FirstOrDefault(e => (e as Contact).FirstName == contact2.FirstName).Id);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void When_execute_is_called_with_a_non_existing_target_exception_is_thrown()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -249,16 +247,16 @@ namespace DG.XrmMockupTest
                 {
                     orgAdminUIService.Associate(Contact.EntityLogicalName, Guid.NewGuid(), relationship,
                         relatedEntities);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void When_execute_is_called_with_a_non_existing_reference_exception_is_thrown()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -275,16 +273,16 @@ namespace DG.XrmMockupTest
                 {
                     orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship,
                         relatedEntities);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         /*[ExpectedException(typeof(FaultException),
         "An existing relation contains the same link. N:N relation cannot be made.")]*/
         public void TestAssocNNTwice()
@@ -306,17 +304,17 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Associate(Contact.EntityLogicalName, contact1.Id, relationship2, relatedAccounts);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
             }
         }
 
-        #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
-        [TestMethod]
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [Fact]
         public void TestAssociateWOPrimaryNamePlugin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -325,7 +323,7 @@ namespace DG.XrmMockupTest
 
                 dg_bus bus = new dg_bus { dg_Ticketprice = 1 };
                 bus.Id = orgAdminService.Create(bus);
-                
+
                 dg_child child = new dg_child { dg_name = "Margrethe" };
                 child.Id = orgAdminService.Create(child);
 
@@ -335,14 +333,14 @@ namespace DG.XrmMockupTest
                 orgAdminUIService.Associate(dg_bus.EntityLogicalName, bus.Id, relationship,
                     relatedEntities);
 
-                var retrievedBus = dg_bus.Retrieve(orgAdminService, bus.Id, x => x.dg_Ticketprice); 
-                Assert.AreEqual(25, retrievedBus.dg_Ticketprice);
+                var retrievedBus = dg_bus.Retrieve(orgAdminService, bus.Id, x => x.dg_Ticketprice);
+                Assert.Equal(25, retrievedBus.dg_Ticketprice);
             }
         }
-        #endif
+#endif
 
-        #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
-        [TestMethod]
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
+        [Fact]
         public void TestDisassociateWOPrimaryNamePlugin()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -362,9 +360,9 @@ namespace DG.XrmMockupTest
                     relatedEntities);
 
                 var retrievedBus = dg_bus.Retrieve(orgAdminService, bus.Id, x => x.dg_Ticketprice);
-                Assert.AreEqual(26, retrievedBus.dg_Ticketprice);
+                Assert.Equal(26, retrievedBus.dg_Ticketprice);
             }
         }
-        #endif
+#endif
     }
 }

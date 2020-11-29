@@ -4,17 +4,18 @@ using DG.Tools.XrmMockup;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestSecurityRoles : UnitTestBase
     {
+        public TestSecurityRoles(XrmMockupFixture fixture) : base(fixture) { }
+
 #if !(XRM_MOCKUP_TEST_2011) //not sure why this fails for 2011 - possibly a different admin id for the roletemplate in the metadata...?
         
-        [TestMethod]
+        [Fact]
         public void TestQueryOnLinkedRoleTemplate()
         {
             // All MS Dynamics CRM instances share the same System Admin role GUID.
@@ -33,11 +34,11 @@ namespace DG.XrmMockupTest
             q.Criteria.AddCondition("roletemplateid", ConditionOperator.Equal, adminId);
             var link = q.AddLink("systemuserroles", "roleid", "roleid");
             link.LinkCriteria.AddCondition("systemuserid", ConditionOperator.Equal, adminuser.Id);
-            Assert.IsTrue( orgAdminService.RetrieveMultiple(q).Entities.Count > 0 );
+            Assert.True( orgAdminService.RetrieveMultiple(q).Entities.Count > 0 );
         }
 #endif
 
-        [TestMethod]
+        [Fact]
         public void TestCreateSecurity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -55,11 +56,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     schedulerService.Create(new Lead());
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
                 schedulerService.Create(new Contact());
@@ -71,16 +72,16 @@ namespace DG.XrmMockupTest
                         OwnerId = orgUser.ToEntityReference()
                     };
                     schedulerService.Create(contact);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssignSecurityUser()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -102,11 +103,11 @@ namespace DG.XrmMockupTest
                     req.Assignee = user.ToEntityReference();
                     req.Target = contact.ToEntityReference();
                     service.Execute(req);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
                 var usersContact = new Contact();
                 usersContact.Id = service.Create(usersContact);
@@ -116,7 +117,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestAssignSecurityTeam()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -137,11 +138,11 @@ namespace DG.XrmMockupTest
                     req.Assignee = team.ToEntityReference();
                     req.Target = contact.ToEntityReference();
                     service.Execute(req);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
                 var teamAdmin = crm.CreateTeam(orgAdminUIService, businessunit.ToEntityReference(), SecurityRoles.SystemAdministrator);
                 var adminContact = new Contact();
@@ -152,7 +153,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestUpdateSecurity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -172,11 +173,11 @@ namespace DG.XrmMockupTest
                 {
                     bus.dg_name = "new sadas";
                     service.Update(bus);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
                 var usersBus = new dg_bus();
@@ -186,7 +187,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestDeleteSecurity()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -205,11 +206,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     service.Delete(bus.LogicalName, bus.Id);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
                 var usersBus = new dg_bus();
@@ -218,7 +219,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestParentChangeCascading()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -243,11 +244,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     service.Retrieve(otherChild.LogicalName, otherChild.Id, new ColumnSet(true));
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
                 otherChild.dg_parentBusId = bus.ToEntityReference();
