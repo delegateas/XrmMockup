@@ -115,11 +115,14 @@ namespace DG.Tools.XrmMockup {
 
             if (basePluginType.GetMethod("PluginProcessingStepConfigs") != null)
             { // Matches DAXIF plugin registration
-                stepConfigs.AddRange(
-                    basePluginType
+                
+                var configs = basePluginType
                     .GetMethod("PluginProcessingStepConfigs")
                     .Invoke(plugin, new object[] { })
-                    as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>);
+                    as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>;
+                
+                stepConfigs.AddRange(configs);
+                
                 pluginExecute = (provider) => {
                     basePluginType
                     .GetMethod("Execute")
@@ -475,7 +478,7 @@ namespace DG.Tools.XrmMockup {
                     thisPluginContext.PrimaryEntityId = guid;
                 }
                 thisPluginContext.PrimaryEntityName = logicalName;
-                if (this.impersonatingUserId != null)
+                if (this.impersonatingUserId != null && this.impersonatingUserId != Guid.Empty)
                 {
                     thisPluginContext.UserId = this.impersonatingUserId.Value;
                 }
