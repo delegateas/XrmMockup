@@ -17,9 +17,19 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestBasicSecurity()
         {
+            //create a team
+            var team1 = new Team { Name = "* RECORD OWNER TEAM *", BusinessUnitId = crm.RootBusinessUnit };
+#if !(XRM_MOCKUP_2011)
+            team1.TeamType = Team_TeamType.Owner;
+#endif
+            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SystemCustomizer).ToEntity<Team>();
+            
             var child = new Entity("mock_child");
             child.Id = orgAdminService.Create(child);
 
+            //check that the child has the parent id populated
+            var checkChild = orgAdminService.Retrieve("mock_child", child.Id, new ColumnSet(true));
+            Assert.NotNull(checkChild.GetAttributeValue<EntityReference>("mock_parentid"));
             
 
 
