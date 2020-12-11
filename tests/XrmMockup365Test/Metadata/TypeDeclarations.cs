@@ -43,6 +43,7 @@ namespace DG.Tools.XrmMockup {
 		public static Guid MarketingManager = new Guid("50475cab-c047-e611-80d9-c4346badf080");
 		public static Guid MarketingProfessional = new Guid("3e405cab-c047-e611-80d9-c4346badf080");
 		public static Guid MockSecurityRole = new Guid("50f89c72-923b-eb11-a813-0022481ae95c");
+		public static Guid MockRecordOwnerTeamRole = new Guid("35416ea9-ae3b-eb11-a813-0022481ae95c");
 		public static Guid PlaybookManager = new Guid("4178df9e-4ea5-e811-8149-000d3a3a2732");
 		public static Guid PlaybookUser = new Guid("4178df9e-4ea5-e811-8149-000d3a3a2731");
 		public static Guid ProjectOwner = new Guid("f9a5a958-d07f-44cd-886d-eb6343309c2a");
