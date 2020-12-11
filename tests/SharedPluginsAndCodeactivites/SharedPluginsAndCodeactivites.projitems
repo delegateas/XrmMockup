@@ -9,7 +9,7 @@
     <Import_RootNamespace>SharedPluginsAndCodeactivites</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ParentPreCreatePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BusTicketSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />

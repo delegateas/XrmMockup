@@ -22,8 +22,12 @@ namespace DG.XrmMockupTest
 #if !(XRM_MOCKUP_2011)
             team1.TeamType = Team_TeamType.Owner;
 #endif
-            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SystemCustomizer).ToEntity<Team>();
-            
+            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.Salesperson).ToEntity<Team>();
+
+
+            var user1 = new SystemUser() { BusinessUnitId = crm.RootBusinessUnit } ;
+            var user = crm.CreateUser(orgAdminService, user1, SecurityRoles.MockSecurityRole);
+
             var child = new Entity("mock_child");
             child.Id = orgAdminService.Create(child);
 
