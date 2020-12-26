@@ -19,7 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeamMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\UpdateInactiveIncident.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\AddMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CloseIncidentRequestHandler.cs" />

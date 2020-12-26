@@ -7,23 +7,23 @@ using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 
-namespace DG.Some.Namespace {
-
-    public class ParentPostCreatePlugin : Plugin {
-        public ParentPostCreatePlugin() : base(typeof(ParentPostCreatePlugin)) {
+namespace DG.Some.Namespace 
+{
+    public class ParentPostCreatePlugin : Plugin 
+    {
+        public ParentPostCreatePlugin() : base(typeof(ParentPostCreatePlugin)) 
+        {
             RegisterPluginStep("mock_parent",
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute)
-                  .SetExecutionMode(ExecutionMode.Synchronous)
-                  ;
+                  .SetExecutionMode(ExecutionMode.Synchronous);
         }
 
         protected void Execute(LocalPluginContext localContext)
         {
             //assign the parent to the record owning team.
 
-            
             var target = (Entity)localContext.PluginExecutionContext.InputParameters["Target"];
             localContext.TracingService.Trace($"target logical name {target.LogicalName}");
 

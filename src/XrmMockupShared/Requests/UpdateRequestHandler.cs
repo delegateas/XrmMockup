@@ -16,7 +16,7 @@ namespace DG.Tools.XrmMockup
     {
         internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
 
-        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
@@ -24,32 +24,6 @@ namespace DG.Tools.XrmMockup
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
             var entity = request.Target;
             var row = db.GetDbRow(entRef);
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName != LogicalNames.Opportunity &&
-                row.Table.TableName != LogicalNames.SystemUser &&
-                row.GetColumn<int?>("statecode") == 1)
-            {
-                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
-            }
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.Opportunity &&
-                row.GetColumn<int?>("statecode") == 1)
-            {
-                throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
-            }
-
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.SystemUser &&
-                row.GetColumn<bool?>("isdisabled") == true)
-            {
-                throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
-            }
-
-            // modify for all activites
-            //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
             var xrmEntity = row.ToEntity();
 
             if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
@@ -88,6 +62,44 @@ namespace DG.Tools.XrmMockup
                     }
                 }
             }
+
+        }
+
+        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<UpdateRequest>(orgRequest);
+            var settings = MockupExecutionContext.GetSettings(request);
+
+            var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
+            var entity = request.Target;
+            var row = db.GetDbRow(entRef);
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName != LogicalNames.Opportunity &&
+                row.Table.TableName != LogicalNames.SystemUser &&
+                row.GetColumn<int?>("statecode") == 1)
+            {
+                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
+            }
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName == LogicalNames.Opportunity &&
+                row.GetColumn<int?>("statecode") == 1)
+            {
+                throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
+            }
+
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName == LogicalNames.SystemUser &&
+                row.GetColumn<bool?>("isdisabled") == true)
+            {
+                throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
+            }
+
+            // modify for all activites
+            //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
+            var xrmEntity = row.ToEntity();
 
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)

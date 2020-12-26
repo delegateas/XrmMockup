@@ -16,10 +16,9 @@ namespace DG.Tools.XrmMockup
     {
         internal CreateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Create") { }
 
-        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<CreateRequest>(orgRequest);
-            var resp = new CreateResponse();
             var settings = MockupExecutionContext.GetSettings(request);
             var entity = request.Target;
             if (entity.LogicalName == null) throw new MockupException("Entity needs a logical name");
@@ -69,6 +68,23 @@ namespace DG.Tools.XrmMockup
                 }
             }
 
+        }
+
+        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<CreateRequest>(orgRequest);
+            var resp = new CreateResponse();
+            var settings = MockupExecutionContext.GetSettings(request);
+            var entity = request.Target;
+            if (entity.LogicalName == null) throw new MockupException("Entity needs a logical name");
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName);
+            var clonedEntity = entity.CloneEntity(entityMetadata, new ColumnSet(true));
+            var validAttributes = clonedEntity.Attributes.Where(x => x.Value != null);
+            clonedEntity.Attributes = new AttributeCollection();
+            clonedEntity.Attributes.AddRange(validAttributes);
+
+        
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {
                 throw new FaultException($"Trying to create entity '{clonedEntity.LogicalName}', but the attributes had a circular reference");

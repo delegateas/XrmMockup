@@ -32,11 +32,9 @@ namespace DG.Tools.XrmMockup {
                     }
 
                     this.DefaultStateStatus.Add(kvp.Key, dict);
-
                 }
             }
         }
-
     }
 
     public class MetaPlugin {

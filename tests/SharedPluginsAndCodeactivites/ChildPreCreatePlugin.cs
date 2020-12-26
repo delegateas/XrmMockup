@@ -4,16 +4,16 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 
-namespace DG.Some.Namespace {
-
-    public class ChildPreCreatePlugin : Plugin {
-        public ChildPreCreatePlugin() : base(typeof(ChildPreCreatePlugin)) {
+namespace DG.Some.Namespace 
+{
+    public class ChildPreCreatePlugin : Plugin 
+    {
+        public ChildPreCreatePlugin() : base(typeof(ChildPreCreatePlugin)) 
+        {
             RegisterPluginStep("mock_child",
                 EventOperation.Create,
                 ExecutionStage.PreOperation,
-                Execute)
-                  .SetExecutionMode(ExecutionMode.Synchronous)
-                  ;
+                Execute).SetExecutionMode(ExecutionMode.Synchronous);
         }
 
         protected void Execute(LocalPluginContext localContext)

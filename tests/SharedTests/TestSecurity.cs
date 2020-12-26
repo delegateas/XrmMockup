@@ -14,7 +14,7 @@ namespace DG.XrmMockupTest
     {
         public TestSecurity(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact]
+        [Fact ]
         public void TestBasicSecurity()
         {
             //create a team
@@ -35,11 +35,7 @@ namespace DG.XrmMockupTest
             //check that the child has the parent id populated
             var checkChild = orgAdminService.Retrieve("mock_child", child.Id, new ColumnSet(true));
             Assert.NotNull(checkChild.GetAttributeValue<EntityReference>("mock_parentid"));
-            
-
 
         }
-
     }
-
 }

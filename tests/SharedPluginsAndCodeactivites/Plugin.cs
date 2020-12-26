@@ -504,7 +504,6 @@
             }
         }
 
-
         public PluginStepConfig(string entityLogicalName,EventOperation eventOperation, ExecutionStage executionStage)
         {
             this._LogicalName = entityLogicalName;
@@ -613,7 +612,6 @@
                 }
             }
         }
-
     }
 
     class AnyEntity : Entity {

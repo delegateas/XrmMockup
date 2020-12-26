@@ -566,6 +566,9 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
+            //perform security checks for the request
+            CheckRequestSecurity(request, userRef);
+
             if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
                 // System Pre-validation
                 pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
@@ -672,10 +675,13 @@ namespace DG.Tools.XrmMockup
         private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef, PluginContext parentPluginContext)
         {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            if (request is AssignRequest assignRequest) {
+            if (request is AssignRequest assignRequest)
+            {
                 var targetEntity = db.GetEntityOrNull(assignRequest.Target);
-                if (targetEntity.GetAttributeValue<EntityReference>("ownerid") != assignRequest.Assignee) {
-                    var req = new UpdateRequest {
+                if (targetEntity.GetAttributeValue<EntityReference>("ownerid") != assignRequest.Assignee)
+                {
+                    var req = new UpdateRequest
+                    {
                         Target = new Entity(assignRequest.Target.LogicalName, assignRequest.Target.Id)
                     };
                     req.Target.Attributes["ownerid"] = assignRequest.Assignee;
@@ -684,11 +690,14 @@ namespace DG.Tools.XrmMockup
                 return new AssignResponse();
             }
 
-            if (request is SetStateRequest setstateRequest) {
+            if (request is SetStateRequest setstateRequest)
+            {
                 var targetEntity = db.GetEntityOrNull(setstateRequest.EntityMoniker);
                 if (targetEntity.GetAttributeValue<OptionSetValue>("statecode") != setstateRequest.State ||
-                    targetEntity.GetAttributeValue<OptionSetValue>("statuscode") != setstateRequest.Status) {
-                    var req = new UpdateRequest {
+                    targetEntity.GetAttributeValue<OptionSetValue>("statuscode") != setstateRequest.Status)
+                {
+                    var req = new UpdateRequest
+                    {
                         Target = new Entity(setstateRequest.EntityMoniker.LogicalName, setstateRequest.EntityMoniker.Id)
                     };
                     req.Target.Attributes["statecode"] = setstateRequest.State;
@@ -714,6 +723,18 @@ namespace DG.Tools.XrmMockup
             }
 
             throw new NotImplementedException($"Execute for the request '{request.RequestName}' has not been implemented yet.");
+        }
+
+        private void CheckRequestSecurity(OrganizationRequest request, EntityReference userRef)
+        {
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if (handler != null)
+            {
+                handler.CheckSecurity(request, userRef);
+            }
+            return;
+            
+            throw new NotImplementedException($"CheckRequestSecurity for the request '{request.RequestName}' has not been implemented yet.");
         }
 
         private string RequestNameToMessageName(string requestName)

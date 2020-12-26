@@ -26,6 +26,10 @@ namespace DG.Tools.XrmMockup {
             return this.RequestName == RequestName;
         }
         abstract internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef);
+        virtual internal void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+        }
+
 
         public static T MakeRequest<T>(OrganizationRequest req) where T : OrganizationRequest {
             var typedReq = Activator.CreateInstance<T>();

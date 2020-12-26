@@ -14,34 +14,47 @@ namespace DG.Tools.XrmMockup {
     internal class DisassociateRequestHandler : RequestHandler {
         internal DisassociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Disassociate") {}
 
-        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+
             var request = MakeRequest<DisassociateRequest>(orgRequest);
             var relatedLogicalName = request.RelatedEntities.FirstOrDefault()?.LogicalName;
             var oneToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as OneToManyRelationshipMetadata;
             var manyToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
             var targetEntity = db.GetEntity(request.Target);
-            if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
+            if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef))
+            {
                 throw new FaultException($"Trying to unappend to entity '{request.Target.LogicalName}'" +
                     ", but the calling user does not have read access for that entity");
             }
 
-            if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
+            if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef))
+            {
                 throw new FaultException($"Trying to unappend to entity '{request.Target.LogicalName}'" +
                     ", but the calling user does not have append to access for that entity");
             }
 
-            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef)))
+            {
                 var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity");
             }
 
-            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef)))
+            {
                 var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
                 throw new FaultException($"Trying to unappend entity '{firstError.LogicalName}'" +
                     $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity");
             }
+        }
+
+        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
+            var request = MakeRequest<DisassociateRequest>(orgRequest);
+            var relatedLogicalName = request.RelatedEntities.FirstOrDefault()?.LogicalName;
+            var oneToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as OneToManyRelationshipMetadata;
+            var manyToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
             if (manyToMany != null) {
                 foreach (var relatedEntity in request.RelatedEntities) {

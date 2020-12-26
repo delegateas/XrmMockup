@@ -14,6 +14,38 @@ namespace DG.Tools.XrmMockup {
     internal class AssociateRequestHandler : RequestHandler {
         internal AssociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Associate") { }
 
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<AssociateRequest>(orgRequest);
+            var targetEntity = db.GetEntity(request.Target);
+
+            if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef))
+            {
+                throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
+                    ", but the calling user does not have read access for that entity");
+            }
+
+            if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef))
+            {
+                throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
+                    ", but the calling user does not have append to access for that entity");
+            }
+
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef)))
+            {
+                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
+                throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
+                    $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity");
+            }
+
+            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef)))
+            {
+                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
+                throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
+                    $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity");
+            }
+        }
+
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<AssociateRequest>(orgRequest);
             var relatedLogicalName = request.RelatedEntities.FirstOrDefault()?.LogicalName;
@@ -21,27 +53,7 @@ namespace DG.Tools.XrmMockup {
             var manyToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
             var targetEntity = db.GetEntity(request.Target);
-            if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
-                throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
-                    ", but the calling user does not have read access for that entity");
-            }
 
-            if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
-                throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
-                    ", but the calling user does not have append to access for that entity");
-            }
-
-            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
-                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
-                throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
-                    $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity");
-            }
-
-            if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
-                var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
-                throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
-                    $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity");
-            }
 
             if (manyToMany != null) {
                 foreach (var relatedEntity in request.RelatedEntities) {
