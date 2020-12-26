@@ -24,8 +24,7 @@ namespace DG.XrmMockupTest
 #endif
             team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.MockRecordOwnerTeamRole).ToEntity<Team>();
 
-
-            var user1 = new SystemUser() { BusinessUnitId = crm.RootBusinessUnit } ;
+            var user1 = new SystemUser() { BusinessUnitId = crm.RootBusinessUnit };
             var user = crm.CreateUser(orgAdminService, user1, SecurityRoles.MockSecurityRole);
             var userService = crm.CreateOrganizationService(user.Id);
 
