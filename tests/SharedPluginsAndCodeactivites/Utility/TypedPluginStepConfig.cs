@@ -42,7 +42,6 @@
             }
         }
 
-
         public PluginStepConfig(EventOperation eventOperation, ExecutionStage executionStage)
         {
             this._LogicalName = Activator.CreateInstance<T>().LogicalName;

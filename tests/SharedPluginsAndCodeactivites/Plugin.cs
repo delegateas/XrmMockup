@@ -302,7 +302,6 @@
             return stepConfig;
         }
 
-
         private Collection<IPluginStepConfig> pluginConfigs;
         private Collection<IPluginStepConfig> PluginStepConfigs {
             get {
@@ -313,11 +312,5 @@
             }
         }
         #endregion
-
     }
-
-
-
-
-
 }
