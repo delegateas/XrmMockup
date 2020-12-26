@@ -67,7 +67,6 @@ namespace DG.Tools.XrmMockup
                     }
                 }
             }
-
         }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
@@ -83,7 +82,6 @@ namespace DG.Tools.XrmMockup
             var validAttributes = clonedEntity.Attributes.Where(x => x.Value != null);
             clonedEntity.Attributes = new AttributeCollection();
             clonedEntity.Attributes.AddRange(validAttributes);
-
         
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {

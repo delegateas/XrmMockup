@@ -27,7 +27,6 @@ namespace DG.Tools.XrmMockup {
             {
                 throw new FaultException($"You do not have permission to access entity '{request.Target.LogicalName}' for delete");
             }
-
         }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {

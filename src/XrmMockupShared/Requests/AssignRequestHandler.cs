@@ -14,7 +14,6 @@ namespace DG.Tools.XrmMockup {
     internal class AssignRequestHandler : RequestHandler {
         internal AssignRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Assign") {}
 
-        
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<AssignRequest>(orgRequest);
             var casSelection = new CascadeSelection() { assign = true };

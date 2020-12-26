@@ -16,7 +16,6 @@ namespace DG.Tools.XrmMockup {
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
-
             var request = MakeRequest<DisassociateRequest>(orgRequest);
             var relatedLogicalName = request.RelatedEntities.FirstOrDefault()?.LogicalName;
             var oneToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as OneToManyRelationshipMetadata;

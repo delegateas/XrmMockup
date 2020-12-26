@@ -40,7 +40,6 @@ namespace DG.Some.Namespace
 
             localContext.TracingService.Trace($"assigning");
             var resp = (AssignResponse)localContext.OrganizationService.Execute(req);
-
         }
     }
 }

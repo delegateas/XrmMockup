@@ -30,7 +30,6 @@ namespace DG.Tools.XrmMockup {
         {
         }
 
-
         public static T MakeRequest<T>(OrganizationRequest req) where T : OrganizationRequest {
             var typedReq = Activator.CreateInstance<T>();
             if (req.RequestName != typedReq.RequestName) {

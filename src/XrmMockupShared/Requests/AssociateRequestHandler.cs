@@ -13,7 +13,7 @@ using DG.Tools.XrmMockup.Database;
 namespace DG.Tools.XrmMockup {
     internal class AssociateRequestHandler : RequestHandler {
         internal AssociateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Associate") { }
-
+        
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<AssociateRequest>(orgRequest);
@@ -53,7 +53,6 @@ namespace DG.Tools.XrmMockup {
             var manyToMany = Utility.GetRelatedEntityMetadata(metadata.EntityMetadata, relatedLogicalName, request.Relationship.SchemaName) as ManyToManyRelationshipMetadata;
 
             var targetEntity = db.GetEntity(request.Target);
-
 
             if (manyToMany != null) {
                 foreach (var relatedEntity in request.RelatedEntities) {

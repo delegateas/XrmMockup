@@ -24,7 +24,6 @@ namespace DG.Some.Namespace
 
             var child = localContext.PluginExecutionContext.InputParameters["Target"] as Entity;
             child["mock_parentid"] = parent.ToEntityReference();
-
         }
     }
 }
