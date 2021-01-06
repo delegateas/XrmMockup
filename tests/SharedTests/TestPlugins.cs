@@ -43,7 +43,6 @@ namespace DG.XrmMockupTest
 
             var checkNote = user2Service.Retrieve("annotation", note2.Id, new ColumnSet("notetext"));
             Assert.Equal("updated by admin plugin", checkNote.GetAttributeValue<string>("notetext"));
-            
         }
 
 #if !XRM_MOCKUP_TEST_2011

@@ -509,7 +509,6 @@
             }
         }
 
-
         public PluginStepConfig(string logicalName,EventOperation eventOperation, ExecutionStage executionStage)
         {
             this._LogicalName = logicalName;
@@ -634,7 +633,6 @@
                 }
             }
         }
-
 
         private static string GetMemberName(Expression<Func<object>> lambda)
         {

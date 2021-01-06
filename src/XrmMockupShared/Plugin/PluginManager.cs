@@ -483,7 +483,6 @@ namespace DG.Tools.XrmMockup {
                     thisPluginContext.UserId = this.impersonatingUserId.Value;
                 }
 
-
                 foreach (var image in this.images)
                 {
                     var type = (ImageType)image.Item3;

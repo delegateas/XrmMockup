@@ -118,7 +118,6 @@ namespace DG.Tools.XrmMockup.Metadata
 
         private List<MetaPlugin> GetPlugins(string[] solutions)
         {
-
             var plugins = new List<MetaPlugin>();
 
             if (solutions == null || solutions.Length == 0)
@@ -130,7 +129,6 @@ namespace DG.Tools.XrmMockup.Metadata
 
             //get the images
             var images = GetImages(solutions);
-
 
             foreach (var pluginStep in pluginSteps.Entities)
             {
@@ -159,7 +157,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 };
                 plugins.Add(metaPlugin);
             }
-
             return plugins;
         }
 
@@ -267,7 +264,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 .First(e => e.Id.Equals(baseOrganizationId));
         }
 
-
         internal IEnumerable<Entity> GetBusinessUnits()
         {
             var query = new QueryExpression("businessunit")
@@ -276,7 +272,6 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             return service.RetrieveMultiple(query).Entities;
         }
-
 
         private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
         {
