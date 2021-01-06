@@ -162,7 +162,6 @@ namespace DG.Tools.XrmMockup.Metadata
 
         private EntityCollection GetPluginSteps(string[] solutions)
         {
-
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
             {
                 ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name", "impersonatinguserid"),
