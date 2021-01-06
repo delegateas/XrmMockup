@@ -42,7 +42,6 @@
             }
         }
 
-
         public PluginStepConfig(EventOperation eventOperation, ExecutionStage executionStage)
         {
             this._LogicalName = Activator.CreateInstance<T>().LogicalName;
@@ -152,7 +151,6 @@
             }
         }
 
-
         private static string GetMemberName(Expression<Func<T, object>> lambda)
         {
             if (!(lambda.Body is MemberExpression body))
@@ -164,5 +162,4 @@
             return body.Member.Name;
         }
     }
-
 }
