@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveMembersTeamRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CloseIncidentRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\IsValidStateTransitionRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveMetadataChangesRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrievePrincipalAccessRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveAttributeRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveExchangeRateRequestHandler.cs" />

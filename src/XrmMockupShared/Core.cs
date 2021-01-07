@@ -197,6 +197,7 @@ namespace DG.Tools.XrmMockup
                 new RetrieveAttributeRequestHandler(this, db, metadata, security),
                 new WhoAmIRequestHandler(this, db, metadata, security),
                 new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
+                new RetrieveMetadataChangesRequestHandler(this, db, metadata, security)
         };
 
         internal void EnableProxyTypes(Assembly assembly)
