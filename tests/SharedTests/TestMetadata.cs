@@ -230,7 +230,6 @@ namespace DG.XrmMockupTest
             var response = (RetrieveMetadataChangesResponse)orgAdminService.Execute(retrieveMetadataChangesRequest);
 
             Assert.Equal("account", response.EntityMetadata[0].LogicalName);
-
         }
     }
 
