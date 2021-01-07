@@ -175,8 +175,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
 
-        
-
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0) {
@@ -198,14 +196,11 @@ namespace DG.Tools.XrmMockup.Database {
             {
                 return false;
             }
-
         }
-
 
         internal DbRow GetDbRow(Entity xrmEntity) {
             return GetDbRow(xrmEntity.ToEntityReferenceWithKeyAttributes());
         }
-
 
         internal DbRow GetDbRow(string logicalName, Guid id) {
             return GetDbRow(new EntityReference(logicalName, id));

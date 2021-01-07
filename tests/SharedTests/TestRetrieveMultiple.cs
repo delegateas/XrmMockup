@@ -879,9 +879,7 @@ namespace DG.XrmMockupTest
             q.ColumnSet = new ColumnSet(true);
             var res = orgAdminService.RetrieveMultiple(q);
 
-
             Assert.Equal("MATT", res.Entities.Single().GetAttributeValue<string>("firstname"));
-
         }
     }
 }
