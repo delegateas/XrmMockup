@@ -7,6 +7,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Xunit;
 using System.Linq;
 using Xunit.Sdk;
+using Microsoft.Xrm.Sdk.Metadata.Query;
 
 namespace DG.XrmMockupTest
 {
@@ -208,6 +209,29 @@ namespace DG.XrmMockupTest
             Assert.Null(resp.EntityMetadata.Attributes);
         }
 
+        [Fact]
+        public void RetrieveMetadataChangesRequest()
+        {
+            var entityFilter = new MetadataFilterExpression(LogicalOperator.And);
+            entityFilter.Conditions.Add(new MetadataConditionExpression("ObjectTypeCode ", MetadataConditionOperator.Equals, 1));
+            var propertyExpression = new MetadataPropertiesExpression { AllProperties = false };
+            propertyExpression.PropertyNames.Add("LogicalName");
+            var entityQueryExpression = new EntityQueryExpression()
+            {
+                Criteria = entityFilter,
+                Properties = propertyExpression
+            };
+
+            var retrieveMetadataChangesRequest = new RetrieveMetadataChangesRequest()
+            {
+                Query = entityQueryExpression
+            };
+
+            var response = (RetrieveMetadataChangesResponse)orgAdminService.Execute(retrieveMetadataChangesRequest);
+
+            Assert.Equal("account", response.EntityMetadata[0].LogicalName);
+
+        }
     }
 
 }
