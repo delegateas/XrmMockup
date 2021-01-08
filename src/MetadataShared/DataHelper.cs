@@ -138,6 +138,14 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             pluginQuery.LinkEntities.Add(sdkMessageFilterQuery);
 
+            var pluginTypeQuery = new LinkEntity("sdkmessageprocessingstep", "plugintype", "plugintypeid", "plugintypeid", JoinOperator.LeftOuter)
+            {
+                Columns = new ColumnSet("assemblyname"),
+                EntityAlias = "plugintype",
+                LinkCriteria = new FilterExpression()
+            };
+            pluginQuery.LinkEntities.Add(pluginTypeQuery);
+
             var solutionComponentQuery = new LinkEntity("sdkmessageprocessingstep", "solutioncomponent", "sdkmessageprocessingstepid", "objectid", JoinOperator.Inner)
             {
                 Columns = new ColumnSet(),
@@ -200,6 +208,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     Stage = plugin.GetAttributeValue<OptionSetValue>("stage").Value,
                     MessageName = plugin.GetAttributeValue<EntityReference>("sdkmessageid").Name,
                     AssemblyName = plugin.GetAttributeValue<EntityReference>("eventhandler").Name,
+                    PluginAssemblyName = plugin.GetAttributeValue<AliasedValue>("plugintype.assemblyname").Value.ToString(),
                     PrimaryEntity = plugin.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode")?.Value as string ?? "",  // In case of AnyEntity use ""
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == plugin.Id)
