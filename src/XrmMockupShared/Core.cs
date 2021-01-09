@@ -566,15 +566,20 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
-            //perform security checks for the request
-            CheckRequestSecurity(request, userRef);
 
-            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue) {
+            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
+            {
                 // System Pre-validation
                 pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 // Pre-validation
                 pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+            }
+            
+            //perform security checks for the request
+            CheckRequestSecurity(request, userRef);
 
+            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
+            { 
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
                 pluginContext.ParentContext = pluginContext.Clone();
                 pluginContext.SharedVariables.Clear();
