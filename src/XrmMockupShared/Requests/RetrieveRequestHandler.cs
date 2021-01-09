@@ -40,11 +40,13 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            ExecuteCalculatedFields(row);
-#endif
             row = db.GetDbRow(request.Target);
             var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            core.ExecuteCalculatedFields(entity,row.Metadata);
+#endif
+
 
             Utility.SetFormmattedValues(db, entity, row.Metadata);
 
@@ -65,32 +67,6 @@ namespace DG.Tools.XrmMockup {
         }
 
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-        private void ExecuteCalculatedFields(DbRow row) {
-            var attributes = row.Metadata.Attributes.Where(
-                m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
-            foreach (var attr in attributes) {
-                string definition = (attr as BooleanAttributeMetadata)?.FormulaDefinition;
-                if (attr is BooleanAttributeMetadata) definition = (attr as BooleanAttributeMetadata).FormulaDefinition;
-                else if (attr is DateTimeAttributeMetadata) definition = (attr as DateTimeAttributeMetadata).FormulaDefinition;
-                else if (attr is DecimalAttributeMetadata) definition = (attr as DecimalAttributeMetadata).FormulaDefinition;
-                else if (attr is IntegerAttributeMetadata) definition = (attr as IntegerAttributeMetadata).FormulaDefinition;
-                else if (attr is MoneyAttributeMetadata) definition = (attr as MoneyAttributeMetadata).FormulaDefinition;
-                else if (attr is PicklistAttributeMetadata) definition = (attr as PicklistAttributeMetadata).FormulaDefinition;
-                else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
-
-                if (definition == null) {
-                    var trace = core.ServiceFactory.GetService(typeof(ITracingService)) as ITracingService;
-                    trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
-                    return;
-                }
-                var tree = WorkflowConstructor.ParseCalculated(definition);
-                var factory = core.ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), core.TimeOffset, core.GetWorkflowService(), 
-                    factory, factory.GetService(typeof(ITracingService)) as ITracingService);
-            }
-        }
-#endif
     }
 }
