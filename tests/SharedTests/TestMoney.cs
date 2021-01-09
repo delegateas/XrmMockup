@@ -5,6 +5,7 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
@@ -50,6 +51,46 @@ namespace DG.XrmMockupTest
                 Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
                 Assert.NotNull(retrieved.dg_AllConditions);
             }
+        }
+
+        [Fact]
+        public void TestCalculatedIsSetRetrieveMultiple()
+        {
+
+            var bus = new dg_bus
+            {
+                dg_name = "Buu"
+            };
+            bus.Id = orgAdminUIService.Create(bus);
+
+            var q = new QueryExpression("dg_bus");
+            q.ColumnSet = new ColumnSet(true);
+            var all = orgAdminService.RetrieveMultiple(q);
+            Assert.Single(all.Entities);
+                
+
+
+            bus.dg_name = "Woop";
+            orgAdminUIService.Update(bus);
+
+            all = orgAdminService.RetrieveMultiple(q);
+            var retrieved = (dg_bus)all.Entities.Single();
+            Assert.Null(retrieved.dg_Udregnet);
+            Assert.Null(retrieved.dg_AllConditions);
+
+            bus.dg_Ticketprice = 30;
+            bus.dg_EtHelTal = 5;
+            bus.dg_Udkoerselsdato = DateTime.Now;
+            orgAdminUIService.Update(bus);
+
+            all = orgAdminService.RetrieveMultiple(q);
+            retrieved = (dg_bus)all.Entities.Single();
+            Assert.Equal(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
+            Assert.Equal(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
+            Assert.Equal(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
+            Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
+            Assert.NotNull(retrieved.dg_AllConditions);
+        
         }
 
         [Fact]
