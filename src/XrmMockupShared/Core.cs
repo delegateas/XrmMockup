@@ -566,7 +566,6 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
-
             if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
             {
                 // System Pre-validation
