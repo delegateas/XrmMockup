@@ -982,6 +982,5 @@ namespace DG.Tools.XrmMockup
             }
         }
 #endif
-
     }
 }

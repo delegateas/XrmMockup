@@ -16,7 +16,6 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCalculatedIsSet()
         {
-
             var bus = new dg_bus
             {
                 dg_name = "Buu"
@@ -56,7 +55,6 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCalculatedIsSetRetrieveMultiple()
         {
-
             var bus = new dg_bus
             {
                 dg_name = "Buu"
@@ -68,8 +66,6 @@ namespace DG.XrmMockupTest
             var all = orgAdminService.RetrieveMultiple(q);
             Assert.Single(all.Entities);
                 
-
-
             bus.dg_name = "Woop";
             orgAdminUIService.Update(bus);
 
@@ -90,7 +86,6 @@ namespace DG.XrmMockupTest
             Assert.Equal(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
             Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
             Assert.NotNull(retrieved.dg_AllConditions);
-        
         }
 
         [Fact]
