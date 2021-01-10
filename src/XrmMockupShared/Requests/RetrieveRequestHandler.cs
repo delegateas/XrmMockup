@@ -40,12 +40,11 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
             }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            core.ExecuteCalculatedFields(row);
+#endif
             row = db.GetDbRow(request.Target);
             var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            core.ExecuteCalculatedFields(entity,row.Metadata);
-#endif
 
 
             Utility.SetFormmattedValues(db, entity, row.Metadata);

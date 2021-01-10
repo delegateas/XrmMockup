@@ -38,9 +38,17 @@ namespace DG.Tools.XrmMockup {
             var rows = db.GetDBEntityRows(queryExpr.EntityName);
             if (db[queryExpr.EntityName].Count() > 0)
             {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+                for (int i=0;i<rows.Count();i++)
+                {
+                    core.ExecuteCalculatedFields(rows.ToList()[i]);
+                }
+#endif
                 foreach (var row in rows)
                 {
                     var entity = row.ToEntity();
+
+
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
                     Utility.SetFormmattedValues(db, toAdd, row.Metadata);
@@ -60,13 +68,6 @@ namespace DG.Tools.XrmMockup {
             var filteredEntities = new EntityCollection();
             filteredEntities.Entities.AddRange(collection.Entities.Where(e => security.HasPermission(e, AccessRights.ReadAccess, userRef)));
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-
-            foreach (var entity in filteredEntities.Entities)
-            {
-                core.ExecuteCalculatedFields(entity,metadata.EntityMetadata[entity.LogicalName]);
-            }
-#endif
             var orders = queryExpr.Orders;
             var orderedCollection = new EntityCollection();
             // TODO: Check the order that the orders are executed in is correct
