@@ -14,7 +14,6 @@ namespace DG.XrmMockupTest
     public class TestRetrieveNoProxyTypes : UnitTestBaseNoProxyTypes
     {
         public TestRetrieveNoProxyTypes(XrmMockupFixtureNoProxyTypes fixture) : base(fixture) {  }
-
         
         [Fact]
         public void TestLookupFormattedValues()
@@ -34,7 +33,6 @@ namespace DG.XrmMockupTest
                     new ColumnSet("accountid", "parentaccountid"));
               //  Assert.NotNull(retrieved.ParentAccountId);
                 Assert.Equal("MLJ UnitTest2", retrieved.FormattedValues["parentaccountid"]);
-
             }
         }
     }

@@ -277,7 +277,6 @@ namespace DG.Tools.XrmMockup
 
                 toReturn.Id = entity.Id;
                 toReturn.EntityState = entity.EntityState;
-                
             }
             else
             {

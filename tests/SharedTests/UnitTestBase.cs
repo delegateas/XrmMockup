@@ -38,7 +38,6 @@ namespace DG.XrmMockupTest
             if (fixture.crmRealData != null)
                 orgRealDataService = fixture.crmRealData.GetAdminService();
         }
-        
 
         public void Dispose()
         {
