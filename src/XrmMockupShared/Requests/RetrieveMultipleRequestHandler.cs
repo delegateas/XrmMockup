@@ -48,7 +48,6 @@ namespace DG.Tools.XrmMockup {
                 {
                     var entity = row.ToEntity();
 
-
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
                     Utility.SetFormmattedValues(db, toAdd, row.Metadata);
