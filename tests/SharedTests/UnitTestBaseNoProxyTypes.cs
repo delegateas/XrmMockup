@@ -5,8 +5,8 @@ using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [Collection("Xrm Collection")]
-    public class UnitTestBase
+    [Collection("Xrm Collection No Proxy Types")]
+    public class UnitTestBaseNoProxyTypes
     {
         private static DateTime _startTime { get; set; }
 
@@ -28,7 +28,7 @@ namespace DG.XrmMockupTest
         static protected XrmMockup365 crm;
 #endif
 
-        public UnitTestBase(XrmMockupFixture fixture)
+        public UnitTestBaseNoProxyTypes(XrmMockupFixtureNoProxyTypes fixture)
         {
             crm = fixture.crm;
             crm.ResetEnvironment();
@@ -38,7 +38,6 @@ namespace DG.XrmMockupTest
             if (fixture.crmRealData != null)
                 orgRealDataService = fixture.crmRealData.GetAdminService();
         }
-        
 
         public void Dispose()
         {
