@@ -144,6 +144,18 @@ namespace DG.Tools.XrmMockup {
                         .GetMethod("Execute")
                         .Invoke(plugin, new object[] { provider });
                     };
+
+                    if (metaStep.MessageName.ToLower() == "setstatedynamicentity")
+                    {
+                        var stepConfig2 = new StepConfig(metaStep.AssemblyName, metaStep.Stage, "setstate", metaStep.PrimaryEntity);
+                        stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig2, extendedConfig, imageTuple));
+                        pluginExecute = (provider) => {
+                            basePluginType
+                            .GetMethod("Execute")
+                            .Invoke(plugin, new object[] { provider });
+                        };
+                    }
+
                 }
             }
 
