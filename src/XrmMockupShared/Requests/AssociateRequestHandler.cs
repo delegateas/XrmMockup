@@ -23,24 +23,24 @@ namespace DG.Tools.XrmMockup {
             var targetEntity = db.GetEntity(request.Target);
             if (!security.HasPermission(targetEntity, AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
-                    ", but the calling user does not have read access for that entity");
+                    ", but the calling user does not have read access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 
             if (!security.HasPermission(targetEntity, AccessRights.AppendToAccess, userRef)) {
                 throw new FaultException($"Trying to append to entity '{request.Target.LogicalName}'" +
-                    ", but the calling user does not have append to access for that entity");
+                    ", but the calling user does not have append to access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 
             if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef))) {
                 var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.ReadAccess, userRef));
                 throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
-                    $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity");
+                    $" to '{request.Target.LogicalName}', but the calling user does not have read access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 
             if (request.RelatedEntities.Any(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef))) {
                 var firstError = request.RelatedEntities.First(r => !security.HasPermission(db.GetEntity(r), AccessRights.AppendAccess, userRef));
                 throw new FaultException($"Trying to append entity '{firstError.LogicalName}'" +
-                    $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity");
+                    $" to '{request.Target.LogicalName}', but the calling user does not have append access for that entity (SecLib::AccessCheckEx2 failed)");
             }
 
             if (manyToMany != null) {

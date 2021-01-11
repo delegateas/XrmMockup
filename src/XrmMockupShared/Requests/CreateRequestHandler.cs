@@ -35,7 +35,7 @@ namespace DG.Tools.XrmMockup
                 if (!security.HasPermission(clonedEntity, AccessRights.CreateAccess, userRef))
                 {
                     throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity");
+                        $", but the calling user with id '{userRef.Id}' does not have Create access for that entity (SecLib::AccessCheckEx2 failed)");
                 }
                 if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
                 {
@@ -48,7 +48,7 @@ namespace DG.Tools.XrmMockup
                         if (!security.HasPermission(clonedEntity, AccessRights.AppendAccess, userRef))
                         {
                             throw new FaultException($"Trying to create entity '{entity.LogicalName}' with references" +
-                                $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                                $", but the calling user with id '{userRef.Id}' does not have Append access for that entity (SecLib::AccessCheckEx2 failed)");
                         }
                     }
 
@@ -58,7 +58,7 @@ namespace DG.Tools.XrmMockup
                         if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
                         {
                             throw new FaultException($"Trying to create entity '{entity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                                $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}' (SecLib::AccessCheckEx2 failed)");
                         }
                         if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
                         {
