@@ -153,7 +153,6 @@ namespace DG.Tools.XrmMockup {
                 var stage = (ExecutionStage)stepConfig.Item1.Item2;
                 var trigger = new PluginTrigger(stepConfig.Item1.Item3, stage, pluginExecute, stepConfig, metadata);
                 AddTrigger(stepConfig.Item1.Item3.ToLower(), stage, trigger, register);
-               
             }
         }
 
@@ -253,7 +252,6 @@ namespace DG.Tools.XrmMockup {
         public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-
             if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
                 registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
                     .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
