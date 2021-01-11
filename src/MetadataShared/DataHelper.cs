@@ -213,7 +213,6 @@ namespace DG.Tools.XrmMockup.Metadata
                         .ToList()
                 };
 
-
                 if (metaPlugin.PrimaryEntity == "none")
                 {
                     metaPlugin.PrimaryEntity = "";
@@ -221,10 +220,8 @@ namespace DG.Tools.XrmMockup.Metadata
 
                 plugins.Add(metaPlugin);
             }
-
             return plugins;
         }
-
         private List<Entity> GetCurrencies()
         {
             var query = new QueryExpression("transactioncurrency")
