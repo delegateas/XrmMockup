@@ -239,8 +239,8 @@ namespace DG.Tools.XrmMockup {
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
         public void Trigger(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) {
-            
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core) 
+        {
             if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
                 registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
             if(temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))

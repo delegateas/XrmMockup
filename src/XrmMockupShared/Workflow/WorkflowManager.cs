@@ -111,13 +111,11 @@ namespace DG.Tools.XrmMockup {
         public void StageAsync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-
             var toExecute = asynchronousWorkflows.Where(x => ShouldStage(x, operation, stage, entity, pluginContext)).ToList();
             foreach (var workflow in toExecute)
             {
                 Stage(workflow, operation, stage, entity,pluginContext);
             }
-            
         }
 
         internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
@@ -242,9 +240,8 @@ namespace DG.Tools.XrmMockup {
             var isUpdate = operation == nameof(EventOperation.Update).ToLower();
             var isDelete = operation == nameof(EventOperation.Delete).ToLower();
 
-            if (!isCreate && !isUpdate && !isDelete) return false;
-            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return false;
-            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return false;
+            if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return false;
+
             var triggerFields = new HashSet<string>();
             if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
             {
@@ -275,6 +272,14 @@ namespace DG.Tools.XrmMockup {
             return true;
         }
 
+        private bool ShouldTriggerOnAction(bool isCreate,bool isUpdate,bool isDelete,Entity workflow)
+        {
+            if (!isCreate && !isUpdate && !isDelete) return false;
+            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return false;
+            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return false;
+            return true;
+        }
+
         private bool ShouldExecute(Entity workflow, string operation, ExecutionStage stage, object entityObject, PluginContext pluginContext)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
@@ -284,8 +289,7 @@ namespace DG.Tools.XrmMockup {
 
             var guid = entity?.Id ?? entityRef.Id;
             var logicalName = entity?.LogicalName ?? entityRef.LogicalName;
-
-
+            
             if (workflow.GetAttributeValue<string>("primaryentity") != "" && workflow.GetAttributeValue<string>("primaryentity") != logicalName) return false;
 
             checkInfiniteRecursion(pluginContext);
@@ -294,10 +298,8 @@ namespace DG.Tools.XrmMockup {
             var isUpdate = operation.ToLower() == nameof(EventOperation.Update).ToString().ToLower();
             var isDelete = operation.ToLower() == nameof(EventOperation.Delete).ToString().ToLower();
 
-            if (!isCreate && !isUpdate && !isDelete) return false;
+            if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return false;
 
-            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return false;
-            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return false;
             var triggerFields = new HashSet<string>();
             if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
             {
@@ -326,7 +328,6 @@ namespace DG.Tools.XrmMockup {
             if (parsedWorkflow == null) return false;
 
             return true;
-
         }
 
         private void Execute(Entity workflow, string operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
@@ -344,7 +345,6 @@ namespace DG.Tools.XrmMockup {
             var isUpdate = operation.ToLower() == nameof(EventOperation.Update).ToString().ToLower();
             var isDelete = operation.ToLower() == nameof(EventOperation.Delete).ToString().ToLower();
 
-
             var triggerFields = new HashSet<string>();
             if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
             {
@@ -354,7 +354,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
 
-
             var thisStage = isCreate ? workflow.GetOptionSetValue<workflow_stage>("createstage") :
                 (isDelete ? workflow.GetOptionSetValue<workflow_stage>("deletestage") : workflow.GetOptionSetValue<workflow_stage>("updatestage"));
 
@@ -362,8 +361,7 @@ namespace DG.Tools.XrmMockup {
             {
                 thisStage = workflow_stage.Postoperation;
             }
-
-
+            
             var thisPluginContext = createPluginContext(pluginContext, workflow, thisStage, guid, logicalName);
 
             var parsedWorkflow = ParseWorkflow(workflow);
