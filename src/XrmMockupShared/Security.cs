@@ -176,7 +176,6 @@ namespace DG.Tools.XrmMockup
                         }
                         break;
 
-
                     case CascadeType.Active:
                         foreach (var relatedEntity in relatedEntities.Value.Entities)
                         {
