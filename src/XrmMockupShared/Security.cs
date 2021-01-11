@@ -163,13 +163,19 @@ namespace DG.Tools.XrmMockup
                 switch (relationshipMeta.CascadeConfiguration.Assign)
                 {
                     case CascadeType.Cascade:
-                        foreach (var relatedEntity in relatedEntities.Value.Entities)
+
+                        var refEntityMetadata = Metadata.EntityMetadata[relationshipMeta.ReferencingEntity];
+                        if (refEntityMetadata.OwnershipType != OwnershipTypes.BusinessOwned)
                         {
-                            req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
-                            req.Target.Attributes["ownerid"] = ownerRef;
-                            Core.Execute(req, userRef, null);
+                            foreach (var relatedEntity in relatedEntities.Value.Entities)
+                            {
+                                req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
+                                req.Target.Attributes["ownerid"] = ownerRef;
+                                Core.Execute(req, userRef, null);
+                            }
                         }
                         break;
+
 
                     case CascadeType.Active:
                         foreach (var relatedEntity in relatedEntities.Value.Entities)
