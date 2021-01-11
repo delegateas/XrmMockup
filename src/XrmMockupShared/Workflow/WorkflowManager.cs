@@ -189,9 +189,8 @@ namespace DG.Tools.XrmMockup {
             var isUpdate = operation == nameof(EventOperation.Update).ToLower();
             var isDelete = operation == nameof(EventOperation.Delete).ToLower();
 
-            if (!isCreate && !isUpdate && !isDelete) return;
-            if (isCreate && (!workflow.GetAttributeValue<bool?>("triggeroncreate").HasValue || !workflow.GetAttributeValue<bool?>("triggeroncreate").Value)) return;
-            if (isDelete && (!workflow.GetAttributeValue<bool?>("triggerondelete").HasValue || !workflow.GetAttributeValue<bool?>("triggerondelete").Value)) return;
+            if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return;
+            
             var triggerFields = new HashSet<string>();
             if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)
             {
