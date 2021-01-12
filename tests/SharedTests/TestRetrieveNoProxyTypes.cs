@@ -35,5 +35,20 @@ namespace DG.XrmMockupTest
                 Assert.Equal("MLJ UnitTest2", retrieved.FormattedValues["parentaccountid"]);
             }
         }
+
+        [Fact]
+        public void TestRetrieveUserByFullName()
+        {
+            var user = new Entity("systemuser");
+            user["businessunitid"] = crm.RootBusinessUnit;
+            user["firstname"] = "Matt";
+            crm.CreateUser(orgAdminService, user, SecurityRoles.CEOBusinessManager);
+
+            var q = new QueryExpression("systemuser");
+            q.Criteria.AddCondition("fullname", ConditionOperator.Equal, "Matt");
+            var users = orgAdminService.RetrieveMultiple(q);
+            Assert.Single(users.Entities);
+
+        }
     }
 }
