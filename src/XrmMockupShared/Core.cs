@@ -268,20 +268,23 @@ namespace DG.Tools.XrmMockup
 
         internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
         {
+            Entity toReturn;
+
             if (HasType(entity.LogicalName))
             {
-                var typedEntity = GetEntity(entity.LogicalName);
-                typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
+                toReturn = GetEntity(entity.LogicalName);
+                toReturn.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db);
-                typedEntity.Id = entity.Id;
-                typedEntity.EntityState = entity.EntityState;
-                return typedEntity;
+                toReturn.Id = entity.Id;
+                toReturn.EntityState = entity.EntityState;
             }
             else
             {
-                return entity.CloneEntity(metadata, colsToKeep);
+                toReturn = entity.CloneEntity(metadata, colsToKeep);
             }
+
+            Utility.PopulateEntityReferenceNames(toReturn , db);
+            return toReturn;
         }
 
         internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)

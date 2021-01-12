@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesWrite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
@@ -59,8 +60,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollectionNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmmockupFixtureNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupFixture.cs" />
   </ItemGroup>
 </Project>
