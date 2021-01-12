@@ -141,7 +141,6 @@ namespace WorkflowExecuter
                         {
                             nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variable.Type.Split(':')[1], variable.Name));
                         }
-
                     }
                     else if (variable.DefaultList != null)
                     {
