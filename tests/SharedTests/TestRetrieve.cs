@@ -38,27 +38,6 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void TestLookupFormattedValues()
-        {
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                var id1 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest" });
-                var id2 = this.orgAdminUIService.Create(new Account() { Name = "MLJ UnitTest2" });
-
-                var acc1a = new Account(id1)
-                {
-                    ParentAccountId = new EntityReference(Account.EntityLogicalName, id2)
-                };
-                this.orgAdminUIService.Update(acc1a);
-
-                var retrieved = this.orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,
-                    new ColumnSet("accountid", "parentaccountid")).ToEntity<Account>();
-                Assert.NotNull(retrieved.ParentAccountId);
-                Assert.Equal("MLJ UnitTest2", retrieved.FormattedValues["parentaccountid"]);
-            }
-        }
-
-        [Fact]
         public void TestRetrieveHasId()
         {
             using (var context = new Xrm(orgAdminUIService))
