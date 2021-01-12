@@ -133,7 +133,15 @@ namespace WorkflowExecuter
                 {
                     if (variable.Default != null)
                     {
-                        nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variable.Type.Split(':')[1], variable.Name));
+                        if (variable.Type.StartsWith("scg:Dictionary"))
+                        {
+                            nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variable.Type.Replace("scg:",""), variable.Name));
+                        }
+                        else
+                        {
+                            nodes.Add(new CreateVariable(new object[][] { new object[] { "", variable.Default } }, variable.Type.Split(':')[1], variable.Name));
+                        }
+
                     }
                     else if (variable.DefaultList != null)
                     {
