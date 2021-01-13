@@ -5,6 +5,7 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
@@ -15,6 +16,7 @@ using IXrmMockupExtension;
 
 #endif
 
+[assembly:InternalsVisibleTo("SharedTests")]
 namespace DG.Tools.XrmMockup
 {
     internal class Snapshot
@@ -783,16 +785,16 @@ namespace DG.Tools.XrmMockup
                         var createdEntity =
                             GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
                                 .ToEntity();
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, createdEntity,
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, createdEntity,
                             userRef);
                         break;
                     case "Update":
                         var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, updatedEntity,
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, updatedEntity,
                             userRef);
                         break;
                     case "Delete":
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, null, userRef);
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, null, userRef);
                         break;
                 }
 
