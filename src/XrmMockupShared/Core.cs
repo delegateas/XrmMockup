@@ -53,6 +53,8 @@ namespace DG.Tools.XrmMockup
     internal class Core
 #endif
     {
+        #region MyRegion
+
         private PluginManager pluginManager;
         private WorkflowManager workflowManager;
         private Security security;
@@ -518,6 +520,8 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        #endregion
+
         /// <summary>
         /// Execute the request and trigger plugins if needed
         /// </summary>
@@ -563,6 +567,7 @@ namespace DG.Tools.XrmMockup
             {
                 pluginContext.ParentContext = parentPluginContext;
                 pluginContext.Depth = parentPluginContext.Depth + 1;
+                parentPluginContext.Depth = pluginContext.Depth;
             }
 
             var buRef = GetBusinessUnit(userRef);
