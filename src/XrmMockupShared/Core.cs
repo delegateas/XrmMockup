@@ -16,7 +16,8 @@ using IXrmMockupExtension;
 
 #endif
 
-[assembly:InternalsVisibleTo("SharedTests")]
+[assembly: InternalsVisibleTo("SharedTests")]
+
 namespace DG.Tools.XrmMockup
 {
     internal class Snapshot
@@ -624,7 +625,7 @@ namespace DG.Tools.XrmMockup
 
                 updateEntityReference = entityBeforeUpdate.ToEntityReference();
             }
-            
+
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
 
@@ -667,29 +668,37 @@ namespace DG.Tools.XrmMockup
 
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
-            
+
+#if XRM_MOCKUP_365
             // Trigger Extension
             switch (request.RequestName)
             {
                 case "Create":
                     var createResponse = (CreateResponse) response;
-                    var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
+                    var entityLogicalName = ((Entity) request.Parameters["Target"]).LogicalName;
 
                     var createdEntity =
                         GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
                             .ToEntity();
-                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, createdEntity,
+                    TriggerExtension(
+                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        createdEntity,
                         userRef);
                     break;
                 case "Update":
                     var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
-                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, updatedEntity,
+                    TriggerExtension(
+                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        updatedEntity,
                         userRef);
                     break;
                 case "Delete":
-                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, null, userRef);
+                    TriggerExtension(
+                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        null, userRef);
                     break;
             }
+#endif
 
             return response;
         }
