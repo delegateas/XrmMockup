@@ -681,20 +681,20 @@ namespace DG.Tools.XrmMockup
                         GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
                             .ToEntity();
                     TriggerExtension(
-                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        new XrmExtension(this, userRef, pluginContext), request,
                         createdEntity,
                         userRef);
                     break;
                 case "Update":
                     var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
                     TriggerExtension(
-                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        new XrmExtension(this, userRef, pluginContext), request,
                         updatedEntity,
                         userRef);
                     break;
                 case "Delete":
                     TriggerExtension(
-                        new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request,
+                        new XrmExtension(this, userRef, pluginContext), request,
                         null, userRef);
                     break;
             }
