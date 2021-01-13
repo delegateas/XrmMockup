@@ -130,7 +130,6 @@ namespace DG.XrmMockupTest
             }
         }
 #endif
-
         [Fact]
         public void TestAddedFields()
         {
@@ -141,6 +140,5 @@ namespace DG.XrmMockupTest
             orgAdminService.Update(fax);
             Assert.False(fax.Contains("isbilled"));
         }
-
     }
 }

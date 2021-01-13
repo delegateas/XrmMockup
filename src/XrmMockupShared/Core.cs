@@ -287,7 +287,6 @@ namespace DG.Tools.XrmMockup
             toReturn.KeyAttributes = entity.CloneKeyAttributes();
 #endif
             return toReturn;
-
         }
 
         internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)
@@ -962,6 +961,5 @@ namespace DG.Tools.XrmMockup
         {
             return metadata.EntityMetadata[entityLogicalName];
         }
-
     }
 }
