@@ -616,6 +616,15 @@ namespace DG.Tools.XrmMockup
                     postImage, pluginContext, this);
             }
 
+            EntityReference updateEntityReference = null;
+            if (request.RequestName == "Update")
+            {
+                var updateTargetEntity = (Entity) request.Parameters["Target"];
+                var entityBeforeUpdate = GetDbRow(updateTargetEntity.ToEntityReferenceWithKeyAttributes()).ToEntity();
+
+                updateEntityReference = entityBeforeUpdate.ToEntityReference();
+            }
+            
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
 
@@ -657,6 +666,29 @@ namespace DG.Tools.XrmMockup
                 }
 
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
+            }
+            
+            // Trigger Extension
+            switch (request.RequestName)
+            {
+                case "Create":
+                    var createResponse = (CreateResponse) response;
+                    var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
+
+                    var createdEntity =
+                        GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
+                            .ToEntity();
+                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, createdEntity,
+                        userRef);
+                    break;
+                case "Update":
+                    var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
+                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, updatedEntity,
+                        userRef);
+                    break;
+                case "Delete":
+                    TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext {Depth = 1}), request, null, userRef);
+                    break;
             }
 
             return response;
@@ -764,43 +796,10 @@ namespace DG.Tools.XrmMockup
             var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
             if (handler != null)
             {
-
-                EntityReference updateEntityReference = null;
-                if (request.RequestName == "Update")
-                {
-                    var updateTargetEntity = (Entity) request.Parameters["Target"];
-                    var entityBeforeUpdate = GetDbRow(updateTargetEntity.ToEntityReferenceWithKeyAttributes()).ToEntity();
-
-                    updateEntityReference = entityBeforeUpdate.ToEntityReference();
-                }
                 var response = handler.Execute(request, userRef);
-
-                // Trigger Extension
-                switch (request.RequestName)
-                {
-                    case "Create":
-                        var createResponse = (CreateResponse) response;
-                        var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
-
-                        var createdEntity =
-                            GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
-                                .ToEntity();
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, createdEntity,
-                            userRef);
-                        break;
-                    case "Update":
-                        var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, updatedEntity,
-                            userRef);
-                        break;
-                    case "Delete":
-                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext ?? new PluginContext()), request, null, userRef);
-                        break;
-                }
 
                 return response;
             }
-
 #endif
 
             if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false)
