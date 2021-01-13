@@ -56,9 +56,7 @@ namespace DG.Tools.XrmMockup {
 
                 db.Delete(entity);
             }
-#if XRM_MOCKUP_365
-            core.TriggerExtension(null, request, null, userRef);
-#endif
+
             return new DeleteResponse();
         }
     }

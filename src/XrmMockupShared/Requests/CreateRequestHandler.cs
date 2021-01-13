@@ -277,13 +277,9 @@ namespace DG.Tools.XrmMockup
                     core.Execute(associateReq, userRef);
                 }
             }
-
+            
             resp.Results.Add("id", clonedEntity.Id);
-#if XRM_MOCKUP_365
-            core.ServiceFactory.CreateOrganizationService(userRef.Id);
 
-            core.TriggerExtension(null, request, clonedEntity, userRef);
-#endif
             return resp;
         }
 

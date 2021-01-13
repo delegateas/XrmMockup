@@ -752,11 +752,54 @@ namespace DG.Tools.XrmMockup
                 return ExecuteAction(request);
             }
 
+#if !XRM_MOCKUP_365
             var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
             if (handler != null)
             {
                 return handler.Execute(request, userRef);
             }
+#else
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if (handler != null)
+            {
+
+                EntityReference updateEntityReference = null;
+                if (request.RequestName == "Update")
+                {
+                    var updateTargetEntity = (Entity) request.Parameters["Target"];
+                    var entityBeforeUpdate = GetDbRow(updateTargetEntity.ToEntityReferenceWithKeyAttributes()).ToEntity();
+
+                    updateEntityReference = entityBeforeUpdate.ToEntityReference();
+                }
+                var response = handler.Execute(request, userRef);
+
+                // Trigger Extension
+                switch (request.RequestName)
+                {
+                    case "Create":
+                        var createResponse = (CreateResponse) response;
+                        var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
+
+                        var createdEntity =
+                            GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
+                                .ToEntity();
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, createdEntity,
+                            userRef);
+                        break;
+                    case "Update":
+                        var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, updatedEntity,
+                            userRef);
+                        break;
+                    case "Delete":
+                        TriggerExtension(new XrmExtension(this, userRef, parentPluginContext), request, null, userRef);
+                        break;
+                }
+
+                return response;
+            }
+
+#endif
 
             if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false)
             {
@@ -1014,14 +1057,86 @@ namespace DG.Tools.XrmMockup
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
             EntityReference userRef)
         {
-            // TODO: We need to add support for different contexts, but without giving access to the core directly.
-            var userService = ServiceFactory.CreateOrganizationService(userRef.Id);
-
             foreach (var mockUpExtension in settings.MockUpExtensions)
             {
-                mockUpExtension.TriggerExtension(userService, request, currentEntity, userRef);
+                mockUpExtension.TriggerExtension(service, request, currentEntity, userRef);
             }
         }
 #endif
+    }
+
+    internal class XrmExtension : IOrganizationService
+    {
+        private readonly Core _core;
+        private readonly EntityReference _userRef;
+        private readonly PluginContext _parentPluginContext;
+
+        public XrmExtension(Core core, EntityReference userRef, PluginContext parentPluginContext)
+        {
+            _core = core;
+            _userRef = userRef ?? throw new ArgumentNullException(nameof(userRef));
+            _parentPluginContext = parentPluginContext;
+        }
+
+        public Guid Create(Entity entity)
+        {
+            var response = (CreateResponse) _core.Execute(new CreateRequest(), _userRef, _parentPluginContext);
+
+            return response.id;
+        }
+
+        public Entity Retrieve(string entityName, Guid id, ColumnSet columnSet)
+        {
+            var response = (RetrieveResponse) _core.Execute(
+                new RetrieveRequest {ColumnSet = columnSet, Target = new EntityReference(entityName, id)}, _userRef,
+                _parentPluginContext);
+
+            return response.Entity;
+        }
+
+        public void Update(Entity entity)
+        {
+            _core.Execute(new UpdateRequest {Target = entity}, _userRef, _parentPluginContext);
+        }
+
+        public void Delete(string entityName, Guid id)
+        {
+            _core.Execute(new DeleteRequest {Target = new EntityReference(entityName, id)}, _userRef,
+                _parentPluginContext);
+        }
+
+        public OrganizationResponse Execute(OrganizationRequest request)
+        {
+            return _core.Execute(request, _userRef, _parentPluginContext);
+        }
+
+        public void Associate(string entityName, Guid entityId, Relationship relationship,
+            EntityReferenceCollection relatedEntities)
+        {
+            _core.Execute(
+                new AssociateRequest
+                {
+                    Target = new EntityReference(entityName, entityId), Relationship = relationship,
+                    RelatedEntities = relatedEntities
+                }, _userRef, _parentPluginContext);
+        }
+
+        public void Disassociate(string entityName, Guid entityId, Relationship relationship,
+            EntityReferenceCollection relatedEntities)
+        {
+            _core.Execute(
+                new DisassociateRequest
+                {
+                    Target = new EntityReference(entityName, entityId), Relationship = relationship,
+                    RelatedEntities = relatedEntities
+                }, _userRef, _parentPluginContext);
+        }
+
+        public EntityCollection RetrieveMultiple(QueryBase query)
+        {
+            var response = (RetrieveMultipleResponse) _core.Execute(new RetrieveMultipleRequest {Query = query},
+                _userRef, _parentPluginContext);
+            return response.EntityCollection;
+        }
     }
 }

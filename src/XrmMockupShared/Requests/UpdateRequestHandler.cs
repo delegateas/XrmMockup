@@ -207,9 +207,6 @@ namespace DG.Tools.XrmMockup
 
             db.Update(xrmEntity);
 
-#if XRM_MOCKUP_365
-            core.TriggerExtension(null, request, xrmEntity, userRef);
-#endif
             return new UpdateResponse();
         }
     }
