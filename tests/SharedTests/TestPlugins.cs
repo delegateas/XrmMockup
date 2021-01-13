@@ -135,8 +135,10 @@ namespace DG.XrmMockupTest
         public void TestAddedFields()
         {
             var fax = new Entity("fax");
-            orgAdminService.Create(fax);
+            fax.Id = orgAdminService.Create(fax);
             Assert.False(fax.Contains("category"));
+
+            orgAdminService.Update(fax);
             Assert.False(fax.Contains("isbilled"));
         }
 

@@ -36,9 +36,9 @@ namespace DG.XrmMockupTest
                 FirstName = oldFirstName
             };
 
-            var personelId = orgAdminService.Create(personel);
+            personel.Id = orgAdminService.Create(personel);
 
-            var personelUpd = new Contact(personelId)
+            var personelUpd = new Contact(personel.Id)
             {
                 EMailAddress1 = "something@test.dk"
             };
@@ -66,9 +66,9 @@ namespace DG.XrmMockupTest
                 FirstName = oldFirstName
             };
 
-            var personelId = orgAdminService.Create(personel);
+            personel.Id = orgAdminService.Create(personel);
 
-            var personelUpd = new Contact(personelId)
+            var personelUpd = new Contact(personel.Id)
             {
                 EMailAddress1 = "something@test.dk"
             };
@@ -97,9 +97,9 @@ namespace DG.XrmMockupTest
                 FirstName = oldFirstName
             };
 
-            var personelId = orgAdminService.Create(personel);
+            personel.Id = orgAdminService.Create(personel);
 
-            var personelUpd = new Contact(personelId)
+            var personelUpd = new Contact(personel.Id)
             {
                 EMailAddress1 = "something@test.dk"
             };
@@ -129,9 +129,9 @@ namespace DG.XrmMockupTest
                 FirstName = oldFirstName
             };
 
-            var personelId = orgAdminService.Create(personel);
+            personel.Id = orgAdminService.Create(personel);
 
-            var personelUpd = new Contact(personelId)
+            var personelUpd = new Contact(personel.Id)
             {
                 EMailAddress1 = "something@test.dk"
             };
@@ -162,9 +162,9 @@ namespace DG.XrmMockupTest
                 FirstName = oldFirstName
             };
 
-            var personelId = orgAdminService.Create(personel);
+            personel.Id = orgAdminService.Create(personel);
 
-            var personelUpd = new Contact(personelId)
+            var personelUpd = new Contact(personel.Id)
             {
                 EMailAddress1 = "something@test.dk"
             };
@@ -193,9 +193,9 @@ namespace DG.XrmMockupTest
             {
                 Name = oldAccountName,
             };
-            var accountId = orgAdminService.Create(account);
+            account.Id = orgAdminService.Create(account);
 
-            var accountUpd = new Account(accountId)
+            var accountUpd = new Account(account.Id)
             {
                 EMailAddress1 = "trigger@valid.dk"
             };
@@ -222,9 +222,9 @@ namespace DG.XrmMockupTest
             {
                 Name = oldAccountName,
             };
-            var accountId = orgAdminService.Create(account);
+            account.Id = orgAdminService.Create(account);
 
-            var accountUpd = new Account(accountId)
+            var accountUpd = new Account(account.Id)
             {
                 EMailAddress1 = "trigger@valid.dk"
             };
@@ -252,9 +252,9 @@ namespace DG.XrmMockupTest
             {
                 Name = oldAccountName,
             };
-            var accountId = orgAdminService.Create(account);
+            account.Id = orgAdminService.Create(account);
 
-            var accountUpd = new Account(accountId)
+            var accountUpd = new Account(account.Id)
             {
                 EMailAddress1 = "trigger@valid.dk"
             };
@@ -281,9 +281,9 @@ namespace DG.XrmMockupTest
             {
                 Name = oldAccountName,
             };
-            var accountId = orgAdminService.Create(account);
+            account.Id = orgAdminService.Create(account);
 
-            var accountUpd = new Account(accountId)
+            var accountUpd = new Account(account.Id)
             {
                 EMailAddress1 = "trigger@valid.dk"
             };
@@ -311,9 +311,9 @@ namespace DG.XrmMockupTest
             {
                 Name = oldAccountName,
             };
-            var accountId = orgAdminService.Create(account);
+            account.Id = orgAdminService.Create(account);
 
-            var accountUpd = new Account(accountId)
+            var accountUpd = new Account(account.Id)
             {
                 EMailAddress1 = "trigger@valid.dk"
             };

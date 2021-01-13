@@ -30,9 +30,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
@@ -62,9 +62,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
@@ -92,9 +92,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
@@ -122,9 +122,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
@@ -153,9 +153,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
@@ -184,9 +184,9 @@ namespace DG.XrmMockupTest
                 {
                     Name = oldAccountName,
                 };
-                var accountId = orgAdminService.Create(account);
+                account.Id = orgAdminService.Create(account);
 
-                var accountUpd = new Account(accountId)
+                var accountUpd = new Account(account.Id)
                 {
                     EMailAddress1 = "trigger@valid.dk"
                 };
