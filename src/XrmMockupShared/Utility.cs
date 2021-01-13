@@ -1117,7 +1117,6 @@ namespace DG.Tools.XrmMockup
                     return new OptionSetValue(os.Value);
                 default:
                     return attribute.Value;
-
             }
         }
     }

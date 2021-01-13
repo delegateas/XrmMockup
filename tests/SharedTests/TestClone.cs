@@ -20,7 +20,6 @@ namespace DG.XrmMockupTest
         [Fact]
         public void CloningAnEntityShouldProperlyDisconnectObjectProperties()
         {
-
             var account = new Entity("account");
             var money = new Money(123.45M);
             account["marketcap"] = money;
@@ -30,7 +29,6 @@ namespace DG.XrmMockupTest
             
             money.Value = 333.33M;
             Assert.Equal(123.45M, account2.GetAttributeValue<Money>("marketcap").Value);
-
         }
     }
 }
