@@ -1,3 +1,6 @@
+### 1.4.1 - 14 January 2020
+* Fixed error where tracing service throws an exception (@MattTrinder1)
+
 ### 1.4.0 - 25 November 2020
 * CodeActivities are now allowed to extend abstract classes.
 * Plugins without a base class will now be found if any class from the dll is referenced in the basePluginTypes setting.

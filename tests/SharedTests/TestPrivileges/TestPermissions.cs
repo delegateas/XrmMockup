@@ -3,14 +3,16 @@ using Microsoft.Xrm.Sdk.Query;
 using DG.Tools.XrmMockup;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPermissions : UnitTestBase
     {
-        [TestMethod]
+        public TestPermissions(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestPermissionWhenThroughTeam()
         {
             var businessunit = new BusinessUnit();
@@ -46,10 +48,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userService.Update(updateContact);
-                Assert.Fail();
-            } catch (Exception e)
+                throw new XunitException();
+            }
+            catch (Exception e)
             {
-                Assert.IsInstanceOfType(e, typeof(FaultException));
+                Assert.IsType<FaultException>(e);
             }
 
             // Add user to team
@@ -57,8 +60,8 @@ namespace DG.XrmMockupTest
             // Update contact using the user service
             userService.Update(updateContact);
             // Assert success
-            contact = (Contact) orgAdminUIService.Retrieve(Contact.EntityLogicalName, contactId, new ColumnSet(true));
-            Assert.AreEqual("CEO", contact.GetAttributeValue<string>("jobtitle"));
+            contact = (Contact)orgAdminUIService.Retrieve(Contact.EntityLogicalName, contactId, new ColumnSet(true));
+            Assert.Equal("CEO", contact.GetAttributeValue<string>("jobtitle"));
         }
     }
 }

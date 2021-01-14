@@ -6,14 +6,16 @@ using Microsoft.Xrm.Sdk.Messages;
 using System.ServiceModel;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestRetrieve : UnitTestBase
     {
-        [TestMethod]
+        public TestRetrieve(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestReferenceHasPrimaryAttribute()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -29,13 +31,13 @@ namespace DG.XrmMockupTest
 
                 var retrieved = this.orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,
                     new ColumnSet("accountid", "parentaccountid")).ToEntity<Account>();
-                Assert.IsNotNull(retrieved.ParentAccountId);
-                Assert.AreEqual(retrieved.Id, id1);
+                Assert.NotNull(retrieved.ParentAccountId);
+                Assert.Equal(retrieved.Id, id1);
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestRetrieveHasId()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -49,20 +51,20 @@ namespace DG.XrmMockupTest
                 });
 
                 var entity = (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet(true));
-                Assert.AreEqual(_accountId, entity.Id);
+                Assert.Equal(_accountId, entity.Id);
                 entity = (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet("name"));
-                Assert.AreEqual(_accountId, entity.Id);
+                Assert.Equal(_accountId, entity.Id);
 
                 var calId = orgAdminUIService.Create(new Entity("calendar"));
                 var cal = orgAdminUIService.Retrieve("calendar", calId, new ColumnSet(true));
-                Assert.AreEqual(calId, cal.Id);
+                Assert.Equal(calId, cal.Id);
                 cal = orgAdminUIService.Retrieve("calendar", calId, new ColumnSet("createdby"));
-                Assert.AreEqual(calId, cal.Id);
+                Assert.Equal(calId, cal.Id);
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestRetrieveWithNullColumnset()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -73,11 +75,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Retrieve(Account.EntityLogicalName, account.Id, null);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(FaultException));
+                    Assert.IsType<FaultException>(e);
                 }
 
 
@@ -85,7 +87,7 @@ namespace DG.XrmMockupTest
         }
 
 
-        [TestMethod]
+        [Fact]
         public void TestRetrieveRelatedEntities()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -167,17 +169,17 @@ namespace DG.XrmMockupTest
                 //execute the request
                 RetrieveResponse response = (RetrieveResponse)orgAdminUIService.Execute(request);
 
-                Assert.AreEqual(1, response.Entity.RelatedEntities.Count);
+                Assert.Single(response.Entity.RelatedEntities);
                 var collection = response.Entity.RelatedEntities.Values.First();
-                Assert.AreEqual(1, collection.Entities.Count);
+                Assert.Single(collection.Entities);
                 var entity = collection.Entities.First();
-                Assert.IsTrue(entity.Attributes.ContainsKey("firstname"));
-                Assert.AreEqual("Alan", entity.Attributes["firstname"]);
+                Assert.True(entity.Attributes.ContainsKey("firstname"));
+                Assert.Equal("Alan", entity.Attributes["firstname"]);
 
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestFetchMoneyAttribute()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -190,16 +192,16 @@ namespace DG.XrmMockupTest
                 invoice.Id = orgGodService.Create(invoice);
 
                 var retrievedSucceeds = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount", "transactioncurrencyid")) as Invoice;
-                Assert.IsNotNull(retrievedSucceeds.TotalAmount);
-                Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
+                Assert.NotNull(retrievedSucceeds.TotalAmount);
+                Assert.Equal(10m, retrievedSucceeds.TotalAmount.Value);
 
                 var retrievedFails = orgAdminService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet("totalamount")) as Invoice;
-                Assert.IsNotNull(retrievedSucceeds.TotalAmount);
-                Assert.AreEqual(10m, retrievedSucceeds.TotalAmount.Value);
+                Assert.NotNull(retrievedSucceeds.TotalAmount);
+                Assert.Equal(10m, retrievedSucceeds.TotalAmount.Value);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestFormattedValuesRetrieveMultiple()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -212,11 +214,11 @@ namespace DG.XrmMockupTest
                 invoice.Id = orgAdminUIService.Create(invoice);
 
                 var retrieved = context.InvoiceSet.FirstOrDefault();
-                Assert.AreEqual("Default Value", retrieved.FormattedValues["prioritycode"]);
+                Assert.Equal("Default Value", retrieved.FormattedValues["prioritycode"]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestFormattedValuesRetrieve()
         {
             var invoice = new Invoice()
@@ -227,10 +229,10 @@ namespace DG.XrmMockupTest
             invoice.Id = orgAdminUIService.Create(invoice);
 
             var retrieved = orgAdminUIService.Retrieve(Invoice.EntityLogicalName, invoice.Id, new ColumnSet(true));
-            Assert.AreEqual("Default Value", retrieved.FormattedValues["prioritycode"]);
+            Assert.Equal("Default Value", retrieved.FormattedValues["prioritycode"]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestRetrieveInvalidAttributeFails()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -241,12 +243,12 @@ namespace DG.XrmMockupTest
                 {
                     orgAdminUIService.Retrieve(Account.EntityLogicalName, id1,
                         new ColumnSet(attr)).ToEntity<Account>();
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(MockupException));
-                    Assert.AreEqual($"'account' entity doesn't contain attribute with Name = '{attr}'", e.Message);
+                    Assert.IsType<MockupException>(e);
+                    Assert.Equal($"'account' entity doesn't contain attribute with Name = '{attr}'", e.Message);
                 }
 
             }
@@ -254,7 +256,7 @@ namespace DG.XrmMockupTest
 
 
 #if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
-        [TestMethod]
+        [Fact]
         public void TestEmptyCalculatedFieldss()
         {
             using (var context = new Xrm(orgAdminUIService))
