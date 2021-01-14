@@ -676,12 +676,19 @@ namespace DG.Tools.XrmMockup
 
 #if XRM_MOCKUP_365
             // Trigger Extension
-            if (pluginContext.Depth > 8)
+            if (this.settings.MockUpExtensions.Any())
             {
-                throw new FaultException(
-                    "This workflow job was canceled because the workflow that started it included an infinite loop." +
-                    " Correct the workflow logic and try again.");
+                /*
+                 * When moving business units, more than eight layers occur...
+                 */
+                if (pluginContext.Depth > 8)
+                {
+                    throw new FaultException(
+                        "This workflow job was canceled because the workflow that started it included an infinite loop." +
+                        " Correct the workflow logic and try again.");
+                }
             }
+
             switch (request.RequestName)
             {
                 case "Create":
