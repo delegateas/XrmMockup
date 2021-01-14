@@ -39,9 +39,9 @@ namespace DG.Tools.XrmMockup {
             if (db[queryExpr.EntityName].Count() > 0)
             {
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-                for (int i=0; i<rows.Count(); i++)
+                foreach (var row in rows.ToList())
                 {
-                    core.ExecuteCalculatedFields(rows.ToList()[i]);
+                    core.ExecuteCalculatedFields(row);
                 }
 #endif
                 foreach (var row in rows)
