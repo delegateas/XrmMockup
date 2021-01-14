@@ -1,3 +1,6 @@
+### 1.4.4 - 14 January 2020
+* Add formatted values for late-bound entities (@MattTrinder1)
+
 ### 1.4.3 - 14 January 2020
 * Added calculated field calculation to retrieve multiple (@MattTrinder1)
 
