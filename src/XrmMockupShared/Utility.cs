@@ -605,7 +605,7 @@ namespace DG.Tools.XrmMockup
                 return money.Value;
 
             else if (obj is AliasedValue aliasedValue)
-                return aliasedValue.Value;
+                return ConvertToComparableObject(aliasedValue.Value);
 
             else if (obj is OptionSetValue optionSetValue)
                 return optionSetValue.Value;
