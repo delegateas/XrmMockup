@@ -1090,18 +1090,18 @@ namespace DG.Tools.XrmMockup
     {
         private readonly Core _core;
         private readonly EntityReference _userRef;
-        private readonly PluginContext _parentPluginContext;
+        private readonly PluginContext _pluginContext;
 
-        public XrmExtension(Core core, EntityReference userRef, PluginContext parentPluginContext)
+        public XrmExtension(Core core, EntityReference userRef, PluginContext pluginContext)
         {
             _core = core;
             _userRef = userRef ?? throw new ArgumentNullException(nameof(userRef));
-            _parentPluginContext = parentPluginContext;
+            _pluginContext = pluginContext;
         }
 
         public Guid Create(Entity entity)
         {
-            var response = (CreateResponse) _core.Execute(new CreateRequest(), _userRef, _parentPluginContext);
+            var response = (CreateResponse) _core.Execute(new CreateRequest(), _userRef, _pluginContext);
 
             return response.id;
         }
@@ -1110,25 +1110,25 @@ namespace DG.Tools.XrmMockup
         {
             var response = (RetrieveResponse) _core.Execute(
                 new RetrieveRequest {ColumnSet = columnSet, Target = new EntityReference(entityName, id)}, _userRef,
-                _parentPluginContext);
+                _pluginContext);
 
             return response.Entity;
         }
 
         public void Update(Entity entity)
         {
-            _core.Execute(new UpdateRequest {Target = entity}, _userRef, _parentPluginContext);
+            _core.Execute(new UpdateRequest {Target = entity}, _userRef, _pluginContext);
         }
 
         public void Delete(string entityName, Guid id)
         {
             _core.Execute(new DeleteRequest {Target = new EntityReference(entityName, id)}, _userRef,
-                _parentPluginContext);
+                _pluginContext);
         }
 
         public OrganizationResponse Execute(OrganizationRequest request)
         {
-            return _core.Execute(request, _userRef, _parentPluginContext);
+            return _core.Execute(request, _userRef, _pluginContext);
         }
 
         public void Associate(string entityName, Guid entityId, Relationship relationship,
@@ -1139,7 +1139,7 @@ namespace DG.Tools.XrmMockup
                 {
                     Target = new EntityReference(entityName, entityId), Relationship = relationship,
                     RelatedEntities = relatedEntities
-                }, _userRef, _parentPluginContext);
+                }, _userRef, _pluginContext);
         }
 
         public void Disassociate(string entityName, Guid entityId, Relationship relationship,
@@ -1150,13 +1150,13 @@ namespace DG.Tools.XrmMockup
                 {
                     Target = new EntityReference(entityName, entityId), Relationship = relationship,
                     RelatedEntities = relatedEntities
-                }, _userRef, _parentPluginContext);
+                }, _userRef, _pluginContext);
         }
 
         public EntityCollection RetrieveMultiple(QueryBase query)
         {
             var response = (RetrieveMultipleResponse) _core.Execute(new RetrieveMultipleRequest {Query = query},
-                _userRef, _parentPluginContext);
+                _userRef, _pluginContext);
             return response.EntityCollection;
         }
     }
