@@ -1,3 +1,6 @@
+### 1.4.3 - 14 January 2020
+* Added calculated field calculation to retrieve multiple (@MattTrinder1)
+
 ### 1.4.2 - 14 January 2020
 * Added roletemplates as actual records (@MattTrinder1)
 
