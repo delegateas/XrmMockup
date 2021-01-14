@@ -1,3 +1,6 @@
+### 1.4.2 - 14 January 2020
+* Added roletemplates as actual records (@MattTrinder1)
+
 ### 1.4.1 - 14 January 2020
 * Fixed error where tracing service throws an exception (@MattTrinder1)
 
