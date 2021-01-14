@@ -85,7 +85,7 @@ namespace DG.Tools.XrmMockup
                 Id = entity.Id
             };
 
-            if (metadata?.PrimaryIdAttribute != null)
+            if (metadata?.PrimaryIdAttribute != null && entity.Id != Guid.Empty)
             {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
