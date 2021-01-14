@@ -14,7 +14,7 @@ namespace DG.XrmMockupTest
         public TestSecurityRoles(XrmMockupFixture fixture) : base(fixture) { }
 
 #if !(XRM_MOCKUP_TEST_2011) //not sure why this fails for 2011 - possibly a different admin id for the roletemplate in the metadata...?
-        
+
         [Fact]
         public void TestQueryOnLinkedRoleTemplate()
         {
