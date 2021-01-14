@@ -1,3 +1,6 @@
+### 1.4.5 - 14 January 2020
+* Fixed error when using entityreferences in linkentities.
+
 ### 1.4.4 - 14 January 2020
 * Add formatted values for late-bound entities (@MattTrinder1)
 
