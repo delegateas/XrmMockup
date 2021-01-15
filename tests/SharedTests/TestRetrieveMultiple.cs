@@ -907,9 +907,6 @@ namespace DG.XrmMockupTest
             query.Criteria.AddCondition("address1_postalcode", ConditionOperator.DoesNotEndWith, "1DW");
             res = orgAdminService.RetrieveMultiple(query);
             Assert.Equal(3, res.Entities.Count);
-
-
         }
-
     }
 }
