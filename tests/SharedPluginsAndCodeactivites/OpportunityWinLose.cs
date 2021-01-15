@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using static SharedPluginsAndCodeactivites.Utility.Enums;
 
 namespace DG.Some.Namespace {
     public class OpportunityWinLose : Plugin {
