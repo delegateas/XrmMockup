@@ -81,7 +81,6 @@ namespace DG.Tools.XrmMockup
                       ||
                       (xrmEntity[attr.Key] as EntityReference).Id != (attr.Value as EntityReference).Id)
                     {
-
                         var reference = attr.Value as EntityReference;
                         if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
                         {

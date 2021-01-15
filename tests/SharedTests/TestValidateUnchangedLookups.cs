@@ -45,9 +45,6 @@ namespace DG.XrmMockupTest
             con["parentcustomerid"] = new EntityReference("account", accountId);
 
             userService.Update(con);
-
-
-
         }
 
         [Fact]
@@ -86,9 +83,6 @@ namespace DG.XrmMockupTest
             con["ownerid"] = new EntityReference("systemuser", contact.OwnerId.Id);
 
             userService.Update(con);
-
-
-
         }
     }
 }
