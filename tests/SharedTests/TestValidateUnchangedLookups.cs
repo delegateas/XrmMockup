@@ -33,7 +33,6 @@ namespace DG.XrmMockupTest
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.WriteAccess, PrivilegeDepth.Global },
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-
                         }
                     }
                 });
@@ -70,7 +69,6 @@ namespace DG.XrmMockupTest
                         new Dictionary<AccessRights, PrivilegeDepth>() {
                             { AccessRights.WriteAccess, PrivilegeDepth.Global },
                             { AccessRights.AppendAccess, PrivilegeDepth.Global },
-
                         }
                     }
                 });
