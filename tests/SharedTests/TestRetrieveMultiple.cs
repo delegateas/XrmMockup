@@ -46,6 +46,11 @@ namespace DG.XrmMockupTest
             account3.Address1_City = "Lyngby";
             account4.Address1_City = "Lyngby";
 
+            account1.Address1_PostalCode = "MK111DW";
+            account2.Address1_PostalCode = "OX449NG";
+            account3.Address1_PostalCode = "S103AY";
+            account4.Address1_PostalCode = "SY71SW";
+
             account1.DoNotEMail = true;
 
             account1.Id = orgAdminUIService.Create(account1);
@@ -866,6 +871,44 @@ namespace DG.XrmMockupTest
                 Assert.False(query.PageInfo.ReturnTotalRecordCount);
                 Assert.Equal(-1, res.TotalRecordCount);
             }
+        }
+
+        [Fact]
+        public void RetrieveMultipleBeginsWith()
+        {
+            var query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.BeginsWith, "MK11");
+            var res = orgAdminService.RetrieveMultiple(query);
+            Assert.Single(res.Entities);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.DoesNotBeginWith, "MK11");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Equal(3, res.Entities.Count);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.EndsWith, "1DW");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Single(res.Entities);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.DoesNotEndWith, "1DW");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Equal(3, res.Entities.Count);
+
+
         }
 
     }
