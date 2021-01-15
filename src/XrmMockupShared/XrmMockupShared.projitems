@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\MockupPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeamMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\DefaultBusinessUnitTeams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\SetAnnotationIsDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\UpdateInactiveIncident.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SystemPlugins\ContactTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\AddMembersTeamRequestHandler.cs" />

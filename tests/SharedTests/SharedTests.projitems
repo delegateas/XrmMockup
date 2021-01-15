@@ -9,10 +9,10 @@
     <Import_RootNamespace>SharedTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)TestAction - Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestActivities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestAnnotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
