@@ -4,7 +4,7 @@
         <TargetFramework>net462</TargetFramework>
         <DebugType>portable</DebugType>
         <Title>IXrmMockupExtension</Title>
-        <PackageVersion>1.3.3-dev.8.0</PackageVersion>
+        <PackageVersion>1.3.3-dev.9.0</PackageVersion>
         <PackageId>cda95f8572254e649186787cdca29fe5</PackageId>
         <Description>This is a development version of XrmMockup. Use the offical package: https://www.nuget.org/packages/XrmMockup365/</Description>
         <RepositoryUrl>https://github.com/thygesteffensen/XrmMockup</RepositoryUrl>

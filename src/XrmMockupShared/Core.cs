@@ -700,20 +700,18 @@ namespace DG.Tools.XrmMockup
                             .ToEntity();
                     TriggerExtension(
                         new XrmExtension(this, userRef, pluginContext), request,
-                        createdEntity,
-                        userRef);
+                        createdEntity, preImage, userRef);
                     break;
                 case "Update":
                     var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
                     TriggerExtension(
                         new XrmExtension(this, userRef, pluginContext), request,
-                        updatedEntity,
-                        userRef);
+                        updatedEntity, preImage, userRef);
                     break;
                 case "Delete":
                     TriggerExtension(
                         new XrmExtension(this, userRef, pluginContext), request,
-                        null, userRef);
+                        null, preImage, userRef);
                     break;
             }
 #endif
@@ -1083,11 +1081,11 @@ namespace DG.Tools.XrmMockup
 
 #if XRM_MOCKUP_365
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
-            EntityReference userRef)
+            Entity preEntity, EntityReference userRef)
         {
             foreach (var mockUpExtension in settings.MockUpExtensions)
             {
-                mockUpExtension.TriggerExtension(service, request, currentEntity, userRef);
+                mockUpExtension.TriggerExtension(service, request, currentEntity, preEntity, userRef);
             }
         }
 #endif
