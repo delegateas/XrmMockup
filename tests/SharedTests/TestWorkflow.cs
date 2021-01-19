@@ -6,12 +6,32 @@ using System.IO;
 using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {
     public class TestWorkflow : UnitTestBase
     {
         public TestWorkflow(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
+        public void TestWorkflowWhichUpdatesParent()
+        {
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "IncrementNumberofChildren.xml"));
+
+
+            var parent = new Entity("mock_parent");
+            parent.Id = orgAdminService.Create(parent);
+
+            var child = new Entity("mock_child");
+            child["mock_parentid"] = parent.ToEntityReference();
+            child.Id = orgAdminService.Create(child);
+
+            var checkParent = orgAdminService.Retrieve("mock_parent", parent.Id, new ColumnSet(true));
+            Assert.Equal(1, checkParent.GetAttributeValue<int>("mock_numberofchildren"));
+
+            
+        }
 
         [Fact]
         public void TestCreateWorkflow()
