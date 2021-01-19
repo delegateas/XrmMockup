@@ -19,7 +19,6 @@ namespace DG.XrmMockupTest
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "IncrementNumberofChildren.xml"));
 
-
             var parent = new Entity("mock_parent");
             parent.Id = orgAdminService.Create(parent);
 

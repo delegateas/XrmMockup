@@ -432,7 +432,6 @@ namespace WorkflowExecuter
                     return;
                 }
             }
-
             if (TargetType == "DateTime")
             {
                 if (var2 is XrmTimeSpan)
