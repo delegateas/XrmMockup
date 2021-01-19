@@ -390,7 +390,7 @@ namespace WorkflowExecuter
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+    IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
             var var1 = variables[Parameters[0][0]];
             var var2 = variables[Parameters[0][1]];
@@ -424,11 +424,15 @@ namespace WorkflowExecuter
                 return;
             }
 
-            if (var1 == null || var2 == null)
+            if (TargetType == "XrmTimeSpan")
             {
-                variables[VariableName] = null;
-                return;
+                if (var1 == null || var2 == null)
+                {
+                    variables[VariableName] = null;
+                    return;
+                }
             }
+
 
             if (TargetType == "DateTime")
             {
@@ -452,23 +456,75 @@ namespace WorkflowExecuter
             decimal? dec1 = null;
             decimal? dec2 = null;
 
+
+            if (var1 == null && var2 == null)
+            {
+                variables[VariableName] = null;
+                return;
+            }
+
             switch (TargetType)
             {
                 case "Money":
-                    dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
-                    dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
+                    }
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
+                    }
                     break;
                 case "Int32":
-                    dec1 = (int)var1;
-                    dec2 = (int)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = (int)var1;
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = (int)var2;
+                    }
                     break;
                 case "Decimal":
-                    dec1 = (decimal)var1;
-                    dec2 = (decimal)var2;
+                    if (var1 == null)
+                    {
+                        dec1 = 0;
+                    }
+                    else
+                    {
+                        dec1 = Convert.ToDecimal(var1);
+                    }
+
+                    if (var2 == null)
+                    {
+                        dec2 = 0;
+                    }
+                    else
+                    {
+                        dec2 = Convert.ToDecimal(var2);
+                    }
                     break;
                 default:
                     break;
             }
+
 
             if (!dec1.HasValue || !dec2.HasValue)
             {
@@ -515,6 +571,7 @@ namespace WorkflowExecuter
             }
         }
     }
+
 
     [DataContract]
     internal class Aggregate : IWorkflowNode

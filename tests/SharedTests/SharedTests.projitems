@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestCalculatedFields.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
