@@ -29,8 +29,6 @@ namespace DG.XrmMockupTest
 
             var checkParent = orgAdminService.Retrieve("mock_parent", parent.Id, new ColumnSet(true));
             Assert.Equal(1, checkParent.GetAttributeValue<int>("mock_numberofchildren"));
-
-            
         }
 
         [Fact]

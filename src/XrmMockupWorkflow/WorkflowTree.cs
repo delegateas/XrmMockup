@@ -433,7 +433,6 @@ namespace WorkflowExecuter
                 }
             }
 
-
             if (TargetType == "DateTime")
             {
                 if (var2 is XrmTimeSpan)
@@ -455,7 +454,6 @@ namespace WorkflowExecuter
 
             decimal? dec1 = null;
             decimal? dec2 = null;
-
 
             if (var1 == null && var2 == null)
             {
@@ -1905,7 +1903,6 @@ namespace WorkflowExecuter
             }
         }
     }
-
 
     [DataContract]
     internal class SendEmail : IWorkflowNode
