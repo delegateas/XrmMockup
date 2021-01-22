@@ -1,3 +1,6 @@
+### 1.5.0 - 22 January 2020
+* Moved security checks to validation step in the pipeline
+
 ### 1.4.6 - 22 January 2020
 * Added support for impersonating user in plugins
 
