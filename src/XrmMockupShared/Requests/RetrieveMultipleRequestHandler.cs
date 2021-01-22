@@ -45,7 +45,7 @@ namespace DG.Tools.XrmMockup {
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
-            var rowBag = new ConcurrentBag<DbRow>(rows);
+            var rowBag = new ConcurrentBag<DbRow>();
             //don't add the rows by passing in via the constructor as it can change the order
             foreach (var row in rows)
             {
@@ -107,29 +107,39 @@ namespace DG.Tools.XrmMockup {
                 throw new MockupException("Number of orders are greater than 2, unsupported in crm");
             } else if (orders.Count == 1) {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection.OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName])).Select(y => y.Value));
+                    orderedCollection.Entities.AddRange(collection.OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
+                        .ThenBy(x => x.Key.Sequence)
+                        .Select(y => y.Value));
                 else
                     orderedCollection.Entities.AddRange(collection.OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName])).Select(y => y.Value));
             } else if (orders.Count == 2) {
                 if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(collection
                         .OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName])).Select(y => y.Value));
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
+                        .ThenBy(x => x.Key.Sequence)
+                        .Select(y => y.Value));
 
                 else if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(collection
                         .OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName])).Select(y => y.Value));
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
+                        .ThenBy(x => x.Key.Sequence)
+                        .Select(y => y.Value));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Ascending)
                     orderedCollection.Entities.AddRange(collection
                         .OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName])).Select(y => y.Value));
+                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
+                        .ThenBy(x => x.Key.Sequence)
+                        .Select(y => y.Value));
 
                 else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Descending)
                     orderedCollection.Entities.AddRange(collection
                         .OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName])).Select(y => y.Value));
+                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
+                        .ThenBy(x => x.Key.Sequence)
+                        .Select(y => y.Value));
             }
 
             var colToReturn = new EntityCollection();
