@@ -19,9 +19,20 @@ namespace DG.Tools.XrmMockup {
         {
             foreach (var kvp in metadata.EntityMetadata)
             {
-                if (!this.EntityMetadata.ContainsKey(kvp.Key))
-                {
-                    this.EntityMetadata.Add(kvp.Key, kvp.Value);
+                if (this.EntityMetadata.ContainsKey(kvp.Key)) continue;
+                
+                this.EntityMetadata.Add(kvp.Key, kvp.Value);
+
+                //also need to merge the default state and status for this entity
+                if (metadata.DefaultStateStatus.ContainsKey(kvp.Key)) { 
+                    var defaultSS = metadata.DefaultStateStatus[kvp.Key];
+                    var dict = new Dictionary<int, int>();
+                    foreach (var kvp2 in defaultSS)
+                    {
+                        dict.Add(kvp2.Key, kvp2.Value);
+                    }
+
+                    this.DefaultStateStatus.Add(kvp.Key, dict);
                 }
             }
         }
