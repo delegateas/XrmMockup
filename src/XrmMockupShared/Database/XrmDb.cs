@@ -7,6 +7,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
+using System.Threading;
 
 namespace DG.Tools.XrmMockup.Database {
 
@@ -14,10 +15,12 @@ namespace DG.Tools.XrmMockup.Database {
         private Dictionary<string, DbTable> TableDict = new Dictionary<string, DbTable>();
         private Dictionary<string, EntityMetadata> EntityMetadata;
         private OrganizationServiceProxy OnlineProxy;
+        private int sequence;
 
         public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, OrganizationServiceProxy onlineProxy) {
             this.EntityMetadata = entityMetadata;
             this.OnlineProxy = onlineProxy;
+            sequence = 0;
         }
 
         public DbTable this[string tableName] {
@@ -33,11 +36,13 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
-            var dbEntity = ToDbRow(xrmEntity, withReferenceChecks);
+
+            int nextSequence = Interlocked.Increment(ref sequence);
+            var dbEntity = ToDbRow(xrmEntity,nextSequence, withReferenceChecks);
             this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
         }
 
-        public DbRow ToDbRow(Entity xrmEntity, bool withReferenceChecks = true)
+        public DbRow ToDbRow(Entity xrmEntity, int sequence, bool withReferenceChecks = true)
         {
             var primaryIdKey = this[xrmEntity.LogicalName].Metadata.PrimaryIdAttribute;
             if (!xrmEntity.Attributes.ContainsKey(primaryIdKey))
@@ -46,6 +51,7 @@ namespace DG.Tools.XrmMockup.Database {
             }
 
             var dbEntity = DbRow.FromEntity(xrmEntity, this, withReferenceChecks);
+            dbEntity.Sequence = sequence;
             if (dbEntity.Id != Guid.Empty)
             {
                 if (this[dbEntity.Table.TableName][dbEntity.Id] != null)
