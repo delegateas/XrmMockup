@@ -1,3 +1,6 @@
+### 1.5.2 - 22 January 2020
+* Fixed an error where assign cascaded to organization owned entities (@MattTrinder1)
+
 ### 1.5.1 - 22 January 2020
 * Added support for RetrieveMetadataChangesRequest (@MattTrinder1)
 
