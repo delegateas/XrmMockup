@@ -3,7 +3,6 @@ namespace DG.Some.Namespace {
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-
     public class AccountPostPlugin : Plugin {
 
         public AccountPostPlugin()
