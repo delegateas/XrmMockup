@@ -37,6 +37,11 @@ namespace DG.XrmMockupTest
             orgAdminService = crm.GetAdminService();
             if (fixture.crmRealData != null)
                 orgRealDataService = fixture.crmRealData.GetAdminService();
+
+            //create an admin user to run our impersonating user plugins as
+            var adminUser = new Entity("systemuser") { Id = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c") };
+            adminUser["businessunitid"] = crm.RootBusinessUnit;
+            adminUser = crm.CreateUser(orgAdminService, adminUser, SecurityRoles.SystemAdministrator);
         }
 
         public void Dispose()

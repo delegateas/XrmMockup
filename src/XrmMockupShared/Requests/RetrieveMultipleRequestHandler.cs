@@ -38,9 +38,16 @@ namespace DG.Tools.XrmMockup {
             var rows = db.GetDBEntityRows(queryExpr.EntityName);
             if (db[queryExpr.EntityName].Count() > 0)
             {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+                foreach (var row in rows.ToList())
+                {
+                    core.ExecuteCalculatedFields(row);
+                }
+#endif
                 foreach (var row in rows)
                 {
                     var entity = row.ToEntity();
+
                     var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
                     Utility.SetFormmattedValues(db, toAdd, row.Metadata);
