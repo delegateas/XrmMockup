@@ -44,7 +44,6 @@ namespace DG.Tools.XrmMockup {
 
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
-
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             var rowBag = new ConcurrentBag<DbRow>(rows);
             //don't add the rows by passing in via the constructor as it can change the order

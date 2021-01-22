@@ -35,8 +35,8 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        public void Add(Entity xrmEntity, bool withReferenceChecks = true) {
-
+        public void Add(Entity xrmEntity, bool withReferenceChecks = true) 
+        {
             int nextSequence = Interlocked.Increment(ref sequence);
             var dbEntity = ToDbRow(xrmEntity,nextSequence, withReferenceChecks);
             this[dbEntity.Table.TableName][dbEntity.Id] = dbEntity;
