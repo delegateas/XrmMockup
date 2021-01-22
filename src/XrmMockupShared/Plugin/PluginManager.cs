@@ -138,8 +138,17 @@ namespace DG.Tools.XrmMockup
                     plugins
                     .Where(x =>
                         x.AssemblyName == basePluginType.FullName &&
-                        x.PluginAssemblyName == basePluginType.Assembly.GetName().Name)
+                        x.PluginTypeAssemblyName == basePluginType.Assembly.GetName().Name)
                     .ToList();
+
+                // fallback for backwards compatability for old Metadata files
+                if (metaSteps == null || metaSteps.Count == 0)
+                {
+                    metaSteps =
+                        plugins
+                        .Where(x => x.AssemblyName == basePluginType.FullName)
+                        .ToList();
+                }
 
                 if (metaSteps == null || metaSteps.Count == 0)
                 {
