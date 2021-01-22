@@ -1,8 +1,11 @@
+### 1.5.1 - 22 January 2020
+* Added support for RetrieveMetadataChangesRequest (@MattTrinder1)
+
 ### 1.5.0 - 22 January 2020
-* Moved security checks to validation step in the pipeline
+* Moved security checks to validation step in the pipeline (@MattTrinder1)
 
 ### 1.4.6 - 22 January 2020
-* Added support for impersonating user in plugins
+* Added support for impersonating user in plugins (@MattTrinder1)
 
 ### 1.4.5 - 14 January 2020
 * Fixed error when using entityreferences in linkentities.
