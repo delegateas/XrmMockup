@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using static SharedPluginsAndCodeactivites.Utility.Enums;
 
 namespace DG.Some.Namespace {
 

@@ -16,7 +16,6 @@
     using ExtendedStepConfig = System.Tuple<int, int, string, int, string, System.Guid?>;
     using ImageTuple = System.Tuple<string, string, int, string>;
     using System.Reflection;
-    using static SharedPluginsAndCodeactivites.Utility.Enums;
 
     /// <summary>
     /// Base class for all Plugins.
