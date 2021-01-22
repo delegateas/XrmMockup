@@ -1,3 +1,6 @@
+### 1.4.6 - 22 January 2020
+* Added support for impersonating user in plugins
+
 ### 1.4.5 - 14 January 2020
 * Fixed error when using entityreferences in linkentities.
 
