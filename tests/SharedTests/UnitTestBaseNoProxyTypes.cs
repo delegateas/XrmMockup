@@ -5,8 +5,8 @@ using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [Collection("Xrm Collection")]
-    public class UnitTestBase
+    [Collection("Xrm Collection No Proxy Types")]
+    public class UnitTestBaseNoProxyTypes
     {
         private static DateTime _startTime { get; set; }
 
@@ -14,7 +14,6 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
-
 
 #if XRM_MOCKUP_TEST_2011
         static protected XrmMockup2011 crm;
@@ -28,7 +27,7 @@ namespace DG.XrmMockupTest
         static protected XrmMockup365 crm;
 #endif
 
-        public UnitTestBase(XrmMockupFixture fixture)
+        public UnitTestBaseNoProxyTypes(XrmMockupFixtureNoProxyTypes fixture)
         {
             crm = fixture.crm;
             crm.ResetEnvironment();
@@ -37,11 +36,6 @@ namespace DG.XrmMockupTest
             orgAdminService = crm.GetAdminService();
             if (fixture.crmRealData != null)
                 orgRealDataService = fixture.crmRealData.GetAdminService();
-
-            //create an admin user to run our impersonating user plugins as
-            var adminUser = new Entity("systemuser") { Id = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c") };
-            adminUser["businessunitid"] = crm.RootBusinessUnit;
-            adminUser = crm.CreateUser(orgAdminService, adminUser, SecurityRoles.SystemAdministrator);
         }
 
         public void Dispose()

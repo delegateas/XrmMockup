@@ -38,7 +38,8 @@ namespace DG.Tools.XrmMockup {
         }
     }
 
-    public class MetaPlugin {
+    public class MetaPlugin
+    {
         public string FilteredAttributes;
         public int Mode;
         public string Name;
@@ -46,8 +47,10 @@ namespace DG.Tools.XrmMockup {
         public int Stage;
         public string MessageName;
         public string AssemblyName;
+        public string PluginTypeAssemblyName;
         public string PrimaryEntity;
         public List<MetaImage> Images;
+        public Guid? ImpersonatingUserId;
     }
 
     public class MetaImage

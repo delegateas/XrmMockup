@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NotePostOperationPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BusTicketSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
@@ -50,10 +51,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\AnyEntity.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\Enums.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\IPluginStepConfig.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\PluginStepConfig.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\TypedPluginStepConfig.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Utility\" />
   </ItemGroup>
 </Project>

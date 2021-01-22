@@ -268,20 +268,23 @@ namespace DG.Tools.XrmMockup
 
         internal Entity GetStronglyTypedEntity(Entity entity, EntityMetadata metadata, ColumnSet colsToKeep)
         {
+            Entity toReturn;
+
             if (HasType(entity.LogicalName))
             {
-                var typedEntity = GetEntity(entity.LogicalName);
-                typedEntity.SetAttributes(entity.Attributes, metadata, colsToKeep);
+                toReturn = GetEntity(entity.LogicalName);
+                toReturn.SetAttributes(entity.Attributes, metadata, colsToKeep);
 
-                Utility.PopulateEntityReferenceNames(typedEntity, db);
-                typedEntity.Id = entity.Id;
-                typedEntity.EntityState = entity.EntityState;
-                return typedEntity;
+                toReturn.Id = entity.Id;
+                toReturn.EntityState = entity.EntityState;
             }
             else
             {
-                return entity.CloneEntity(metadata, colsToKeep);
+                toReturn = entity.CloneEntity(metadata, colsToKeep);
             }
+
+            Utility.PopulateEntityReferenceNames(toReturn , db);
+            return toReturn;
         }
 
         internal void AddRelatedEntities(Entity entity, RelationshipQueryCollection relatedEntityQuery, EntityReference userRef)
@@ -544,7 +547,7 @@ namespace DG.Tools.XrmMockup
             var buRef = GetBusinessUnit(userRef);
             pluginContext.BusinessUnitId = buRef.Id;
 
-            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out EventOperation? eventOp);
+            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out string eventOp);
 
             var entityInfo = GetEntityInfo(request);
 
@@ -566,29 +569,28 @@ namespace DG.Tools.XrmMockup
                     primaryRef.Id = preImage.Id;
             }
 
-            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
-            {
+            if (settings.TriggerProcesses && entityInfo != null) {
                 // System Pre-validation
-                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 // Pre-validation
-                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
             }
             
             //perform security checks for the request
             CheckRequestSecurity(request, userRef);
 
-            if (settings.TriggerProcesses && entityInfo != null && eventOp.HasValue)
+            if (settings.TriggerProcesses && entityInfo != null)
             { 
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
                 pluginContext.ParentContext = pluginContext.Clone();
                 pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
-                pluginManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                workflowManager.Trigger(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.Trigger(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                workflowManager.TriggerSync(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
 
                 // System Pre-operation
-                pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
             }
 
             // Core operation
@@ -606,17 +608,17 @@ namespace DG.Tools.XrmMockup
                     pluginContext.OutputParameters["BusinessEntityCollection"] = (response as RetrieveMultipleResponse)?.EntityCollection;
                 }
 
-                if (eventOp.HasValue)
+                if (!string.IsNullOrEmpty(eventOp))
                 {
                     //copy the createon etc system attributes onto the target so they are available for postoperation processing
                     CopySystemAttributes(postImage, entityInfo.Item1 as Entity);
 
-                    pluginManager.TriggerSystem(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSystem(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                     
-                    workflowManager.TriggerSync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.StageAsync(eventOp.Value, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    workflowManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    workflowManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
                 }
 
                 //When last Sync has been executed we trigger the Async jobs.
@@ -976,5 +978,36 @@ namespace DG.Tools.XrmMockup
             InitializeDB();
             security.ResetEnvironment(db);
         }
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        internal void ExecuteCalculatedFields(DbRow row)
+        {
+            var attributes = row.Metadata.Attributes.Where(
+                m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
+
+            foreach (var attr in attributes)
+            {
+                string definition = (attr as BooleanAttributeMetadata)?.FormulaDefinition;
+                if (attr is BooleanAttributeMetadata) definition = (attr as BooleanAttributeMetadata).FormulaDefinition;
+                else if (attr is DateTimeAttributeMetadata) definition = (attr as DateTimeAttributeMetadata).FormulaDefinition;
+                else if (attr is DecimalAttributeMetadata) definition = (attr as DecimalAttributeMetadata).FormulaDefinition;
+                else if (attr is IntegerAttributeMetadata) definition = (attr as IntegerAttributeMetadata).FormulaDefinition;
+                else if (attr is MoneyAttributeMetadata) definition = (attr as MoneyAttributeMetadata).FormulaDefinition;
+                else if (attr is PicklistAttributeMetadata) definition = (attr as PicklistAttributeMetadata).FormulaDefinition;
+                else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
+
+                if (definition == null)
+                {
+                    var trace = this.ServiceFactory.GetService(typeof(ITracingService)) as ITracingService;
+                    trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
+                    return;
+                }
+                var tree = WorkflowConstructor.ParseCalculated(definition);
+                var factory = this.ServiceFactory;
+                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), this.TimeOffset, this.GetWorkflowService(),
+                    factory, factory.GetService(typeof(ITracingService)) as ITracingService);
+            }
+        }
+#endif
     }
 }
