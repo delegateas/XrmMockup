@@ -42,6 +42,8 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
+            AddRoleTemplatesForBusinessUnit(db, businessUnit);
+
             foreach (var sr in SecurityRoles.Values)
             {
                 var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
@@ -52,13 +54,34 @@ namespace DG.Tools.XrmMockup
                 role[roleMeta.PrimaryIdAttribute] = role.Id;
                 role["businessunitid"] = businessUnit;
                 role["name"] = sr.Name;
-                role["roletemplateid"] = sr.RoleTemplateId;
+                if (sr.RoleTemplateId != Guid.Empty)
+                {
+                    role["roletemplateid"] = new EntityReference("roletemplate", sr.RoleTemplateId);
+                }
                 role["createdby"] = Core.AdminUserRef;
                 role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 role["modifiedby"] = Core.AdminUserRef;
                 role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
                 db.Add(role);
                 SecurityRoleMapping.Add(role.Id, sr.RoleId);
+            }
+        }
+
+        internal void AddRoleTemplatesForBusinessUnit(XrmDb db, EntityReference businessUnit)
+        {
+            //role templates are actually uniques across all business units so don't try adding more than once.
+            var allRoleTemplates = db.GetDBEntityRows("roletemplate").Select(x => x.ToEntity());
+
+            foreach (var sr in SecurityRoles.Values.Where(x => x.RoleTemplateId != Guid.Empty).GroupBy(x => x.RoleTemplateId).Select(x => x.Key))
+            {
+                if (!allRoleTemplates.Any(x => x.Id == sr))
+                {
+                    var roleTemplate = new Entity("roletemplate")
+                    {
+                        Id = sr
+                    };
+                    db.Add(roleTemplate);
+                }
             }
         }
 
@@ -163,11 +186,16 @@ namespace DG.Tools.XrmMockup
                 switch (relationshipMeta.CascadeConfiguration.Assign)
                 {
                     case CascadeType.Cascade:
-                        foreach (var relatedEntity in relatedEntities.Value.Entities)
+
+                        var refEntityMetadata = Metadata.EntityMetadata[relationshipMeta.ReferencingEntity];
+                        if (refEntityMetadata.OwnershipType != OwnershipTypes.BusinessOwned)
                         {
-                            req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
-                            req.Target.Attributes["ownerid"] = ownerRef;
-                            Core.Execute(req, userRef, null);
+                            foreach (var relatedEntity in relatedEntities.Value.Entities)
+                            {
+                                req.Target = new Entity(relatedEntity.LogicalName, relatedEntity.Id);
+                                req.Target.Attributes["ownerid"] = ownerRef;
+                                Core.Execute(req, userRef, null);
+                            }
                         }
                         break;
 
