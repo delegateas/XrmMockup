@@ -89,6 +89,17 @@ public class XrmMockupFixture : IDisposable
     {
         new MetaPlugin()
         {
+#if XRM_MOCKUP_TEST_2011
+            PluginTypeAssemblyName = "TestPluginAssembly11",
+#elif XRM_MOCKUP_TEST_2013
+            PluginTypeAssemblyName = "TestPluginAssembly13",
+#elif XRM_MOCKUP_TEST_2015
+            PluginTypeAssemblyName = "TestPluginAssembly15",
+#elif XRM_MOCKUP_TEST_2016
+            PluginTypeAssemblyName = "TestPluginAssembly16",
+#elif XRM_MOCKUP_TEST_365
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+#endif
             AssemblyName = "DG.Some.Namespace.ContactIPluginDirectPreOp",
             MessageName = "Create",
             PrimaryEntity = "contact",
@@ -97,6 +108,17 @@ public class XrmMockupFixture : IDisposable
         },
         new MetaPlugin()
         {
+#if XRM_MOCKUP_TEST_2011
+            PluginTypeAssemblyName = "TestPluginAssembly11",
+#elif XRM_MOCKUP_TEST_2013
+            PluginTypeAssemblyName = "TestPluginAssembly13",
+#elif XRM_MOCKUP_TEST_2015
+            PluginTypeAssemblyName = "TestPluginAssembly15",
+#elif XRM_MOCKUP_TEST_2016
+            PluginTypeAssemblyName = "TestPluginAssembly16",
+#elif XRM_MOCKUP_TEST_365
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+#endif
             AssemblyName = "DG.Some.Namespace.ContactIPluginDirectPostOp",
             MessageName = "Create",
             PrimaryEntity = "contact",

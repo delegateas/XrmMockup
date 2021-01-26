@@ -1,3 +1,42 @@
+### 1.6.4 - 26 January 2020
+* Improved performance of fetching a row in the database (@MattTrinder1)
+
+### 1.6.2 - 26 January 2020
+* Security error messages now include the SecLib::AccessCheckEx2 tag (@MattTrinder1)
+
+### 1.6.1 - 26 January 2020
+* Plugins registered on AnyEntity are now handled in all cases (@MattTrinder1)
+
+### 1.6.0 - 26 January 2020
+* Plugin steps are now able have the same name but different assemblies (@MattTrinder1)
+
+### 1.5.2 - 22 January 2020
+* Fixed an error where assign cascaded to organization owned entities (@MattTrinder1)
+
+### 1.5.1 - 22 January 2020
+* Added support for RetrieveMetadataChangesRequest (@MattTrinder1)
+
+### 1.5.0 - 22 January 2020
+* Moved security checks to validation step in the pipeline (@MattTrinder1)
+
+### 1.4.6 - 22 January 2020
+* Added support for impersonating user in plugins (@MattTrinder1)
+
+### 1.4.5 - 14 January 2020
+* Fixed error when using entityreferences in linkentities.
+
+### 1.4.4 - 14 January 2020
+* Add formatted values for late-bound entities (@MattTrinder1)
+
+### 1.4.3 - 14 January 2020
+* Added calculated field calculation to retrieve multiple (@MattTrinder1)
+
+### 1.4.2 - 14 January 2020
+* Added roletemplates as actual records (@MattTrinder1)
+
+### 1.4.1 - 14 January 2020
+* Fixed error where tracing service throws an exception (@MattTrinder1)
+
 ### 1.4.0 - 25 November 2020
 * CodeActivities are now allowed to extend abstract classes.
 * Plugins without a base class will now be found if any class from the dll is referenced in the basePluginTypes setting.

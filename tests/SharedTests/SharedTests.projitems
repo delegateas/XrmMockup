@@ -24,9 +24,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestSecurity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestTracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />
