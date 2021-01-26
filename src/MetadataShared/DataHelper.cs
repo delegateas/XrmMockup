@@ -155,6 +155,10 @@ namespace DG.Tools.XrmMockup.Metadata
                         })
                         .ToList()
                 };
+                if (metaPlugin.PrimaryEntity == "none")
+                {
+                    metaPlugin.PrimaryEntity = "";
+                }
                 plugins.Add(metaPlugin);
             }
             return plugins;
@@ -239,7 +243,6 @@ namespace DG.Tools.XrmMockup.Metadata
             var images = service.RetrieveMultiple(imagesQuery);
             return images;
         }
-
 
         private List<Entity> GetCurrencies()
         {
