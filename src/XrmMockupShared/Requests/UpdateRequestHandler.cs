@@ -53,12 +53,12 @@ namespace DG.Tools.XrmMockup
                     if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
                     {
                         throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}' (SecLib::AccessCheckEx2 failed)");
                     }
                     if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
                     {
                         throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}' (SecLib::AccessCheckEx2 failed)");
                     }
                 }
             }
