@@ -1,3 +1,6 @@
+### 1.6.5 - 26 January 2020
+* Added support for dictionary variables in workflows (@MattTrinder1)
+
 ### 1.6.4 - 26 January 2020
 * Improved performance of fetching a row in the database (@MattTrinder1)
 
