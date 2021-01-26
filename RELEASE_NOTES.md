@@ -1,3 +1,6 @@
+### 1.6.3 - 26 January 2020
+* Improved performance of fetching a row in the database (@MattTrinder1)
+
 ### 1.6.2 - 26 January 2020
 * Security error messages now include the SecLib::AccessCheckEx2 tag (@MattTrinder1)
 
