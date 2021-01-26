@@ -1,3 +1,9 @@
+### 1.6.1 - 26 January 2020
+* Plugins registered on AnyEntity are now handled in all cases (@MattTrinder1)
+
+### 1.6.0 - 26 January 2020
+* Plugin steps are now able have the same name but different assemblies (@MattTrinder1)
+
 ### 1.5.2 - 22 January 2020
 * Fixed an error where assign cascaded to organization owned entities (@MattTrinder1)
 
