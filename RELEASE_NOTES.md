@@ -1,3 +1,6 @@
+### 1.6.2 - 26 January 2020
+* Security error messages now include the SecLib::AccessCheckEx2 tag (@MattTrinder1)
+
 ### 1.6.1 - 26 January 2020
 * Plugins registered on AnyEntity are now handled in all cases (@MattTrinder1)
 
