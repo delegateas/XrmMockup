@@ -1,14 +1,12 @@
 ﻿using DG.XrmContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
-    public class TestXrmExtension
+    public class TestXrmExtension : UnitTestBase
     {
-        [TestMethod]
+        public TestXrmExtension(XrmMockupFixture fixture) : base(fixture) { }
         public void Test()
         {
             //var t = new XrmExtension(new Core(), new EntityReference(), new PluginContext());
