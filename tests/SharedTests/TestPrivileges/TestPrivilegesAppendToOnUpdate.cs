@@ -3,11 +3,11 @@ using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPrivilegesAppendToOnUpdate : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -15,8 +15,7 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        [TestInitialize]
-        public void Init()
+        public TestPrivilegesAppendToOnUpdate(XrmMockupFixture fixture) : base(fixture)
         {
             crm.DisableRegisteredPlugins(true);
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
@@ -48,7 +47,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test user append to account on basic level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendToOnUpdateUserLevel()
         {
             // add account and contact to database
@@ -63,11 +62,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -87,11 +86,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Clear PrimaryContactId
@@ -113,11 +112,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Clear PrimaryContactId
@@ -139,11 +138,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Clear PrimaryContactId
@@ -164,18 +163,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append to account on local level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendToOnUpdateBULevel()
         {
             // add account and contact to database
@@ -189,11 +188,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -212,11 +211,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -236,11 +235,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Clear PrimaryContactId
@@ -262,11 +261,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Clear PrimaryContactId
@@ -287,18 +286,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append to account on deep level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendToOnUpdateBUChildLevel()
         {
             // add account and contact to database
@@ -312,11 +311,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -335,11 +334,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -358,11 +357,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -382,11 +381,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
 
             // Add account append privilege with global level
@@ -404,18 +403,18 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 
         /// <summary>
         /// Test user append to account on global level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestAppendToOnUpdateGlobalLevel()
         {
             // add account and contact to database
@@ -429,11 +428,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -452,11 +451,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -475,11 +474,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -498,11 +497,11 @@ namespace DG.XrmMockupTest
             try
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to append");
+                throw new XunitException("User should not be able to append");
             }
             catch (Exception) { }
 
@@ -521,11 +520,11 @@ namespace DG.XrmMockupTest
             {
                 userOrg.Update(new Account(accId) { PrimaryContactId = new EntityReference(Contact.EntityLogicalName, contactId) });
                 var account = Account.Retrieve(orgAdminService, accId);
-                Assert.AreEqual(contactId, account.PrimaryContactId.Id);
+                Assert.Equal(contactId, account.PrimaryContactId.Id);
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to append");
+                throw new XunitException("User should be able to append");
             }
         }
 

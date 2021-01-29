@@ -9,9 +9,16 @@
     <Import_RootNamespace>SharedPluginsAndCodeactivites</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NotePostOperationPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BusTicketSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UpdateIdInCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContactPostPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPostOp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPreOp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync2WithExecutionOrder - Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\AsyncWithExecutionOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\Test5\Sync1WithExecutionOrder.cs" />

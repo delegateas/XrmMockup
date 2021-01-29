@@ -17,7 +17,7 @@ namespace DG.Tools.XrmMockup
         /// This is used to locate the assemblies required.
         /// </summary>
         public IEnumerable<Type> BasePluginTypes { get; set; }
-
+        
         /// <summary>
         /// List of at least one instance of a CodeActivity in each of your projects that contain CodeActivities. 
         /// This is used to locate the assemblies required to find all CodeActivity.
@@ -53,6 +53,11 @@ namespace DG.Tools.XrmMockup
         /// Flag for if Append And Append To privilege should be check on create and update. Default is true
         /// </summary>
         public bool? AppendAndAppendToPrivilegeCheck { get; set; }
+
+        /// <summary>
+        /// Additional Plugin Metatdata for IPlugin direct plugin registration
+        /// </summary>
+        public MetaPlugin[] IPluginMetadata { get; set; }
 
 #if XRM_MOCKUP_365
         /// <summary>

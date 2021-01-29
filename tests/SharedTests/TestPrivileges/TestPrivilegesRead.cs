@@ -3,11 +3,11 @@ using Microsoft.Crm.Sdk.Messages;
 using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestPrivilegesRead : UnitTestBase
     {
         SystemUser UserBURoot;
@@ -15,10 +15,8 @@ namespace DG.XrmMockupTest
         SystemUser UserBULvl12;
         SystemUser UserBULvl2;
 
-        [TestInitialize]
-        public void Init()
+        public TestPrivilegesRead(XrmMockupFixture fixture) : base(fixture)
         {
-
             var buLevel1 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = crm.RootBusinessUnit, Name = "Business Level 1" });
             var buLevel2 = orgAdminService.Create(new BusinessUnit() { ParentBusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, buLevel1), Name = "Business Level 2" });
 
@@ -31,7 +29,7 @@ namespace DG.XrmMockupTest
         /// <summary>
         /// Test user read account on basic level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestReadUserLevel()
         {
             // add account to database
@@ -47,11 +45,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -73,7 +71,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with local level
@@ -94,7 +92,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with deep level
@@ -115,7 +113,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with global level
@@ -135,14 +133,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
         }
 
         /// <summary>
         /// Test user read account on local level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestReadBULevel()
         {
             // add account to database
@@ -158,11 +156,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -181,17 +179,17 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
             // Add account read privilege with local level
             crm.AddPrivileges(
-                UserBULvl11.ToEntityReference(), 
+                UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
@@ -207,7 +205,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with deep level
@@ -228,7 +226,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with global level
@@ -248,14 +246,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
         }
 
         /// <summary>
         /// Test user read account on deep level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestReadBUChildLevel()
         {
             // add account to database
@@ -271,11 +269,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -294,11 +292,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -317,17 +315,17 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
             // Add account read privilege with deep level
             crm.AddPrivileges(
-                UserBULvl11.ToEntityReference(), 
+                UserBULvl11.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
                     { Account.EntityLogicalName,
                         new Dictionary<AccessRights, PrivilegeDepth>() {
@@ -343,7 +341,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
 
             // Add account read privilege with global level
@@ -363,14 +361,14 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
         }
 
         /// <summary>
         /// Test user read account on global level
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void TestReadGlobalLevel()
         {
             // add account to database
@@ -386,11 +384,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -409,11 +407,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -432,11 +430,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -455,11 +453,11 @@ namespace DG.XrmMockupTest
             try
             {
                 var account = Account.Retrieve(userOrg, accId);
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
-            catch (AssertFailedException)
+            catch (XunitException)
             {
-                Assert.Fail("User should not be able to read");
+                throw new XunitException("User should not be able to read");
             }
             catch (Exception) { }
 
@@ -480,7 +478,7 @@ namespace DG.XrmMockupTest
             }
             catch (Exception)
             {
-                Assert.Fail("User should be able to read");
+                throw new XunitException("User should be able to read");
             }
         }
     }
