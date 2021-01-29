@@ -12,10 +12,6 @@ using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk.Client;
 using WorkflowExecuter;
-#if XRM_MOCKUP_365
-using IXrmMockupExtension;
-
-#endif
 
 [assembly: InternalsVisibleTo("SharedTests")]
 
@@ -49,7 +45,7 @@ namespace DG.Tools.XrmMockup
     /// Class for handling all requests to the database
     /// </summary>
 #if XRM_MOCKUP_365
-    internal class Core : IMockUpExtension
+    internal class Core : IXrmMockupExtension
 #else
     internal class Core
 #endif

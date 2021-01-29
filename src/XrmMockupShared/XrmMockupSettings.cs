@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
-#if XRM_MOCKUP_365
-using IXrmMockupExtension;
-#endif
 
 namespace DG.Tools.XrmMockup
 {
@@ -63,7 +60,7 @@ namespace DG.Tools.XrmMockup
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
-        public List<IMockUpExtension> MockUpExtensions { get; set; } = new List<IMockUpExtension>();
+        public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
 #endif
     }
 

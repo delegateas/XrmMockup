@@ -1,8 +1,10 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Xrm.Sdk;
 
-namespace IXrmMockupExtension
+[assembly: InternalsVisibleTo("XrmMockup365Test")]
+namespace DG.Tools.XrmMockup
 {
-    public interface IMockUpExtension
+    public interface IXrmMockupExtension
     {
         /// <summary>
         /// 
@@ -12,6 +14,6 @@ namespace IXrmMockupExtension
         /// <param name="currentEntity">Newest version of the entity - only with updated attributes</param>
         /// <param name="preEntity">Pre entity image of entity before</param>
         /// <param name="userRef">The executing user - used to generate OrgService to execute request against XrmMockup</param>
-        void TriggerExtension(IOrganizationService organizationService,OrganizationRequest request, Entity currentEntity, Entity preEntity, EntityReference userRef);
+        void TriggerExtension(IOrganizationService organizationService, OrganizationRequest request, Entity currentEntity, Entity preEntity, EntityReference userRef);
     }
 }
