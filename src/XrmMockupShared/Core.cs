@@ -700,7 +700,7 @@ namespace DG.Tools.XrmMockup
                             .ToEntity();
                     TriggerExtension(
                         new XrmExtension(this, userRef, pluginContext), request,
-                        createdEntity, preImage, userRef);
+                        createdEntity, null, userRef);
                     break;
                 case "Update":
                     var updatedEntity = GetDbRow(updateEntityReference).ToEntity();
@@ -1103,7 +1103,7 @@ namespace DG.Tools.XrmMockup
             _userRef = userRef ?? throw new ArgumentNullException(nameof(userRef));
             _pluginContext = pluginContext;
         }
-
+        
         public Guid Create(Entity entity)
         {
             var response = (CreateResponse) _core.Execute(new CreateRequest(), _userRef, _pluginContext);
