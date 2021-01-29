@@ -4,11 +4,10 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestFetchXmlToQueryExpression : UnitTestBase
     {
         string accountName;
@@ -17,8 +16,7 @@ namespace DG.XrmMockupTest
         Guid _opportunity1Id;
         Guid _opportunity2Id;
 
-        [TestInitialize]
-        public void Init()
+        public TestFetchXmlToQueryExpression(XrmMockupFixture fixture) : base(fixture)
         {
             accountName = "Litware, Inc.";
             // Create an account.
@@ -41,7 +39,6 @@ namespace DG.XrmMockupTest
                     Address1_Telephone1 = "(206)555-5555",
                     ParentCustomerId = acc.ToEntityReference()
                 });
-
 
             _contact2Id = orgAdminUIService.Create(
                 new Contact()
@@ -75,12 +72,11 @@ namespace DG.XrmMockupTest
 
         // ignored until entityname can be handled correctly for 2011
 #if !(XRM_MOCKUP_TEST_2011)
-        [TestMethod]
+        [Fact]
         public void TestFetchXmlToQueryExpressionFromXml()
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 // Create a Fetch query that we will convert into a query expression.
                 var fetchXml =
                     @"<fetch mapping='logical' version='1.0'>
@@ -101,7 +97,6 @@ namespace DG.XrmMockupTest
                     </entity>
                 </fetch>";
 
-
                 var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(
                     new FetchXmlToQueryExpressionRequest { FetchXml = fetchXml });
 
@@ -111,24 +106,22 @@ namespace DG.XrmMockupTest
 
                 EntityCollection result = orgAdminUIService.RetrieveMultiple(queryExpression);
 
-
-                Assert.AreEqual(1, result.Entities.Count);
+                Assert.Single(result.Entities);
                 var entity = result.Entities.First();
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("opportunityid"));
-                Assert.AreEqual(_opportunity1Id, entity.Attributes["opportunityid"]);
+                Assert.True(entity.Attributes.ContainsKey("opportunityid"));
+                Assert.Equal(_opportunity1Id, entity.Attributes["opportunityid"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("name"));
-                Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
+                Assert.True(entity.Attributes.ContainsKey("name"));
+                Assert.Equal("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
-                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
-                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
-
+                Assert.True(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.True(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestFetchXmlToQueryExpressionFromExpr()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -157,22 +150,20 @@ namespace DG.XrmMockupTest
 
                 EntityCollection result = orgAdminUIService.RetrieveMultiple(fetchExpr);
 
-
-                Assert.AreEqual(1, result.Entities.Count);
+                Assert.Single(result.Entities);
                 var entity = result.Entities.First();
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("opportunityid"));
-                Assert.AreEqual(_opportunity1Id, entity.Attributes["opportunityid"]);
+                Assert.True(entity.Attributes.ContainsKey("opportunityid"));
+                Assert.Equal(_opportunity1Id, entity.Attributes["opportunityid"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("name"));
-                Assert.AreEqual("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
+                Assert.True(entity.Attributes.ContainsKey("name"));
+                Assert.Equal("Litware, Inc. Opportunity 1", entity.Attributes["name"]);
 
-                Assert.IsTrue(entity.Attributes.ContainsKey("contact.firstname"));
-                Assert.IsTrue(entity.Attributes["contact.firstname"] is AliasedValue);
-                Assert.AreEqual("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
+                Assert.True(entity.Attributes.ContainsKey("contact.firstname"));
+                Assert.True(entity.Attributes["contact.firstname"] is AliasedValue);
+                Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
             }
         }
 #endif
     }
-
 }

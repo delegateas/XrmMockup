@@ -2,7 +2,6 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-
     public class ContactPostPlugin : Plugin 
     {
         public ContactPostPlugin()

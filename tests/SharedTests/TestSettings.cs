@@ -2,14 +2,16 @@
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-    [TestClass]
     public class TestSettings : UnitTestBase
     {
-        [TestMethod]
+        public TestSettings(XrmMockupFixture fixture) : base(fixture) { }
+
+        [Fact]
         public void TestNoExceptionRequest()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -19,11 +21,11 @@ namespace DG.XrmMockupTest
                 try
                 {
                     orgAdminUIService.Execute(req);
-                    Assert.Fail();
+                    throw new XunitException();
                 }
                 catch (Exception e)
                 {
-                    Assert.IsInstanceOfType(e, typeof(NotImplementedException));
+                    Assert.IsType<NotImplementedException>(e);
                 }
 
                 req = new OrganizationRequest("TestWrongRequest");
@@ -31,7 +33,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [TestMethod, Ignore("Using real data")]
+        [Fact(Skip = "Using real data")]
         public void TestRealDataRetrieve()
         {
             var acc = new Account(new Guid("9155CF31-BA6A-E611-80E0-C4346BAC0E68"))
@@ -40,11 +42,11 @@ namespace DG.XrmMockupTest
             };
             orgRealDataService.Update(acc);
             var retrieved = orgRealDataService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet(true)).ToEntity<Account>();
-            Assert.AreEqual(acc.Name, retrieved.Name);
-            Assert.AreEqual("12321123312", retrieved.AccountNumber);
+            Assert.Equal(acc.Name, retrieved.Name);
+            Assert.Equal("12321123312", retrieved.AccountNumber);
         }
 
-        [TestMethod, Ignore( "Using real data")]
+        [Fact(Skip = "Using real data")]
         public void TestRealDataRetrieveMultiple()
         {
             var query = new QueryExpression(Account.EntityLogicalName)
@@ -57,7 +59,7 @@ namespace DG.XrmMockupTest
                 }
             };
             var res = orgRealDataService.RetrieveMultiple(query);
-            Assert.IsTrue(res.Entities.Count > 0);
+            Assert.True(res.Entities.Count > 0);
         }
     }
 }
