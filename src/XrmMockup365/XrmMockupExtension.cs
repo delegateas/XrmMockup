@@ -1,7 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 
-[assembly: InternalsVisibleTo("XrmMockup365Test")]
 namespace DG.Tools.XrmMockup
 {
     public interface IXrmMockupExtension
