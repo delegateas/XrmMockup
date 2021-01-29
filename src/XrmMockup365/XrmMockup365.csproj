@@ -3,14 +3,17 @@
         <OutputType>Library</OutputType>
         <TargetFramework>net462</TargetFramework>
         <DebugType>portable</DebugType>
-        <Title>XrmMockup365 (DEV)</Title>
-        <PackageVersion>1.3.3-dev.10.0</PackageVersion>
-        <PackageId>bd1fe5ca33fd455dafb99d34768b8de4</PackageId>
-        <Description>This is a development version of XrmMockup. Use the offical package: https://www.nuget.org/packages/XrmMockup365/</Description>
-        <RepositoryUrl>https://github.com/thygesteffensen/XrmMockup</RepositoryUrl>
+        <Title>XrmMockup365</Title>
     </PropertyGroup>
     <PropertyGroup>
-<!--        <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>-->
+        <PackageProjectUrl>http://delegateas.github.io/</PackageProjectUrl>
+        <Authors>Delegate A/S, Martin Kasban Tange, Magnus Gether Sørensen</Authors>
+        <Company>Delegate</Company>
+        <Description>Engine which simulates your exact Dynamics 365/CRM instance locally including all of it's logic!</Description>
+        <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
+        <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
+        <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
+        <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     </PropertyGroup>
