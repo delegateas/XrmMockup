@@ -1,15 +1,4 @@
-﻿using Microsoft.Xrm.Sdk;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DG.Tools;
-using Microsoft.Xrm.Sdk.Metadata;
-using System.Web.Script.Serialization;
-using System.IO;
-using System.Collections.ObjectModel;
-using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("XrmMockup16Test")]

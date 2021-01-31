@@ -1,43 +1,46 @@
-### 1.6.5 - 26 January 2020
+### 1.7.1 - 29 January 2021
+* Added support for extensions to XrmMockup that tap into core
+
+### 1.6.5 - 26 January 2021
 * Added support for dictionary variables in workflows (@MattTrinder1)
 
-### 1.6.4 - 26 January 2020
+### 1.6.4 - 26 January 2021
 * Improved performance of fetching a row in the database (@MattTrinder1)
 
-### 1.6.2 - 26 January 2020
+### 1.6.2 - 26 January 2021
 * Security error messages now include the SecLib::AccessCheckEx2 tag (@MattTrinder1)
 
-### 1.6.1 - 26 January 2020
+### 1.6.1 - 26 January 2021
 * Plugins registered on AnyEntity are now handled in all cases (@MattTrinder1)
 
-### 1.6.0 - 26 January 2020
+### 1.6.0 - 26 January 2021
 * Plugin steps are now able have the same name but different assemblies (@MattTrinder1)
 
-### 1.5.2 - 22 January 2020
+### 1.5.2 - 22 January 2021
 * Fixed an error where assign cascaded to organization owned entities (@MattTrinder1)
 
-### 1.5.1 - 22 January 2020
+### 1.5.1 - 22 January 2021
 * Added support for RetrieveMetadataChangesRequest (@MattTrinder1)
 
-### 1.5.0 - 22 January 2020
+### 1.5.0 - 22 January 2021
 * Moved security checks to validation step in the pipeline (@MattTrinder1)
 
-### 1.4.6 - 22 January 2020
+### 1.4.6 - 22 January 2021
 * Added support for impersonating user in plugins (@MattTrinder1)
 
-### 1.4.5 - 14 January 2020
+### 1.4.5 - 14 January 2021
 * Fixed error when using entityreferences in linkentities.
 
-### 1.4.4 - 14 January 2020
+### 1.4.4 - 14 January 2021
 * Add formatted values for late-bound entities (@MattTrinder1)
 
-### 1.4.3 - 14 January 2020
+### 1.4.3 - 14 January 2021
 * Added calculated field calculation to retrieve multiple (@MattTrinder1)
 
-### 1.4.2 - 14 January 2020
+### 1.4.2 - 14 January 2021
 * Added roletemplates as actual records (@MattTrinder1)
 
-### 1.4.1 - 14 January 2020
+### 1.4.1 - 14 January 2021
 * Fixed error where tracing service throws an exception (@MattTrinder1)
 
 ### 1.4.0 - 25 November 2020
