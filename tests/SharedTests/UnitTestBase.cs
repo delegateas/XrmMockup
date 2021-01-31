@@ -30,6 +30,8 @@ namespace DG.XrmMockupTest
         protected Entity testUser4;
         protected IOrganizationService testUser4Service;
 
+        protected Entity testUser5;
+
         protected Entity contactWriteAccessTeamTemplate;
 
 #if XRM_MOCKUP_TEST_2011
@@ -98,7 +100,7 @@ namespace DG.XrmMockupTest
             accessTeamTestRole2.Name = "AccessTeamTestNoShare";
             var contactPriv2 = accessTeamTestRole.Privileges["contact"];
             var newPriv2 = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
-            foreach (var priv in contactPriv.Where(x=>x.Value.AccessRight != AccessRights.ShareAccess))
+            foreach (var priv in contactPriv.Where(x => x.Value.AccessRight != AccessRights.ShareAccess))
             {
                 var newP = priv.Value.Clone();
                 newP.PrivilegeDepth = PrivilegeDepth.Basic;
@@ -107,6 +109,21 @@ namespace DG.XrmMockupTest
             accessTeamTestRole2.Privileges.Remove("contact");
             accessTeamTestRole2.Privileges.Add("contact", newPriv2);
             crm.AddSecurityRole(accessTeamTestRole2);
+
+            //create a new security role without write priv on contact
+            var accessTeamTestRole3 = crm.CloneSecurityRole("Salesperson");
+            accessTeamTestRole3.Name = "AccessTeamTestNoWrite";
+            var contactPriv3 = accessTeamTestRole.Privileges["contact"];
+            var newPriv3 = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
+            foreach (var priv in contactPriv.Where(x => x.Value.AccessRight != AccessRights.WriteAccess))
+            {
+                var newP = priv.Value.Clone();
+                newP.PrivilegeDepth = PrivilegeDepth.Basic;
+                newPriv3.Add(priv.Key, newP);
+            }
+            accessTeamTestRole3.Privileges.Remove("contact");
+            accessTeamTestRole3.Privileges.Add("contact", newPriv3);
+            crm.AddSecurityRole(accessTeamTestRole3);
 
             //create some users with the new role
             var user = new Entity("systemuser");
@@ -134,9 +151,15 @@ namespace DG.XrmMockupTest
             user4["internalemailaddress"] = "camstestuser4@official.mod.uk";
             user4["businessunitid"] = crm.RootBusinessUnit;
             user4["islicensed"] = true;
-            testUser4 = crm.CreateUser(orgAdminService, user4, new Guid[] { crm.GetSecurityRole("AccessTeamTestNoShare").RoleId } );
+            testUser4 = crm.CreateUser(orgAdminService, user4, new Guid[] { crm.GetSecurityRole("AccessTeamTestNoShare").RoleId });
             testUser4Service = crm.CreateOrganizationService(testUser4.Id);
 
+            var user5 = new Entity("systemuser");
+            user5["internalemailaddress"] = "camstestuser4@official.mod.uk";
+            user5["businessunitid"] = crm.RootBusinessUnit;
+            user5["islicensed"] = true;
+            testUser5 = crm.CreateUser(orgAdminService, user5, new Guid[] { crm.GetSecurityRole("AccessTeamTestNoWrite").RoleId });
+            
 
             //create some access team templates
             CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);

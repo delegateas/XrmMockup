@@ -589,6 +589,24 @@ namespace DG.XrmMockupTest
             }
         }
 
+        [Fact]
+        public void AddedUserMustHavePrivelegesOnTheEntityWhichMatchTheAccessTeam()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "test 1"
+            };
+            contact.Id = testUser1Service.Create(contact);
+            try
+            {
+                AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser5.Id, testUser1Service);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains("cannot join team", ex.Message);
+            }
+        }
+
     }
 }
 #endif
