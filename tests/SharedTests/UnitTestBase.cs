@@ -4,6 +4,7 @@ using DG.Tools.XrmMockup;
 using Xunit;
 using System.Collections.Generic;
 using Microsoft.Crm.Sdk.Messages;
+using System.Linq;
 
 namespace DG.XrmMockupTest
 {
@@ -25,6 +26,9 @@ namespace DG.XrmMockupTest
 
         protected Entity testUser3;
         protected IOrganizationService testUser3Service;
+
+        protected Entity testUser4;
+        protected IOrganizationService testUser4Service;
 
         protected Entity contactWriteAccessTeamTemplate;
 
@@ -89,6 +93,21 @@ namespace DG.XrmMockupTest
             accessTeamTestRole.Privileges.Add("account", newPriv);
             crm.AddSecurityRole(accessTeamTestRole);
 
+            //create a new security role without share priv on contact
+            var accessTeamTestRole2 = crm.CloneSecurityRole("Salesperson");
+            accessTeamTestRole2.Name = "AccessTeamTestNoShare";
+            var contactPriv2 = accessTeamTestRole.Privileges["contact"];
+            var newPriv2 = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
+            foreach (var priv in contactPriv.Where(x=>x.Value.AccessRight != AccessRights.ShareAccess))
+            {
+                var newP = priv.Value.Clone();
+                newP.PrivilegeDepth = PrivilegeDepth.Basic;
+                newPriv2.Add(priv.Key, newP);
+            }
+            accessTeamTestRole2.Privileges.Remove("contact");
+            accessTeamTestRole2.Privileges.Add("contact", newPriv2);
+            crm.AddSecurityRole(accessTeamTestRole2);
+
             //create some users with the new role
             var user = new Entity("systemuser");
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
@@ -110,6 +129,14 @@ namespace DG.XrmMockupTest
             user3["islicensed"] = true;
             testUser3 = crm.CreateUser(orgAdminService, user3, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser3Service = crm.CreateOrganizationService(testUser3.Id);
+
+            var user4 = new Entity("systemuser");
+            user4["internalemailaddress"] = "camstestuser4@official.mod.uk";
+            user4["businessunitid"] = crm.RootBusinessUnit;
+            user4["islicensed"] = true;
+            testUser4 = crm.CreateUser(orgAdminService, user4, new Guid[] { crm.GetSecurityRole("AccessTeamTestNoShare").RoleId } );
+            testUser4Service = crm.CreateOrganizationService(testUser4.Id);
+
 
             //create some access team templates
             CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);

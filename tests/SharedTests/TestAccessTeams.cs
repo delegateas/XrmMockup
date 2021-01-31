@@ -529,6 +529,18 @@ namespace DG.XrmMockupTest
             req.TeamTemplateId = tt.Entities.First().Id;
             orgAdminService.Execute(req);
         }
+
+        private void AddUserToAccessTeam(string accessTeamName, EntityReference record, Guid userId,IOrganizationService service)
+        {
+            var req = new AddUserToRecordTeamRequest();
+            req.Record = record;
+            req.SystemUserId = userId;
+            var q = new QueryExpression("teamtemplate");
+            q.Criteria.AddCondition("teamtemplatename", ConditionOperator.Equal, accessTeamName);
+            var tt = orgAdminService.RetrieveMultiple(q);
+            req.TeamTemplateId = tt.Entities.First().Id;
+            service.Execute(req);
+        }
         private void RemoveUserFromAccessTeam(string accessTeamName, EntityReference record, Guid userId)
         {
             var req = new RemoveUserFromRecordTeamRequest();
@@ -539,6 +551,26 @@ namespace DG.XrmMockupTest
             var tt = orgAdminService.RetrieveMultiple(q);
             req.TeamTemplateId = tt.Entities.First().Id;
             orgAdminService.Execute(req);
+        }
+
+        [Fact]
+        public void ShouldNotBeAbleToAddUserToAccessTeamWithoutSharePriveligeOnEntity()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "test 1"
+            };
+            contact.Id = testUser1Service.Create(contact);
+            try
+            {
+                AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id, testUser4Service);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains("does not have share permission", ex.Message);
+            }
+            
+
         }
     }
 }

@@ -10,12 +10,31 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
+using Microsoft.Xrm.Sdk.Metadata.Query;
 
 namespace DG.Tools.XrmMockup
 {
     internal class AddUserToRecordTeamRequestHandler : RequestHandler
     {
         internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
+
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            //check that the caller has share permission on the entity
+            var ttId = (Guid)orgRequest["TeamTemplateId"];
+            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
+
+            var userPrivs = security.GetPrincipalPrivilege(userRef.Id);
+
+            var entityMetadata = metadata.EntityMetadata.Single(x => x.Value.ObjectTypeCode.Value == ttRow.GetAttributeValue<int>("objecttypecode"));
+
+            var privs = userPrivs[entityMetadata.Value.LogicalName];
+
+            if (!privs.ContainsKey(AccessRights.ShareAccess))
+            {
+                throw new FaultException($"User does not have share permission on the {entityMetadata.Value.LogicalName} entity");
+            }
+        }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
