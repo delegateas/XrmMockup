@@ -552,6 +552,17 @@ namespace DG.XrmMockupTest
             req.TeamTemplateId = tt.Entities.First().Id;
             orgAdminService.Execute(req);
         }
+        private void RemoveUserFromAccessTeam(string accessTeamName, EntityReference record, Guid userId,IOrganizationService service)
+        {
+            var req = new RemoveUserFromRecordTeamRequest();
+            req.Record = record;
+            req.SystemUserId = userId;
+            var q = new QueryExpression("teamtemplate");
+            q.Criteria.AddCondition("teamtemplatename", ConditionOperator.Equal, accessTeamName);
+            var tt = orgAdminService.RetrieveMultiple(q);
+            req.TeamTemplateId = tt.Entities.First().Id;
+            service.Execute(req);
+        }
 
         [Fact]
         public void ShouldNotBeAbleToAddUserToAccessTeamWithoutSharePriveligeOnEntity()
@@ -570,6 +581,25 @@ namespace DG.XrmMockupTest
                 Assert.Contains("does not have share permission", ex.Message);
             }
         }
+        
+        [Fact]
+        public void ShouldNotBeAbleToRemoveUserFromAccessTeamWithoutSharePriveligeOnEntity()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "test 1"
+            };
+            contact.Id = testUser1Service.Create(contact);
+            AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id);
+            try
+            {
+                RemoveUserFromAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id, testUser4Service);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains("does not have share permission", ex.Message);
+            }
+        }
 
         [Fact]
         public void ShouldNotBeAbleToAddUserToAccessTeamWithoutRightsOnTheRecordWhichMatchTheAccessTeam()
@@ -582,6 +612,25 @@ namespace DG.XrmMockupTest
             try
             {
                 AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id, testUser3Service);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains("permission on the contact entity", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ShouldNotBeAbleToRemoveUserFromAccessTeamWithoutRightsOnTheRecordWhichMatchTheAccessTeam()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "test 1"
+            };
+            contact.Id = testUser1Service.Create(contact);
+            AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id);
+            try
+            {
+                RemoveUserFromAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id,testUser3Service);
             }
             catch (Exception ex)
             {

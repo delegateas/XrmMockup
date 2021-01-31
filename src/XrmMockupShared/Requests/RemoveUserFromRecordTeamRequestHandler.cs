@@ -17,6 +17,38 @@ namespace DG.Tools.XrmMockup
     {
         internal RemoveUserFromRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveUserFromRecordTeam") { }
 
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            //check that the caller has share permission on the entity
+            var ttId = (Guid)orgRequest["TeamTemplateId"];
+            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
+            var record = orgRequest["Record"] as EntityReference;
+
+            var callingUserPrivs = security.GetPrincipalPrivilege(userRef.Id);
+
+            var entityMetadata = metadata.EntityMetadata.Single(x => x.Value.ObjectTypeCode.Value == ttRow.GetAttributeValue<int>("objecttypecode"));
+
+            var callingPrivs = callingUserPrivs[entityMetadata.Value.LogicalName];
+
+            if (!callingPrivs.ContainsKey(AccessRights.ShareAccess))
+            {
+                throw new FaultException($"User does not have share permission on the {entityMetadata.Value.LogicalName} entity");
+            }
+
+            //also check that the calling user has rights on the record which match the rights being assigned by the access team
+            foreach (var right in Enum.GetValues(typeof(AccessRights)))
+            {
+                if ((ttRow.GetAttributeValue<int>("defaultaccessrightsmask") & (int)right) > 0)
+                {
+                    if (!security.HasPermission(record, (AccessRights)right, userRef))
+                    {
+                        throw new FaultException($"User does not have {Enum.GetName(typeof(AccessRights), right)} permission on the {entityMetadata.Value.LogicalName} entity with id {record.Id}");
+                    }
+
+                }
+            }
+        }
+
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             //validate that the team template exists
