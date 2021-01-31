@@ -14,10 +14,8 @@ using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
-
     public class TestAccessTeams : UnitTestBase
     {
-
     public TestAccessTeams(XrmMockupFixture fixture) : base(fixture) { }
 
         [Fact]
@@ -655,7 +653,6 @@ namespace DG.XrmMockupTest
                 Assert.Contains("cannot join team", ex.Message);
             }
         }
-
     }
 }
 #endif

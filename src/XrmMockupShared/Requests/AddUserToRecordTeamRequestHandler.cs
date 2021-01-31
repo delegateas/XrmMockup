@@ -61,11 +61,8 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"Added user cannot join team as does not have {Enum.GetName(typeof(AccessRights), right)} permission on the {entityMetadata.Value.LogicalName} entity");
                     }
-
                 }
             }
-
-
         }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)

@@ -159,7 +159,6 @@ namespace DG.XrmMockupTest
             user5["businessunitid"] = crm.RootBusinessUnit;
             user5["islicensed"] = true;
             testUser5 = crm.CreateUser(orgAdminService, user5, new Guid[] { crm.GetSecurityRole("AccessTeamTestNoWrite").RoleId });
-            
 
             //create some access team templates
             CreateAccessTeamTemplate("TestWriteContact", 2, AccessRights.WriteAccess);
