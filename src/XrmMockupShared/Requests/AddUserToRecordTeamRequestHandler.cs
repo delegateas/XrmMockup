@@ -45,7 +45,6 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"User does not have {Enum.GetName(typeof(AccessRights), right)} permission on the {entityMetadata.Value.LogicalName} entity with id {record.Id}");
                     }
-
                 }
             }
 
