@@ -1,0 +1,98 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+		paket.lock = paket.lock
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
+	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
+		build.fsx = build.fsx
+		README.md = README.md
+		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MetadataGen", "MetadataGen", "{E75407BE-AEA4-480C-8307-1C41851DB58B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "versions", "versions", "{DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataShared", "src\MetadataShared\MetadataShared.shproj", "{3C2BBE8A-2ACE-44CA-9994-49C768B2CA1D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataSkeleton", "src\MetadataSkeleton\MetadataSkeleton.shproj", "{FDDB9BF5-4D33-495D-91A4-DFE919CF96CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator11", "src\MetadataGen\MetadataGenerator11\MetadataGenerator11.csproj", "{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator13", "src\MetadataGen\MetadataGenerator13\MetadataGenerator13.csproj", "{F57425C1-13CB-483B-BDDE-605D9A712F4A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator15", "src\MetadataGen\MetadataGenerator15\MetadataGenerator15.csproj", "{02A76886-689C-4F6D-BEF2-08DCBC040249}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator16", "src\MetadataGen\MetadataGenerator16\MetadataGenerator16.csproj", "{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator365", "src\MetadataGen\MetadataGenerator365\MetadataGenerator365.csproj", "{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2-DE25-4F25-98CA-04B2B397911E}"
+	ProjectSection(SolutionItems) = preProject
+		files\TypeDeclarations.cs = files\TypeDeclarations.cs
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{3c2bbe8a-2ace-44ca-9994-49c768b2ca1d}*SharedItemsImports = 13
+		src\MetadataShared\MetadataShared.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{731874af-5bec-49e4-940a-9a1ef4e21ef1}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
+		src\MetadataShared\MetadataShared.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{f57425c1-13cb-483b-bdde-605d9a712f4a}*SharedItemsImports = 5
+		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{731874AF-5BEC-49E4-940A-9A1EF4E21EF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F57425C1-13CB-483B-BDDE-605D9A712F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F57425C1-13CB-483B-BDDE-605D9A712F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F57425C1-13CB-483B-BDDE-605D9A712F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F57425C1-13CB-483B-BDDE-605D9A712F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02A76886-689C-4F6D-BEF2-08DCBC040249}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02A76886-689C-4F6D-BEF2-08DCBC040249}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02A76886-689C-4F6D-BEF2-08DCBC040249}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02A76886-689C-4F6D-BEF2-08DCBC040249}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{731874AF-5BEC-49E4-940A-9A1EF4E21EF1} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
+		{F57425C1-13CB-483B-BDDE-605D9A712F4A} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
+		{02A76886-689C-4F6D-BEF2-08DCBC040249} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
+		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
+		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7565DA42-40CA-442E-B85C-DB64B497DFAB}
+	EndGlobalSection
+EndGlobal
