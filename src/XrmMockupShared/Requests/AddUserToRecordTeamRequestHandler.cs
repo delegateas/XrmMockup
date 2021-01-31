@@ -23,6 +23,7 @@ namespace DG.Tools.XrmMockup
             //check that the caller has share permission on the entity
             var ttId = (Guid)orgRequest["TeamTemplateId"];
             var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
+            var record = orgRequest["Record"] as EntityReference;
 
             var userPrivs = security.GetPrincipalPrivilege(userRef.Id);
 
@@ -34,6 +35,21 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException($"User does not have share permission on the {entityMetadata.Value.LogicalName} entity");
             }
+
+            //also check that the calling user has rights on the record which match the rights being assigned by the access team
+            foreach (var right in Enum.GetValues(typeof(AccessRights)))
+            {
+                if ((ttRow.GetAttributeValue<int>("defaultaccessrightsmask") & (int)right) > 0)
+                {
+                    if (!security.HasPermission(record, (AccessRights)right, userRef))
+                    {
+                        throw new FaultException($"User does not have {Enum.GetName(typeof(AccessRights),right)} permission on the {entityMetadata.Value.LogicalName} entity with id {record.Id}"); 
+                    }
+                    
+                }
+            }
+
+
         }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)

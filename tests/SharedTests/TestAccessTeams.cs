@@ -569,9 +569,26 @@ namespace DG.XrmMockupTest
             {
                 Assert.Contains("does not have share permission", ex.Message);
             }
-            
-
         }
+
+        [Fact]
+        public void ShouldNotBeAbleToAddUserToAccessTeamWithoutRightsOnTheRecordWhichMatchTheAccessTeam()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "test 1"
+            };
+            contact.Id = testUser1Service.Create(contact);
+            try
+            {
+                AddUserToAccessTeam("TestWriteContact", contact.ToEntityReference(), testUser2.Id, testUser3Service);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains("permission on the contact entity", ex.Message);
+            }
+        }
+
     }
 }
 #endif
