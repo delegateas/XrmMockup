@@ -300,7 +300,6 @@ namespace DG.XrmMockupTest
             q.Criteria.AddCondition("fullname", ConditionOperator.Equal, "Matt");
             var users = orgAdminService.RetrieveMultiple(q);
             Assert.Single(users.Entities);
-
         }
     }
 }
