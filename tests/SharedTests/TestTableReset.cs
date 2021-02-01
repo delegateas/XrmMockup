@@ -74,5 +74,4 @@ namespace DG.XrmMockupTest
             Assert.Equal(4, contacts.Entities.Where(x => x.Contains("firstname") && x.GetAttributeValue<string>("firstname").StartsWith("ResetTest")).Count());
         }
     }
-
 }
