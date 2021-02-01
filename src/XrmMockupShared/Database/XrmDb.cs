@@ -256,6 +256,5 @@ namespace DG.Tools.XrmMockup.Database {
         {
             TableDict[tableName] = new DbTable(this.EntityMetadata[tableName]);
         }
-
     }
 }

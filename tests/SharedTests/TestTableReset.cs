@@ -6,7 +6,22 @@ using Xunit;
 
 namespace DG.XrmMockupTest
 {
+#if XRM_MOCKUP_TEST_2011
+    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup11Test")]
+#endif
+#if XRM_MOCKUP_TEST_2013
+    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup13Test")]
+#endif
+#if XRM_MOCKUP_TEST_2015
+    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup15Test")]
+#endif
+#if XRM_MOCKUP_TEST_2016
+    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup16Test")]
+#endif
+#if XRM_MOCKUP_TEST_365
     [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup365Test")]
+#endif
+
     public class TestResetTables : UnitTestBaseNoReset
     {
         public TestResetTables(XrmMockupFixture fixture) : base(fixture) 
@@ -16,7 +31,6 @@ namespace DG.XrmMockupTest
             orgAdminService.Create(contact1);
             var contact2 = new Contact() { FirstName = "c2" };
             orgAdminService.Create(contact2);
-
         }
 
         [Fact]
@@ -41,7 +55,6 @@ namespace DG.XrmMockupTest
 
             account1 = new Account() { Name = "a1" };
             orgAdminService.Create(account1);
-
         }
 
         [Fact]
@@ -55,7 +68,6 @@ namespace DG.XrmMockupTest
             var contactQuery = new QueryExpression("contact");
             var contacts = orgAdminService.RetrieveMultiple(contactQuery);
             Assert.Equal(4, contacts.Entities.Count);
-
         }
     }
 

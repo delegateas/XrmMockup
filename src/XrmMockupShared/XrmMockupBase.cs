@@ -446,6 +446,5 @@ namespace DG.Tools.XrmMockup
         {
             Core.ResetTable(tableName);
         }
-
     }
 }
