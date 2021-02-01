@@ -207,50 +207,52 @@ namespace DG.Tools.XrmMockup
             if (middle == null) middle = "";
             var last = dbEntity.GetAttributeValue<string>("lastname");
             if (last == null) last = "";
+
+            string fullname = string.Empty;
+
             switch (fullnameFormat)
             {
                 case FullNameConventionCode.FirstLast:
-                    dbEntity["fullname"] = first != "" ? first + " " + last : last;
+                    fullname = first != "" ? first + " " + last : last;
                     break;
                 case FullNameConventionCode.LastFirst:
-                    dbEntity["fullname"] = first != "" ? last + ", " + first : last;
+                    fullname = first != "" ? last + ", " + first : last;
                     break;
                 case FullNameConventionCode.LastNoSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + first : last;
+                    fullname = first != "" ? last + first : last;
                     break;
                 case FullNameConventionCode.LastSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + " " + first : last;
+                    fullname = first != "" ? last + " " + first : last;
                     break;
                 case FullNameConventionCode.FirstMiddleLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle;
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = first;
+                    if (middle != "") fullname += " " + middle;
+                    fullname += fullname != "" ? " " + last : last;
                     break;
                 case FullNameConventionCode.FirstMiddleInitialLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle[0] + ".";
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = first;
+                    if (middle != "") fullname += " " + middle[0] + ".";
+                    fullname += fullname != "" ? " " + last : last;
                     break;
                 case FullNameConventionCode.LastFirstMiddle:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] += (string)dbEntity["fullname"] == last ? ", " + middle : " " + middle;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = last;
+                    if (first != "") fullname += ", " + first;
+                    if (middle != "") fullname += fullname == last ? ", " + middle : " " + middle;
                     break;
                 case FullNameConventionCode.LastFirstMiddleInitial:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] +=
-                            (string)dbEntity["fullname"] == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = last;
+                    if (first != "") fullname += ", " + first;
+                    if (middle != "") fullname += fullname == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
                     break;
-
             }
-            if (dbEntity["fullname"] != null)
+
+            if (string.IsNullOrEmpty(fullname))
             {
-                (dbEntity["fullname"] as string).TrimStart().TrimEnd();
+                dbEntity["fullname"] = null;
+            }
+            else
+            {
+                dbEntity["fullname"] = fullname.Trim();
             }
         }
 
