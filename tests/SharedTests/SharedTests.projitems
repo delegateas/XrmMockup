@@ -61,8 +61,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestXrmExtension.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupFixture.cs" />
