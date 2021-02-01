@@ -17,7 +17,6 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
 
-
 #if XRM_MOCKUP_TEST_2011
         static protected XrmMockup2011 crm;
 #elif XRM_MOCKUP_TEST_2013
