@@ -441,5 +441,11 @@ namespace DG.Tools.XrmMockup
         {
             Core.AddPrivileges(principleRef, privileges);
         }
+
+        public void ResetTable(string tableName)
+        {
+            Core.ResetTable(tableName);
+        }
+
     }
 }

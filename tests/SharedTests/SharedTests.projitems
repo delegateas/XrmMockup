@@ -13,8 +13,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCaseOrderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestTableReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnCreate .cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendOnCreate.cs" />
@@ -63,6 +66,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestXrmExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollectionNoProxyTypes.cs" />
