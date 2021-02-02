@@ -98,6 +98,18 @@ namespace DG.Tools.XrmMockup.Metadata
             Abbreviations = new string[] { }
         };
 
+        public static ArgumentDescription OutputFileName = new ArgumentDescription()
+        {
+            Name = "outFileName",
+            Abbreviations = new string[] { }
+        };
+
+        public static ArgumentDescription IncludeSystemEntities = new ArgumentDescription()
+        {
+            Name = "includeSystemEntities",
+            Abbreviations = new string[] { }
+        };
+
         public static ArgumentDescription[] ArgList = new ArgumentDescription[] {
             Url,
             Username,
@@ -107,6 +119,8 @@ namespace DG.Tools.XrmMockup.Metadata
             Entities,
             Solutions,
             OutDir,
+            OutputFileName,
+            IncludeSystemEntities,
             UnitTestProjectPath,
             fetchFromAssemblies,
             Method,
