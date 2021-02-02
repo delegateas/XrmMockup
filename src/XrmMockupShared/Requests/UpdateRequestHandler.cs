@@ -71,7 +71,6 @@ namespace DG.Tools.XrmMockup
                         criteria.Conditions.Add(condition);
                     }
 
-
                     if (criteria.Conditions.All(c => Utility.EvaluateCondition(row.ToEntity(), c)))
                     {
                         string fieldNames = string.Empty;
@@ -87,7 +86,6 @@ namespace DG.Tools.XrmMockup
             }
 #endif
         }
-
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {

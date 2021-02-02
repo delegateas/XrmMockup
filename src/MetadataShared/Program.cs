@@ -60,7 +60,6 @@ namespace DG.Tools.XrmMockup.Metadata {
             var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies),includeSystemEntities);
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
             var outputFileName = ParsedArgs[Arguments.OutputFileName] ?? "Metadata.xml";
-            
 
             var skeleton = generator.GetMetadata();
 

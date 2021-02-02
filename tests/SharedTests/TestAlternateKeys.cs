@@ -196,7 +196,6 @@ namespace DG.XrmMockupTest
 
             var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u3));
             Assert.Equal("A record that has the attribute values Decimal Field already exists. The entity key Decimal requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
-
         }
 
         [Fact]
@@ -217,7 +216,6 @@ namespace DG.XrmMockupTest
 
             var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u3));
             Assert.Equal("A record that has the attribute values ContactLookup already exists. The entity key Contact requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
-
         }
 
         [Fact]
@@ -231,7 +229,6 @@ namespace DG.XrmMockupTest
             u1["mock_contactlookup"] = contact.ToEntityReference();
             orgAdminService.Create(u1);
 
-
             var u3 = new Entity("mock_uniquesinglekeyonlookup");
             u3["mock_name"] = "unique3";
             var id3 = orgAdminService.Create(u3);
@@ -242,7 +239,6 @@ namespace DG.XrmMockupTest
 
             var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update3));
             Assert.Equal("A record that has the attribute values ContactLookup already exists. The entity key Contact requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
-
         }
 
         [Fact]
@@ -268,12 +264,8 @@ namespace DG.XrmMockupTest
             
             var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update3));
             Assert.Equal("A record that has the attribute values Decimal Field already exists. The entity key Decimal requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
-
         }
-
-
 #endif
-
     }
 }
 #endif
