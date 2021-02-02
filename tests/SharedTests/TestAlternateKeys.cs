@@ -3,6 +3,8 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using Xunit.Sdk;
+using System.ServiceModel;
 
 namespace DG.XrmMockupTest
 {
@@ -66,6 +68,21 @@ namespace DG.XrmMockupTest
         public void AltKeyRetrieveWithoutEntityTypeInDb()
         {
             var y = Account.Retrieve_dg_name(orgAdminUIService, "woop", x => x.AccountNumber);
+        }
+
+
+        [Fact]
+        public void TestUniqueNameOnInsert()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonname");
+            u1["mock_name"] = "unique1";
+            orgAdminService.Create(u1);
+            
+            var u2 = new Entity("mock_uniquesinglekeyonname");
+            u2["mock_name"] = "unique1";
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u2));
+            Assert.Equal("A record that has the attribute values Name already exists. The entity key Name requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
         }
     }
 }
