@@ -209,7 +209,6 @@ namespace DG.XrmMockupTest
             u1["mock_contactlookup"] = contact.ToEntityReference();
             orgAdminService.Create(u1);
 
-
             var u3 = new Entity("mock_uniquesinglekeyonlookup");
             u3["mock_name"] = "unique3";
             u3["mock_contactlookup"] = contact.ToEntityReference();
@@ -235,7 +234,6 @@ namespace DG.XrmMockupTest
 
             var update3 = new Entity("mock_uniquesinglekeyonlookup") { Id = id3 };
             update3["mock_contactlookup"] = contact.ToEntityReference();
-
 
             var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update3));
             Assert.Equal("A record that has the attribute values ContactLookup already exists. The entity key Contact requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
