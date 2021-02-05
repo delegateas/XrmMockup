@@ -155,49 +155,6 @@ namespace DG.Tools.XrmMockup.Database {
             return currentDbRow;
         }
 
-
-        internal bool TryGetDbRow(EntityReference reference, out DbRow dbRow)
-        {
-            DbRow currentDbRow = null;
-            dbRow = null;
-
-            if (reference?.Id != Guid.Empty)
-            {
-                currentDbRow = this[reference.LogicalName][reference.Id];
-                if (currentDbRow == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    dbRow = currentDbRow;
-                    return true;
-                }
-            }
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            // Try fetching with key attributes if any
-            else if (reference?.KeyAttributes?.Count > 0) {
-                currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
-
-                if (currentDbRow == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    dbRow = currentDbRow;
-                    return true;
-                }
-            }
-#endif
-            // No identification given for the entity, throw error
-            else
-            {
-                return false;
-            }
-        }
-
         internal DbRow GetDbRow(Entity xrmEntity) {
             return GetDbRow(xrmEntity.ToEntityReferenceWithKeyAttributes());
         }
