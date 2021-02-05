@@ -110,12 +110,15 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true) {
+        internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true)
+        {
             DbRow currentDbRow = null;
 
-            if (reference?.Id != Guid.Empty) {                
+            if (reference?.Id != Guid.Empty)
+            {
                 currentDbRow = this[reference.LogicalName][reference.Id];
-                if (currentDbRow == null && OnlineProxy != null) {
+                if (currentDbRow == null && OnlineProxy != null)
+                {
                     if (!withReferenceCheck)
                         currentDbRow = DbRow.MakeDBRowRef(reference, this);
                     else
@@ -125,7 +128,8 @@ namespace DG.Tools.XrmMockup.Database {
                         currentDbRow = this[reference.LogicalName][reference.Id];
                     }
                 }
-                if (currentDbRow == null) {
+                if (currentDbRow == null)
+                {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
@@ -143,18 +147,17 @@ namespace DG.Tools.XrmMockup.Database {
             }
 #endif
             // No identification given for the entity, throw error
-            else {
+            else
+            {
                 throw new FaultException($"Missing a form of identification for the desired record in order to retrieve it.");
             }
 
             return currentDbRow;
         }
 
-
         internal DbRow GetDbRow(Entity xrmEntity) {
             return GetDbRow(xrmEntity.ToEntityReferenceWithKeyAttributes());
         }
-
 
         internal DbRow GetDbRow(string logicalName, Guid id) {
             return GetDbRow(new EntityReference(logicalName, id));
@@ -167,7 +170,6 @@ namespace DG.Tools.XrmMockup.Database {
         public Entity GetEntity(EntityReference reference) {
             return GetDbRow(reference).ToEntity();
         }
-
 
         #region GetOrNull
 
@@ -239,6 +241,7 @@ namespace DG.Tools.XrmMockup.Database {
                 return null;
             }
         }
+
         #endregion
 
         public XrmDb Clone()

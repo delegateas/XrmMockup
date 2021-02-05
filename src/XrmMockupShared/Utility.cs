@@ -650,10 +650,19 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    if (attr == null) return false;
+                    
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    }
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    return !Matches(attr,ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
