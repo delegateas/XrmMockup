@@ -1,3 +1,6 @@
+### 1.7.2 - 05 February 2021
+* String comparison in queries is now case insensitive (@MattTrinder1)
+
 ### 1.7.1 - 29 January 2021
 * Added support for extensions to XrmMockup that tap into core
 
