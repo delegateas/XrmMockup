@@ -632,6 +632,10 @@ namespace DG.Tools.XrmMockup
                 // System Pre-operation
                 pluginManager.TriggerSystem(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
             }
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            //perform uniqueness checks for the request
+            CheckRequestUniqueness(request, userRef);
+#endif
 
             // Core operation
             OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
@@ -835,6 +839,20 @@ namespace DG.Tools.XrmMockup
 
             throw new NotImplementedException($"CheckRequestSecurity for the request '{request.RequestName}' has not been implemented yet.");
         }
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        private void CheckRequestUniqueness(OrganizationRequest request, EntityReference userRef)
+        {
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if (handler != null)
+            {
+                handler.CheckUniqueness(request, userRef);
+            }
+            return;
+
+            throw new NotImplementedException($"CheckUniqueness for the request '{request.RequestName}' has not been implemented yet.");
+        }
+#endif
 
         private string RequestNameToMessageName(string requestName)
         {

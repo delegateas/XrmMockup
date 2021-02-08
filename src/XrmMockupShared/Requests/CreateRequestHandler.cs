@@ -18,6 +18,65 @@ namespace DG.Tools.XrmMockup
         {
         }
 
+        internal override void CheckUniqueness(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            var request = MakeRequest<CreateRequest>(orgRequest);
+            var settings = MockupExecutionContext.GetSettings(request);
+            var entity = request.Target;
+            if (entity.LogicalName == null) throw new MockupException("Entity needs a logical name");
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName);
+            if (!entityMetadata.Keys.Any())
+            {
+                return;
+            }
+
+            var currentRows = db.GetDBEntityRows(entity.LogicalName);
+            if (!currentRows.Any())
+            {
+                return;
+            }
+
+            var criteria = new FilterExpression();
+            foreach (var key in entityMetadata.Keys)
+            {
+                //dynamics cheerfully allows null values in keys, so only actually checks duplicates on populated values
+                //so if the entity does not have all of the key attributes populated it will always be created
+                bool allPopulated = true;
+                foreach (var keyAttr in key.KeyAttributes)
+                {
+                    allPopulated = allPopulated && (entity.Contains(keyAttr) && entity[keyAttr] != null);
+                }
+                if (!allPopulated)
+                {
+                    //skip onto the next key
+                    continue;
+                }
+
+                foreach (var keyAttr in key.KeyAttributes)
+                {
+                    var condition = new ConditionExpression(keyAttr, ConditionOperator.Equal, entity[keyAttr]);
+                    criteria.Conditions.Add(condition);
+                }
+                foreach (var row in currentRows)
+                {
+                    if (criteria.Conditions.All(c => Utility.EvaluateCondition(row.ToEntity(), c)))
+                    {
+                        string fieldNames = string.Empty;
+                        foreach (var keyAttr in key.KeyAttributes)
+                        {
+                            fieldNames += entityMetadata.Attributes.Single(x => x.LogicalName == keyAttr).DisplayName.UserLocalizedLabel.Label + ", ";
+                        }
+                        fieldNames = fieldNames.Trim().Trim(new char[] { ',' });
+                        
+                        throw new FaultException($"A record that has the attribute values {fieldNames} already exists. The entity key {key.DisplayName.UserLocalizedLabel.Label} requires that this set of attributes contains unique values. Select unique values and try again.");
+                    }
+                }
+            }
+#endif
+        }
+
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<CreateRequest>(orgRequest);

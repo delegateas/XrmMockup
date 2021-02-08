@@ -3,6 +3,8 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using Xunit.Sdk;
+using System.ServiceModel;
 
 namespace DG.XrmMockupTest
 {
@@ -67,6 +69,201 @@ namespace DG.XrmMockupTest
         {
             var y = Account.Retrieve_dg_name(orgAdminUIService, "woop", x => x.AccountNumber);
         }
+
+#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
+
+        [Fact]
+        public void TestUniqueOnInsertSingleAttributeKey()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonname");
+            u1["mock_name"] = "unique1";
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonname");
+            u2["mock_name"] = "unique1";
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u2));
+            Assert.Equal("A record that has the attribute values Name already exists. The entity key Name requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnUpdateSingleAttributeKey()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonname");
+            u1["mock_name"] = "unique1";
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonname");
+            u2["mock_name"] = "unique2";
+            u2.Id = orgAdminService.Create(u2);
+
+            u2["mock_name"] = "unique1";
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(u2));
+            Assert.Equal("A record that has the attribute values Name already exists. The entity key Name requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnInsertMultiAttributeKey()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u1["mock_name"] = "unique1";
+            u1["mock_intvalue"] = 1;
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u2["mock_name"] = "unique1";
+            u2["mock_intvalue"] = 1;
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u2));
+            Assert.Equal("A record that has the attribute values Int Value, Name already exists. The entity key NameAndIntValue requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnUpdateMultiAttributeKeyBothUpdated()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u1["mock_name"] = "unique1";
+            u1["mock_intvalue"] = 1;
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u2["mock_name"] = "unique2";
+            u2["mock_intvalue"] = 2;
+            var id2 = orgAdminService.Create(u2);
+
+            var update2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            update2.Id = id2;
+            update2["mock_name"] = "unique1";
+            update2["mock_intvalue"] = 1;
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update2));
+            Assert.Equal("A record that has the attribute values Int Value, Name already exists. The entity key NameAndIntValue requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnUpdateMultiAttributeKeyOneUpdated()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u1["mock_name"] = "unique1";
+            u1["mock_intvalue"] = 1;
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u2["mock_name"] = "unique1";
+            u2["mock_intvalue"] = 2;
+            var id2 = orgAdminService.Create(u2);
+
+            var update2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            update2.Id = id2;
+            update2["mock_intvalue"] = 1;
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update2));
+            Assert.Equal("A record that has the attribute values Int Value, Name already exists. The entity key NameAndIntValue requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnInsertMultiAttributeKeyNoFalsePositive()
+        {
+            var u1 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u1["mock_name"] = "unique1";
+            u1["mock_intvalue"] = "1";
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquesinglekeyonnameandintvalue");
+            u2["mock_name"] = "unique1";
+            u2["mock_intvalue"] = "2";
+
+            orgAdminService.Create(u2);
+        }
+
+        [Fact]
+        public void TestUniqueOnInsertMultipleKeys()
+        {
+            var u1 = new Entity("mock_uniquemultiplekeys");
+            u1["mock_name"] = "unique1";
+            u1["mock_decimalfield"] = 3.62M;
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquemultiplekeys");
+            u2["mock_name"] = "unique2";
+            u2["mock_decimalfield"] = 3.63M;
+            orgAdminService.Create(u2);
+
+            var u3 = new Entity("mock_uniquemultiplekeys");
+            u3["mock_name"] = "unique3";
+            u3["mock_decimalfield"] = 3.62M;
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u3));
+            Assert.Equal("A record that has the attribute values Decimal Field already exists. The entity key Decimal requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnInsertLookup()
+        {
+            var contact = new Contact() { FirstName = "matt" };
+            contact.Id = orgAdminService.Create(contact);
+
+            var u1 = new Entity("mock_uniquesinglekeyonlookup");
+            u1["mock_name"] = "unique1";
+            u1["mock_contactlookup"] = contact.ToEntityReference();
+            orgAdminService.Create(u1);
+
+            var u3 = new Entity("mock_uniquesinglekeyonlookup");
+            u3["mock_name"] = "unique3";
+            u3["mock_contactlookup"] = contact.ToEntityReference();
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(u3));
+            Assert.Equal("A record that has the attribute values ContactLookup already exists. The entity key Contact requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnUpdateLookup()
+        {
+            var contact = new Contact() { FirstName = "matt" };
+            contact.Id = orgAdminService.Create(contact);
+
+            var u1 = new Entity("mock_uniquesinglekeyonlookup");
+            u1["mock_name"] = "unique1";
+            u1["mock_contactlookup"] = contact.ToEntityReference();
+            orgAdminService.Create(u1);
+
+            var u3 = new Entity("mock_uniquesinglekeyonlookup");
+            u3["mock_name"] = "unique3";
+            var id3 = orgAdminService.Create(u3);
+
+            var update3 = new Entity("mock_uniquesinglekeyonlookup") { Id = id3 };
+            update3["mock_contactlookup"] = contact.ToEntityReference();
+
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update3));
+            Assert.Equal("A record that has the attribute values ContactLookup already exists. The entity key Contact requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUniqueOnUpdateMultipleKeys()
+        {
+            var u1 = new Entity("mock_uniquemultiplekeys");
+            u1["mock_name"] = "unique1";
+            u1["mock_decimalfield"] = 3.62M;
+            orgAdminService.Create(u1);
+
+            var u2 = new Entity("mock_uniquemultiplekeys");
+            u2["mock_name"] = "unique2";
+            u2["mock_decimalfield"] = 3.63M;
+            orgAdminService.Create(u2);
+
+            var u3 = new Entity("mock_uniquemultiplekeys");
+            u3["mock_name"] = "unique3";
+            u3["mock_decimalfield"] = 3.61M;
+            var id3 = orgAdminService.Create(u3);
+
+            var update3 = new Entity("mock_uniquemultiplekeys") { Id = id3 };
+            update3["mock_decimalfield"] = 3.62M;
+            
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Update(update3));
+            Assert.Equal("A record that has the attribute values Decimal Field already exists. The entity key Decimal requires that this set of attributes contains unique values. Select unique values and try again.", ex.Message);
+        }
+#endif
     }
 }
 #endif

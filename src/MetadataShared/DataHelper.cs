@@ -25,7 +25,7 @@ namespace DG.Tools.XrmMockup.Metadata
         private HashSet<string> EntityLogicalNames;
         private string[] SolutionNames;
 
-        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies)
+        public DataHelper(IOrganizationService service, string entitiesString, string solutionsString, bool fetchFromAssemblies,bool includeSystemEntities)
         {
             this.service = service;
             this.SolutionNames = solutionsString.Split(',').Select(x => x.Trim()).ToArray();
@@ -36,10 +36,13 @@ namespace DG.Tools.XrmMockup.Metadata
                 this.EntityLogicalNames = GetLogicalNames(AssemblyGetter.GetAssembliesInBuildPath());
 
             // Add default entities
-            var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles", "activitypointer", "roletemplate" };
-            foreach (var logicalName in defaultEntities)
+            if (includeSystemEntities)
             {
-                this.EntityLogicalNames.Add(logicalName);
+                var defaultEntities = new string[] { "businessunit", "systemuser", "transactioncurrency", "role", "systemuserroles", "teamroles", "activitypointer", "roletemplate" };
+                foreach (var logicalName in defaultEntities)
+                {
+                    this.EntityLogicalNames.Add(logicalName);
+                }
             }
 
             // Add specified entities
@@ -52,7 +55,7 @@ namespace DG.Tools.XrmMockup.Metadata
             }
         }
 
-        public MetadataSkeleton GetMetadata(string path)
+        public MetadataSkeleton GetMetadata()
         {
             var skeleton = new MetadataSkeleton();
 

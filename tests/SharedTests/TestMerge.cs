@@ -18,13 +18,13 @@ namespace DG.XrmMockupTest
                 var _account1Id = orgAdminUIService.Create(
                     new Account
                     {
-                        Name = "Fourth Coffee",
+                        Name = "Fourth Coffee 1",
                         Description = "Coffee House"
                     });
                 var _account2Id = orgAdminUIService.Create(
                     new Account
                     {
-                        Name = "Fourth Coffee",
+                        Name = "Fourth Coffee 2",
                         NumberOfEmployees = 55,
                     });
 
@@ -64,7 +64,7 @@ namespace DG.XrmMockupTest
                     (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName,
                     _account1Id, new ColumnSet(true));
 
-                Assert.Equal("Fourth Coffee", mergedAccount.Name);
+                Assert.Equal("Fourth Coffee 1", mergedAccount.Name);
                 Assert.Equal("Coffee House", mergedAccount.Description);
                 Assert.Equal(updateContent.NumberOfEmployees, mergedAccount.NumberOfEmployees);
                 Assert.Equal(updateContent.Address1_Line1, mergedAccount.Address1_Line1);

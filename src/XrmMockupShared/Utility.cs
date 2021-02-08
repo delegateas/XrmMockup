@@ -567,7 +567,7 @@ namespace DG.Tools.XrmMockup
                     criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
-        private static bool EvaluateCondition(Entity row, ConditionExpression condition)
+        internal static bool EvaluateCondition(Entity row, ConditionExpression condition)
         {
             object attr = null;
             switch (condition)

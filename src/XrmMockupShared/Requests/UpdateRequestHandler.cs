@@ -11,9 +11,80 @@ namespace DG.Tools.XrmMockup
 {
     internal class UpdateRequestHandler : RequestHandler
     {
-        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core,
-            db, metadata, security, "Update")
+        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) 
+                                     : base(core,db, metadata, security, "Update")
         {
+        }
+
+        internal override void CheckUniqueness(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            var request = MakeRequest<UpdateRequest>(orgRequest);
+            var settings = MockupExecutionContext.GetSettings(request);
+            var entity = request.Target;
+            if (entity.LogicalName == null) throw new MockupException("Entity needs a logical name");
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(entity.LogicalName);
+            if (!entityMetadata.Keys.Any())
+            {
+                return;
+            }
+
+            var currentRows = db.GetDBEntityRows(entity.LogicalName);
+            if (!currentRows.Any())
+            {
+                return;
+            }
+            
+            var criteria = new FilterExpression();
+            foreach (var key in entityMetadata.Keys)
+            {
+                bool anyPopulated = false;
+                foreach (var keyAttr in key.KeyAttributes)
+                {
+                    anyPopulated = anyPopulated | entity.Contains(keyAttr);
+                }
+                if (!anyPopulated)
+                {
+                    continue;
+                }
+
+                foreach (var row in currentRows)
+                {
+                    if (row.ToEntity().Id == entity.Id)
+                    {
+                        //don't check the row being updated against itself
+                        continue;
+                    }
+                    foreach (var keyAttr in key.KeyAttributes)
+                    {
+                        ConditionExpression condition = null;
+                        if (entity.Contains(keyAttr))
+                        {
+                            condition = new ConditionExpression(keyAttr, ConditionOperator.Equal, entity[keyAttr]);
+                        }
+                        else
+                        {
+                            //get use the current value of the row
+                            condition = new ConditionExpression(keyAttr, ConditionOperator.Equal, row.ToEntity()[keyAttr]);
+                        }
+                        criteria.Conditions.Add(condition);
+                    }
+
+                    if (criteria.Conditions.All(c => Utility.EvaluateCondition(row.ToEntity(), c)))
+                    {
+                        string fieldNames = string.Empty;
+                        foreach (var keyAttr in key.KeyAttributes)
+                        {
+                            fieldNames += entityMetadata.Attributes.Single(x => x.LogicalName == keyAttr).DisplayName.UserLocalizedLabel.Label + ", ";
+                        }
+                        fieldNames = fieldNames.Trim().Trim(new char[] { ',' });
+                        
+                        throw new FaultException($"A record that has the attribute values {fieldNames} already exists. The entity key {key.DisplayName.UserLocalizedLabel.Label} requires that this set of attributes contains unique values. Select unique values and try again.");
+                    }
+                }
+            }
+#endif
         }
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)

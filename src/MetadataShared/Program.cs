@@ -52,10 +52,16 @@ namespace DG.Tools.XrmMockup.Metadata {
             );
 
             Console.WriteLine("Generation of metadata files started");
-            var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies));
+            bool includeSystemEntities = true;
+            if (ParsedArgs[Arguments.IncludeSystemEntities] != null)
+            {
+                includeSystemEntities = Convert.ToBoolean(ParsedArgs[Arguments.IncludeSystemEntities]);
+            }
+            var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies),includeSystemEntities);
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
+            var outputFileName = ParsedArgs[Arguments.OutputFileName] ?? "Metadata.xml";
 
-            var skeleton = generator.GetMetadata(AssemblyGetter.GetProjectPath());
+            var skeleton = generator.GetMetadata();
 
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
             var workflowSerializer = new DataContractSerializer(typeof(Entity));
@@ -79,7 +85,7 @@ namespace DG.Tools.XrmMockup.Metadata {
             Console.WriteLine("Writing files");
 
             Directory.CreateDirectory(outputLocation);
-            using (var stream = new FileStream(outputLocation + "/Metadata.xml", FileMode.Create)) {
+            using (var stream = new FileStream(outputLocation + "/" + outputFileName, FileMode.Create)) {
                 serializer.WriteObject(stream, skeleton);
             }
 
