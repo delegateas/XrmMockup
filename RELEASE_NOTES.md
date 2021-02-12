@@ -1,3 +1,6 @@
+### 1.7.5 - 12 February 2021
+* Added BeginsWith, EndsWith and not versions (@MattTrinder1)
+
 ### 1.7.4 - 12 February 2021
 * Entity attributes are now cloned (@MattTrinder1)
 
