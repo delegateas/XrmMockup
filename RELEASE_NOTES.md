@@ -1,3 +1,6 @@
+### 1.7.4 - 12 February 2021
+* Entity attributes are now cloned (@MattTrinder1)
+
 ### 1.7.3 - 12 February 2021
 * Added support for closeincident plugins
 * Reverted breaking change to DAXIF registration plugins
