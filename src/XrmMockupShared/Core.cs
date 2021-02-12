@@ -955,6 +955,10 @@ namespace DG.Tools.XrmMockup
                     : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
             }
+            else if (request is CloseIncidentRequest closeIncidentRequest)
+            {
+                obj = closeIncidentRequest.IncidentResolution?.GetAttributeValue<EntityReference>("incidentid");
+            }
             else if (request is RetrieveMultipleRequest)
             {
                 var retrieve = request as RetrieveMultipleRequest;
