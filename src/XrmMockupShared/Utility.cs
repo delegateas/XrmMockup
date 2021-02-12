@@ -123,7 +123,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new MockupException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = attr.Value;
+                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             else
@@ -134,7 +134,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    entity.Attributes[attr.Key] = attr.Value;
+                    entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             return entity;
@@ -1125,6 +1125,28 @@ namespace DG.Tools.XrmMockup
             defaultTeam["businessunitid"] = rootBusinessUnit.ToEntityReference();
 
             return defaultTeam;
+        }
+
+        private static object CloneAttribute(KeyValuePair<string, object> attribute)
+        {
+            if (attribute.Value == null) return null;
+
+            switch (attribute.Value.GetType().Name)
+            {
+                case "Money":
+                    var m = attribute.Value as Money;
+                    return new Money(m.Value);
+                case "EntityReference":
+                    var er = attribute.Value as EntityReference;
+                    var newEr = new EntityReference(er.LogicalName, er.Id);
+                    newEr.Name = er.Name;
+                    return newEr;
+                case "OptionSetValue":
+                    var os = attribute.Value as OptionSetValue;
+                    return new OptionSetValue(os.Value);
+                default:
+                    return attribute.Value;
+            }
         }
     }
 
