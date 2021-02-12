@@ -19,15 +19,27 @@ namespace DG.Tools.XrmMockup {
         {
             foreach (var kvp in metadata.EntityMetadata)
             {
-                if (!this.EntityMetadata.ContainsKey(kvp.Key))
-                {
-                    this.EntityMetadata.Add(kvp.Key, kvp.Value);
+                if (this.EntityMetadata.ContainsKey(kvp.Key)) continue;
+                
+                this.EntityMetadata.Add(kvp.Key, kvp.Value);
+
+                //also need to merge the default state and status for this entity
+                if (metadata.DefaultStateStatus.ContainsKey(kvp.Key)) { 
+                    var defaultSS = metadata.DefaultStateStatus[kvp.Key];
+                    var dict = new Dictionary<int, int>();
+                    foreach (var kvp2 in defaultSS)
+                    {
+                        dict.Add(kvp2.Key, kvp2.Value);
+                    }
+
+                    this.DefaultStateStatus.Add(kvp.Key, dict);
                 }
             }
         }
     }
 
-    public class MetaPlugin {
+    public class MetaPlugin
+    {
         public string FilteredAttributes;
         public int Mode;
         public string Name;
@@ -35,8 +47,10 @@ namespace DG.Tools.XrmMockup {
         public int Stage;
         public string MessageName;
         public string AssemblyName;
+        public string PluginTypeAssemblyName;
         public string PrimaryEntity;
         public List<MetaImage> Images;
+        public Guid? ImpersonatingUserId;
     }
 
     public class MetaImage

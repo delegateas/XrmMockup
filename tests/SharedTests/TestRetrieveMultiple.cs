@@ -908,5 +908,18 @@ namespace DG.XrmMockupTest
             res = orgAdminService.RetrieveMultiple(query);
             Assert.Equal(3, res.Entities.Count);
         }
+        [Fact]
+        public void TestCaseSensitivity()
+        {
+            var c = new Contact();
+            c.FirstName = "MATT";
+            orgAdminService.Create(c);
+            var q = new QueryExpression("contact");
+            q.Criteria.AddCondition("firstname", ConditionOperator.Equal, "matt");
+            q.ColumnSet = new ColumnSet(true);
+            var res = orgAdminService.RetrieveMultiple(q);
+
+            Assert.Equal("MATT", res.Entities.Single().GetAttributeValue<string>("firstname"));
+        }
     }
 }

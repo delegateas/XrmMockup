@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
@@ -14,7 +11,60 @@ namespace DG.Tools.XrmMockup
 {
     internal class UpdateRequestHandler : RequestHandler
     {
-        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
+        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core,
+            db, metadata, security, "Update")
+        {
+        }
+
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<UpdateRequest>(orgRequest);
+            var settings = MockupExecutionContext.GetSettings(request);
+
+            var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
+            var entity = request.Target;
+            var row = db.GetDbRow(entRef);
+            var xrmEntity = row.ToEntity();
+
+            if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
+            {
+                throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
+                                         $", but calling user with id '{userRef.Id}' does not have write access for that entity");
+            }
+
+            if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
+            {
+                var references = entity.Attributes
+                    .Where(x => x.Value is EntityReference && x.Key != "ownerid")
+                    .ToArray();
+
+                if (references.Any())
+                {
+                    if (!security.HasPermission(xrmEntity, AccessRights.AppendAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' with references" +
+                                                 $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
+                    }
+                }
+
+                foreach (var attr in references)
+                {
+                    var reference = attr.Value as EntityReference;
+                    if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                        !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}' (SecLib::AccessCheckEx2 failed)");
+                    }
+
+                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}' (SecLib::AccessCheckEx2 failed)");
+                    }
+                }
+            }
+        }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -52,43 +102,6 @@ namespace DG.Tools.XrmMockup
             //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
             var xrmEntity = row.ToEntity();
 
-            if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
-            {
-                throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
-                     $", but calling user with id '{userRef.Id}' does not have write access for that entity");
-            }
-
-            if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
-            {
-                var references = entity.Attributes
-                    .Where(x => x.Value is EntityReference && x.Key != "ownerid")
-                    .ToArray();
-
-                if (references.Any())
-                {
-                    if (!security.HasPermission(xrmEntity, AccessRights.AppendAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}' with references" +
-                            $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
-                    }
-                }
-
-                foreach (var attr in references)
-                {
-                    var reference = attr.Value as EntityReference;
-                    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                    }
-                    if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
-                    {
-                        throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}'" +
-                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                    }
-                }
-            }
-
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null)
@@ -109,12 +122,14 @@ namespace DG.Tools.XrmMockup
                     .Cast<StatusOptionMetadata>()
                     .FirstOrDefault(o => o.Value == updEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
 
-                if ((!updEntity.Contains("statecode") || updEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
+                if ((!updEntity.Contains("statecode") ||
+                     updEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
                     && statusmeta != null)
                 {
                     updEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
                 }
-                else if (!updEntity.Contains("statuscode") || updEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
+                else if (!updEntity.Contains("statuscode") ||
+                         updEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
                 {
                     var state = updEntity.GetAttributeValue<OptionSetValue>("statecode").Value;
                     updEntity["statuscode"] = new OptionSetValue(defaultStateStatus[state]);
@@ -129,16 +144,18 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, updEntity))
             {
-                throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
+                throw new FaultException(
+                    $"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
             }
 
-            if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead || updEntity.LogicalName == LogicalNames.SystemUser)
+            if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead ||
+                updEntity.LogicalName == LogicalNames.SystemUser)
             {
                 Utility.SetFullName(metadata, updEntity);
             }
 
             updEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
                 .ToList()
                 .ForEach(x => updEntity[x.Key] = null);
 
@@ -147,7 +164,8 @@ namespace DG.Tools.XrmMockup
             var transactioncurrencyId = "transactioncurrencyid";
             if (updEntity.LogicalName != LogicalNames.TransactionCurrency &&
                 (updEntity.Attributes.ContainsKey(transactioncurrencyId) ||
-                updEntity.Attributes.Any(a => row.Metadata.Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
+                 updEntity.Attributes.Any(a =>
+                     row.Metadata.Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
             {
                 if (!xrmEntity.Attributes.ContainsKey(transactioncurrencyId))
                 {
@@ -161,6 +179,7 @@ namespace DG.Tools.XrmMockup
                         xrmEntity[transactioncurrencyId] = core.baseCurrency;
                     }
                 }
+
                 var currencyId = xrmEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db.GetEntity(LogicalNames.TransactionCurrency, currencyId.Id);
                 xrmEntity["exchangerate"] = currency.GetAttributeValue<decimal?>("exchangerate");
@@ -181,7 +200,7 @@ namespace DG.Tools.XrmMockup
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
-            
+
             if (Utility.Activities.Contains(xrmEntity.LogicalName))
             {
                 xrmEntity["activitytypecode"] = Utility.ActivityTypeCode[xrmEntity.LogicalName];

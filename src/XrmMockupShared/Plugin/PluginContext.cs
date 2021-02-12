@@ -17,6 +17,8 @@ namespace DG.Tools.XrmMockup {
         private EntityImageCollection _preEntityImages = new EntityImageCollection();
         private EntityImageCollection _postEntityImages = new EntityImageCollection();
 
+        public int? ExtensionDepth;
+
         public PluginContext() {
             this.CorrelationId = Guid.NewGuid();
         }
