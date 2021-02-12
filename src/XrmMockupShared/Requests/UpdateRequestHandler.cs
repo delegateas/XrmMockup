@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
@@ -14,9 +11,12 @@ namespace DG.Tools.XrmMockup
 {
     internal class UpdateRequestHandler : RequestHandler
     {
-        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Update") { }
+        internal UpdateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core,
+            db, metadata, security, "Update")
+        {
+        }
 
-        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
@@ -24,38 +24,12 @@ namespace DG.Tools.XrmMockup
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
             var entity = request.Target;
             var row = db.GetDbRow(entRef);
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName != LogicalNames.Opportunity &&
-                row.Table.TableName != LogicalNames.SystemUser &&
-                row.GetColumn<int?>("statecode") == 1)
-            {
-                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
-            }
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.Opportunity &&
-                row.GetColumn<int?>("statecode") == 1)
-            {
-                throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
-            }
-
-
-            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
-                row.Table.TableName == LogicalNames.SystemUser &&
-                row.GetColumn<bool?>("isdisabled") == true)
-            {
-                throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
-            }
-
-            // modify for all activites
-            //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
             var xrmEntity = row.ToEntity();
 
             if (!security.HasPermission(xrmEntity, AccessRights.WriteAccess, userRef))
             {
                 throw new FaultException($"Trying to update entity '{row.Table.TableName}'" +
-                     $", but calling user with id '{userRef.Id}' does not have write access for that entity");
+                                         $", but calling user with id '{userRef.Id}' does not have write access for that entity");
             }
 
             if (core.GetMockupSettings().AppendAndAppendToPrivilegeCheck.GetValueOrDefault(true))
@@ -95,6 +69,43 @@ namespace DG.Tools.XrmMockup
                     }
                 }
             }
+        }
+
+        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<UpdateRequest>(orgRequest);
+            var settings = MockupExecutionContext.GetSettings(request);
+
+            var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
+            var entity = request.Target;
+            var row = db.GetDbRow(entRef);
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName != LogicalNames.Opportunity &&
+                row.Table.TableName != LogicalNames.SystemUser &&
+                row.GetColumn<int?>("statecode") == 1)
+            {
+                throw new MockupException($"Trying to update inactive '{row.Table.TableName}', which is impossible in UI");
+            }
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName == LogicalNames.Opportunity &&
+                row.GetColumn<int?>("statecode") == 1)
+            {
+                throw new MockupException($"Trying to update closed opportunity '{row.Id}', which is impossible in UI");
+            }
+
+
+            if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
+                row.Table.TableName == LogicalNames.SystemUser &&
+                row.GetColumn<bool?>("isdisabled") == true)
+            {
+                throw new MockupException($"Trying to update inactive systemuser '{row.Id}', which is impossible in UI");
+            }
+
+            // modify for all activites
+            //if (entity.LogicalName == "activity" && dbEntity.GetAttributeValue<OptionSetValue>("statecode")?.Value == 1) return;
+            var xrmEntity = row.ToEntity();
 
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
@@ -121,12 +132,14 @@ namespace DG.Tools.XrmMockup
                     .Cast<StatusOptionMetadata>()
                     .FirstOrDefault(o => o.Value == updEntity.GetAttributeValue<OptionSetValue>("statuscode")?.Value);
 
-                if ((!updEntity.Contains("statecode") || updEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
+                if ((!updEntity.Contains("statecode") ||
+                     updEntity.GetAttributeValue<OptionSetValue>("statecode") == null)
                     && statusmeta != null)
                 {
                     updEntity["statecode"] = new OptionSetValue(statusmeta.State.Value);
                 }
-                else if (!updEntity.Contains("statuscode") || updEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
+                else if (!updEntity.Contains("statuscode") ||
+                         updEntity.GetAttributeValue<OptionSetValue>("statuscode") == null)
                 {
                     var state = updEntity.GetAttributeValue<OptionSetValue>("statecode").Value;
                     updEntity["statuscode"] = new OptionSetValue(defaultStateStatus[state]);
@@ -141,16 +154,18 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, updEntity))
             {
-                throw new FaultException($"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
+                throw new FaultException(
+                    $"Trying to create entity '{xrmEntity.LogicalName}', but the attributes had a circular reference");
             }
 
-            if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead || updEntity.LogicalName == LogicalNames.SystemUser)
+            if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead ||
+                updEntity.LogicalName == LogicalNames.SystemUser)
             {
                 Utility.SetFullName(metadata, updEntity);
             }
 
             updEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
                 .ToList()
                 .ForEach(x => updEntity[x.Key] = null);
 
@@ -159,7 +174,8 @@ namespace DG.Tools.XrmMockup
             var transactioncurrencyId = "transactioncurrencyid";
             if (updEntity.LogicalName != LogicalNames.TransactionCurrency &&
                 (updEntity.Attributes.ContainsKey(transactioncurrencyId) ||
-                updEntity.Attributes.Any(a => row.Metadata.Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
+                 updEntity.Attributes.Any(a =>
+                     row.Metadata.Attributes.Any(m => m.LogicalName == a.Key && m is MoneyAttributeMetadata))))
             {
                 if (!xrmEntity.Attributes.ContainsKey(transactioncurrencyId))
                 {
@@ -173,6 +189,7 @@ namespace DG.Tools.XrmMockup
                         xrmEntity[transactioncurrencyId] = core.baseCurrency;
                     }
                 }
+
                 var currencyId = xrmEntity.GetAttributeValue<EntityReference>(transactioncurrencyId);
                 var currency = db.GetEntity(LogicalNames.TransactionCurrency, currencyId.Id);
                 xrmEntity["exchangerate"] = currency.GetAttributeValue<decimal?>("exchangerate");
@@ -193,7 +210,7 @@ namespace DG.Tools.XrmMockup
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
 #endif
             }
-            
+
             if (Utility.Activities.Contains(xrmEntity.LogicalName))
             {
                 xrmEntity["activitytypecode"] = Utility.ActivityTypeCode[xrmEntity.LogicalName];

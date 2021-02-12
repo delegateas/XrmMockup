@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
@@ -14,16 +10,27 @@ namespace DG.Tools.XrmMockup {
     internal class DeleteRequestHandler : RequestHandler {
         internal DeleteRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Delete") {}
 
+        internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
+        {
+            var request = MakeRequest<DeleteRequest>(orgRequest);
+            var casSelection = new CascadeSelection() { delete = true };
+            var entity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef, casSelection);
+            if (entity == null)
+            {
+                throw new FaultException($"{request.Target.LogicalName} with Id '{request.Target.Id}' does not exist");
+            }
+            if (!security.HasPermission(entity, AccessRights.DeleteAccess, userRef))
+            {
+                throw new FaultException($"You do not have permission to access entity '{request.Target.LogicalName}' for delete");
+            }
+        }
+
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<DeleteRequest>(orgRequest);
             var casSelection = new CascadeSelection() { delete = true };
             var entity = core.GetDbEntityWithRelatedEntities(request.Target, EntityRole.Referenced, userRef, casSelection);
             if (entity == null) {
                 throw new FaultException($"{request.Target.LogicalName} with Id '{request.Target.Id}' does not exist");
-            }
-
-            if (!security.HasPermission(entity, AccessRights.DeleteAccess, userRef)) {
-                throw new FaultException($"You do not have permission to access entity '{request.Target.LogicalName}' for delete");
             }
 
             if (entity != null) {
@@ -60,6 +67,7 @@ namespace DG.Tools.XrmMockup {
 
                 db.Delete(entity);
             }
+
             return new DeleteResponse();
         }
     }

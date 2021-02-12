@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestValidateUnchangedLookups.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestSecurity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeams.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestTime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestXrmExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollectionNoProxyTypes.cs" />

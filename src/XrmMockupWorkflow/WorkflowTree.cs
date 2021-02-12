@@ -1301,9 +1301,30 @@ namespace WorkflowExecuter
             if (Value.Contains(".Id"))
             {
                 var toEntity = variables[To.Replace(".Id", "")] as Entity;
-                var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
-                toEntity.Id = valueEntity.Id;
-                return;
+                if (Value.Contains("related_"))
+                {
+                    var regex = new Regex(@"_.+#");
+                    var relatedAttr = regex.Match(Value).Value.TrimEdge();
+                    var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
+                    if (!primaryEntity.Attributes.ContainsKey(relatedAttr))
+                    {
+                        // variables[VariableName] = null;
+                        return;
+                    }
+                    var entRef = primaryEntity.Attributes[relatedAttr] as EntityReference;
+                    if (entRef == null)
+                    {
+                        //  variables[VariableName] = null;
+                        return;
+                    }
+                    var entity = orgService.Retrieve(entRef.LogicalName, entRef.Id, new ColumnSet(true));
+                    toEntity.Id = entity.Id;
+                }
+                else
+                {
+                    var valueEntity = variables[Value.Replace(".Id", "")] as Entity;
+                    toEntity.Id = valueEntity.Id;
+                }
             }
 
             if (Value.Contains("CreatedEntities(") && Value.Contains("#Temp") && variables.ContainsKey(To))
