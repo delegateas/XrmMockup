@@ -712,10 +712,42 @@ namespace DG.Tools.XrmMockup
                     }
                     var x = int.Parse((string)values.First());
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
+                
                 case ConditionOperator.In:
                     return values.Contains(attr);
+                
                 case ConditionOperator.NotIn:
                     return !values.Contains(attr);
+                
+                case ConditionOperator.BeginsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).StartsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotBeginWith:
+                    return !Matches(attr, ConditionOperator.BeginsWith, values);
+                
+                case ConditionOperator.EndsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).EndsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotEndWith:
+                    return !Matches(attr, ConditionOperator.EndsWith, values);
                 default:
                     throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
             }
