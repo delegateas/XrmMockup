@@ -1,3 +1,7 @@
+### 1.7.3 - 12 February 2021
+* Added support for closeincident plugins
+* Reverted breaking change to DAXIF registration plugins
+
 ### 1.7.2 - 05 February 2021
 * String comparison in queries is now case insensitive (@MattTrinder1)
 
