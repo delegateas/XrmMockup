@@ -617,7 +617,7 @@ namespace DG.Tools.XrmMockup
                 return money.Value;
 
             else if (obj is AliasedValue aliasedValue)
-                return aliasedValue.Value;
+                return ConvertToComparableObject(aliasedValue.Value);
 
             else if (obj is OptionSetValue optionSetValue)
                 return optionSetValue.Value;
@@ -662,10 +662,19 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    if (attr == null) return false;
+                    
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    }
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    return !Matches(attr,ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -869,11 +878,27 @@ namespace DG.Tools.XrmMockup
                 throw new ArgumentException($"Could not find metadata file at '{pathToMetadata}'." +
                     " Be sure to run Metadata/GetMetadata.cmd to generate it after setting it up in Metadata/Config.fsx.");
             }
+
+            //check for any additional metadata files
+            var metaDataFiles = Directory.GetFiles(folderLocation, "*Metadata.xml");
+
+            var master = new MetadataSkeleton();
             var serializer = new DataContractSerializer(typeof(MetadataSkeleton));
             using (var stream = new FileStream(pathToMetadata, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                return (MetadataSkeleton)serializer.ReadObject(stream);
+                master = (MetadataSkeleton)serializer.ReadObject(stream);
             }
+
+            foreach (var file in metaDataFiles.Where(x => Path.GetFileName(x) != Path.GetFileName(pathToMetadata)))
+            {
+                serializer = new DataContractSerializer(typeof(MetadataSkeleton));
+                using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    master.Merge((MetadataSkeleton)serializer.ReadObject(stream));
+                }
+            }
+
+            return master;
         }
 
         internal static List<Entity> GetWorkflows(string folderLocation)
