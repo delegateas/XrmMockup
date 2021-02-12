@@ -581,6 +581,10 @@ namespace DG.Tools.XrmMockup
                     {
                         attr = row[key];
                     }
+                    else if (row != null && row.Contains(condition.AttributeName))
+                    {
+                        attr = row[condition.AttributeName];
+                    }
                     break;
 #endif
                 default:
