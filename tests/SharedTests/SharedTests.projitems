@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesWrite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestValidateUnchangedLookups.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSecurity.cs" />
