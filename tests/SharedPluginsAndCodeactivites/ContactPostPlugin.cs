@@ -21,12 +21,12 @@
 
             var service = localContext.OrganizationService;
 
-            var con = localContext.PluginExecutionContext.InputParameters["Target"] as Entity;
+            var con = (localContext.PluginExecutionContext.InputParameters["Target"] as Entity).ToEntity<Contact>();
 
-            if (con.GetAttributeValue<string>("firstname") == "CheckSystemAttributes")
+            if (con.FirstName == "CheckSystemAttributes")
             {
-                con["lastname"] = con.GetAttributeValue<DateTime>("createdon").ToString();
-                con["firstname"] = "updated";
+                con.LastName = con.CreatedOn?.ToString();
+                con.FirstName = "updated";
                 service.Update(con);
             }
         }

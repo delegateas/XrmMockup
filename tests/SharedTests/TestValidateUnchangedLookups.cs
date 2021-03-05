@@ -15,17 +15,17 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestAppendTo()
         {
-            var accountId = orgAdminService.Create(new Account() { Name = "testaccount" });
-            var con = new Entity("contact");
-            con["firstname"] = "assign";
-            con["parentcustomerid"] = new EntityReference("account", accountId);
-            var contactId = orgAdminService.Create(con);
+            var acc = new Account() { Name = "testaccount" };
+            acc.Id = orgAdminService.Create(acc);
+            var con = new Contact()
+            {
+                FirstName = "assign",
+                ParentCustomerId = acc.ToEntityReference()
+            };
+            con.Id = orgAdminService.Create(con);
 
-            //now try and update the same fields again as min priv account
-
-            var minUser = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "minuser@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, crm.RootBusinessUnit.Id) }) as SystemUser;
-
-            // Add account append privilege with basic level
+            // Create user with write and append, but not append to
+            var minUser = crm.CreateUser(orgAdminService, crm.RootBusinessUnit);
             crm.AddPrivileges(
                 minUser.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
@@ -36,32 +36,30 @@ namespace DG.XrmMockupTest
                         }
                     }
                 });
-
             var userService = crm.CreateOrganizationService(minUser.Id);
 
-            con = new Entity("contact") { Id = contactId };
-            con["firstname"] = "assign";
-            con["parentcustomerid"] = new EntityReference("account", accountId);
-
-            userService.Update(con);
+            userService.Update(new Contact(con.Id)
+            {
+                FirstName = con.FirstName,
+                ParentCustomerId = con.ParentCustomerId
+            });
         }
 
         [Fact]
         public void TestAssign()
         {
-            var accountId = orgAdminService.Create(new Account() { Name = "testaccount" });
-            var con = new Entity("contact");
-            con["firstname"] = "assign";
-            con["parentcustomerid"] = new EntityReference("account", accountId);
-            var contactId = orgAdminService.Create(con);
+            var acc = new Account() { Name = "testaccount" };
+            acc.Id = orgAdminService.Create(acc);
+            var con = new Contact()
+            {
+                FirstName = "assign"
+            };
+            con.Id = orgAdminService.Create(con);
 
-            var contact = orgAdminService.Retrieve("contact", contactId, new ColumnSet(true)) as Contact;
+            var contact = orgAdminService.Retrieve(con.LogicalName, con.Id, new ColumnSet(true)).ToEntity<Contact>();
 
-            //now try and update the same fields again as min priv account
-
-            var minUser = crm.CreateUser(orgAdminService, new SystemUser() { DomainName = "minuser@privileges", BusinessUnitId = new EntityReference(BusinessUnit.EntityLogicalName, crm.RootBusinessUnit.Id) }) as SystemUser;
-
-            // Add account append privilege with basic level
+            // Create user with write and append, but not assign
+            var minUser = crm.CreateUser(orgAdminService, crm.RootBusinessUnit);
             crm.AddPrivileges(
                 minUser.ToEntityReference(),
                 new Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>>() {
@@ -72,15 +70,13 @@ namespace DG.XrmMockupTest
                         }
                     }
                 });
-
             var userService = crm.CreateOrganizationService(minUser.Id);
 
-            con = new Entity("contact") { Id = contactId };
-            con["firstname"] = "assign";
-            con["parentcustomerid"] = new EntityReference("account", accountId);
-            con["ownerid"] = new EntityReference("systemuser", contact.OwnerId.Id);
-
-            userService.Update(con);
+            userService.Update(new Contact(con.Id)
+            {
+                FirstName = contact.FirstName,
+                OwnerId = contact.OwnerId
+            });
         }
     }
 }

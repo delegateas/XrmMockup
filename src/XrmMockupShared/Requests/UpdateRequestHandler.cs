@@ -46,26 +46,22 @@ namespace DG.Tools.XrmMockup
                             $", but the calling user with id '{userRef.Id}' does not have Append access for that entity");
                     }
                 }
-                
+
                 foreach (var attr in references)
                 {
-                    if ((!xrmEntity.Contains(attr.Key))
-                       ||
-                       (xrmEntity.Contains(attr.Key) && xrmEntity[attr.Key] == null)
-                      ||
-                      (xrmEntity[attr.Key] as EntityReference).Id != (attr.Value as EntityReference).Id)
+                    var existingRef = xrmEntity.GetAttributeValue<EntityReference>(attr.Key);
+                    var newRef = attr.Value as EntityReference;
+                    if (existingRef?.Id == newRef.Id) continue;
+
+                    if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(newRef, AccessRights.ReadAccess, userRef))
                     {
-                        var reference = attr.Value as EntityReference;
-                        if (settings.ServiceRole == MockupServiceSettings.Role.UI && !security.HasPermission(reference, AccessRights.ReadAccess, userRef))
-                        {
-                            throw new FaultException($"Trying to update entity '{xrmEntity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                        }
-                        if (!security.HasPermission(reference, AccessRights.AppendToAccess, userRef))
-                        {
-                            throw new FaultException($"Trying to update entity '{xrmEntity.LogicalName}'" +
-                                $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{reference.LogicalName}' on attribute '{attr.Key}'");
-                        }
+                        throw new FaultException($"Trying to update entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have read access for referenced entity '{newRef.LogicalName}' on attribute '{attr.Key}'");
+                    }
+                    if (!security.HasPermission(newRef, AccessRights.AppendToAccess, userRef))
+                    {
+                        throw new FaultException($"Trying to update entity '{xrmEntity.LogicalName}'" +
+                            $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{newRef.LogicalName}' on attribute '{attr.Key}'");
                     }
                 }
             }
@@ -110,9 +106,9 @@ namespace DG.Tools.XrmMockup
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null)
-            { 
-                if (xrmEntity.Contains("ownerid") && request.Target.Contains("ownerid") 
-                    &&  xrmEntity.GetAttributeValue<EntityReference>("ownerid").Id 
+            {
+                if (xrmEntity.Contains("ownerid") && request.Target.Contains("ownerid")
+                    && xrmEntity.GetAttributeValue<EntityReference>("ownerid").Id
                     != request.Target.GetAttributeValue<EntityReference>("ownerid").Id)
                 {
                     security.CheckAssignPermission(xrmEntity, ownerRef, userRef);
@@ -165,7 +161,7 @@ namespace DG.Tools.XrmMockup
             }
 
             updEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
                 .ToList()
                 .ForEach(x => updEntity[x.Key] = null);
 
