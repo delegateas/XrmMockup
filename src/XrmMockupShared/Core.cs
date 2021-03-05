@@ -295,7 +295,9 @@ namespace DG.Tools.XrmMockup
             {
                 toReturn = entity.CloneEntity(metadata, colsToKeep);
             }
-
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+            toReturn.KeyAttributes = entity.CloneKeyAttributes();
+#endif
             Utility.PopulateEntityReferenceNames(toReturn, db);
             return toReturn;
         }
@@ -937,7 +939,7 @@ namespace DG.Tools.XrmMockup
             return resp;
         }
 
-        #region EntityImage helpers
+#region EntityImage helpers
 
         private Tuple<object, string, Guid> GetEntityInfo(OrganizationRequest request)
         {
@@ -1011,9 +1013,7 @@ namespace DG.Tools.XrmMockup
         {
             return Utility.GetBusinessUnit(db, owner);
         }
-
-        #endregion
-
+#endregion
 
         internal void DisabelRegisteredPlugins(bool include)
         {
@@ -1083,7 +1083,12 @@ namespace DG.Tools.XrmMockup
             security.ResetEnvironment(db);
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        internal EntityMetadata GetEntityMetadata(string entityLogicalName)
+        {
+            return metadata.EntityMetadata[entityLogicalName];
+        }
+
+      #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal void ExecuteCalculatedFields(DbRow row)
         {
             var attributes = row.Metadata.Attributes.Where(

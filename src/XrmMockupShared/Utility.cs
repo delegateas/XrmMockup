@@ -66,6 +66,18 @@ namespace DG.Tools.XrmMockup
             return CloneEntity(entity, null, null);
         }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
+        {
+            var kac = new KeyAttributeCollection();
+            foreach (var keyAttr in entity.KeyAttributes)
+            {
+                kac.Add(new KeyValuePair<string, object>(keyAttr.Key, CloneAttribute(keyAttr)));
+            }
+            return kac;
+        }
+#endif
+
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols)
         {
             var clone = new Entity(entity.LogicalName)
@@ -73,14 +85,14 @@ namespace DG.Tools.XrmMockup
                 Id = entity.Id
             };
 
-            if (metadata?.PrimaryIdAttribute != null)
+            if (metadata?.PrimaryIdAttribute != null && entity.Id != Guid.Empty)
             {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            clone.KeyAttributes = entity.KeyAttributes;
+            clone.KeyAttributes = entity.CloneKeyAttributes();
 #endif
 
             return clone.SetAttributes(entity.Attributes, metadata, cols);

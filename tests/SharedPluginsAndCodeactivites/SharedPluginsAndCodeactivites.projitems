@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BusTicketSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FaxPreOperationPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UpdateIdInCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContactPostPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPostOp.cs" />
