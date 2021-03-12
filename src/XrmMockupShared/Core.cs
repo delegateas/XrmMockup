@@ -1119,6 +1119,11 @@ namespace DG.Tools.XrmMockup
         }
 #endif
 
+        internal void ResetTable(string tableName)
+        {
+            db.ResetTable(tableName);
+        }
+
 #if XRM_MOCKUP_365
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
             Entity preEntity, EntityReference userRef)

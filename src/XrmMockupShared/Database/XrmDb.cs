@@ -260,5 +260,10 @@ namespace DG.Tools.XrmMockup.Database {
 
             return clonedDB;
         }
+
+        internal void ResetTable(string tableName)
+        {
+            TableDict[tableName] = new DbTable(this.EntityMetadata[tableName]);
+        }
     }
 }
