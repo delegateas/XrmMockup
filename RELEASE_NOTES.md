@@ -1,3 +1,6 @@
+### 1.7.8 - 12 March 2021
+* isDocument on annotation is now automatically populated (@MattTrinder1)
+
 ### 1.7.7 - 05 March 2021
 * Security checks are now skipped for lookups if the value is unchanged (@MattTrinder1)
 
