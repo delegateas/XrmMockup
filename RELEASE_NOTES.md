@@ -1,3 +1,7 @@
+### 1.7.9 - 12 March 2021
+* Fixed updated to parent records in workflow (@MattTrinder1)
+* Improved handling of type casting in workflows (@MattTrinder1)
+
 ### 1.7.8 - 12 March 2021
 * isDocument on annotation is now automatically populated (@MattTrinder1)
 
