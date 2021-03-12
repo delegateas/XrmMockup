@@ -46,6 +46,11 @@ namespace DG.XrmMockupTest
             account3.Address1_City = "Lyngby";
             account4.Address1_City = "Lyngby";
 
+            account1.Address1_PostalCode = "MK111DW";
+            account2.Address1_PostalCode = "OX449NG";
+            account3.Address1_PostalCode = "S103AY";
+            account4.Address1_PostalCode = "SY71SW";
+
             account1.DoNotEMail = true;
 
             account1.Id = orgAdminUIService.Create(account1);
@@ -189,7 +194,7 @@ namespace DG.XrmMockupTest
                 Assert.Equal(8, result.Count());
 
                 var ordered = result.OrderByDescending(x => x.Name).ThenBy(x => x.AccountId);
-                Assert.Equal(ordered.ToList(), result.ToList());
+                Assert.Equal(ordered.Select(x => new { x.Name, x.AccountId }).ToList(), result.Select(x => new { x.Name, x.AccountId }).ToList());
             }
         }
 
@@ -868,5 +873,53 @@ namespace DG.XrmMockupTest
             }
         }
 
+        [Fact]
+        public void RetrieveMultipleBeginsWith()
+        {
+            var query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.BeginsWith, "MK11");
+            var res = orgAdminService.RetrieveMultiple(query);
+            Assert.Single(res.Entities);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.DoesNotBeginWith, "MK11");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Equal(3, res.Entities.Count);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.EndsWith, "1DW");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Single(res.Entities);
+
+            query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet(true)
+            };
+            query.Criteria.AddCondition("address1_postalcode", ConditionOperator.DoesNotEndWith, "1DW");
+            res = orgAdminService.RetrieveMultiple(query);
+            Assert.Equal(3, res.Entities.Count);
+        }
+        [Fact]
+        public void TestCaseSensitivity()
+        {
+            var c = new Contact();
+            c.FirstName = "MATT";
+            orgAdminService.Create(c);
+            var q = new QueryExpression("contact");
+            q.Criteria.AddCondition("firstname", ConditionOperator.Equal, "matt");
+            q.ColumnSet = new ColumnSet(true);
+            var res = orgAdminService.RetrieveMultiple(q);
+
+            Assert.Equal("MATT", res.Entities.Single().GetAttributeValue<string>("firstname"));
+        }
     }
 }

@@ -447,7 +447,7 @@ namespace DG.XrmMockupTest
                 Subject = "Resolved Incident"
             };
 
-            orgAdminUIService.Create(incidentResolution);
+            incidentResolution.Id = orgAdminUIService.Create(incidentResolution);
 
             var request = new CloseIncidentRequest()
             {

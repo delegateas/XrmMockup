@@ -33,7 +33,7 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
-                Assert.Null(retrieved.dg_Udregnet);
+                Assert.Equal(0,retrieved.dg_Udregnet);
                 Assert.Null(bus.dg_AllConditions);
             }
 
@@ -71,7 +71,7 @@ namespace DG.XrmMockupTest
 
             all = orgAdminService.RetrieveMultiple(q);
             var retrieved = (dg_bus)all.Entities.Single();
-            Assert.Null(retrieved.dg_Udregnet);
+            Assert.Equal(0,retrieved.dg_Udregnet);
             Assert.Null(retrieved.dg_AllConditions);
 
             bus.dg_Ticketprice = 30;

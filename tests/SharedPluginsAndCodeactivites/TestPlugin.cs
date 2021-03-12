@@ -12,7 +12,7 @@
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, ImpersonatingUserId
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = System.Tuple<string, int, string, string>;
-    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, System.Guid?>;
+    using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
     using ImageTuple = System.Tuple<string, string, int, string>;
     using System.Reflection;
 
@@ -260,7 +260,7 @@
                 yield return
                     new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(
                         new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
-                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext),
+                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext.ToString()),
                         config.GetImages());
             }
         }
