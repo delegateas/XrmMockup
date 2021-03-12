@@ -39,14 +39,11 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             orgAdminService = localContext.OrganizationAdminService;
 
             var targetAnnotation = localContext.PluginExecutionContext.InputParameters["Target"] as Entity;
-            if (targetAnnotation.Contains("documentbody") && !string.IsNullOrEmpty(targetAnnotation.GetAttributeValue<string>("documentbody")))
-            {
-                targetAnnotation["isdocument"] = true;
-            }
-            else
-            {
-                targetAnnotation["isdocument"] = false; 
-            }
+            if (!targetAnnotation.Contains("documentbody")) return;
+
+            var documentBody = targetAnnotation.GetAttributeValue<string>("documentbody");
+            
+            targetAnnotation["isdocument"] = !string.IsNullOrEmpty(documentBody);
         }
     }
 }
