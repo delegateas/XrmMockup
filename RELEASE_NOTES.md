@@ -1,3 +1,6 @@
+### 1.7.10 - 12 March 2021
+* Improved performance of RetrieveMultiple for large queries by up to 30 percent (@MattTrinder1)
+
 ### 1.7.9 - 12 March 2021
 * Fixed updated to parent records in workflow (@MattTrinder1)
 * Improved handling of type casting in workflows (@MattTrinder1)
