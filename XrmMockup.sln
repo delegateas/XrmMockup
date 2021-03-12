@@ -81,6 +81,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{149E3AC2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{D375A019-3229-4D24-955B-06248D1D12F5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A832071-17C0-4F94-8592-4060E11AB731}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\MetadataShared\MetadataShared.projitems*{02a76886-689c-4f6d-bef2-08dcbc040249}*SharedItemsImports = 5

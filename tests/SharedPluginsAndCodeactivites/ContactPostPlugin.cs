@@ -2,7 +2,6 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-
     public class ContactPostPlugin : Plugin 
     {
         public ContactPostPlugin()
@@ -22,11 +21,11 @@
 
             var service = localContext.OrganizationService;
 
-            var con = localContext.PluginExecutionContext.InputParameters["Target"] as Contact;
+            var con = (localContext.PluginExecutionContext.InputParameters["Target"] as Entity).ToEntity<Contact>();
 
             if (con.FirstName == "CheckSystemAttributes")
             {
-                con.LastName = con.CreatedOn.ToString();
+                con.LastName = con.CreatedOn?.ToString();
                 con.FirstName = "updated";
                 service.Update(con);
             }

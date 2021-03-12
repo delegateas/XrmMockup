@@ -11,7 +11,7 @@ using Microsoft.Xrm.Sdk;
 namespace DG.Tools.XrmMockup {
 
     // StepConfig           : className, PluginExecutionStage, PluginEventOperation, LogicalName
-    // ExtendedStepConfig   : PluginDeployment, PluginExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
+    // ExtendedStepConfig   : PluginDeployment, PluginExecutionMode, Name, ExecutionOrder, FilteredAttributes, ImpersonatingUserId
     // ImageTuple           : Name, EntityAlias, PluginImageType, Attributes
     using StepConfig = System.Tuple<string, int, string, string>;
     using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;

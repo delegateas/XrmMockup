@@ -147,7 +147,7 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var bus = new dg_bus();
-                var busId = orgAdminUIService.Create(bus);
+                bus.Id = orgAdminUIService.Create(bus);
                 var query = new QueryExpression(TransactionCurrency.EntityLogicalName)
                 {
                     Criteria = new FilterExpression()
@@ -156,12 +156,12 @@ namespace DG.XrmMockupTest
                 var resp = orgAdminUIService.RetrieveMultiple(query);
                 var currency = resp.Entities.First().ToEntity<TransactionCurrency>();
 
-                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
+                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
 
                 bus.dg_Ticketprice = 10m;
                 orgAdminUIService.Update(bus);
-                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
+                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.Equal(currency.ToEntityReference().Id, retrieved.TransactionCurrencyId.Id);
             }
         }
@@ -185,14 +185,14 @@ namespace DG.XrmMockupTest
                 {
                     dg_Ticketprice = 10m
                 };
-                var busId = orgAdminUIService.Create(bus);
+                bus.Id = orgAdminUIService.Create(bus);
 
-                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
+                var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
 
                 bus.dg_Ticketprice = 20m;
                 orgAdminUIService.Update(bus);
-                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, busId, new ColumnSet(true)) as dg_bus;
+                retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.Equal(currency.ToEntityReference(), retrieved.TransactionCurrencyId);
             }
         }

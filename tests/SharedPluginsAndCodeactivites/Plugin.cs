@@ -1,4 +1,5 @@
-﻿namespace DG.Some.Namespace {
+﻿namespace DG.Some.Namespace
+{
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@
     using Microsoft.Xrm.Sdk;
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
+    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, ImpersonatingUserId
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = System.Tuple<string, int, string, string>;
     using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
@@ -19,44 +20,54 @@
     /// <summary>
     /// Base class for all Plugins.
     /// </summary>    
-    public class Plugin : IPlugin {
-        protected class LocalPluginContext {
-            internal IServiceProvider ServiceProvider {
+    public class Plugin : IPlugin
+    {
+        protected class LocalPluginContext
+        {
+            internal IServiceProvider ServiceProvider
+            {
                 get;
 
                 private set;
             }
 
-            internal IOrganizationService OrganizationService {
+            internal IOrganizationService OrganizationService
+            {
                 get;
 
                 private set;
             }
 
             // Delegate A/S added:
-            internal IOrganizationService OrganizationAdminService {
+            internal IOrganizationService OrganizationAdminService
+            {
                 get;
 
                 private set;
             }
 
-            internal IPluginExecutionContext PluginExecutionContext {
+            internal IPluginExecutionContext PluginExecutionContext
+            {
                 get;
 
                 private set;
             }
 
-            internal ITracingService TracingService {
+            internal ITracingService TracingService
+            {
                 get;
 
                 private set;
             }
 
-            private LocalPluginContext() {
+            private LocalPluginContext()
+            {
             }
 
-            internal LocalPluginContext(IServiceProvider serviceProvider) {
-                if (serviceProvider == null) {
+            internal LocalPluginContext(IServiceProvider serviceProvider)
+            {
+                if (serviceProvider == null)
+                {
                     throw new ArgumentNullException("serviceProvider");
                 }
 
@@ -76,14 +87,19 @@
                 this.OrganizationAdminService = factory.CreateOrganizationService(null);
             }
 
-            internal void Trace(string message) {
-                if (string.IsNullOrWhiteSpace(message) || this.TracingService == null) {
+            internal void Trace(string message)
+            {
+                if (string.IsNullOrWhiteSpace(message) || this.TracingService == null)
+                {
                     return;
                 }
 
-                if (this.PluginExecutionContext == null) {
+                if (this.PluginExecutionContext == null)
+                {
                     this.TracingService.Trace(message);
-                } else {
+                }
+                else
+                {
                     this.TracingService.Trace(
                         "{0}, Correlation Id: {1}, Initiating User: {2}",
                         message,
@@ -100,9 +116,12 @@
         /// Item is a <see cref="System.Tuple"/> containing the Pipeline Stage, Message and (optionally) the Primary Entity. 
         /// In addition, the fourth parameter provide the delegate to invoke on a matching registration.
         /// </summary>
-        protected Collection<Tuple<int, string, string, Action<LocalPluginContext>>> RegisteredEvents {
-            get {
-                if (this.registeredEvents == null) {
+        protected Collection<Tuple<int, string, string, Action<LocalPluginContext>>> RegisteredEvents
+        {
+            get
+            {
+                if (this.registeredEvents == null)
+                {
                     this.registeredEvents = new Collection<Tuple<int, string, string, Action<LocalPluginContext>>>();
                 }
 
@@ -114,7 +133,8 @@
         /// Gets or sets the name of the child class.
         /// </summary>
         /// <value>The name of the child class.</value>
-        protected string ChildClassName {
+        protected string ChildClassName
+        {
             get;
 
             private set;
@@ -124,7 +144,8 @@
         /// Initializes a new instance of the <see cref="Plugin"/> class.
         /// </summary>
         /// <param name="childClassName">The <see cref="" cred="Type"/> of the derived class.</param>
-        internal Plugin(Type childClassName) {
+        internal Plugin(Type childClassName)
+        {
             this.ChildClassName = childClassName.ToString();
         }
 
@@ -140,8 +161,10 @@
         /// could execute the plug-in at the same time. All per invocation state information 
         /// is stored in the context. This means that you should not use global variables in plug-ins.
         /// </remarks>
-        public void Execute(IServiceProvider serviceProvider) {
-            if (serviceProvider == null) {
+        public void Execute(IServiceProvider serviceProvider)
+        {
+            if (serviceProvider == null)
+            {
                 throw new ArgumentNullException("serviceProvider");
             }
 
@@ -150,7 +173,8 @@
 
             localcontext.Trace(string.Format(CultureInfo.InvariantCulture, "Entered {0}.Execute()", this.ChildClassName));
 
-            try {
+            try
+            {
                 // Iterate over all of the expected registered events to ensure that the plugin
                 // has been invoked by an expected event
                 // For any given plug-in event at an instance in time, we would expect at most 1 result to match.
@@ -163,7 +187,8 @@
                      )
                      select a.Item4).FirstOrDefault();
 
-                if (entityAction != null) {
+                if (entityAction != null)
+                {
                     localcontext.Trace(string.Format(
                         CultureInfo.InvariantCulture,
                         "{0} is firing for Entity: {1}, Message: {2}",
@@ -171,9 +196,12 @@
                         localcontext.PluginExecutionContext.PrimaryEntityName,
                         localcontext.PluginExecutionContext.MessageName));
 
-                    try {
+                    try
+                    {
                         entityAction.Invoke(localcontext);
-                    } catch (TargetInvocationException e) {
+                    }
+                    catch (TargetInvocationException e)
+                    {
                         throw e.InnerException;
                     }
 
@@ -181,12 +209,16 @@
                     // guard against multiple executions.
                     return;
                 }
-            } catch (FaultException<OrganizationServiceFault> e) {
+            }
+            catch (FaultException<OrganizationServiceFault> e)
+            {
                 localcontext.Trace(string.Format(CultureInfo.InvariantCulture, "Exception: {0}", e.ToString()));
 
                 // Handle the exception.
                 throw;
-            } finally {
+            }
+            finally
+            {
                 localcontext.Trace(string.Format(CultureInfo.InvariantCulture, "Exiting {0}.Execute()", this.ChildClassName));
             }
         }
@@ -207,9 +239,11 @@
         /// <returns></returns>
         /// 
 
-        public IEnumerable<Tuple<string, int, string, string>> PluginProcessingSteps() {
+        public IEnumerable<Tuple<string, int, string, string>> PluginProcessingSteps()
+        {
             var className = this.ChildClassName;
-            foreach (var events in this.RegisteredEvents) {
+            foreach (var events in this.RegisteredEvents)
+            {
                 yield return new Tuple<string, int, string, string>
                     (className, events.Item1, events.Item2, events.Item3);
             }
@@ -217,11 +251,15 @@
 
         #region Additional helper methods
 
-        protected static T GetImage<T>(LocalPluginContext context, ImageType imageType, string name) where T : Entity {
+        protected static T GetImage<T>(LocalPluginContext context, ImageType imageType, string name) where T : Entity
+        {
             EntityImageCollection collection = null;
-            if (imageType == ImageType.PreImage) {
+            if (imageType == ImageType.PreImage)
+            {
                 collection = context.PluginExecutionContext.PreEntityImages;
-            } else if (imageType == ImageType.PostImage) {
+            }
+            else if (imageType == ImageType.PostImage)
+            {
                 collection = context.PluginExecutionContext.PostEntityImages;
             }
 
@@ -235,15 +273,18 @@
             }
         }
 
-        protected static T GetImage<T>(LocalPluginContext context, ImageType imageType) where T : Entity {
+        protected static T GetImage<T>(LocalPluginContext context, ImageType imageType) where T : Entity
+        {
             return GetImage<T>(context, imageType, imageType.ToString());
         }
 
-        protected static T GetPreImage<T>(LocalPluginContext context, string name = "PreImage") where T : Entity {
+        protected static T GetPreImage<T>(LocalPluginContext context, string name = "PreImage") where T : Entity
+        {
             return GetImage<T>(context, ImageType.PreImage, name);
         }
 
-        protected static T GetPostImage<T>(LocalPluginContext context, string name = "PostImage") where T : Entity {
+        protected static T GetPostImage<T>(LocalPluginContext context, string name = "PostImage") where T : Entity
+        {
             return GetImage<T>(context, ImageType.PostImage, name);
         }
 
@@ -256,13 +297,15 @@
         /// Get the plugin step configurations.
         /// </summary>
         /// <returns>List of steps</returns>
-        public IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>> PluginProcessingStepConfigs() {
+        public IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>> PluginProcessingStepConfigs()
+        {
             var className = this.ChildClassName;
-            foreach (var config in this.PluginStepConfigs) {
+            foreach (var config in this.PluginStepConfigs)
+            {
                 yield return
                     new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(
                         new StepConfig(className, config._ExecutionStage, config._EventOperation, config._LogicalName),
-                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext.ToString()),
+                        new ExtendedStepConfig(config._Deployment, config._ExecutionMode, config._Name, config._ExecutionOrder, config._FilteredAttributes, config._UserContext?.ToString()),
                         config.GetImages());
             }
         }
@@ -270,8 +313,23 @@
 
         protected PluginStepConfig<T> RegisterPluginStep<T>(
             EventOperation eventOperation, ExecutionStage executionStage, Action<LocalPluginContext> action)
-            where T : Entity {
+            where T : Entity
+        {
             PluginStepConfig<T> stepConfig = new PluginStepConfig<T>(eventOperation, executionStage);
+            this.PluginStepConfigs.Add((IPluginStepConfig)stepConfig);
+
+            this.RegisteredEvents.Add(
+                new Tuple<int, string, string, Action<LocalPluginContext>>(
+                    stepConfig._ExecutionStage,
+                    stepConfig._EventOperation,
+                    stepConfig._LogicalName,
+                    new Action<LocalPluginContext>(action)));
+
+            return stepConfig;
+        }
+        protected PluginStepConfig RegisterPluginStep(string logicalName, EventOperation eventOperation, ExecutionStage executionStage, Action<LocalPluginContext> action)
+        {
+            PluginStepConfig stepConfig = new PluginStepConfig(logicalName, eventOperation, executionStage);
             this.PluginStepConfigs.Add((IPluginStepConfig)stepConfig);
 
             this.RegisteredEvents.Add(
@@ -286,9 +344,12 @@
 
 
         private Collection<IPluginStepConfig> pluginConfigs;
-        private Collection<IPluginStepConfig> PluginStepConfigs {
-            get {
-                if (this.pluginConfigs == null) {
+        private Collection<IPluginStepConfig> PluginStepConfigs
+        {
+            get
+            {
+                if (this.pluginConfigs == null)
+                {
                     this.pluginConfigs = new Collection<IPluginStepConfig>();
                 }
                 return this.pluginConfigs;
@@ -299,7 +360,8 @@
     }
 
     #region PluginStepConfig made by Delegate A/S
-    interface IPluginStepConfig {
+    interface IPluginStepConfig
+    {
         string _LogicalName { get; }
         string _EventOperation { get; }
         int _ExecutionStage { get; }
@@ -309,7 +371,7 @@
         int _ExecutionMode { get; }
         int _ExecutionOrder { get; }
         string _FilteredAttributes { get; }
-        Guid _UserContext { get; }
+        Guid? _UserContext { get; }
         IEnumerable<ImageTuple> GetImages();
     }
 
@@ -318,7 +380,8 @@
     /// Class to encapsulate the various configurations that can be made 
     /// to a plugin step.
     /// </summary>
-    public class PluginStepConfig<T> : IPluginStepConfig where T : Entity {
+    public class PluginStepConfig<T> : IPluginStepConfig where T : Entity
+    {
         public string _LogicalName { get; private set; }
         public string _EventOperation { get; private set; }
         public int _ExecutionStage { get; private set; }
@@ -327,20 +390,23 @@
         public int _Deployment { get; private set; }
         public int _ExecutionMode { get; private set; }
         public int _ExecutionOrder { get; private set; }
-        public Guid _UserContext { get; private set; }
+        public Guid? _UserContext { get; private set; }
 
         public Collection<PluginStepImage> _Images = new Collection<PluginStepImage>();
         public Collection<string> _FilteredAttributesCollection = new Collection<string>();
 
-        public string _FilteredAttributes {
-            get {
+        public string _FilteredAttributes
+        {
+            get
+            {
                 if (this._FilteredAttributesCollection.Count == 0) return null;
                 return string.Join(",", this._FilteredAttributesCollection).ToLower();
             }
         }
 
 
-        public PluginStepConfig(EventOperation eventOperation, ExecutionStage executionStage) {
+        public PluginStepConfig(EventOperation eventOperation, ExecutionStage executionStage)
+        {
             this._LogicalName = Activator.CreateInstance<T>().LogicalName;
             this._EventOperation = eventOperation.ToString();
             this._ExecutionStage = (int)executionStage;
@@ -350,60 +416,73 @@
             this._UserContext = Guid.Empty;
         }
 
-        private PluginStepConfig<T> AddFilteredAttribute(Expression<Func<T, object>> lambda) {
+        private PluginStepConfig<T> AddFilteredAttribute(Expression<Func<T, object>> lambda)
+        {
             this._FilteredAttributesCollection.Add(GetMemberName(lambda));
             return this;
         }
 
-        public PluginStepConfig<T> AddFilteredAttributes(params Expression<Func<T, object>>[] lambdas) {
+        public PluginStepConfig<T> AddFilteredAttributes(params Expression<Func<T, object>>[] lambdas)
+        {
             foreach (var lambda in lambdas) this.AddFilteredAttribute(lambda);
             return this;
         }
 
-        public PluginStepConfig<T> SetDeployment(Deployment deployment) {
+        public PluginStepConfig<T> SetDeployment(Deployment deployment)
+        {
             this._Deployment = (int)deployment;
             return this;
         }
 
-        public PluginStepConfig<T> SetExecutionMode(ExecutionMode executionMode) {
+        public PluginStepConfig<T> SetExecutionMode(ExecutionMode executionMode)
+        {
             this._ExecutionMode = (int)executionMode;
             return this;
         }
 
-        public PluginStepConfig<T> SetName(string name) {
+        public PluginStepConfig<T> SetName(string name)
+        {
             this._Name = name;
             return this;
         }
 
-        public PluginStepConfig<T> SetExecutionOrder(int executionOrder) {
+        public PluginStepConfig<T> SetExecutionOrder(int executionOrder)
+        {
             this._ExecutionOrder = executionOrder;
             return this;
         }
 
-        public PluginStepConfig<T> SetUserContext(Guid userContext) {
+        public PluginStepConfig<T> SetUserContext(Guid userContext)
+        {
             this._UserContext = userContext;
             return this;
         }
 
-        public PluginStepConfig<T> AddImage(ImageType imageType) {
+        public PluginStepConfig<T> AddImage(ImageType imageType)
+        {
             return this.AddImage(imageType, null);
         }
 
-        public PluginStepConfig<T> AddImage(ImageType imageType, params Expression<Func<T, object>>[] attributes) {
+        public PluginStepConfig<T> AddImage(ImageType imageType, params Expression<Func<T, object>>[] attributes)
+        {
             return this.AddImage(imageType.ToString(), imageType.ToString(), imageType, attributes);
         }
 
-        public PluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType) {
+        public PluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType)
+        {
             return this.AddImage(name, entityAlias, imageType, null);
         }
 
-        public PluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType, params Expression<Func<T, object>>[] attributes) {
+        public PluginStepConfig<T> AddImage(string name, string entityAlias, ImageType imageType, params Expression<Func<T, object>>[] attributes)
+        {
             this._Images.Add(new PluginStepImage(name, entityAlias, imageType, attributes));
             return this;
         }
 
-        public IEnumerable<ImageTuple> GetImages() {
-            foreach (var image in this._Images) {
+        public IEnumerable<ImageTuple> GetImages()
+        {
+            foreach (var image in this._Images)
+            {
                 yield return new ImageTuple(image.Name, image.EntityAlias, image.ImageType, image.Attributes);
             }
         }
@@ -411,27 +490,33 @@
         /// <summary>
         /// Container for information about images attached to steps
         /// </summary>
-        public class PluginStepImage {
+        public class PluginStepImage
+        {
             public string Name { get; private set; }
             public string EntityAlias { get; private set; }
             public int ImageType { get; private set; }
             public string Attributes { get; private set; }
 
-            public PluginStepImage(string name, string entityAlias, ImageType imageType, Expression<Func<T, object>>[] attributes) {
+            public PluginStepImage(string name, string entityAlias, ImageType imageType, Expression<Func<T, object>>[] attributes)
+            {
                 this.Name = name;
                 this.EntityAlias = entityAlias;
                 this.ImageType = (int)imageType;
 
-                if (attributes != null && attributes.Length > 0) {
+                if (attributes != null && attributes.Length > 0)
+                {
                     this.Attributes = string.Join(",", attributes.Select(x => PluginStepConfig<T>.GetMemberName(x))).ToLower();
-                } else {
+                }
+                else
+                {
                     this.Attributes = null;
                 }
             }
         }
 
 
-        private static string GetMemberName(Expression<Func<T, object>> lambda) {
+        private static string GetMemberName(Expression<Func<T, object>> lambda)
+        {
             if (!(lambda.Body is MemberExpression body))
             {
                 var ubody = (UnaryExpression)lambda.Body;
@@ -442,7 +527,174 @@
         }
     }
 
-    class AnyEntity : Entity {
+    /// <summary>
+    /// Made by Delegate A/S
+    /// Class to encapsulate the various configurations that can be made 
+    /// to a plugin step.
+    /// </summary>
+    public class PluginStepConfig : IPluginStepConfig
+    {
+        public string _LogicalName { get; private set; }
+        public string _EventOperation { get; private set; }
+        public int _ExecutionStage { get; private set; }
+
+        public string _Name { get; private set; }
+        public int _Deployment { get; private set; }
+        public int _ExecutionMode { get; private set; }
+        public int _ExecutionOrder { get; private set; }
+        public Guid? _UserContext { get; private set; }
+
+        public Collection<PluginStepImage> _Images = new Collection<PluginStepImage>();
+        public Collection<string> _FilteredAttributesCollection = new Collection<string>();
+
+        public string _FilteredAttributes
+        {
+            get
+            {
+                if (this._FilteredAttributesCollection.Count == 0) return null;
+                return string.Join(",", this._FilteredAttributesCollection).ToLower();
+            }
+        }
+
+        public PluginStepConfig(string logicalName, EventOperation eventOperation, ExecutionStage executionStage)
+        {
+            this._LogicalName = logicalName;
+            this._EventOperation = eventOperation.ToString();
+            this._ExecutionStage = (int)executionStage;
+            this._Deployment = (int)Deployment.ServerOnly;
+            this._ExecutionMode = (int)ExecutionMode.Synchronous;
+            this._ExecutionOrder = 1;
+            this._UserContext = Guid.Empty;
+        }
+
+        private PluginStepConfig AddFilteredAttribute(string name)
+        {
+            this._FilteredAttributesCollection.Add(name);
+            return this;
+        }
+
+        public PluginStepConfig AddFilteredAttributes(params string[] names)
+        {
+            foreach (var name in names) this.AddFilteredAttribute(name);
+            return this;
+        }
+
+        public PluginStepConfig SetDeployment(Deployment deployment)
+        {
+            this._Deployment = (int)deployment;
+            return this;
+        }
+
+        public PluginStepConfig SetExecutionMode(ExecutionMode executionMode)
+        {
+            this._ExecutionMode = (int)executionMode;
+            return this;
+        }
+
+        public PluginStepConfig SetName(string name)
+        {
+            this._Name = name;
+            return this;
+        }
+
+        public PluginStepConfig SetExecutionOrder(int executionOrder)
+        {
+            this._ExecutionOrder = executionOrder;
+            return this;
+        }
+
+        public PluginStepConfig SetUserContext(Guid userContext)
+        {
+            this._UserContext = userContext;
+            return this;
+        }
+
+        public PluginStepConfig AddImage(ImageType imageType)
+        {
+            return this.AddImage(imageType, null);
+        }
+
+        public PluginStepConfig AddImage(ImageType imageType, string[] attributes)
+        {
+            return this.AddImage(imageType.ToString(), imageType.ToString(), imageType, attributes);
+        }
+
+        public PluginStepConfig AddImage(string name, string entityAlias, ImageType imageType)
+        {
+            return this.AddImage(name, entityAlias, imageType, null);
+        }
+
+        public PluginStepConfig AddImage(string name, string entityAlias, ImageType imageType, string[] attributes)
+        {
+            this._Images.Add(new PluginStepImage(name, entityAlias, imageType, attributes));
+            return this;
+        }
+
+        public IEnumerable<ImageTuple> GetImages()
+        {
+            foreach (var image in this._Images)
+            {
+                yield return new ImageTuple(image.Name, image.EntityAlias, image.ImageType, image.Attributes);
+            }
+        }
+
+        /// <summary>
+        /// Container for information about images attached to steps
+        /// </summary>
+        public class PluginStepImage
+        {
+            public string Name { get; private set; }
+            public string EntityAlias { get; private set; }
+            public int ImageType { get; private set; }
+            public string Attributes { get; private set; }
+
+            public PluginStepImage(string name, string entityAlias, ImageType imageType, Expression<Func<object>>[] attributes)
+            {
+                this.Name = name;
+                this.EntityAlias = entityAlias;
+                this.ImageType = (int)imageType;
+
+                if (attributes != null && attributes.Length > 0)
+                {
+                    this.Attributes = string.Join(",", attributes.Select(x => PluginStepConfig.GetMemberName(x))).ToLower();
+                }
+                else
+                {
+                    this.Attributes = null;
+                }
+            }
+
+            public PluginStepImage(string name, string entityAlias, ImageType imageType, string[] attributes)
+            {
+                this.Name = name;
+                this.EntityAlias = entityAlias;
+                this.ImageType = (int)imageType;
+
+                if (attributes != null && attributes.Length > 0)
+                {
+                    this.Attributes = string.Join(",", attributes.Select(x => x.ToLower()));
+                }
+                else
+                {
+                    this.Attributes = null;
+                }
+            }
+        }
+
+        private static string GetMemberName(Expression<Func<object>> lambda)
+        {
+            if (!(lambda.Body is MemberExpression body))
+            {
+                var ubody = (UnaryExpression)lambda.Body;
+                body = ubody.Operand as MemberExpression;
+            }
+
+            return body.Member.Name;
+        }
+    }
+
+    class AnyEntity : Entity
+    {
         public AnyEntity() : base("") { }
     }
 
@@ -450,25 +702,29 @@
      * Enums to help setup plugin steps
      */
 
-    public enum ExecutionMode {
+    public enum ExecutionMode
+    {
         Synchronous = 0,
         Asynchronous = 1,
     }
 
-    public enum ExecutionStage {
+    public enum ExecutionStage
+    {
         PreValidation = 10,
         PreOperation = 20,
         PostOperation = 40,
     }
 
-    public enum Deployment {
+    public enum Deployment
+    {
         ServerOnly = 0,
         MicrosoftDynamicsCRMClientforOutlookOnly = 1,
         Both = 2,
     }
 
     // EventOperation based on CRM 2016
-    public enum EventOperation {
+    public enum EventOperation
+    {
         AddItem,
         AddListMembers,
         AddMember,
@@ -571,7 +827,8 @@
         Win
     }
 
-    public enum ImageType {
+    public enum ImageType
+    {
         PreImage = 0,
         PostImage = 1,
         Both = 2,

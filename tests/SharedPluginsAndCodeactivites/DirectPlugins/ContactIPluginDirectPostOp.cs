@@ -18,8 +18,8 @@ namespace DG.Some.Namespace
             if (contact.GetAttributeValue<string>("firstname") == "ChangeMePleasePostOp")
             {
                 contact["firstname"] = "NameIsModifiedPostOp";
+                service.Update(contact);
             }
-            service.Update(contact);
         }
     }
 }

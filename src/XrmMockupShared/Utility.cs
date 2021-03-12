@@ -66,6 +66,18 @@ namespace DG.Tools.XrmMockup
             return CloneEntity(entity, null, null);
         }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
+        {
+            var kac = new KeyAttributeCollection();
+            foreach (var keyAttr in entity.KeyAttributes)
+            {
+                kac.Add(new KeyValuePair<string, object>(keyAttr.Key, CloneAttribute(keyAttr)));
+            }
+            return kac;
+        }
+#endif
+
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols)
         {
             var clone = new Entity(entity.LogicalName)
@@ -73,14 +85,14 @@ namespace DG.Tools.XrmMockup
                 Id = entity.Id
             };
 
-            if (metadata?.PrimaryIdAttribute != null)
+            if (metadata?.PrimaryIdAttribute != null && entity.Id != Guid.Empty)
             {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            clone.KeyAttributes = entity.KeyAttributes;
+            clone.KeyAttributes = entity.CloneKeyAttributes();
 #endif
 
             return clone.SetAttributes(entity.Attributes, metadata, cols);
@@ -123,7 +135,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new MockupException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = attr.Value;
+                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             else
@@ -134,7 +146,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    entity.Attributes[attr.Key] = attr.Value;
+                    entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             return entity;
@@ -581,6 +593,10 @@ namespace DG.Tools.XrmMockup
                     {
                         attr = row[key];
                     }
+                    else if (row != null && row.Contains(condition.AttributeName))
+                    {
+                        attr = row[condition.AttributeName];
+                    }
                     break;
 #endif
                 default:
@@ -650,10 +666,19 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    if (attr == null) return false;
+                    
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    }
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    return !Matches(attr,ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -699,10 +724,42 @@ namespace DG.Tools.XrmMockup
                     }
                     var x = int.Parse((string)values.First());
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
+                
                 case ConditionOperator.In:
                     return values.Contains(attr);
+                
                 case ConditionOperator.NotIn:
                     return !values.Contains(attr);
+                
+                case ConditionOperator.BeginsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).StartsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotBeginWith:
+                    return !Matches(attr, ConditionOperator.BeginsWith, values);
+                
+                case ConditionOperator.EndsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).EndsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotEndWith:
+                    return !Matches(attr, ConditionOperator.EndsWith, values);
                 default:
                     throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
             }
@@ -1112,6 +1169,28 @@ namespace DG.Tools.XrmMockup
             defaultTeam["businessunitid"] = rootBusinessUnit.ToEntityReference();
 
             return defaultTeam;
+        }
+
+        private static object CloneAttribute(KeyValuePair<string, object> attribute)
+        {
+            if (attribute.Value == null) return null;
+
+            switch (attribute.Value.GetType().Name)
+            {
+                case "Money":
+                    var m = attribute.Value as Money;
+                    return new Money(m.Value);
+                case "EntityReference":
+                    var er = attribute.Value as EntityReference;
+                    var newEr = new EntityReference(er.LogicalName, er.Id);
+                    newEr.Name = er.Name;
+                    return newEr;
+                case "OptionSetValue":
+                    var os = attribute.Value as OptionSetValue;
+                    return new OptionSetValue(os.Value);
+                default:
+                    return attribute.Value;
+            }
         }
     }
 

@@ -17,6 +17,7 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestWorkflowWhichUpdatesParent()
         {
+            crm.DisableRegisteredPlugins(true);
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "IncrementNumberofChildren.xml"));
 
             var parent = new Entity("mock_parent");

@@ -61,7 +61,7 @@ namespace DG.Tools.XrmMockup {
         /// <returns></returns>
         public Guid Create(Entity entity) {
             var req = new CreateRequest();
-            req.Target = entity;
+            req.Target = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(entity.LogicalName), null);
             var resp = SendRequest<CreateResponse>(req);
             return resp.id;
         }
@@ -125,7 +125,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="entity"></param>
         public void Update(Entity entity) {
             var req = new UpdateRequest();
-            req.Target = entity;
+            req.Target = core.GetStronglyTypedEntity(entity, core.GetEntityMetadata(entity.LogicalName), null);
             SendRequest<UpdateResponse>(req);
         }
 

@@ -9,7 +9,7 @@
     using Microsoft.Xrm.Sdk;
 
     // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
-    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, UserContext
+    // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes, ImpersonatingUserId
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = System.Tuple<string, int, string, string>;
     using ExtendedStepConfig = System.Tuple<int, int, string, int, string, string>;
