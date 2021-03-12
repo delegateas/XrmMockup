@@ -434,17 +434,17 @@ namespace WorkflowExecuter
             }
             if (TargetType == "DateTime")
             {
-                if (var2 is XrmTimeSpan)
+                if (var2 is XrmTimeSpan span)
                 {
                     if (Method == "Add")
                     {
-                        variables[VariableName] = ((DateTime)var1).AddXrmTimeSpan((XrmTimeSpan)var2);
+                        variables[VariableName] = ((DateTime)var1).AddXrmTimeSpan(span);
                         return;
                     }
 
                     if (Method == "Subtract")
                     {
-                        variables[VariableName] = ((DateTime)var1).SubtractXrmTimeSpan((XrmTimeSpan)var2);
+                        variables[VariableName] = ((DateTime)var1).SubtractXrmTimeSpan(span);
                         return;
                     }
                 }
@@ -463,65 +463,26 @@ namespace WorkflowExecuter
             switch (TargetType)
             {
                 case "Money":
-                    if (var1 == null)
-                    {
-                        dec1 = 0;
-                    }
-                    else
-                    {
-                        dec1 = var1 is Money ? (var1 as Money).Value : (decimal)var1;
-                    }
-                    if (var2 == null)
-                    {
-                        dec2 = 0;
-                    }
-                    else
-                    {
-                        dec2 = var2 is Money ? (var2 as Money).Value : (decimal)var2;
-                    }
+                    dec1 =
+                        var1 == null ? 0 :
+                        var1 is Money ? (var1 as Money).Value : 
+                        (decimal)var1;
+                    dec2 = 
+                        var2 == null ? 0 :
+                        var2 is Money ? (var2 as Money).Value : 
+                        (decimal)var2;
                     break;
                 case "Int32":
-                    if (var1 == null)
-                    {
-                        dec1 = 0;
-                    }
-                    else
-                    {
-                        dec1 = (int)var1;
-                    }
-
-                    if (var2 == null)
-                    {
-                        dec2 = 0;
-                    }
-                    else
-                    {
-                        dec2 = (int)var2;
-                    }
+                    dec1 = var1 == null ? 0 : (int)var1;
+                    dec2 = var2 == null ? 0 : (int)var2;
                     break;
                 case "Decimal":
-                    if (var1 == null)
-                    {
-                        dec1 = 0;
-                    }
-                    else
-                    {
-                        dec1 = Convert.ToDecimal(var1);
-                    }
-
-                    if (var2 == null)
-                    {
-                        dec2 = 0;
-                    }
-                    else
-                    {
-                        dec2 = Convert.ToDecimal(var2);
-                    }
+                    dec1 = var1 == null ? 0 : Convert.ToDecimal(var1);
+                    dec2 = var2 == null ? 0 : Convert.ToDecimal(var2);
                     break;
                 default:
                     break;
             }
-
 
             if (!dec1.HasValue || !dec2.HasValue)
             {
@@ -568,7 +529,6 @@ namespace WorkflowExecuter
             }
         }
     }
-
 
     [DataContract]
     internal class Aggregate : IWorkflowNode
