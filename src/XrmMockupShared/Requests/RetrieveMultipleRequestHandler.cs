@@ -36,7 +36,7 @@ namespace DG.Tools.XrmMockup {
             }
 
             FillAliasIfEmpty(queryExpr);
-            //var collection = new EntityCollection();
+
             db.PrefillDBWithOnlineData(queryExpr);
             var rows = db.GetDBEntityRows(queryExpr.EntityName);
 
@@ -62,7 +62,6 @@ namespace DG.Tools.XrmMockup {
 
             var collection = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
 
-            // foreach (var row in rows)
             Parallel.ForEach(rows, row =>
             {
                 var entity = row.ToEntity();
@@ -145,7 +144,6 @@ namespace DG.Tools.XrmMockup {
             var colToReturn = new EntityCollection();
 
             if (orderedCollection.Entities.Count != 0) {
-                //foreach (var entity in orderedCollection.Entities) 
                 Parallel.ForEach(orderedCollection.Entities, entity =>
                 {
                     KeepAttributesAndAliasAttributes(entity, queryExpr.ColumnSet);
@@ -153,7 +151,6 @@ namespace DG.Tools.XrmMockup {
                 );
                 colToReturn = orderedCollection;
             } else {
-                // foreach (var entity in collection) {
                 Parallel.ForEach(collection, kvp =>
                 {
                     KeepAttributesAndAliasAttributes(kvp.Value, queryExpr.ColumnSet);
