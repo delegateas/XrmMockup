@@ -1,3 +1,6 @@
+### 1.7.11 - 12 March 2021
+* Added option to reset a single table in the database (@MattTrinder1)
+
 ### 1.7.10 - 12 March 2021
 * Improved performance of RetrieveMultiple for large queries by up to 30 percent (@MattTrinder1)
 
