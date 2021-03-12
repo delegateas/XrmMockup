@@ -15,6 +15,8 @@ namespace DG.Tools.XrmMockup.Database {
         public Guid Id { get; set; }
         public bool IsDeleted { get; private set; } = false;
 
+        public int Sequence { get; set; }
+
         private Dictionary<string, object> Columns = new Dictionary<string, object>();
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         private Dictionary<string, object> Keys = new Dictionary<string, object>();

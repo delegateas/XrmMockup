@@ -194,7 +194,7 @@ namespace DG.XrmMockupTest
                 Assert.Equal(8, result.Count());
 
                 var ordered = result.OrderByDescending(x => x.Name).ThenBy(x => x.AccountId);
-                Assert.Equal(ordered.ToList(), result.ToList());
+                Assert.Equal(ordered.Select(x => new { x.Name, x.AccountId }).ToList(), result.Select(x => new { x.Name, x.AccountId }).ToList());
             }
         }
 
