@@ -102,7 +102,7 @@ namespace DG.Tools.XrmMockup
             }
             catch (Exception ex)
             {
-                if (!ex.Message.StartsWith("No parameterless constructor"))
+                if (ex.Source != "mscorlib")
                 {
                     throw;
                 }
