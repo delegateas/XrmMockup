@@ -1,3 +1,6 @@
+### 1.7.12 - 16 March 2021
+* Made plugin finding with DAXIF language agnostic
+
 ### 1.7.11 - 12 March 2021
 * Added option to reset a single table in the database (@MattTrinder1)
 
