@@ -20,6 +20,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.IO;
 using DG.Tools.XrmMockup.Database;
 using System.Xml.Linq;
+using System.Collections.Concurrent;
 
 namespace DG.Tools.XrmMockup
 {
@@ -66,6 +67,18 @@ namespace DG.Tools.XrmMockup
             return CloneEntity(entity, null, null);
         }
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
+        public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
+        {
+            var kac = new KeyAttributeCollection();
+            foreach (var keyAttr in entity.KeyAttributes)
+            {
+                kac.Add(new KeyValuePair<string, object>(keyAttr.Key, CloneAttribute(keyAttr)));
+            }
+            return kac;
+        }
+#endif
+
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols)
         {
             var clone = new Entity(entity.LogicalName)
@@ -73,14 +86,14 @@ namespace DG.Tools.XrmMockup
                 Id = entity.Id
             };
 
-            if (metadata?.PrimaryIdAttribute != null)
+            if (metadata?.PrimaryIdAttribute != null && entity.Id != Guid.Empty)
             {
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-            clone.KeyAttributes = entity.KeyAttributes;
+            clone.KeyAttributes = entity.CloneKeyAttributes();
 #endif
 
             return clone.SetAttributes(entity.Attributes, metadata, cols);
@@ -123,7 +136,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new MockupException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = attr.Value;
+                    if (keep.Contains(attr.Key)) entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             else
@@ -134,7 +147,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new FaultException($"'{entity.LogicalName}' entity doesn't contain attribute with Name = '{attr.Key}'");
                     }
-                    entity.Attributes[attr.Key] = attr.Value;
+                    entity.Attributes[attr.Key] = CloneAttribute(attr);
                 }
             }
             return entity;
@@ -207,50 +220,52 @@ namespace DG.Tools.XrmMockup
             if (middle == null) middle = "";
             var last = dbEntity.GetAttributeValue<string>("lastname");
             if (last == null) last = "";
+
+            string fullname = string.Empty;
+
             switch (fullnameFormat)
             {
                 case FullNameConventionCode.FirstLast:
-                    dbEntity["fullname"] = first != "" ? first + " " + last : last;
+                    fullname = first != "" ? first + " " + last : last;
                     break;
                 case FullNameConventionCode.LastFirst:
-                    dbEntity["fullname"] = first != "" ? last + ", " + first : last;
+                    fullname = first != "" ? last + ", " + first : last;
                     break;
                 case FullNameConventionCode.LastNoSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + first : last;
+                    fullname = first != "" ? last + first : last;
                     break;
                 case FullNameConventionCode.LastSpaceFirst:
-                    dbEntity["fullname"] = first != "" ? last + " " + first : last;
+                    fullname = first != "" ? last + " " + first : last;
                     break;
                 case FullNameConventionCode.FirstMiddleLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle;
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = first;
+                    if (middle != "") fullname += " " + middle;
+                    fullname += fullname != "" ? " " + last : last;
                     break;
                 case FullNameConventionCode.FirstMiddleInitialLast:
-                    dbEntity["fullname"] = first;
-                    if (middle != "") dbEntity["fullname"] += " " + middle[0] + ".";
-                    dbEntity["fullname"] += (string)dbEntity["fullname"] != "" ? " " + last : last;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = first;
+                    if (middle != "") fullname += " " + middle[0] + ".";
+                    fullname += fullname != "" ? " " + last : last;
                     break;
                 case FullNameConventionCode.LastFirstMiddle:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] += (string)dbEntity["fullname"] == last ? ", " + middle : " " + middle;
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = last;
+                    if (first != "") fullname += ", " + first;
+                    if (middle != "") fullname += fullname == last ? ", " + middle : " " + middle;
                     break;
                 case FullNameConventionCode.LastFirstMiddleInitial:
-                    dbEntity["fullname"] = last;
-                    if (first != "") dbEntity["fullname"] += ", " + first;
-                    if (middle != "") dbEntity["fullname"] +=
-                            (string)dbEntity["fullname"] == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
-                    if (dbEntity.GetAttributeValue<string>("fullname") == "") dbEntity["fullname"] = null;
+                    fullname = last;
+                    if (first != "") fullname += ", " + first;
+                    if (middle != "") fullname += fullname == last ? ", " + middle[0] + "." : " " + middle[0] + ".";
                     break;
-
             }
-            if (dbEntity["fullname"] != null)
+
+            if (string.IsNullOrEmpty(fullname))
             {
-                (dbEntity["fullname"] as string).TrimStart().TrimEnd();
+                dbEntity["fullname"] = null;
+            }
+            else
+            {
+                dbEntity["fullname"] = fullname.Trim();
             }
         }
 
@@ -581,6 +596,10 @@ namespace DG.Tools.XrmMockup
                     {
                         attr = row[key];
                     }
+                    else if (row != null && row.Contains(condition.AttributeName))
+                    {
+                        attr = row[condition.AttributeName];
+                    }
                     break;
 #endif
                 default:
@@ -650,10 +669,19 @@ namespace DG.Tools.XrmMockup
                     return attr != null;
 
                 case ConditionOperator.Equal:
-                    return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    if (attr == null) return false;
+                    
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    }
 
                 case ConditionOperator.NotEqual:
-                    return !Equals(ConvertTo(values.First(), attr?.GetType()), attr);
+                    return !Matches(attr,ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -699,10 +727,42 @@ namespace DG.Tools.XrmMockup
                     }
                     var x = int.Parse((string)values.First());
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
+                
                 case ConditionOperator.In:
                     return values.Contains(attr);
+                
                 case ConditionOperator.NotIn:
                     return !values.Contains(attr);
+                
+                case ConditionOperator.BeginsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).StartsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotBeginWith:
+                    return !Matches(attr, ConditionOperator.BeginsWith, values);
+                
+                case ConditionOperator.EndsWith:
+                    if (attr == null) return false;
+
+                    if (attr.GetType() == typeof(string))
+                    {
+                        return (attr as string).EndsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
+                    }
+                
+                case ConditionOperator.DoesNotEndWith:
+                    return !Matches(attr, ConditionOperator.EndsWith, values);
                 default:
                     throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
             }
@@ -1060,20 +1120,19 @@ namespace DG.Tools.XrmMockup
 
         internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
         {
-            var validMetadata = metadata.Attributes
-                .Where(a => IsValidForFormattedValues(a));
+            var validMetadata = metadata.Attributes.Where(a => IsValidForFormattedValues(a));
 
-            var formattedValues = new List<KeyValuePair<string, string>>();
-            foreach (var a in entity.Attributes)
-            {
-                if (a.Value == null) continue;
-                var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
-                var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
-                if (formattedValuePair.Value != null)
-                {
-                    formattedValues.Add(formattedValuePair);
-                }
-            }
+            var formattedValues = new ConcurrentBag<KeyValuePair<string, string>>();
+
+            Parallel.ForEach(entity.Attributes.Where(x=>x.Value != null), a =>
+             {
+                 var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
+                 var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
+                 if (formattedValuePair.Value != null)
+                 {
+                     formattedValues.Add(formattedValuePair);
+                 }
+             });
 
             if (formattedValues.Count > 0)
             {
@@ -1112,6 +1171,28 @@ namespace DG.Tools.XrmMockup
             defaultTeam["businessunitid"] = rootBusinessUnit.ToEntityReference();
 
             return defaultTeam;
+        }
+
+        private static object CloneAttribute(KeyValuePair<string, object> attribute)
+        {
+            if (attribute.Value == null) return null;
+
+            switch (attribute.Value.GetType().Name)
+            {
+                case "Money":
+                    var m = attribute.Value as Money;
+                    return new Money(m.Value);
+                case "EntityReference":
+                    var er = attribute.Value as EntityReference;
+                    var newEr = new EntityReference(er.LogicalName, er.Id);
+                    newEr.Name = er.Name;
+                    return newEr;
+                case "OptionSetValue":
+                    var os = attribute.Value as OptionSetValue;
+                    return new OptionSetValue(os.Value);
+                default:
+                    return attribute.Value;
+            }
         }
     }
 

@@ -13,9 +13,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestActivities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestAlternateKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestAnnotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCaseOrderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestClone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestTableReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnCreate .cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendOnCreate.cs" />
@@ -24,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesWrite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesRead.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesCreate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestValidateUnchangedLookups.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrieveNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestRetrievePrincipalAccess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSecurity.cs" />
@@ -64,6 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestUpsert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestXrmExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollectionNoProxyTypes.cs" />

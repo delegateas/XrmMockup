@@ -34,6 +34,21 @@ namespace DG.Tools.XrmMockup {
 
                     this.DefaultStateStatus.Add(kvp.Key, dict);
                 }
+
+                if (metadata.DefaultStateStatus.ContainsKey(kvp.Key))
+                {
+                    if (!this.DefaultStateStatus.ContainsKey(kvp.Key))
+                    {
+                        var defaultSS = metadata.DefaultStateStatus[kvp.Key];
+                        var dict = new Dictionary<int, int>();
+                        foreach (var kvp2 in defaultSS)
+                        {
+                            dict.Add(kvp2.Key, kvp2.Value);
+                        }
+
+                        this.DefaultStateStatus.Add(kvp.Key, dict);
+                    }
+                }
             }
         }
     }

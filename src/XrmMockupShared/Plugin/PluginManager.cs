@@ -19,7 +19,7 @@ namespace DG.Tools.XrmMockup
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes,impersonating user id
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
     using StepConfig = Tuple<string, int, string, string>;
-    using ExtendedStepConfig = Tuple<int, int, string, int, string, Guid?>;
+    using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
     using ImageTuple = Tuple<string, string, int, string>;
 
     internal class PluginManager
@@ -39,7 +39,8 @@ namespace DG.Tools.XrmMockup
         {
             new SystemPlugins.UpdateInactiveIncident(),
             new SystemPlugins.DefaultBusinessUnitTeams(),
-            new SystemPlugins.DefaultBusinessUnitTeamMembers()
+            new SystemPlugins.DefaultBusinessUnitTeamMembers(),
+            new SystemPlugins.SetAnnotationIsDocument()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
@@ -101,7 +102,7 @@ namespace DG.Tools.XrmMockup
             }
             catch (Exception ex)
             {
-                if (!ex.Message.StartsWith("No parameterless constructor"))
+                if (ex.Source != "mscorlib")
                 {
                     throw;
                 }
@@ -158,7 +159,7 @@ namespace DG.Tools.XrmMockup
                 foreach (var metaStep in metaSteps)
                 {
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
-                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId);
+                    var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId?.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
                     stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
                     pluginExecute = (provider) =>
@@ -335,7 +336,7 @@ namespace DG.Tools.XrmMockup
             ExecutionMode mode;
             int order = 0;
             Dictionary<string, EntityMetadata> metadata;
-            Guid? impersonatingUserId;
+            string impersonatingUserId;
 
             HashSet<string> attributes;
             IEnumerable<ImageTuple> images;
@@ -497,9 +498,9 @@ namespace DG.Tools.XrmMockup
                     thisPluginContext.PrimaryEntityId = guid;
                 }
                 thisPluginContext.PrimaryEntityName = logicalName;
-                if (this.impersonatingUserId != null && this.impersonatingUserId != Guid.Empty)
+                if (Guid.TryParse(this.impersonatingUserId, out Guid impersonatingUserId) && impersonatingUserId != Guid.Empty)
                 {
-                    thisPluginContext.UserId = this.impersonatingUserId.Value;
+                    thisPluginContext.UserId = impersonatingUserId;
                 }
 
                 foreach (var image in this.images)

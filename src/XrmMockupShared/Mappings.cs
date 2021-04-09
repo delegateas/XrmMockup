@@ -46,6 +46,8 @@ namespace DG.Tools.XrmMockup {
             { typeof(UpdateRequest), nameof(EventOperation.Update).ToLower() },
             { typeof(WinOpportunityRequest), nameof(EventOperation.Win).ToLower() },
             { typeof(LoseOpportunityRequest), nameof(EventOperation.Lose).ToLower() },
+            { typeof(CloseIncidentRequest), nameof(EventOperation.Close).ToLower() },
+
 
         };
 
@@ -143,6 +145,8 @@ namespace DG.Tools.XrmMockup {
                     return loseOpportunityRequest.OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
                 case RetrieveMultipleRequest retrieveMultipleRequest:
                     return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
+                case CloseIncidentRequest closeIncidentRequest:
+                    return closeIncidentRequest.IncidentResolution?.GetAttributeValue<EntityReference>("incidentid");
             }
 
             return null;

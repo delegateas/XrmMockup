@@ -5,6 +5,7 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
 using Xunit;
+using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {
@@ -164,5 +165,15 @@ namespace DG.XrmMockupTest
             }
         }
 #endif
+        [Fact]
+        public void TestAddedFields()
+        {
+            var fax = new Entity("fax");
+            fax.Id = orgAdminService.Create(fax);
+            Assert.False(fax.Contains("category"));
+
+            orgAdminService.Update(fax);
+            Assert.False(fax.Contains("isbilled"));
+        }
     }
 }

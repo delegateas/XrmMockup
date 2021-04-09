@@ -454,5 +454,10 @@ namespace DG.Tools.XrmMockup
         {
             Core.AddSecurityRole(role);
         }
+
+        public void ResetTable(string tableName)
+        {
+            Core.ResetTable(tableName);
+        }
     }
 }
