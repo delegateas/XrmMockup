@@ -1,3 +1,6 @@
+### 1.8.0 - 09 April 2021
+* Added support for AddUserToRecordTeam and RemoveUserFromRecordTeam requests (@MattTrinder1)
+
 ### 1.7.13 - 09 April 2021
 * Fixed error with excess white-space in fullnames (@MattTrinder1)
 
