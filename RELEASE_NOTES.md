@@ -1,3 +1,6 @@
+### 1.7.13 - 09 April 2021
+* Fixed error with excess white-space in fullnames (@MattTrinder1)
+
 ### 1.7.12 - 16 March 2021
 * Made plugin finding with DAXIF language agnostic
 
