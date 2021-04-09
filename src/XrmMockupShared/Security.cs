@@ -24,13 +24,16 @@ namespace DG.Tools.XrmMockup
         private Dictionary<Guid, Guid> SecurityRoleMapping;
         private Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>> Shares;
         private Dictionary<Guid, Privileges> PrinciplePrivilages = new Dictionary<Guid, Privileges>();
+        private XrmDb db; 
+        private List<Guid> addedRoles;
 
-        internal Security(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles)
+        internal Security(Core core, MetadataSkeleton metadata, List<SecurityRole> SecurityRoles, XrmDb db)
         {
             this.Core = core;
             this.Metadata = metadata;
+            this.db = db;
             this.SecurityRoles = SecurityRoles.ToDictionary(s => s.RoleId, s => s);
-
+            this.addedRoles = new List<Guid>();
             Initialize();
         }
 
@@ -42,7 +45,7 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
-            AddRoleTemplatesForBusinessUnit(db, businessUnit);
+            AddRoleTemplates(db);
 
             foreach (var sr in SecurityRoles.Values)
             {
@@ -67,7 +70,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal void AddRoleTemplatesForBusinessUnit(XrmDb db, EntityReference businessUnit)
+        internal void AddRoleTemplates(XrmDb db)
         {
             //role templates are actually uniques across all business units so don't try adding more than once.
             var allRoleTemplates = db.GetDBEntityRows("roletemplate").Select(x => x.ToEntity());
@@ -246,6 +249,13 @@ namespace DG.Tools.XrmMockup
         internal void ResetEnvironment(XrmDb db)
         {
             Initialize();
+            //remove any roles added on the fly
+            foreach (var role in addedRoles)
+            {
+                SecurityRoles.Remove(role);
+            }
+            addedRoles = new List<Guid>();
+            this.db = db;
             InitializeSecurityRoles(db);
         }
 
@@ -540,6 +550,10 @@ namespace DG.Tools.XrmMockup
             // check if any of the Teams that the caller is a member of has access
             if (HasTeamMemberPermission(entity, access, caller)) return true;
 
+#if !(XRM_MOCKUP_2011)
+            // check if any of the Teams that the caller is a member of has access
+            if (HasAccessTeamMemberPermission(entity, access, caller)) return true;
+#endif
             // check if there are any shares of the entity with the caller
             if (HasSharePermission(entity, access, caller)) return true;
 
@@ -548,11 +562,20 @@ namespace DG.Tools.XrmMockup
                 .Where(r => r.CascadeConfiguration.Reparent == CascadeType.Cascade || r.CascadeConfiguration.Reparent == CascadeType.Active)
                 .Where(r => entity.Attributes.ContainsKey(r.ReferencingAttribute));
 
-            if (parentChangeRelationships.Any(r =>
-                Core.GetDbRowOrNull(new EntityReference(r.ReferencedEntity, Utility.GetGuidFromReference(entity[r.ReferencingAttribute])))
-                    ?.GetColumn<DbRow>("ownerid").Id == caller.Id))
+            //cope with entity[pcr.ReferencingAttribute] being null
+            foreach (var pcr in parentChangeRelationships)
             {
-                return true;
+                if (entity.Contains(pcr.ReferencingAttribute) && entity[pcr.ReferencingAttribute] != null)
+                {
+                    var refEntity = Core.GetDbRowOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
+                    if (refEntity != null)
+                    {
+                        if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
+                        {
+                            return true;
+                        }
+                    }
+                }
             }
 
             return false;
@@ -560,13 +583,166 @@ namespace DG.Tools.XrmMockup
 
         public Security Clone()
         {
-            var s =  new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList())
+            var s = new Security(this.Core, this.Metadata, this.SecurityRoles.Values.ToList(),this.db)
             {
                 SecurityRoleMapping = this.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value),
-                Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value))
+                Shares = this.Shares.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value)),
+                addedRoles = new List<Guid>(this.addedRoles)
             };
             s.PrinciplePrivilages = this.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
             return s;
+        }
+        internal SecurityRole GetSecurityRole(string name)
+        {
+            return SecurityRoles.Single(x => x.Value.Name == name).Value;
+        }
+
+        internal List<SecurityRole> GetSecurityRoles()
+        {
+            return SecurityRoles.Select(x => x.Value).ToList();
+        }
+
+        internal void AddSecurityRole(SecurityRole role)
+        {
+            SecurityRoles.Add(role.RoleId, role);
+            addedRoles.Add(role.RoleId);
+            AddRoleToDb(this.db, role, Core.RootBusinessUnitRef);
+        }
+
+        internal void AddRoleToDb(XrmDb db, SecurityRole newRole, EntityReference businessUnit)
+        {
+            var roleMeta = Metadata.EntityMetadata.GetMetadata("role");
+            var role = new Entity("role")
+            {
+                Id = newRole.RoleId
+            };
+            role[roleMeta.PrimaryIdAttribute] = role.Id;
+            role["businessunitid"] = businessUnit;
+            role["name"] = newRole.Name;
+            role["roletemplateid"] = newRole.RoleTemplateId;
+            role["createdby"] = Core.AdminUserRef;
+            role["createdon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+            role["modifiedby"] = Core.AdminUserRef;
+            role["modifiedon"] = DateTime.UtcNow.Add(Core.TimeOffset);
+            db.Add(role);
+            SecurityRoleMapping.Add(role.Id, newRole.RoleId);
+        }
+
+        internal Entity GetAccessTeam(Guid teamTemplateId, Guid recordId)
+        {
+            return Core.GetDbTable("team")
+                        .Select(x => x.ToEntity())
+                        .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
+                        .Where(x => x.Attributes.Contains("teamtemplateid") && x.GetAttributeValue<EntityReference>("teamtemplateid").Id == teamTemplateId)
+                        .Where(x => x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId)
+                        .SingleOrDefault();
+        }
+        internal IEnumerable<Entity> GetAccessTeams(Guid recordId)
+        {
+            return Core.GetDbTable("team")
+                        .Select(x => x.ToEntity())
+                        .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
+                        .Where(x => (x.GetAttributeValue<EntityReference>("regardingobjectid").Id == recordId));
+        }
+        internal Entity AddAccessTeam(Guid teamTemplateId, EntityReference record)
+        {
+            //create the team
+            var team = new Entity("team");
+            team.Id = Guid.NewGuid();
+            team["teamtype"] = new OptionSetValue(1);
+            team["teamtemplateid"] = new EntityReference("teamtemplate", teamTemplateId);
+            team["regardingobjectid"] = record;
+            team["name"] = record.Id.ToString() + "+" + teamTemplateId.ToString();
+            db.Add(team);
+
+            return GetAccessTeam(teamTemplateId, record.Id);
+        }
+
+        internal Entity GetTeamMembership(Guid teamId, Guid systemuserId)
+        {
+            return Core.GetDbTable("teammembership")
+                        .Select(x => x.ToEntity())
+                        .Where(x => x.GetAttributeValue<Guid>("teamid") == teamId)
+                        .Where(x => x.GetAttributeValue<Guid>("systemuserid") == systemuserId)
+                        .SingleOrDefault();
+        }
+        internal Entity GetPOA(Guid principalId, Guid objectId)
+        {
+            return Core.GetDbTable("principalobjectaccess")
+                        .Select(x => x.ToEntity())
+                        .Where(x => x.GetAttributeValue<Guid>("principalid") == principalId)
+                        .Where(x => x.GetAttributeValue<Guid>("objectid") == objectId)
+                        .SingleOrDefault();
+        }
+
+        internal Entity AddTeamMembership(Guid teamId, Guid systemuserId)
+        {
+            var teammembership = new Entity("teammembership");
+            teammembership.Id = Guid.NewGuid();
+            teammembership["teamid"] = teamId;
+            teammembership["systemuserid"] = systemuserId;
+            db.Add(teammembership);
+
+            return GetTeamMembership(teamId, systemuserId);
+        }
+        internal Entity AddPOA(Guid principalId, EntityReference objectId, int accessRightsMask)
+        {
+            var poa = new Entity("principalobjectaccess");
+            poa.Id = Guid.NewGuid();
+            poa["principalid"] = principalId;
+            poa["objectid"] = objectId.Id;
+            poa["accessrightsmask"] = accessRightsMask;
+            poa["objecttypecode"] = objectId.LogicalName;
+
+            db.Add(poa);
+
+            return GetPOA(principalId, objectId.Id);
+        }
+        internal void UpdatePOAMask(Guid poaId, int accessRightsMask)
+        {
+            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            existing["accessrightsmask"] = existing.GetAttributeValue<int>("accessrightsmask") | accessRightsMask;
+            db.Update(existing);
+        }
+        internal void OverwritePOAMask(Guid poaId, int accessRightsMask)
+        {
+            var existing = db.GetDbRow("principalobjectaccess", poaId).ToEntity();
+            existing["accessrightsmask"] = accessRightsMask;
+            db.Update(existing);
+        }
+
+        internal bool HasAccessTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
+        {
+            //check if an access team exists for this entity
+            var accessTeams = Core.GetDbTable(LogicalNames.Team)
+                              .Select(x => x.ToEntity())
+                              .Where(x => x.GetAttributeValue<OptionSetValue>("teamtype").Value == 1)
+                              .Where(x => x.GetAttributeValue<EntityReference>("regardingobjectid").Id == entity.Id);
+
+            if (!accessTeams.Any())
+                return false;
+
+            var accessTeamMemberships = Core.GetDbTable(LogicalNames.TeamMembership)
+                                        .Select(x => x.ToEntity())
+                                        .Where(x => x.GetAttributeValue<Guid>("systemuserid") == caller.Id)
+                                        .Where(x => accessTeams.Select(y => y.Id).Contains(x.GetAttributeValue<Guid>("teamid")));
+
+            if (!accessTeamMemberships.Any())
+                return false;
+
+            foreach (var atm in accessTeamMemberships)
+            {
+                var poa = GetPOA(atm.GetAttributeValue<Guid>("systemuserid"), entity.Id);
+                if (poa != null)
+                {
+                    var mask = poa.GetAttributeValue<int>("accessrightsmask");
+                    //check if the mask covers the requested access right
+                    if ((mask & (int)access) > 0)
+                        return true;
+                }
+            }
+
+            return false;
         }
     }
 }

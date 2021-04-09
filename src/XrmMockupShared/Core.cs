@@ -102,7 +102,7 @@ namespace DG.Tools.XrmMockup
 
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
-            this.security = new Security(this, metadata, SecurityRoles);
+            this.security = new Security(this, metadata, SecurityRoles,db);
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
 
             //add the additional plugin settings to the meta data
@@ -200,6 +200,11 @@ namespace DG.Tools.XrmMockup
             new IsValidStateTransitionRequestHandler(this, db, metadata, security),
             new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
+#if !(XRM_MOCKUP_2011)
+                new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
+                new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
+#endif
+
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             new UpsertRequestHandler(this, db, metadata, security),
 #endif
@@ -1122,6 +1127,16 @@ namespace DG.Tools.XrmMockup
         internal void ResetTable(string tableName)
         {
             db.ResetTable(tableName);
+        }
+
+        internal SecurityRole GetSecurityRole(string roleName)
+        {
+            return security.GetSecurityRole(roleName);
+        }
+
+        internal void AddSecurityRole(SecurityRole role)
+        {
+            security.AddSecurityRole(role);
         }
 
 #if XRM_MOCKUP_365

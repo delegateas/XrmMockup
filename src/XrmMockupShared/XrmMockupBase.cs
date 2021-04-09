@@ -442,6 +442,19 @@ namespace DG.Tools.XrmMockup
             Core.AddPrivileges(principleRef, privileges);
         }
 
+        public SecurityRole GetSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName);
+        }
+        public SecurityRole CloneSecurityRole(string roleName)
+        {
+            return Core.GetSecurityRole(roleName).Clone();
+        }
+        public void AddSecurityRole(SecurityRole role)
+        {
+            Core.AddSecurityRole(role);
+        }
+
         public void ResetTable(string tableName)
         {
             Core.ResetTable(tableName);

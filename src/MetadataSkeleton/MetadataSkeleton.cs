@@ -84,6 +84,19 @@ namespace DG.Tools.XrmMockup {
         public bool CanBeBasic;
         public AccessRights AccessRight;
         public PrivilegeDepth PrivilegeDepth;
+
+        public RolePrivilege Clone()
+        {
+            var clone = new RolePrivilege();
+            clone.CanBeGlobal = this.CanBeGlobal;
+            clone.CanBeDeep = this.CanBeDeep;
+            clone.CanBeLocal = this.CanBeLocal;
+            clone.CanBeLocal = this.CanBeLocal;
+            clone.AccessRight = this.AccessRight;
+            clone.PrivilegeDepth = this.PrivilegeDepth;
+
+            return clone;
+        }
     }
 
     public class SecurityRole {
@@ -92,5 +105,29 @@ namespace DG.Tools.XrmMockup {
         public EntityReference BusinessUnitId;
         public Guid RoleId;
         public Guid RoleTemplateId;
+
+        public SecurityRole Clone()
+        {
+            var clone = new SecurityRole();
+            clone.Privileges = new Dictionary<string, Dictionary<AccessRights, RolePrivilege>>();
+            foreach (var priv in this.Privileges)
+            {
+                var newV = new Dictionary<AccessRights, RolePrivilege>();
+                foreach (var v in priv.Value)
+                {
+                    newV.Add(v.Key, new RolePrivilege() { AccessRight = v.Value.AccessRight, CanBeBasic = v.Value.CanBeBasic, CanBeDeep = v.Value.CanBeDeep, CanBeGlobal = v.Value.CanBeGlobal, CanBeLocal = v.Value.CanBeLocal, PrivilegeDepth = v.Value.PrivilegeDepth });
+                }
+
+                var p = new KeyValuePair<string, Dictionary<AccessRights, RolePrivilege>>(priv.Key, newV);
+                clone.Privileges.Add(p.Key, p.Value);
+            }
+
+            clone.Name = "Clone of " + this.Name;
+            clone.BusinessUnitId = this.BusinessUnitId;
+            clone.RoleId = Guid.NewGuid();
+            clone.RoleTemplateId = this.RoleTemplateId;
+
+            return clone;
+        }
     }
 }

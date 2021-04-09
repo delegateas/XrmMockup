@@ -10,13 +10,12 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
-using Microsoft.Xrm.Sdk.Metadata.Query;
 
 namespace DG.Tools.XrmMockup
 {
-    internal class AddUserToRecordTeamRequestHandler : RequestHandler
+    internal class RemoveUserFromRecordTeamRequestHandler : RequestHandler
     {
-        internal AddUserToRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "AddUserToRecordTeam") { }
+        internal RemoveUserFromRecordTeamRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RemoveUserFromRecordTeam") { }
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
@@ -47,56 +46,44 @@ namespace DG.Tools.XrmMockup
                     }
                 }
             }
-
-            var addedUserPrivs = security.GetPrincipalPrivilege((Guid)orgRequest["SystemUserId"]);
-            var addedPrivs = addedUserPrivs[entityMetadata.Value.LogicalName];
-
-            //also check that the user being added has rights on the entity which match the access team
-            foreach (var right in Enum.GetValues(typeof(AccessRights)))
-            {
-                if ((ttRow.GetAttributeValue<int>("defaultaccessrightsmask") & (int)right) > 0)
-                {
-                    if (!addedPrivs.ContainsKey((AccessRights)right))
-                    {
-                        throw new FaultException($"Added user cannot join team as does not have {Enum.GetName(typeof(AccessRights), right)} permission on the {entityMetadata.Value.LogicalName} entity");
-                    }
-                }
-            }
         }
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             //validate that the team template exists
             var ttId = (Guid)orgRequest["TeamTemplateId"];
-            var ttRow = core.GetDbRow(new EntityReference("teamtemplate", ttId)).ToEntity();
 
             var record = orgRequest["Record"] as EntityReference;
 
             var accessTeam = security.GetAccessTeam(ttId, record.Id);
-            if (accessTeam == null)
-            {
-                accessTeam = security.AddAccessTeam(ttId, record);
-            }
-            
-            var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
-            if (membershiprow==null)
-            {
-                membershiprow = security.AddTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
 
+            var membershiprow = security.GetTeamMembership(accessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+            db.Delete(membershiprow);
+
+            if (membershiprow != null)
+            {
                 var poa = security.GetPOA((Guid)orgRequest["SystemUserId"], record.Id);
 
-                if (poa == null)
+                if (poa != null)
                 {
-                    poa = security.AddPOA((Guid)orgRequest["SystemUserId"], record, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
-                }
-                else
-                {
-                    //update the existing poa to include the new privlege
-                    security.UpdatePOAMask(poa.Id, ttRow.GetAttributeValue<int>("defaultaccessrightsmask"));
+                    //we need t update the poa record with the access masks from the the access teams the user is left in
+                    //get the users remaining team memberships
+                    var remainingAccessTeams = security.GetAccessTeams(record.Id);
+                    int mask = 0;
+                    foreach (var remainingAccessTeam in remainingAccessTeams)
+                    {
+                        var ttRow = core.GetDbRow(new EntityReference("teamtemplate", remainingAccessTeam.GetAttributeValue<EntityReference>("teamtemplateid").Id)).ToEntity();
+                        var remainingTeamMembership = security.GetTeamMembership(remainingAccessTeam.Id, (Guid)orgRequest["SystemUserId"]);
+                        if (remainingTeamMembership != null)
+                        {
+                            mask = mask | ttRow.GetAttributeValue<int>("defaultaccessrightsmask");
+                        }
+                    }
+                    security.OverwritePOAMask(poa.Id, mask);
                 }
             }
 
-            var resp = new AddUserToRecordTeamResponse();
+            var resp = new RemoveUserFromRecordTeamResponse();
             resp.Results["AccessTeamId"] = accessTeam.Id;
             return resp;
         }
