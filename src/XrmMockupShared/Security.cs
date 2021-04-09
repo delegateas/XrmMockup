@@ -45,7 +45,7 @@ namespace DG.Tools.XrmMockup
 
         internal void AddRolesForBusinessUnit(XrmDb db, EntityReference businessUnit)
         {
-            AddRoleTemplatesForBusinessUnit(db, businessUnit);
+            AddRoleTemplates(db);
 
             foreach (var sr in SecurityRoles.Values)
             {
@@ -70,7 +70,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal void AddRoleTemplatesForBusinessUnit(XrmDb db, EntityReference businessUnit)
+        internal void AddRoleTemplates(XrmDb db)
         {
             //role templates are actually uniques across all business units so don't try adding more than once.
             var allRoleTemplates = db.GetDBEntityRows("roletemplate").Select(x => x.ToEntity());
