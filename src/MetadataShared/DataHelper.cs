@@ -444,6 +444,7 @@ namespace DG.Tools.XrmMockup.Metadata
             foreach (var e in validSecurityRoles)
             {
                 var entityName = (string)e.pp.privilegeOTC["objecttypecode"];
+
                 if (entityName == "none") continue;
 
                 var rp = ToRolePrivilege(e.pp.privilege, e.rpr.roleprivilege);
@@ -470,7 +471,10 @@ namespace DG.Tools.XrmMockup.Metadata
                     roles[roleId].Privileges.Add(entityName, new Dictionary<AccessRights, RolePrivilege>());
                 }
 
-                roles[roleId].Privileges[entityName].Add(rp.AccessRight, rp);
+                if(!roles[roleId].Privileges[entityName].ContainsKey(rp.AccessRight))
+                {
+                    roles[roleId].Privileges[entityName].Add(rp.AccessRight, rp);
+                }                
             }
             return roles;
         }
