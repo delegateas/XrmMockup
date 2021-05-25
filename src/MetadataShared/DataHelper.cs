@@ -240,7 +240,6 @@ namespace DG.Tools.XrmMockup.Metadata
                 .First(e => e.Id.Equals(baseOrganizationId));
         }
 
-
         internal IEnumerable<Entity> GetBusinessUnits()
         {
             var query = new QueryExpression("businessunit")
@@ -249,7 +248,6 @@ namespace DG.Tools.XrmMockup.Metadata
             };
             return service.RetrieveMultiple(query).Entities;
         }
-
 
         private IEnumerable<Guid> GetEntityComponentIdsFromSolution(string solutionName)
         {
