@@ -1,3 +1,6 @@
+### 1.8.1 - 25 May 2021
+* Handle duplicate access right for same security role
+
 ### 1.8.0 - 09 April 2021
 * Added support for AddUserToRecordTeam and RemoveUserFromRecordTeam requests (@MattTrinder1)
 
