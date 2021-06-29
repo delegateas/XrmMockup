@@ -112,6 +112,8 @@ namespace DG.Tools.XrmMockup.Metadata {
                 file.WriteLine("\t}");
                 file.WriteLine("}");
             }
+
+            Console.WriteLine("XrmMockup Metadata was updated successfully");
         }
 
         private static bool StartsWithNumber(string str) {
