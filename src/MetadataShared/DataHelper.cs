@@ -134,6 +134,7 @@ namespace DG.Tools.XrmMockup.Metadata
             {
                 var metaPlugin = new MetaPlugin()
                 {
+                    SdkMessageProcessingStepId = pluginStep.GetAttributeValue<Guid>("sdkmessageprocessingstepid"),
                     Name = pluginStep.GetAttributeValue<string>("name"),
                     Rank = pluginStep.GetAttributeValue<int>("rank"),
                     FilteredAttributes = pluginStep.GetAttributeValue<string>("filteringattributes"),
@@ -168,7 +169,7 @@ namespace DG.Tools.XrmMockup.Metadata
         {
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
             {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name", "impersonatinguserid"),
+                ColumnSet = new ColumnSet("sdkmessageprocessingstepid", "eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name", "impersonatinguserid"),
                 Criteria = new FilterExpression()
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
