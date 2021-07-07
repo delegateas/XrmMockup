@@ -15,10 +15,10 @@ using XrmMockupShared.Plugin;
 namespace DG.Tools.XrmMockup
 {
 
-    // StepConfig           : className, ExecutionStage, EventOperation, LogicalName
+    // StepConfig           : className, ExecutionStage, EventOperation, LogicalName, SdkMessageProcessingStepId
     // ExtendedStepConfig   : Deployment, ExecutionMode, Name, ExecutionOrder, FilteredAttributes,impersonating user id
     // ImageTuple           : Name, EntityAlias, ImageType, Attributes
-    using StepConfig = Tuple<string, int, string, string>;
+    using StepConfig = Tuple<string, int, string, string, Guid>;
     using ExtendedStepConfig = Tuple<int, int, string, int, string, string>;
     using ImageTuple = Tuple<string, string, int, string>;
 
@@ -159,6 +159,7 @@ namespace DG.Tools.XrmMockup
                 foreach (var metaStep in metaSteps)
                 {
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
+                    var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity, metaStep.SdkMessageProcessingStepId);
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId?.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
                     stepConfigs.Add(new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple));
@@ -337,7 +338,7 @@ namespace DG.Tools.XrmMockup
             int order = 0;
             Dictionary<string, EntityMetadata> metadata;
             string impersonatingUserId;
-
+            Guid sdkMessageProcessingStepId;
             HashSet<string> attributes;
             IEnumerable<ImageTuple> images;
 
@@ -354,6 +355,7 @@ namespace DG.Tools.XrmMockup
                 this.images = stepConfig.Item3;
                 this.metadata = metadata;
                 this.impersonatingUserId = stepConfig.Item2.Item6;
+                this.sdkMessageProcessingStepId = stepConfig.Item1.Item5;
 
                 var attrs = stepConfig.Item2.Item5 ?? "";
                 this.attributes = String.IsNullOrWhiteSpace(attrs) ? new HashSet<string>() : new HashSet<string>(attrs.Split(','));
@@ -476,7 +478,7 @@ namespace DG.Tools.XrmMockup
                 {
                     entity[metadata.GetMetadata(logicalName).PrimaryIdAttribute] = guid;
                 }
-
+                
                 CheckInfiniteLoop(pluginContext);
                 entity = AddPostImageAttributesToEntity(entity, preImage, postImage);
                 CheckSpecialRequest();
@@ -493,6 +495,8 @@ namespace DG.Tools.XrmMockup
                 var thisPluginContext = pluginContext.Clone();
                 thisPluginContext.Mode = (int)this.mode;
                 thisPluginContext.Stage = (int)this.stage;
+                thisPluginContext.OwningExtension = new EntityReference("sdkmessageprocessingstep", this.sdkMessageProcessingStepId);
+
                 if (thisPluginContext.PrimaryEntityId == Guid.Empty)
                 {
                     thisPluginContext.PrimaryEntityId = guid;
