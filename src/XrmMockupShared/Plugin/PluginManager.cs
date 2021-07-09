@@ -92,7 +92,6 @@ namespace DG.Tools.XrmMockup
             SortAllLists(register);
         }
 
-
         private void RegisterPlugin(Type basePluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<string, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
             object plugin = null;
@@ -123,10 +122,6 @@ namespace DG.Tools.XrmMockup
                     .GetMethod("PluginProcessingStepConfigs")
                     .Invoke(plugin, new object[] { })
                     as IEnumerable<Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>>;
-
-
-
-
 
                 pluginExecute = (provider) =>
                 {
@@ -166,17 +161,13 @@ namespace DG.Tools.XrmMockup
                     throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
                 }
 
-
-
                 foreach (var metaStep in metaSteps)
                 {
-
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId?.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
 
                     var pluginConfig = new Tuple<StepConfig, ExtendedStepConfig, IEnumerable<ImageTuple>>(stepConfig, extendedConfig, imageTuple);
-
 
                     pluginExecute = (provider) =>
                     {
@@ -184,7 +175,6 @@ namespace DG.Tools.XrmMockup
                         .GetMethod("Execute")
                         .Invoke(plugin, new object[] { provider });
                     };
-
 
                     var stage = (ExecutionStage)pluginConfig.Item1.Item2;
                     var trigger = new PluginTrigger(pluginConfig.Item1.Item3, stage, pluginExecute, pluginConfig, metadata, metaStep.SdkMessageProcessingStepId);
