@@ -158,7 +158,6 @@ namespace DG.Tools.XrmMockup
 
                 foreach (var metaStep in metaSteps)
                 {
-                    var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity);
                     var stepConfig = new StepConfig(metaStep.AssemblyName, metaStep.Stage, metaStep.MessageName, metaStep.PrimaryEntity, metaStep.SdkMessageProcessingStepId);
                     var extendedConfig = new ExtendedStepConfig(0, metaStep.Mode, metaStep.Name, metaStep.Rank, metaStep.FilteredAttributes, metaStep.ImpersonatingUserId?.ToString());
                     var imageTuple = metaStep.Images?.Select(x => new ImageTuple(x.Name, x.EntityAlias, x.ImageType, x.Attributes)).ToList() ?? new List<ImageTuple>();
@@ -478,7 +477,7 @@ namespace DG.Tools.XrmMockup
                 {
                     entity[metadata.GetMetadata(logicalName).PrimaryIdAttribute] = guid;
                 }
-                
+
                 CheckInfiniteLoop(pluginContext);
                 entity = AddPostImageAttributesToEntity(entity, preImage, postImage);
                 CheckSpecialRequest();
