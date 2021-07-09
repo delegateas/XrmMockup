@@ -20,7 +20,7 @@ namespace DG.Tools.XrmMockup {
 
     /// <summary>
     /// Base class for all Plugins.
-    /// </summary>    
+    /// </summary>
     public class MockupPlugin : IPlugin {
         protected class LocalPluginContext {
             internal IServiceProvider ServiceProvider {
@@ -99,7 +99,7 @@ namespace DG.Tools.XrmMockup {
 
         /// <summary>
         /// Gets the List of events that the plug-in should fire for. Each List
-        /// Item is a <see cref="System.Tuple"/> containing the Pipeline Stage, Message and (optionally) the Primary Entity. 
+        /// Item is a <see cref="System.Tuple"/> containing the Pipeline Stage, Message and (optionally) the Primary Entity.
         /// In addition, the fourth parameter provide the delegate to invoke on a matching registration.
         /// </summary>
         protected Collection<Tuple<int, string, string, Action<LocalPluginContext>>> RegisteredEvents {
@@ -136,10 +136,10 @@ namespace DG.Tools.XrmMockup {
         /// </summary>
         /// <param name="serviceProvider">The service provider.</param>
         /// <remarks>
-        /// For improved performance, Microsoft Dynamics CRM caches plug-in instances. 
-        /// The plug-in's Execute method should be written to be stateless as the constructor 
-        /// is not called for every invocation of the plug-in. Also, multiple system threads 
-        /// could execute the plug-in at the same time. All per invocation state information 
+        /// For improved performance, Microsoft Dynamics CRM caches plug-in instances.
+        /// The plug-in's Execute method should be written to be stateless as the constructor
+        /// is not called for every invocation of the plug-in. Also, multiple system threads
+        /// could execute the plug-in at the same time. All per invocation state information
         /// is stored in the context. This means that you should not use global variables in plug-ins.
         /// </remarks>
         public void Execute(IServiceProvider serviceProvider) {
@@ -202,12 +202,12 @@ namespace DG.Tools.XrmMockup {
         /// - The Pipeline Stage
         /// - The Event Operation
         /// - Logical Entity Name (or empty for all)
-        /// This will allow to instantiate each plug-in and iterate through the 
-        /// PluginProcessingSteps in order to sync the code repository with 
+        /// This will allow to instantiate each plug-in and iterate through the
+        /// PluginProcessingSteps in order to sync the code repository with
         /// MS CRM without have to use any extra layer to perform this operation
         /// </summary>
         /// <returns></returns>
-        /// 
+        ///
 
         public IEnumerable<Tuple<string, int, string, string>> PluginProcessingSteps() {
             var className = this.ChildClassName;
@@ -314,7 +314,7 @@ namespace DG.Tools.XrmMockup {
 
     /// <summary>
     /// Made by Delegate A/S
-    /// Class to encapsulate the various configurations that can be made 
+    /// Class to encapsulate the various configurations that can be made
     /// to a plugin step.
     /// </summary>
     public class PluginStepConfig<T> : IPluginStepConfig where T : Entity {

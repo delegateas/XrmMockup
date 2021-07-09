@@ -66,6 +66,8 @@ namespace DG.Tools.XrmMockup {
         public string PrimaryEntity;
         public List<MetaImage> Images;
         public Guid? ImpersonatingUserId;
+
+        public Guid SdkMessageProcessingStepId;
     }
 
     public class MetaImage
