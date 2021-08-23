@@ -6,6 +6,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
+using System;
 
 namespace DG.Tools.XrmMockup
 {
@@ -64,6 +65,21 @@ namespace DG.Tools.XrmMockup
                             $", but the calling user with id '{userRef.Id}' does not have AppendTo access for referenced entity '{newRef.LogicalName}' on attribute '{attr.Key}'");
                     }
                 }
+            }
+        }
+
+        internal override void InitializePreOperation(OrganizationRequest orgRequest, EntityReference userRef, Entity preImage)
+        {
+            var entity = orgRequest["Target"] as Entity;
+
+            if (Utility.IsValidAttribute("modifiedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["modifiedon"] = preImage["modifiedon"];
+            }
+
+            if (Utility.IsValidAttribute("modifiedby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["modifiedby"] = preImage["modifiedby"];
             }
         }
 

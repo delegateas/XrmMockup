@@ -626,6 +626,9 @@ namespace DG.Tools.XrmMockup
             //perform security checks for the request
             CheckRequestSecurity(request, userRef);
 
+            //perform initialization of preoperation 
+            InitializePreOperation(request, userRef, preImage);
+
             if (settings.TriggerProcesses && entityInfo != null)
             {
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
@@ -841,6 +844,18 @@ namespace DG.Tools.XrmMockup
             return;
 
             throw new NotImplementedException($"CheckRequestSecurity for the request '{request.RequestName}' has not been implemented yet.");
+        }
+
+        private void InitializePreOperation(OrganizationRequest request, EntityReference userRef, Entity preImage)
+        {
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if(handler != null)
+            {
+                handler.InitializePreOperation(request, userRef, preImage);
+            }
+            return;
+
+            throw new NotImplementedException($"InitializePreOperation for the request '{request.RequestName}' has not been implemented yet.");
         }
 
         private string RequestNameToMessageName(string requestName)

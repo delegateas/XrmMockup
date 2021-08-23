@@ -74,6 +74,31 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        internal override void InitializePreOperation(OrganizationRequest orgRequest, EntityReference userRef, Entity preImage)
+        {
+            var entity = orgRequest["Target"] as Entity;
+
+            if (Utility.IsValidAttribute("createdon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
+            }
+
+            if (Utility.IsValidAttribute("createdby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["createdby"] = userRef;
+            }
+
+            if (Utility.IsValidAttribute("modifiedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["modifiedon"] = entity["createdon"];
+            }
+
+            if (Utility.IsValidAttribute("modifiedby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            {
+                entity["modifiedby"] = entity["createdby"];
+            }
+        }
+
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<CreateRequest>(orgRequest);
@@ -173,23 +198,6 @@ namespace DG.Tools.XrmMockup
                         $"Unable to get default status reason for the state {defaultState.ToString()} in {clonedEntity.LogicalName} entity. " +
                         $"This might be due to unsaved default status reason changes. Please update, save, and publish the relevant status reason field on {clonedEntity.LogicalName} and generate new metadata");
                 }
-            }
-
-            if (Utility.IsValidAttribute("createdon", entityMetadata))
-            {
-                clonedEntity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
-            }
-
-            if (Utility.IsValidAttribute("createdby", entityMetadata))
-            {
-                clonedEntity["createdby"] = userRef;
-            }
-
-            if (Utility.IsValidAttribute("modifiedon", entityMetadata) &&
-                Utility.IsValidAttribute("modifiedby", entityMetadata))
-            {
-                clonedEntity["modifiedon"] = clonedEntity["createdon"];
-                clonedEntity["modifiedby"] = clonedEntity["createdby"];
             }
 
             var owner = userRef;
