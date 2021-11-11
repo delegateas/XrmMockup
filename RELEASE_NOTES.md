@@ -1,3 +1,6 @@
+### 1.8.2 - 27 September 2021
+* Log when metadata has been generated
+
 ### 1.8.1 - 25 May 2021
 * Handle duplicate access right for same security role
 
