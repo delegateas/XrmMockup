@@ -171,8 +171,11 @@ namespace DG.Tools.XrmMockup
 
                     pluginExecute = (provider) =>
                     {
-                        basePluginType
-                        .GetMethod("Execute")
+                        (basePluginType
+                        .GetMethod("Execute") 
+                        ??
+                        basePluginType.GetMethod("ExecuteExtension", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance)
+                        )
                         .Invoke(plugin, new object[] { provider });
                     };
 
@@ -282,6 +285,9 @@ namespace DG.Tools.XrmMockup
         public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
+            pluginContext.Mode = (int)ExecutionMode.Synchronous;
+            pluginContext.Stage = (int)stage;
+
             if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
                 registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
                     .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
@@ -295,6 +301,8 @@ namespace DG.Tools.XrmMockup
         {
             if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
             {
+                pluginContext.Mode = (int)ExecutionMode.Asynchronous;
+                pluginContext.Stage = (int)stage;
                 var asyncExecutors = registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
                     .OrderBy(p => p.GetExecutionOrder()).ToList().Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core));
                 asyncExecutors.ToList().ForEach(x => pendingAsyncPlugins.Enqueue(x));
@@ -325,6 +333,9 @@ namespace DG.Tools.XrmMockup
         {
             if (!this.registeredSystemPlugins.ContainsKey(operation)) return;
             if (!this.registeredSystemPlugins[operation].ContainsKey(stage)) return;
+
+            pluginContext.Mode = (int)ExecutionMode.Synchronous;
+            pluginContext.Stage = (int)stage;
 
             registeredSystemPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
@@ -515,11 +526,11 @@ namespace DG.Tools.XrmMockup
                     var cols = image.Item4 != null ? new ColumnSet(image.Item4.Split(',')) : new ColumnSet(true);
                     if (postImage != null && stage == ExecutionStage.PostOperation && (type == ImageType.PostImage || type == ImageType.Both))
                     {
-                        thisPluginContext.PostEntityImages.Add(image.Item1, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
+                        thisPluginContext.PostEntityImages.Add(image.Item2, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
                     }
                     if (preImage != null && type == ImageType.PreImage || type == ImageType.Both)
                     {
-                        thisPluginContext.PreEntityImages.Add(image.Item1, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
+                        thisPluginContext.PreEntityImages.Add(image.Item2, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
                     }
                 }
                 return thisPluginContext;
