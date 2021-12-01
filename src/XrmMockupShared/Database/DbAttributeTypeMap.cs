@@ -30,6 +30,7 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.PartyList, typeof(DbRow[]) },
             { AttributeTypeCode.String, typeof(string) },
             { AttributeTypeCode.Uniqueidentifier, typeof(Guid) },
+            { AttributeTypeCode.Virtual, typeof(DbRow[]) }
         };
 
         public static bool IsValidType(AttributeMetadata attrMetadata, object value) {
