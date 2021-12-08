@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestTracingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestVirtual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />
