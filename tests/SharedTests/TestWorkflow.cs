@@ -334,7 +334,7 @@ namespace DG.XrmMockupTest
             Assert.Null(retrieved.Subject);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingOptionsetToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
@@ -350,7 +350,7 @@ namespace DG.XrmMockupTest
             Assert.Equal("Trade Show", retrieved.Description);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingEntityToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
