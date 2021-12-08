@@ -57,7 +57,8 @@ namespace DG.Tools.XrmMockup.Database {
             this.Id = id;
 
             if (columns != null) {
-                foreach (var col in columns) this[col.Key] = col.Value;
+                foreach (var col in columns) 
+                    this[col.Key] = col.Value;
             }
         }
 
@@ -139,7 +140,8 @@ namespace DG.Tools.XrmMockup.Database {
             IEnumerable<KeyValuePair<string, object>> columns = xrmEntity.Attributes;
 
             if (withReferenceChecks == true) { // Convert EntityReferences to actual references if db is given
-                columns = columns.Select(a => ConvertToDbKeyValue(a, db));
+                columns = columns
+                    .Select(a => ConvertToDbKeyValue(a, db));
             }
 
             return new DbRow(db[xrmEntity.LogicalName], xrmEntity.Id, columns);
@@ -165,7 +167,10 @@ namespace DG.Tools.XrmMockup.Database {
                     .Select(e => db.GetDbRow(e))
                     .ToArray();
             }
-
+            if (value is OptionSetValueCollection optionsets)
+            {
+                return new OptionSetValueCollection(optionsets);
+            }
             return value;
         }
 
@@ -187,6 +192,7 @@ namespace DG.Tools.XrmMockup.Database {
                 attrMetadata is BigIntAttributeMetadata) {
                 return (int?)dbValue;
             }
+
             return dbValue;
         }
 

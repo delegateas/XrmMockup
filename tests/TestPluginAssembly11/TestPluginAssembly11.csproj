@@ -37,8 +37,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="5.0.18" />
-    <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="5.0.18" />
+    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.42" />
+    <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.42" />
   </ItemGroup>
   <Import Project="..\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems" Label="Shared" />
 </Project>

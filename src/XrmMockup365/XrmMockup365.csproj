@@ -49,9 +49,9 @@
         <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
-        <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
-        <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
+        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.42" />
+        <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.42" />
+        <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.92" />
     </ItemGroup>
     <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
     <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />

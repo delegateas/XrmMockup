@@ -5,7 +5,6 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
 using Xunit;
-using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {

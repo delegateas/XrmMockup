@@ -39,6 +39,8 @@ namespace DG.Tools.XrmMockup.Database
             if (expectedType == null) {
                 throw new NotImplementedException($"Attribute of type '{attrMetadata.AttributeType.Value}' is not implemeted in XrmMockup yet.");
             }
+            if (expectedType.Name == "DbRow[]" && attrMetadata.AttributeType.Value == AttributeTypeCode.Virtual) 
+                return true;
             return expectedType == value.GetType();
         }
     }

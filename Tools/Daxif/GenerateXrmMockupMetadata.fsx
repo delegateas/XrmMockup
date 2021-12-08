@@ -10,7 +10,7 @@ open DG.Daxif.Common.Utility
 
 let metadataGenPath vName = 
   Path.solutionRoot ++ 
-    (sprintf @"src\MetadataGen\MetadataGenerator%s\bin\Release\MetadataGenerator%s.exe" vName vName)
+    (sprintf @"src\MetadataGen\MetadataGenerator%s\bin\Release\net462\MetadataGenerator%s.exe" vName vName)
 
 let targetPath vName = Path.solutionRoot ++ (sprintf @"tests\XrmMockup%sTest\Metadata" vName)
 

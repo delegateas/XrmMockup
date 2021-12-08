@@ -57,7 +57,7 @@
  Use argument and pass it along
 </summary>
 </member>
-<member name="M:DG.XrmContext.InterpretOptionSetMetadata.interpretOptionSet(Microsoft.FSharp.Collections.FSharpSet{System.String},Microsoft.FSharp.Core.FSharpOption{Microsoft.Xrm.Sdk.Metadata.EntityMetadata},Microsoft.Xrm.Sdk.Metadata.EnumAttributeMetadata,Microsoft.FSharp.Core.FSharpOption{System.Tuple{System.String,System.String}[]})">
+<member name="M:DG.XrmContext.InterpretOptionSetMetadata.interpretOptionSet(Microsoft.FSharp.Collections.FSharpSet{System.String},Microsoft.FSharp.Core.FSharpOption{Microsoft.Xrm.Sdk.Metadata.EntityMetadata},Microsoft.Xrm.Sdk.Metadata.EnumAttributeMetadata,Microsoft.FSharp.Core.FSharpOption{System.Tuple{System.String,System.String}[]},Microsoft.FSharp.Core.FSharpOption{System.Int32[]})">
 <summary>
  Interprets CRM OptionSetMetadata into intermediate type
 </summary>

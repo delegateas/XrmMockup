@@ -37,8 +37,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
-    <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
+    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.42" />
+    <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.92" />
   </ItemGroup>
   <Import Project="..\..\MetadataShared\MetadataShared.projitems" Label="Shared" />
   <Import Project="..\..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />

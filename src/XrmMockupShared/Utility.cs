@@ -1176,8 +1176,8 @@ namespace DG.Tools.XrmMockup
         private static object CloneAttribute(KeyValuePair<string, object> attribute)
         {
             if (attribute.Value == null) return null;
-
-            switch (attribute.Value.GetType().Name)
+            var name = attribute.Value.GetType().Name;
+            switch (name)
             {
                 case "Money":
                     var m = attribute.Value as Money;
@@ -1190,6 +1190,9 @@ namespace DG.Tools.XrmMockup
                 case "OptionSetValue":
                     var os = attribute.Value as OptionSetValue;
                     return new OptionSetValue(os.Value);
+                case "OptionSetValueCollection":
+                    var osc = attribute.Value as OptionSetValueCollection;
+                    return new OptionSetValueCollection(osc);
                 default:
                     return attribute.Value;
             }

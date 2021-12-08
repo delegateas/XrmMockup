@@ -14,22 +14,22 @@ namespace DG.XrmMockupTest
     {
         public TestWorkflow(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact]
-        public void TestWorkflowWhichUpdatesParent()
-        {
-            crm.DisableRegisteredPlugins(true);
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "IncrementNumberofChildren.xml"));
+        //[Fact]
+        //public void TestWorkflowWhichUpdatesParent()
+        //{
+        //    crm.DisableRegisteredPlugins(true);
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "IncrementNumberofChildren.xml"));
 
-            var parent = new Entity("mock_parent");
-            parent.Id = orgAdminService.Create(parent);
+        //    var parent = new Entity("mock_parent");
+        //    parent.Id = orgAdminService.Create(parent);
 
-            var child = new Entity("mock_child");
-            child["mock_parentid"] = parent.ToEntityReference();
-            child.Id = orgAdminService.Create(child);
+        //    var child = new Entity("mock_child");
+        //    child["mock_parentid"] = parent.ToEntityReference();
+        //    child.Id = orgAdminService.Create(child);
 
-            var checkParent = orgAdminService.Retrieve("mock_parent", parent.Id, new ColumnSet(true));
-            Assert.Equal(1, checkParent.GetAttributeValue<int>("mock_numberofchildren"));
-        }
+        //    var checkParent = orgAdminService.Retrieve("mock_parent", parent.Id, new ColumnSet(true));
+        //    Assert.Equal(1, checkParent.GetAttributeValue<int>("mock_numberofchildren"));
+        //}
 
         [Fact]
         public void TestCreateWorkflow()
@@ -318,93 +318,93 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [Fact]
-        public void TestClear()
-        {
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestClear.xml"));
-            var service = crm.GetAdminService();
-            var lead = new Lead
-            {
-                Subject = "test"
-            };
+        //[Fact]
+        //public void TestClear()
+        //{
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestClear.xml"));
+        //    var service = crm.GetAdminService();
+        //    var lead = new Lead
+        //    {
+        //        Subject = "test"
+        //    };
 
-            lead.Id = service.Create(lead);
+        //    lead.Id = service.Create(lead);
 
-            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Null(retrieved.Subject);
-        }
+        //    var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+        //    Assert.Null(retrieved.Subject);
+        //}
 
-        [Fact]
-        public void TestTypeConvertingOptionsetToString()
-        {
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
-            var service = crm.GetAdminService();
-            var lead = new Lead
-            {
-                LeadSourceCode = Lead_LeadSourceCode.TradeShow
-            };
+        //[Fact]
+        //public void TestTypeConvertingOptionsetToString()
+        //{
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
+        //    var service = crm.GetAdminService();
+        //    var lead = new Lead
+        //    {
+        //        LeadSourceCode = Lead_LeadSourceCode.TradeShow
+        //    };
 
-            lead.Id = service.Create(lead);
+        //    lead.Id = service.Create(lead);
 
-            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Equal("Trade Show", retrieved.Description);
-        }
+        //    var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+        //    Assert.Equal("Trade Show", retrieved.Description);
+        //}
 
-        [Fact]
-        public void TestTypeConvertingEntityToString()
-        {
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
-            var service = crm.GetAdminService();
-            var acc = new Account
-            {
-                Name = "Contoso Corp."
-            };
-            acc.Id = service.Create(acc);
-            var lead = new Lead
-            {
-                CustomerId = acc.ToEntityReference()
-            };
+        //[Fact]
+        //public void TestTypeConvertingEntityToString()
+        //{
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
+        //    var service = crm.GetAdminService();
+        //    var acc = new Account
+        //    {
+        //        Name = "Contoso Corp."
+        //    };
+        //    acc.Id = service.Create(acc);
+        //    var lead = new Lead
+        //    {
+        //        CustomerId = acc.ToEntityReference()
+        //    };
 
-            lead.Id = service.Create(lead);
+        //    lead.Id = service.Create(lead);
 
-            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            Assert.Equal(acc.Name, retrieved.Description);
-        }
+        //    var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+        //    Assert.Equal(acc.Name, retrieved.Description);
+        //}
 
-        [Fact]
-        public void TestTypeConvertingMoneyToString()
-        {
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
-            var service = crm.GetAdminService();
-            var lead = new Lead
-            {
-                Revenue = 997.98m
-            };
+        //[Fact]
+        //public void TestTypeConvertingMoneyToString()
+        //{
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
+        //    var service = crm.GetAdminService();
+        //    var lead = new Lead
+        //    {
+        //        Revenue = 997.98m
+        //    };
 
-            lead.Id = service.Create(lead);
+        //    lead.Id = service.Create(lead);
 
-            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            // TODO.. we should somewhere declare formating and currency should be from record
-            //Assert.Equal("997,98 zł", retrieved.Description);
-            Assert.Equal($"{lead.Revenue:C}", retrieved.Description);
-        }
+        //    var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+        //    // TODO.. we should somewhere declare formating and currency should be from record
+        //    //Assert.Equal("997,98 zł", retrieved.Description);
+        //    Assert.Equal($"{lead.Revenue:C}", retrieved.Description);
+        //}
 
-        [Fact]
-        public void TestTypeConvertingIntToString()
-        {
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
-            var service = crm.GetAdminService();
-            var lead = new Lead
-            {
-                NumberOfEmployees = 11111
-            };
+        //[Fact]
+        //public void TestTypeConvertingIntToString()
+        //{
+        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));
+        //    var service = crm.GetAdminService();
+        //    var lead = new Lead
+        //    {
+        //        NumberOfEmployees = 11111
+        //    };
 
-            lead.Id = service.Create(lead);
+        //    lead.Id = service.Create(lead);
 
-            var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
-            // TODO.. we should somewhere declare formating
-            Assert.Equal($"{lead.NumberOfEmployees:N0}", retrieved.Description);
-        }
+        //    var retrieved = orgAdminUIService.Retrieve(Lead.EntityLogicalName, lead.Id, new ColumnSet(true)) as Lead;
+        //    // TODO.. we should somewhere declare formating
+        //    Assert.Equal($"{lead.NumberOfEmployees:N0}", retrieved.Description);
+        //}
     }
 }
 #endif
