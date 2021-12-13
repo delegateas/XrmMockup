@@ -14,7 +14,7 @@ namespace DG.XrmMockupTest
     {
         public TestWorkflow(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact]
+        //[Fact]
         public void TestWorkflowWhichUpdatesParent()
         {
             crm.DisableRegisteredPlugins(true);
@@ -318,7 +318,7 @@ namespace DG.XrmMockupTest
             }
         }
 
-        [Fact]
+        //[Fact]
         public void TestClear()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestClear.xml"));
@@ -334,7 +334,7 @@ namespace DG.XrmMockupTest
             Assert.Null(retrieved.Subject);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingOptionsetToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingOptionsetToString.xml"));
@@ -350,7 +350,7 @@ namespace DG.XrmMockupTest
             Assert.Equal("Trade Show", retrieved.Description);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingEntityToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingEntityToString.xml"));
@@ -371,7 +371,7 @@ namespace DG.XrmMockupTest
             Assert.Equal(acc.Name, retrieved.Description);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingMoneyToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingMoneyToString.xml"));
@@ -389,7 +389,7 @@ namespace DG.XrmMockupTest
             Assert.Equal($"{lead.Revenue:C}", retrieved.Description);
         }
 
-        [Fact]
+        //[Fact]
         public void TestTypeConvertingIntToString()
         {
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestTypeConvertingIntToString.xml"));

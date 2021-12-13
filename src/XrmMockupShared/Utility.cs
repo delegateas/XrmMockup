@@ -1190,6 +1190,11 @@ namespace DG.Tools.XrmMockup
                 case "OptionSetValue":
                     var os = attribute.Value as OptionSetValue;
                     return new OptionSetValue(os.Value);
+#if XRM_MOCKUP_365
+                case "OptionSetValueCollection":
+                    var osc = attribute.Value as OptionSetValueCollection;
+                    return new OptionSetValueCollection(osc);
+#endif
                 default:
                     return attribute.Value;
             }

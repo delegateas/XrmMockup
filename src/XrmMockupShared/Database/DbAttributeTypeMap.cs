@@ -30,6 +30,7 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.PartyList, typeof(DbRow[]) },
             { AttributeTypeCode.String, typeof(string) },
             { AttributeTypeCode.Uniqueidentifier, typeof(Guid) },
+            { AttributeTypeCode.Virtual, typeof(DbRow[]) }
         };
 
         public static bool IsValidType(AttributeMetadata attrMetadata, object value) {
@@ -38,6 +39,8 @@ namespace DG.Tools.XrmMockup.Database
             if (expectedType == null) {
                 throw new NotImplementedException($"Attribute of type '{attrMetadata.AttributeType.Value}' is not implemeted in XrmMockup yet.");
             }
+            if (expectedType.Name == "DbRow[]" && attrMetadata.AttributeType.Value == AttributeTypeCode.Virtual)
+                return true;
             return expectedType == value.GetType();
         }
     }
