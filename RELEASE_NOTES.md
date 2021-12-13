@@ -1,3 +1,6 @@
+### 1.9.0 - 13 December 2021
+* Added support for virtual datatype (@nillas12)
+
 ### 1.8.2 - 27 September 2021
 * Log when metadata has been generated
 
