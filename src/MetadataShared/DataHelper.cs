@@ -168,8 +168,9 @@ namespace DG.Tools.XrmMockup.Metadata
         {
             var pluginQuery = new QueryExpression("sdkmessageprocessingstep")
             {
-                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name", "impersonatinguserid"),
-                Criteria = new FilterExpression()
+                ColumnSet = new ColumnSet("eventhandler", "stage", "mode", "rank", "sdkmessageid", "filteringattributes", "name", "impersonatinguserid", "sdkmessageprocessingstepid"),
+                Criteria = new FilterExpression(),
+                Distinct = true,
             };
             pluginQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
 
