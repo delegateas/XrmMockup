@@ -1275,9 +1275,9 @@ namespace DG.Tools.XrmMockup
 
 
         private static readonly string ZIP_STRING_FILENAME = "data.txt";
-        public static void ZipCompressString(string filename, string json)
+        public static void ZipCompressString(string filenameWithoutExtenstion, string json)
         {
-            var zipName = Path.ChangeExtension(filename, ".zip");
+            var zipName = Path.ChangeExtension(filenameWithoutExtenstion, ".zip");
 
             if (File.Exists(zipName)) File.Delete(zipName);
 
@@ -1291,9 +1291,9 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        public static string ZipUncompressString(string filename)
+        public static string ZipUncompressString(string filenameWithoutExtenstion)
         {
-            var zipName = Path.ChangeExtension(filename, ".zip");
+            var zipName = Path.ChangeExtension(filenameWithoutExtenstion, ".zip");
             if (!File.Exists(zipName)) throw new FileNotFoundException(zipName);
 
             using (var zip = ZipFile.Open(zipName, ZipArchiveMode.Read))

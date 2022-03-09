@@ -1,11 +1,8 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Metadata;
+﻿using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Collections;
 using System.Linq;
-using System.Text.Json.Nodes;
 using DG.Tools.XrmMockup.Serialization;
 
 namespace DG.Tools.XrmMockup.Database {
