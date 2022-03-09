@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections;
 using System.Linq;
+using System.Text.Json.Nodes;
+using DG.Tools.XrmMockup.Serialization;
 
 namespace DG.Tools.XrmMockup.Database {
     internal class DbTable : IEnumerable<DbRow> {
@@ -64,6 +66,32 @@ namespace DG.Tools.XrmMockup.Database {
             var clonedMainDict = this.MainDict.ToDictionary(x => x.Key, x => x.Value.Clone(clonedTable));
             clonedTable.MainDict = clonedMainDict;
             return clonedTable;
+        }
+        public TableDTO ToSerializableDTO()
+        {
+            var jsonObj = new TableDTO
+            {
+                Name = this.TableName,
+                Rows = this.MainDict.ToDictionary(x => x.Key, x => x.Value.ToSerializableDTO())
+            };
+            return jsonObj;
+        }
+        public static DbTable RestoreSerializableDTO(DbTable current, TableDTO model)
+        {
+            var clonedTable = new DbTable(current.Metadata)
+            {
+                TableName = current.TableName,
+                MainDict = model.Rows.ToDictionary(x => x.Key, x => DbRow.RestoreSerializableDTO(current, x.Value))
+            };
+            return clonedTable;
+        }
+
+        internal void RestoreFromDTOPostProcess(XrmDb clonedDB)
+        {
+            foreach (var row in this.MainDict.Values)
+            {
+                row.RestoreFromDTOPostProcess(clonedDB);
+            }
         }
     }
 }

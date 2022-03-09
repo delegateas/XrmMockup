@@ -1,4 +1,5 @@
 ﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Serialization;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
@@ -7,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace DG.Tools.XrmMockup
 {
@@ -592,6 +595,30 @@ namespace DG.Tools.XrmMockup
             s.PrinciplePrivilages = this.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
             return s;
         }
+
+        public SecurityModelDTO ToSerializableDTO()
+        {
+            var jsonObj = new SecurityModelDTO
+            {
+                AddedRoles = this.addedRoles,
+                PrinciplePrivilages = this.PrinciplePrivilages,
+                SecurityRoleMapping = this.SecurityRoleMapping,
+                Shares = this.Shares.ToDictionary(x => new EntityReferenceDTO { Id = x.Key.Id, LogicalName = x.Key.LogicalName}, x => x.Value.ToDictionary(y => new EntityReferenceDTO { Id = y.Key.Id, LogicalName = y.Key.LogicalName}, y => y.Value))
+            };
+            return jsonObj;
+        }
+        internal static Security RestoreSerializableDTO(Security current, SecurityModelDTO model)
+        {
+            var s = new Security(current.Core, current.Metadata, current.SecurityRoles.Values.ToList(), current.db)
+            {
+                SecurityRoleMapping = model.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value),
+                Shares = model.Shares.ToDictionary(x => new EntityReference { Id = x.Key.Id, LogicalName = x.Key.LogicalName }, x => x.Value.ToDictionary(y => new EntityReference { Id = y.Key.Id, LogicalName = y.Key.LogicalName }, y => y.Value)),
+                addedRoles = new List<Guid>(model.AddedRoles)
+            };
+            s.PrinciplePrivilages = model.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            return s;
+        }
+
         internal SecurityRole GetSecurityRole(string name)
         {
             return SecurityRoles.Single(x => x.Value.Name == name).Value;

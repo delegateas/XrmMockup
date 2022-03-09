@@ -21,6 +21,10 @@ using System.IO;
 using DG.Tools.XrmMockup.Database;
 using System.Xml.Linq;
 using System.Collections.Concurrent;
+using DG.Tools.XrmMockup.Serialization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.IO.Compression;
 
 namespace DG.Tools.XrmMockup
 {
@@ -1197,6 +1201,109 @@ namespace DG.Tools.XrmMockup
 #endif
                 default:
                     return attribute.Value;
+            }
+        }
+
+        public static TableColumnDTO ConvertValueToSerializableDTO(object colToSerialize)
+        {
+            var jsonColObj = new TableColumnDTO
+            {
+                Type = colToSerialize?.GetType().AssemblyQualifiedName,
+            };
+
+            if (jsonColObj.Type == null)
+            {
+                return null;
+            }
+
+            if (colToSerialize is DbRow)
+            {
+                //To avoid recursion we serialize dbrows as references
+                var dbRow = (DbRow)colToSerialize;
+                var refObj = new EntityReferenceDTO
+                {
+                    Id = dbRow.Id,
+                    LogicalName = dbRow.Table.TableName
+                };
+                jsonColObj.Value = JsonSerializer.Serialize(refObj);
+            }
+#if XRM_MOCKUP_365
+            else if (colToSerialize is OptionSetValueCollection)
+            {
+                var typedCollection = (OptionSetValueCollection)colToSerialize;
+                var dto = new OptionSetCollectionDTO
+                {
+                    Values = typedCollection.Select(x => x.Value).ToList(),
+                };
+                jsonColObj.Value = JsonSerializer.Serialize(dto);
+            }
+#endif
+            else
+            {
+                jsonColObj.Value = JsonSerializer.Serialize(colToSerialize);
+            }
+            return jsonColObj;
+        }
+
+        public static object ConvertValueFromSerializableDTO(TableColumnDTO colToSerialize)
+        {
+            if (colToSerialize == null) return null;
+            var type = Type.GetType(colToSerialize.Type);
+            if (type == typeof(DbRow))
+            {
+                var node = JsonNode.Parse(colToSerialize.Value);
+                var typed = (EntityReferenceDTO)JsonSerializer.Deserialize(node, typeof(EntityReferenceDTO));
+                var tmpTable = new DbTable(new EntityMetadata { LogicalName = typed.LogicalName });
+                return new DbRow(tmpTable, typed.Id, null);
+            }
+#if XRM_MOCKUP_365
+            else if (type == typeof(OptionSetValueCollection))
+            {
+                var node = JsonNode.Parse(colToSerialize.Value);
+                var typed = (OptionSetCollectionDTO)JsonSerializer.Deserialize(node, typeof(OptionSetCollectionDTO));
+                var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
+                return newCollection;
+            }
+#endif
+            else
+            {
+                var node = JsonNode.Parse(colToSerialize.Value);
+                var typed = JsonSerializer.Deserialize(node, type);
+                return typed;
+            }
+        }
+
+
+        private static readonly string ZIP_STRING_FILENAME = "data.txt";
+        public static void ZipCompressString(string filename, string json)
+        {
+            var zipName = Path.ChangeExtension(filename, ".zip");
+
+            if (File.Exists(zipName)) File.Delete(zipName);
+
+            using (var zip = ZipFile.Open(zipName, ZipArchiveMode.Create))
+            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json ?? "")))
+            {
+                var zipEntry = zip.CreateEntry(ZIP_STRING_FILENAME);
+                zipEntry.LastWriteTime = DateTimeOffset.Now;
+                using (var entryStream = zipEntry.Open())
+                    ms.CopyTo(entryStream);
+            }
+        }
+
+        public static string ZipUncompressString(string filename)
+        {
+            var zipName = Path.ChangeExtension(filename, ".zip");
+            if (!File.Exists(zipName)) throw new FileNotFoundException(zipName);
+
+            using (var zip = ZipFile.Open(zipName, ZipArchiveMode.Read))
+            using (var ms = new MemoryStream())
+            {
+                var zipEntry = zip.GetEntry(ZIP_STRING_FILENAME);
+                using (var entryStream = zipEntry.Open())
+                    entryStream.CopyTo(ms);
+                var json = Encoding.UTF8.GetString(ms.ToArray());
+                return json;
             }
         }
     }

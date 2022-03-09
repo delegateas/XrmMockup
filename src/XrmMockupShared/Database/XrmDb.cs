@@ -8,6 +8,8 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
 using System.Threading;
+using System.Text.Json.Nodes;
+using DG.Tools.XrmMockup.Serialization;
 
 namespace DG.Tools.XrmMockup.Database {
 
@@ -257,6 +259,29 @@ namespace DG.Tools.XrmMockup.Database {
             {
                 TableDict = clonedTables
             };
+
+            return clonedDB;
+        }
+        public DbDTO ToSerializableDTO()
+        {
+            var jsonObj = new DbDTO
+            {
+                Tables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.ToSerializableDTO())
+            };
+            return jsonObj;
+        }
+        public static XrmDb RestoreSerializableDTO(XrmDb current, DbDTO model)
+        {
+            var clonedTables = model.Tables.ToDictionary(x => x.Key, x => DbTable.RestoreSerializableDTO(new DbTable(current.EntityMetadata[x.Key]), x.Value));
+            var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineProxy)
+            {
+                TableDict = clonedTables
+            };
+
+            foreach (var table in clonedTables)
+            {
+                table.Value.RestoreFromDTOPostProcess(clonedDB);
+            }
 
             return clonedDB;
         }
