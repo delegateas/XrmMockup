@@ -1273,7 +1273,6 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-
         private static readonly string ZIP_STRING_FILENAME = "data.txt";
         public static void ZipCompressString(string filenameWithoutExtenstion, string json)
         {

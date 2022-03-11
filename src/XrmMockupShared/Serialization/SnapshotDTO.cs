@@ -11,7 +11,4 @@ namespace DG.Tools.XrmMockup.Serialization
         public Guid RootBusinessUnitId { get; set; }
         public long TimeOffset { get; set; }
     }
-
-    
-    
 }

@@ -230,8 +230,6 @@ namespace DG.Tools.XrmMockup.Database
             return clonedDBRow;
         }
 
-        
-
         internal void RestoreFromDTOPostProcess(XrmDb clonedDB)
         {
             //Since there is no guarantee that data is recreated in a usefull order, we have to set the db row in a postprocess step.
