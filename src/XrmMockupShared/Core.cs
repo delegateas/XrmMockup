@@ -12,6 +12,8 @@ using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk.Client;
 using WorkflowExecuter;
+using System.Text.Json;
+using DG.Tools.XrmMockup.Serialization;
 
 [assembly: InternalsVisibleTo("SharedTests")]
 
@@ -1050,6 +1052,32 @@ namespace DG.Tools.XrmMockup
                 security = this.security.Clone(),
             };
             snapshots.Add(snapshotName, snapshot);
+        }
+        internal string TakeJsonSnapshot()
+        {
+            var jsonObj = new SnapshotDTO
+            {
+                Db = this.db.ToSerializableDTO(),
+                AdminUserId = this.AdminUserRef.Id,
+                OrganizationId = this.OrganizationId,
+                RootBusinessUnitId = this.RootBusinessUnitRef.Id,
+                TimeOffset = this.TimeOffset.Ticks,
+                Security = this.security.ToSerializableDTO()
+            };
+            string jsonString = JsonSerializer.Serialize(jsonObj);
+            return jsonString;
+        }
+
+        internal void RestoreJsonSnapshot(string json)
+        {
+            var jsonObj = JsonSerializer.Deserialize<SnapshotDTO>(json);
+            this.db = XrmDb.RestoreSerializableDTO(this.db, jsonObj.Db);
+            this.security = Security.RestoreSerializableDTO(this.security, jsonObj.Security);
+            this.AdminUserRef = new EntityReference(this.AdminUserRef.LogicalName, jsonObj.AdminUserId);
+            this.RootBusinessUnitRef = new EntityReference(this.RootBusinessUnitRef.LogicalName, jsonObj.RootBusinessUnitId);
+            this.TimeOffset = new TimeSpan(jsonObj.TimeOffset);
+            this.OrganizationId = jsonObj.OrganizationId;
+            this.RequestHandlers = GetRequestHandlers(this.db);
         }
 
         internal void RestoreToSnapshot(string snapshotName)

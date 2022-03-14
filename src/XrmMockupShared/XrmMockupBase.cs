@@ -382,6 +382,26 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
+        /// Takes a snapshot of the XrmMockup database data and saves it zip compressed
+        /// </summary>
+        /// <param name="filename">Filename used for the ZIP archive. Extenstion will be replaced with .zip</param>
+        public void TakeZipSnapshot(string filename)
+        {
+            var json = Core.TakeJsonSnapshot();
+            Utility.ZipCompressString(filename, json);
+        }
+
+        /// <summary>
+        /// Retore the XrmMockup database data from json data saved in a zip archive
+        /// </summary>
+        /// <param name="filename">Filename of the ZIP archive to be restored</param>
+        public void RestoreZipSnapshot(string filename)
+        {
+            var json = Utility.ZipUncompressString(filename);
+            Core.RestoreJsonSnapshot(json);
+        }
+
+        /// <summary>
         /// Delete a stored snapshot
         /// </summary>
         /// <param name="snapshotName"></param>
