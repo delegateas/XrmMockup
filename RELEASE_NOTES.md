@@ -1,3 +1,7 @@
+### 1.10.0 - 14 March 2022
+* Added SDK message processing step to plugin query (@kato88)
+* Added snapshot to file feature (@tvbirch)
+
 ### 1.9.0 - 13 December 2021
 * Added support for virtual datatype (@nillas12)
 
