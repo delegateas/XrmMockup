@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
+    <Compile Include="..\SharedTests\TestZipSnapshot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestTableReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPrivileges\TestPrivilegesAppendToOnCreate .cs" />
@@ -37,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestSyncAsyncPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestTracingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestVirtual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestWhoAmI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestIncident.cs" />

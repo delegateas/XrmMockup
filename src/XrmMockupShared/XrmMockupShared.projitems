@@ -12,6 +12,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbAttributeTypeMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\EntityReferenceDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\SecurityModelDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\SnapshotDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\XrmDb.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginExecutionProvider.cs" />
@@ -68,6 +73,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableColumnDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableRowDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />
