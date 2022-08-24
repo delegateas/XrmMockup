@@ -983,7 +983,20 @@ namespace WorkflowExecuter
                 return;
             }
 
-            variables[VariableName] = entity.Attributes[Attribute];
+            var attr = entity.Attributes[Attribute];
+            if (TargetType == "EntityReference")
+            {
+                if (attr is Guid guid)
+                {
+                    attr = new EntityReference(EntityLogicalName, guid);
+                }
+                else if (!(attr is EntityReference))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
+                }
+            }
+
+            variables[VariableName] = attr;
         }
     }
 
