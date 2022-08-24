@@ -327,16 +327,21 @@ namespace WorkflowExecuter
         }
 
         private static IWorkflowNode CompressSetEntityProperty(WorkflowParser.SetEntityProperty setEntityProperty)
-        {
-            return new SetEntityProperty(setEntityProperty.Attribute, setEntityProperty.Entity.TrimEdge(), setEntityProperty.Value.TrimEdge());
+{
+            var targetTypeArg = setEntityProperty.InArguments?.First(a => a.ReferenceLiteral != null);
+            var targetType = targetTypeArg?.ReferenceLiteral?.Value?.Split(':')[1];
+
+            return new SetEntityProperty(setEntityProperty.Attribute, setEntityProperty.Entity.TrimEdge(), setEntityProperty.EntityName,
+                setEntityProperty.Value.TrimEdge(), targetType);
         }
 
         private static IWorkflowNode CompressGetEntityProperty(WorkflowParser.GetEntityProperty getEntityProperty)
         {
-            var targetType = getEntityProperty.InArguments?.First(a => a.ReferenceLiteral != null);
+            var targetTypeArg = getEntityProperty.InArguments?.First(a => a.ReferenceLiteral != null);
+            var targetType = targetTypeArg?.ReferenceLiteral?.Value?.Split(':')[1];
 
             return new GetEntityProperty(getEntityProperty.Attribute, getEntityProperty.Entity.TrimEdge(), getEntityProperty.EntityName,
-                getEntityProperty.Value.TrimEdge(), targetType?.ReferenceLiteral?.Value?.Split(':')[1]);
+                getEntityProperty.Value.TrimEdge(), targetType);
         }
 
         private static IWorkflowNode CompressTerminateWorkflow(WorkflowParser.TerminateWorkflow terminateWorkflow)

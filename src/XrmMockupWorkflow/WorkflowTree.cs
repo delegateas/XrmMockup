@@ -982,48 +982,8 @@ namespace WorkflowExecuter
                 variables[VariableName] = null;
                 return;
             }
-            var attr = entity.Attributes[Attribute];
-            if (TargetType == "EntityReference")
-            {
-                if (attr is Guid)
-                {
-                    attr = new EntityReference(EntityLogicalName, (Guid)attr);
-                }
-                else if (!(attr is EntityReference))
-                {
-                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
-                }
-            }
-            if (TargetType == "String")
-            {
-                if (attr is OptionSetValue)
-                {
-                    attr = Util.GetOptionSetValueLabel(entity.LogicalName, Attribute, attr as OptionSetValue, orgService);
-                }
-                else if (attr is bool)
-                {
-                    attr = Util.GetBooleanLabel(entity.LogicalName, Attribute, (bool)attr, orgService);
-                }
-                else if (attr is EntityReference)
-                {
-                    attr = Util.GetPrimaryName(attr as EntityReference, orgService);
-                }
-                else if (attr is Money)
-                {
-                    // TODO: should respect record currency and user format preferences
-                    attr = $"{(attr as Money).Value:C}";
-                }
-                else if (attr is int)
-                {
-                    // TODO: should respect user format preferences
-                    attr = $"{((int)attr):N0}";
-                }
-                else if (attr != null && !(attr is string))
-                {
-                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
-                }
-            }
-            variables[VariableName] = attr;
+
+            variables[VariableName] = entity.Attributes[Attribute];
         }
     }
 
@@ -1459,13 +1419,19 @@ namespace WorkflowExecuter
         [DataMember]
         public string EntityId { get; private set; }
         [DataMember]
+        public string EntityLogicalName { get; private set; }
+        [DataMember]
         public string VariableId { get; private set; }
+        [DataMember]
+        public string TargetType { get; private set; }
 
-        public SetEntityProperty(string Attribute, string ParametersId, string VariableId)
+        public SetEntityProperty(string Attribute, string ParametersId, string EntityLogicalName, string VariableId, string TargetType)
         {
             this.Attribute = Attribute;
             this.EntityId = ParametersId;
+            this.EntityLogicalName = EntityLogicalName;
             this.VariableId = VariableId;
+            this.TargetType = TargetType;
         }
 
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
@@ -1476,13 +1442,62 @@ namespace WorkflowExecuter
                 Console.WriteLine($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
                 variables[VariableId] = null;
             }
+
             var attr = variables[VariableId];
-            if (attr is Money)
+            if (attr is Money money)
             {
                 var exchangeRate = variables["ExchangeRate"] as decimal?;
-                var amount = (attr as Money).Value * exchangeRate.GetValueOrDefault(1.0m);
+                var amount = money.Value * exchangeRate.GetValueOrDefault(1.0m);
                 attr = new Money(amount);
             }
+
+            if (TargetType == "EntityReference")
+            {
+                if (attr is Guid guid)
+                {
+                    attr = new EntityReference(EntityLogicalName, guid);
+                }
+                else if (!(attr is EntityReference))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
+                }
+            }
+
+            if (TargetType == "String")
+            {
+                if (attr is OptionSetValue value)
+                {
+                    attr = Util.GetOptionSetValueLabel(EntityLogicalName, Attribute, value, orgService);
+                }
+                else if (attr is bool boolVal)
+                {
+                    attr = Util.GetBooleanLabel(EntityLogicalName, Attribute, boolVal, orgService);
+                }
+                else if (attr is EntityReference reference)
+                {
+                    attr = Util.GetPrimaryName(reference, orgService);
+                }
+                else if (attr is Money moneyTarget)
+                {
+                    // TODO: should respect record currency and user format preferences
+                    attr = $"{moneyTarget?.Value:C}";
+                }
+                else if (attr is int number)
+                {
+                    // TODO: should respect user format preferences
+                    attr = $"{number:N0}";
+                }
+                else if (attr is DateTime time)
+                {
+                    // TODO: what format does CRM do?
+                    attr = $"{time:g}";
+                }
+                else if (attr != null && !(attr is string))
+                {
+                    throw new InvalidCastException($"Cannot convert {attr.GetType().Name} to {TargetType}");
+                }
+            }
+
             (variables[EntityId] as Entity).Attributes[Attribute] = attr;
         }
     }

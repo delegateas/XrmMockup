@@ -245,6 +245,10 @@ namespace WorkflowParser {
 
         [XmlAttribute("Value")]
         public string Value;
+
+        [XmlArray("SetEntityProperty.TargetType")]
+        [XmlArrayItem("InArgument")]
+        public Argument[] InArguments;
     }
 
     [XmlType("CreateEntity")]
