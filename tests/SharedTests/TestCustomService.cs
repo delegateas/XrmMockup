@@ -5,16 +5,16 @@ using System.Collections.Generic;
 
 namespace DG.XrmMockupTest
 {
-    class MockServiceEndpointNotificationService : IServiceEndpointNotificationService
-    {
-        public string Execute(EntityReference serviceEndpoint, IExecutionContext context)
-        {
-            return null;
-        }
-    }
-
     public class TestCustomService : UnitTestBase
     {
+        class MockServiceEndpointNotificationService : IServiceEndpointNotificationService
+        {
+            public string Execute(EntityReference serviceEndpoint, IExecutionContext context)
+            {
+                return null;
+            }
+        }
+
         private const string contactDescription = "Test_IServiceEndpointNotificationService";
         
         public TestCustomService(XrmMockupFixture fixture) : base(fixture)
