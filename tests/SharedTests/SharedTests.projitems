@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestCascade.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCaseOrderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestClone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCustomService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
