@@ -71,6 +71,8 @@
                     throw new ArgumentNullException("serviceProvider");
                 }
 
+                this.ServiceProvider = serviceProvider;
+
                 // Obtain the execution context service from the service provider.
                 this.PluginExecutionContext = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
 
