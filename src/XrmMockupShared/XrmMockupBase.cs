@@ -8,7 +8,6 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace DG.Tools.XrmMockup
 {
@@ -17,7 +16,7 @@ namespace DG.Tools.XrmMockup
     /// <summary>
     /// A Mockup of a CRM instance
     /// </summary>
-    public abstract class XrmMockupBase {
+    public abstract partial class XrmMockupBase {
 
         /// <summary>
         /// AdminUser for the Mockup instance

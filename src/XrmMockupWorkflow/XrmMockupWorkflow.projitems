@@ -9,6 +9,7 @@
     <Import_RootNamespace>XrmMockupWorkflow</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IWorkflowContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NamespaceIgnoreXmlReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseStructure.cs" />
@@ -16,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowConstructor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmTimeSpan.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmWorkflowContext.cs" />
   </ItemGroup>
 </Project>

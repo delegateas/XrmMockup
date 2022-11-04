@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net462</TargetFramework>
+        <TargetFrameworks>net462;net6.0</TargetFrameworks>
         <DebugType>portable</DebugType>
         <Title>XrmMockup365</Title>
     </PropertyGroup>
@@ -29,7 +29,10 @@
         <DefineConstants>TRACE;XRM_MOCKUP_365</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
-    <ItemGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<DefineConstants>$(DefineConstants);DATAVERSE_SERVICE_CLIENT</DefineConstants>
+	</PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <Reference Include="System" />
         <Reference Include="System.Activities" />
         <Reference Include="System.configuration" />
@@ -44,17 +47,23 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\$(TargetFramework)\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\$(TargetFramework)\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
-        <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
+        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
+        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
+        <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
         <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
     </ItemGroup>
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
         <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
         <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
-        <PackageReference Include="System.Text.Json" Version="6.0.2" />
     </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.0.1" />
+		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" Version="6.0.2" />
+	</ItemGroup>
     <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
     <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />
     <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />

@@ -5,10 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Client;
-using System.Reflection;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup {
