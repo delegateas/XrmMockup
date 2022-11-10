@@ -1,3 +1,6 @@
+### 1.11.0 - 10 November 2022
+* Add support for .NET6 (@mkholt)
+
 ### 1.10.1 - 24 August 2022
 * Add TargetType to SetEntityProperty actions in workflow handling to ensure differing types are handled correctly (@mkholt)
 
