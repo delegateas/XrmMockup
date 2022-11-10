@@ -1,4 +1,7 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿#if DATAVERSE_SERVICE_CLIENT
+using Microsoft.PowerPlatform.Dataverse.Client;
+#endif
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
@@ -61,5 +64,32 @@ namespace DG.Tools.XrmMockup {
         public IOrganizationService CreateAdminOrganizationService(MockupServiceSettings settings) {
             return new MockupService(core, null, this.pluginContext, settings);
         }
+
+#if DATAVERSE_SERVICE_CLIENT
+        /// <summary>
+        /// Returns a new MockupService with the given userId, or standard user if null. 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public IOrganizationServiceAsync CreateOrganizationServiceAsync(Guid? userId)
+        {
+            return new MockupService(core, userId, this.pluginContext);
+        }
+
+        public IOrganizationServiceAsync CreateOrganizationServiceAsync(Guid? userId, MockupServiceSettings settings)
+        {
+            return new MockupService(core, userId, this.pluginContext, settings);
+        }
+
+        public IOrganizationServiceAsync CreateAdminOrganizationServiceAsync()
+        {
+            return new MockupService(core, null, this.pluginContext);
+        }
+
+        public IOrganizationServiceAsync CreateAdminOrganizationServiceAsync(MockupServiceSettings settings)
+        {
+            return new MockupService(core, null, this.pluginContext, settings);
+        }
+#endif
     }
 }
