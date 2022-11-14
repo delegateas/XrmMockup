@@ -220,6 +220,37 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
+        /// Add a custom mock service.
+        /// This will not override the default XrmMockup services.
+        /// </summary>
+        /// <typeparam name="T">e.g. IServiceEndpointNotificationService</typeparam>
+        /// <param name="service"></param>
+        public void AddService<T>(T service)
+        {
+            ServiceFactory.AddCustomService(service);
+        }
+
+        /// <summary>
+        /// Remove a custom mock service.
+        /// This will not override the default XrmMockup services.
+        /// </summary>
+        /// <typeparam name="T">e.g. IServiceEndpointNotificationService</typeparam>
+        /// <param name="service"></param>
+        public void RemoveService<T>()
+        {
+            ServiceFactory.RemoveCustomService<T>();
+        }
+
+        /// <summary>
+        /// Clear all custom mock services.
+        /// This will not affect the default XrmMockup services.
+        /// </summary>
+        public void ResetServices()
+        {
+            ServiceFactory.ClearCustomServices();
+        }
+
+        /// <summary>
         /// Gets a system administrator organization service
         /// </summary>
         /// <returns></returns>

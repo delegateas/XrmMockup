@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Closeincidentplugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContactSendToServiceEndpointPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NotePostOperationPlugin.cs" />
