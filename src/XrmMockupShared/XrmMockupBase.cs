@@ -97,7 +97,7 @@ namespace DG.Tools.XrmMockup
             string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string dll in Directory.GetFiles(path, "*.dll"))
             {
-                var asm = Assembly.LoadFile(dll);
+                var asm = Assembly.LoadFrom(dll);
                 if (addedAssemblies.Contains(asm.FullName)) continue;
 
                 assemblies.Add(asm);
