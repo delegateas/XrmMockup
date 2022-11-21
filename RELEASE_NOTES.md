@@ -1,3 +1,6 @@
+### 1.11.1 - 21 November 2022
+* Ensure dlls are not loaded multiple times (@magesoe)
+
 ### 1.11.0 - 10 November 2022
 * Add support for .NET6 (@mkholt)
 
