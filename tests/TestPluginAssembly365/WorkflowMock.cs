@@ -1,11 +1,10 @@
 ﻿using System;
 
+#if NET6_0_OR_GREATER
 /// <summary>
 /// Implementations of the different Workflow related attributes
 /// These are part of the SDK package, which we do not have access to in .NET6 builds
 /// </summary>
-
-#if NET6_0_OR_GREATER
 namespace Microsoft.Xrm.Sdk.Workflow
 {
     [AttributeUsage(AttributeTargets.Property)]
