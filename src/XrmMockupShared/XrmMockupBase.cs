@@ -220,42 +220,6 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
-        /// Gets a system administrator organization service
-        /// </summary>
-        /// <returns></returns>
-        public IOrganizationService GetAdminService() {
-            return ServiceFactory.CreateAdminOrganizationService();
-        }
-
-        /// <summary>
-        /// Gets a system administrator organization service, with the given settings
-        /// </summary>
-        /// <param name="Settings"></param>
-        /// <returns></returns>
-        public IOrganizationService GetAdminService(MockupServiceSettings Settings) {
-            return ServiceFactory.CreateAdminOrganizationService(Settings);
-        }
-
-        /// <summary>
-        /// Create an organization service for the systemuser with the given id
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public IOrganizationService CreateOrganizationService(Guid userId) {
-            return ServiceFactory.CreateOrganizationService(userId);
-        }
-
-        /// <summary>
-        /// Create an organization service, with the given settings, for the systemuser with the given id
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="settings"></param>
-        /// <returns></returns>
-        public IOrganizationService CreateOrganizationService(Guid userId, MockupServiceSettings settings) {
-            return ServiceFactory.CreateOrganizationService(userId, settings);
-        }
-
-        /// <summary>
         /// Create a new user with a specific businessunit
         /// </summary>
         /// <param name="service"></param>

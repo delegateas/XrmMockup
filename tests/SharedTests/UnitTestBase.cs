@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using Microsoft.Crm.Sdk.Messages;
 using System.Linq;
 
+#if NET6_0_OR_GREATER
+using Microsoft.PowerPlatform.Dataverse.Client;
+#endif
+
 namespace DG.XrmMockupTest
 {
     [Collection("Xrm Collection")]
@@ -13,23 +17,32 @@ namespace DG.XrmMockupTest
     {
         private static DateTime _startTime { get; set; }
 
+#if NET6_0_OR_GREATER
+        protected IOrganizationServiceAsync2 orgAdminUIService;
+        protected IOrganizationServiceAsync2 orgAdminService;
+        protected IOrganizationServiceAsync2 orgGodService;
+        protected IOrganizationServiceAsync2 orgRealDataService;
+
+        protected IOrganizationServiceAsync2 testUser1Service;
+        protected IOrganizationServiceAsync2 testUser2Service;
+        protected IOrganizationServiceAsync2 testUser3Service;
+        protected IOrganizationServiceAsync2 testUser4Service;
+#else
         protected IOrganizationService orgAdminUIService;
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
 
-        protected Entity testUser1;
         protected IOrganizationService testUser1Service;
-
-        protected Entity testUser2;
         protected IOrganizationService testUser2Service;
-
-        protected Entity testUser3;
         protected IOrganizationService testUser3Service;
-
-        protected Entity testUser4;
         protected IOrganizationService testUser4Service;
+#endif
 
+        protected Entity testUser1;
+        protected Entity testUser2;
+        protected Entity testUser3;
+        protected Entity testUser4;
         protected Entity testUser5;
 
         protected Entity contactWriteAccessTeamTemplate;
