@@ -46,11 +46,18 @@
         <Reference Include="System.Net.Http" />
         <Reference Include="System.Xml" />
     </ItemGroup>
-    <ItemGroup>
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
-        <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\$(TargetFramework)\Metadata" />
-        <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
+	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net6.0\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
