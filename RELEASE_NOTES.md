@@ -1,3 +1,7 @@
+### 1.11.2 - 23 November 2022
+* Ensure metadata folder is added in both packages (@mkholt)
+* Implement IOrganizationServiceAsync2 (@mkholt)
+
 ### 1.11.1 - 21 November 2022
 * Ensure dlls are not loaded multiple times (@magesoe)
 
