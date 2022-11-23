@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbAttributeTypeMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />

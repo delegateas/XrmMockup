@@ -100,12 +100,8 @@ namespace DG.Tools.XrmMockup
             {
                 plugin = Activator.CreateInstance(basePluginType);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Source == "mscorlib" || ex.Source == "System.Private.CoreLib")
             {
-                if (ex.Source != "mscorlib")
-                {
-                    throw;
-                }
             }
 
             if (plugin == null)

@@ -9,6 +9,7 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
 using Xunit;
 using Xunit.Sdk;
+using System.Threading;
 
 namespace DG.XrmMockupTest
 {
@@ -28,6 +29,25 @@ namespace DG.XrmMockupTest
             var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
             Assert.Equal(contact.FirstName, dbContact.FirstName);
         }
+
+#if NET6_0_OR_GREATER
+        [Fact]
+        public async System.Threading.Tasks.Task TestCreateSimpleWithRetrieve()
+        {
+            var contact = new Contact()
+            {
+                FirstName = "John"
+            };
+
+            var created = await orgAdminService.CreateAndReturnAsync(contact, CancellationToken.None);
+
+            Assert.NotNull(created);
+            Assert.NotEqual(Guid.Empty, created.Id);
+
+            var dbContact = Contact.Retrieve(orgAdminService, created.Id);
+            Assert.Equal(dbContact.Attributes, created.Attributes);
+        }
+#endif
 
         [Fact]
         public void TestCreateWithRequest()

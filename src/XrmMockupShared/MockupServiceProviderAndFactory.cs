@@ -44,15 +44,37 @@ namespace DG.Tools.XrmMockup {
             return null;
         }
 
+        public IOrganizationService CreateOrganizationService(Guid? userId)
+        {
+            return new MockupService(core, userId, this.pluginContext);
+        }
+
+#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
         /// Returns a new MockupService with the given userId, or standard user if null. 
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IOrganizationService CreateOrganizationService(Guid? userId) {
+        public IOrganizationServiceAsync2 CreateOrganizationServiceAsync(Guid? userId)
+        {
             return new MockupService(core, userId, this.pluginContext);
         }
 
+        public IOrganizationServiceAsync2 CreateOrganizationService(Guid? userId, MockupServiceSettings settings)
+        {
+            return new MockupService(core, userId, this.pluginContext, settings);
+        }
+
+        public IOrganizationServiceAsync2 CreateAdminOrganizationService()
+        {
+            return new MockupService(core, null, this.pluginContext);
+        }
+
+        public IOrganizationServiceAsync2 CreateAdminOrganizationService(MockupServiceSettings settings)
+        {
+            return new MockupService(core, null, this.pluginContext, settings);
+        }
+#else
         public IOrganizationService CreateOrganizationService(Guid? userId, MockupServiceSettings settings) {
             return new MockupService(core, userId, this.pluginContext, settings);
         }
@@ -62,32 +84,6 @@ namespace DG.Tools.XrmMockup {
         }
 
         public IOrganizationService CreateAdminOrganizationService(MockupServiceSettings settings) {
-            return new MockupService(core, null, this.pluginContext, settings);
-        }
-
-#if DATAVERSE_SERVICE_CLIENT
-        /// <summary>
-        /// Returns a new MockupService with the given userId, or standard user if null. 
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public IOrganizationServiceAsync CreateOrganizationServiceAsync(Guid? userId)
-        {
-            return new MockupService(core, userId, this.pluginContext);
-        }
-
-        public IOrganizationServiceAsync CreateOrganizationServiceAsync(Guid? userId, MockupServiceSettings settings)
-        {
-            return new MockupService(core, userId, this.pluginContext, settings);
-        }
-
-        public IOrganizationServiceAsync CreateAdminOrganizationServiceAsync()
-        {
-            return new MockupService(core, null, this.pluginContext);
-        }
-
-        public IOrganizationServiceAsync CreateAdminOrganizationServiceAsync(MockupServiceSettings settings)
-        {
             return new MockupService(core, null, this.pluginContext, settings);
         }
 #endif
