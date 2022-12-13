@@ -13,6 +13,10 @@ using DG.Tools.XrmMockup.Database;
 using Microsoft.Xrm.Sdk.Client;
 using WorkflowExecuter;
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+using Microsoft.Xrm.Sdk.Organization;
+#endif
+
 [assembly: InternalsVisibleTo("SharedTests")]
 
 namespace DG.Tools.XrmMockup
@@ -53,7 +57,7 @@ namespace DG.Tools.XrmMockup
         #region MyRegion
 
         private PluginManager pluginManager;
-#if XRM_MOCKUP_365
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal OrganizationDetail orgDetail;
 #endif
         private WorkflowManager workflowManager;
@@ -124,7 +128,7 @@ namespace DG.Tools.XrmMockup
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
             
-#if XRM_MOCKUP_365
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             this.orgDetail = settings.OrganizationDetail;
 #endif
         }
@@ -210,6 +214,10 @@ namespace DG.Tools.XrmMockup
 #if !(XRM_MOCKUP_2011)
                 new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
                 new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
+#endif
+            
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            new RetrieveCurrentOrganizationRequestHandler(this, db, metadata, security),
 #endif
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
