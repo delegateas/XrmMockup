@@ -61,6 +61,11 @@ namespace DG.Tools.XrmMockup
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
         public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
+        
+        /// <summary>
+        /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
+        /// </summary>
+        public OrganizationDetail OrganizationDetail { get; set; }
 #endif
     }
 

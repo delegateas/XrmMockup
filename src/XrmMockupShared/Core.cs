@@ -53,6 +53,9 @@ namespace DG.Tools.XrmMockup
         #region MyRegion
 
         private PluginManager pluginManager;
+#if XRM_MOCKUP_365
+        internal OrganizationDetail orgDetail;
+#endif
         private WorkflowManager workflowManager;
         private Security security;
         private XrmMockupSettings settings;
@@ -120,6 +123,10 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
+            
+#if XRM_MOCKUP_365
+            this.orgDetail = settings.OrganizationDetail;
+#endif
         }
 
         private void InitializeDB()
