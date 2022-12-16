@@ -1,3 +1,6 @@
+### 1.12.0 - 16 December 2022
+* Add support for RetrieveCurrentOrganization Request (@kato88)
+
 ### 1.11.2 - 23 November 2022
 * Ensure metadata folder is added in both packages (@mkholt)
 * Implement IOrganizationServiceAsync2 (@mkholt)
