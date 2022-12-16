@@ -12,6 +12,7 @@ using System.Xml;
 using System.Web.Script.Serialization;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Xrm.Sdk.Discovery;
 
 [assembly: InternalsVisibleTo("XrmMockup11Test")]
 namespace DG.Tools.XrmMockup {
@@ -36,7 +37,7 @@ namespace DG.Tools.XrmMockup {
             if (instances.ContainsKey(Settings)) {
                 return instances[Settings];
             }
-
+            
             var instance = new XrmMockup2011(Settings);
             instances[Settings] = instance;
             return instance;

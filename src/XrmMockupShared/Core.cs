@@ -15,6 +15,10 @@ using WorkflowExecuter;
 using System.Text.Json;
 using DG.Tools.XrmMockup.Serialization;
 
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+using Microsoft.Xrm.Sdk.Organization;
+#endif
+
 [assembly: InternalsVisibleTo("SharedTests")]
 
 namespace DG.Tools.XrmMockup
@@ -55,6 +59,9 @@ namespace DG.Tools.XrmMockup
         #region MyRegion
 
         private PluginManager pluginManager;
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+        internal OrganizationDetail orgDetail;
+#endif
         private WorkflowManager workflowManager;
         private Security security;
         private XrmMockupSettings settings;
@@ -122,6 +129,10 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
+            
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            this.orgDetail = settings.OrganizationDetail;
+#endif
         }
 
         private void InitializeDB()
@@ -205,6 +216,10 @@ namespace DG.Tools.XrmMockup
 #if !(XRM_MOCKUP_2011)
                 new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
                 new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
+#endif
+            
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+            new RetrieveCurrentOrganizationRequestHandler(this, db, metadata, security),
 #endif
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
