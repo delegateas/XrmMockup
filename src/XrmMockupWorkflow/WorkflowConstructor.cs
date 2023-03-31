@@ -46,7 +46,7 @@ namespace WorkflowExecuter
                workflow.GetOptionSetValue<workflow_stage>("createstage"), workflow.GetOptionSetValue<workflow_stage>("updatestage"),
                workflow.GetOptionSetValue<workflow_stage>("deletestage"), workflow.GetOptionSetValue<Workflow_Mode>("mode"),
                workflow.GetAttributeValue<EntityReference>("ownerid").Id, workflow.GetAttributeValue<string>("primaryentity"), codeActivites,
-               input, output);
+               input, output, workflow.GetAttributeValue<string>("name"));
         }
 
         private static WorkflowArgument ConvertToArgument(Property p)
