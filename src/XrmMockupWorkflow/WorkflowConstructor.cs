@@ -24,7 +24,7 @@ namespace WorkflowExecuter
         {
             if (workflow == null || workflow.LogicalName != LogicalNames.Workflow)
             {
-                throw new WorkflowException($"Entity had logicalname '{LogicalNames.Workflow}' instead of workflow");
+                throw new WorkflowException($"Entity had logicalname '{workflow.LogicalName}' instead of {LogicalNames.Workflow}");
             }
             var parsed = Parser.Parse(workflow.GetAttributeValue<string>("xaml"));
             var triggerFields = new HashSet<string>();
