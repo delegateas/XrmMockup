@@ -720,19 +720,19 @@ namespace DG.Tools.XrmMockup
                         GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
                             .ToEntity();
                     TriggerExtension(
-                        new XrmExtension(this, userRef, pluginContext), request,
+                        new MockupService(this, userRef.Id, pluginContext), request,
                         createdEntity, null, userRef);
                     break;
                 case "Update":
                     var target = (Entity) request.Parameters["Target"];
                     var updatedEntity = GetDbRow(target.ToEntityReferenceWithKeyAttributes()).ToEntity();
                     TriggerExtension(
-                        new XrmExtension(this, userRef, pluginContext), request,
+                        new MockupService(this, userRef.Id, pluginContext), request,
                         updatedEntity, preImage, userRef);
                     break;
                 case "Delete":
                     TriggerExtension(
-                        new XrmExtension(this, userRef, pluginContext), request,
+                        new MockupService(this, userRef.Id, pluginContext), request,
                         null, preImage, userRef);
                     break;
             }
@@ -1192,82 +1192,5 @@ namespace DG.Tools.XrmMockup
             }
         }
 #endif
-    }
-
-    internal class XrmExtension : IOrganizationService
-    {
-        private readonly Core _core;
-        private readonly EntityReference _userRef;
-        private readonly PluginContext _pluginContext;
-
-        public XrmExtension(Core core, EntityReference userRef, PluginContext pluginContext)
-        {
-            _core = core;
-            _userRef = userRef ?? throw new ArgumentNullException(nameof(userRef));
-            _pluginContext = pluginContext;
-        }
-        
-        public Guid Create(Entity entity)
-        {
-            var response = (CreateResponse)_core.Execute(new CreateRequest(), _userRef, _pluginContext);
-
-            return response.id;
-        }
-
-        public Entity Retrieve(string entityName, Guid id, ColumnSet columnSet)
-        {
-            var response = (RetrieveResponse)_core.Execute(
-                new RetrieveRequest { ColumnSet = columnSet, Target = new EntityReference(entityName, id) }, _userRef,
-                _pluginContext);
-
-            return response.Entity;
-        }
-
-        public void Update(Entity entity)
-        {
-            _core.Execute(new UpdateRequest { Target = entity }, _userRef, _pluginContext);
-        }
-
-        public void Delete(string entityName, Guid id)
-        {
-            _core.Execute(new DeleteRequest { Target = new EntityReference(entityName, id) }, _userRef,
-                _pluginContext);
-        }
-
-        public OrganizationResponse Execute(OrganizationRequest request)
-        {
-            return _core.Execute(request, _userRef, _pluginContext);
-        }
-
-        public void Associate(string entityName, Guid entityId, Relationship relationship,
-            EntityReferenceCollection relatedEntities)
-        {
-            _core.Execute(
-                new AssociateRequest
-                {
-                    Target = new EntityReference(entityName, entityId),
-                    Relationship = relationship,
-                    RelatedEntities = relatedEntities
-                }, _userRef, _pluginContext);
-        }
-
-        public void Disassociate(string entityName, Guid entityId, Relationship relationship,
-            EntityReferenceCollection relatedEntities)
-        {
-            _core.Execute(
-                new DisassociateRequest
-                {
-                    Target = new EntityReference(entityName, entityId),
-                    Relationship = relationship,
-                    RelatedEntities = relatedEntities
-                }, _userRef, _pluginContext);
-        }
-
-        public EntityCollection RetrieveMultiple(QueryBase query)
-        {
-            var response = (RetrieveMultipleResponse)_core.Execute(new RetrieveMultipleRequest { Query = query },
-                _userRef, _pluginContext);
-            return response.EntityCollection;
-        }
     }
 }
