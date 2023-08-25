@@ -1,3 +1,6 @@
+### 1.12.1 - 24 August 2023
+* Add flag to mitigate duplicate security role names (@mkholt)
+
 ### 1.12.0 - 16 December 2022
 * Add support for RetrieveCurrentOrganization Request (@kato88)
 

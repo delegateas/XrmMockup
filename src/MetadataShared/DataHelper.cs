@@ -408,7 +408,7 @@ namespace DG.Tools.XrmMockup.Metadata
                 .Select(e => e.ToEntity<Entity>());
         }
 
-        internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId)
+        internal Dictionary<Guid, SecurityRole> GetSecurityRoles(Guid rootBUId, bool mitigateDuplicateNames)
         {
             // Queries
             var privQuery = new QueryExpression(PRIVILEGE)
@@ -466,6 +466,8 @@ namespace DG.Tools.XrmMockup.Metadata
                 (e.rpr?.roleprivilege?.Contains("roleid")).GetValueOrDefault() &&
                 (e.rpr?.role?.Contains("name")).GetValueOrDefault());
 
+            var roleNameCounters = new Dictionary<string, int>();
+
             foreach (var e in validSecurityRoles)
             {
                 var entityName = (string)e.pp.privilegeOTC["objecttypecode"];
@@ -477,9 +479,26 @@ namespace DG.Tools.XrmMockup.Metadata
                 var roleId = (Guid)e.rpr.roleprivilege["roleid"];
                 if (!roles.ContainsKey(roleId))
                 {
+                    var name = (string)e.rpr.role["name"];
+
+                    if (mitigateDuplicateNames) {
+                        if (roleNameCounters.TryGetValue(name, out var count))
+                        {
+                            // Role name has been seen before, warn, add and increment counter
+                            Console.WriteLine("*** WARNING: DUPLICATE SECURITY ROLE NAME DETECTED: \"{0}\" ***", name);
+                            Console.WriteLine("*** IF THIS IS NO ON PURPOSE - REACH OUT TO MICROSOFT SUPPORT ***");
+                            name += $"_{++count}";
+                            roleNameCounters[name] = count;
+                        }
+                        else
+                        {
+                            roleNameCounters[name] = 1;
+                        }
+                    }
+
                     roles[roleId] = new SecurityRole()
                     {
-                        Name = (string)e.rpr.role["name"],
+                        Name = name,
                         RoleId = roleId
                     };
 

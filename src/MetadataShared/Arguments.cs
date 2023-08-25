@@ -98,6 +98,12 @@ namespace DG.Tools.XrmMockup.Metadata
             Abbreviations = new string[] { }
         };
 
+        public static ArgumentDescription MitigateDuplicateSecurityRoles = new ArgumentDescription()
+        {
+            Name = "mitigateDuplicateSecurityRoles",
+            Abbreviations = new string[] { }
+        };
+
         public static ArgumentDescription[] ArgList = new ArgumentDescription[] {
             Url,
             Username,
@@ -113,7 +119,8 @@ namespace DG.Tools.XrmMockup.Metadata
             ClientId,
             ReturnUrl,
             ClientSecret,
-            ConnectionString
+            ConnectionString,
+            MitigateDuplicateSecurityRoles
         };
     }
 }
