@@ -90,7 +90,9 @@ namespace DG.Tools.XrmMockup.Metadata {
                 }
             }
 
-            var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id);
+            var mitigateDuplicateSecurityRoles = ParsedArgs[Arguments.MitigateDuplicateSecurityRoles] != null;
+            var securityRoles = generator.GetSecurityRoles(skeleton.RootBusinessUnit.Id, mitigateDuplicateSecurityRoles);
+
             foreach (var securityRole in securityRoles) {
                 var safeName = ToSafeName(securityRole.Value.Name);
                 using (var stream = new FileStream($"{securityLocation}/{safeName}.xml", FileMode.Create)) {
