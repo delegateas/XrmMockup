@@ -1,5 +1,8 @@
-### 1.12.1 - 24 August 2023
+### 1.12.2 - 24 August 2023
 * Add flag to mitigate duplicate security role names (@mkholt)
+
+### 1.12.1 - 12 May 2023
+* Use Mockup service instead of XrmExtension (@magesoe)
 
 ### 1.12.0 - 16 December 2022
 * Add support for RetrieveCurrentOrganization Request (@kato88)
