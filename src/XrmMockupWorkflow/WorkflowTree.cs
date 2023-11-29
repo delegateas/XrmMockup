@@ -76,19 +76,21 @@ namespace WorkflowExecuter
         public List<WorkflowArgument> Input;
         [DataMember]
         public List<WorkflowArgument> Output;
+        [DataMember]
+        public string Name;
 
 
         public WorkflowTree(IWorkflowNode StartActivity) : this(StartActivity, false, false, new HashSet<string>(),
             workflow_runas.CallingUser, Workflow_Scope.User, workflow_stage.Postoperation, workflow_stage.Postoperation,
             workflow_stage.Postoperation, Workflow_Mode.Realtime, null, "", new Dictionary<string, CodeActivity>(),
-            new List<WorkflowArgument>(), new List<WorkflowArgument>())
+            new List<WorkflowArgument>(), new List<WorkflowArgument>(), "")
         { }
 
         public WorkflowTree(IWorkflowNode StartActivity, bool? TriggerOnCreate, bool? TriggerOnDelete,
             HashSet<string> TriggerFieldsChange, workflow_runas? RunAs, Workflow_Scope? Scope,
             workflow_stage? CreateStage, workflow_stage? UpdateStage, workflow_stage? DeleteStage, Workflow_Mode? Mode,
             Guid? Owner, string PrimaryEntityLogicalname, Dictionary<string, CodeActivity> CodeActivites,
-            List<WorkflowArgument> Input, List<WorkflowArgument> Output)
+            List<WorkflowArgument> Input, List<WorkflowArgument> Output, string Name)
         {
             this.Variables = new Dictionary<string, object>();
             this.StartActivity = StartActivity;
@@ -106,6 +108,7 @@ namespace WorkflowExecuter
             this.CodeActivites = CodeActivites;
             this.Input = Input;
             this.Output = Output;
+            this.Name = Name;
         }
 
         public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset,
@@ -126,7 +129,11 @@ namespace WorkflowExecuter
                 var currency = orgService.Retrieve("transactioncurrency", currencyRef.Id, new ColumnSet(exchangerate));
                 Variables["ExchangeRate"] = currency[exchangerate];
             }
+            primaryEntity.Attributes.TryGetValue("name", out object workflowName);
+            primaryEntity.Attributes.TryGetValue("primaryEntity", out object workflowEntityLogicalName);
+            trace.Trace("Starting {0} workflow: '{1}' for entity '{2}'. timeOffset: {3}", Mode?.ToString() ?? "", Name, PrimaryEntityLogicalname, timeOffset);
             StartActivity.Execute(ref Variables, timeOffset, orgService, factory, trace);
+            trace.Trace("{0} workflow '{1}' completed successfully", Mode?.ToString(), Name);
             return this;
         }
 
@@ -220,6 +227,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             switch (TargetType)
             {
                 case "String":
@@ -333,6 +341,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}", this.GetType().Name);
             variables["Wait"] = null;
         }
     }
@@ -354,6 +363,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             object value = null;
             foreach (var param in Parameters)
             {
@@ -392,6 +402,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
     IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. TargetType: {1} VariableName: {2} Method: {3}", this.GetType().Name, TargetType, VariableName, Method);
             var var1 = variables[Parameters[0][0]];
             var var2 = variables[Parameters[0][1]];
             var variablesInstance = variables;
@@ -550,6 +561,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1} Method: {2}", this.GetType().Name, VariableName, Method);
             var parameterKey = Parameters[0][0];
             var parameters = variables[parameterKey] as IEnumerable<object>;
             var paramType = parameters.FirstOrDefault();
@@ -645,6 +657,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             var variablesInstance = variables;
             var strings = Parameters[0].Select(p => (string)variablesInstance[p]).ToArray();
             variables[VariableName] = string.Concat(strings);
@@ -671,6 +684,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1} Amount: {2}", this.GetType().Name, VariableName, Amount);
             var toAdd = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
             if (toAdd.HasValue && date.HasValue)
@@ -721,6 +735,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1} Amount: {2}", this.GetType().Name, VariableName, Amount);
             var toSubtract = variables[Parameters[0][0]] as int?;
             var date = variables[Parameters[0][1]] as DateTime?;
             if (toSubtract.HasValue && date.HasValue)
@@ -771,6 +786,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1} Amount: {2}", this.GetType().Name, VariableName, Amount);
             var date1 = variables[Parameters[0][0]] as DateTime?;
             var date2 = variables[Parameters[0][1]] as DateTime?;
             if (date1.HasValue && date2.HasValue)
@@ -825,6 +841,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1} Method: {2}", this.GetType().Name, VariableName, Method);
             var word = (string)variables[Parameters[0][0]];
             var trimLength = int.Parse((string)variables[Parameters[0][1]]);
             switch (Method)
@@ -855,6 +872,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             variables[VariableName] = variables["ExecutionTime"];
         }
     }
@@ -873,6 +891,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             variables[VariableName] = DateTime.Now.Add(timeOffset);
         }
     }
@@ -894,6 +913,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableName: {1}", this.GetType().Name, VariableName);
             var variableName = "{" + Parameters[0][0] + "(Arguments)}";
             variables[VariableName] = variables.ContainsKey(variableName) ? variables[variableName] : null;
         }
@@ -905,6 +925,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}", this.GetType().Name);
         }
     }
 
@@ -934,6 +955,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. Attribute: {1} EntityId: {2} EntityLogicalName: {3} VariableName: {4} TargetType: {5}", this.GetType().Name, Attribute, EntityId, EntityLogicalName, VariableName, TargetType);
             Entity entity = null;
             if (EntityId.Contains("related_"))
             {
@@ -1025,6 +1047,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. Operator: {1} Parameters: {2} Operand: {3} ReturnName: {4}", this.GetType().Name, Operator, Parameters, Operand, ReturnName);
             var operand = variables[Operand];
             var variablesInstance = variables;
             var parameters = Parameters != null && Parameters.Count() == 1 ? Parameters[0].Split(',').Select(p => variablesInstance[p.Trim()]).ToArray() : null;
@@ -1177,6 +1200,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. GuardId: {1} Then: {2} Otherwise: {3}", this.GetType().Name, GuardId, Then, Otherwise);
             if (variables[GuardId] != null && (bool)variables[GuardId])
             {
                 Then.Execute(ref variables, timeOffset, orgService, factory, trace);
@@ -1211,6 +1235,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0} Operator: {1} LeftOperand: {2} RightOperand: {3} Result: {4}", this.GetType().Name, Operator, LeftOperand, RightOperand, Result);
             var left = (bool?)variables[LeftOperand];
             var right = (bool?)variables[RightOperand];
 
@@ -1251,6 +1276,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. To: {1} Value: {2}", this.GetType().Name, To, Value);
             var comparaters = new string[] { "<", "<=", "==", ">=", ">" };
             if (comparaters.Any(c => Value.Contains(c)))
             {
@@ -1363,6 +1389,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. BlockExecution: {1} PostponeUntil: {2}", this.GetType().Name, BlockExecution, PostponeUntil);
             if (BlockExecution == "True")
             {
                 variables["Wait"] = null;
@@ -1390,7 +1417,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
-
+            trace.Trace("Entering {0}. Input: {1}, Type: {2}, Result: {3}", this.GetType().Name, Input, Type, Result);
             if (!variables.ContainsKey(Input))
             {
                 variables.Add(Input, null);
@@ -1450,6 +1477,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. Attribute: {1} EntityId: {2} EntityLogicalName: {3} VariableId: {4} TargetType: {5}", this.GetType().Name, Attribute, EntityId, EntityLogicalName, VariableId, TargetType);
             if (!variables.ContainsKey(VariableId))
             {
                 Console.WriteLine($"The attribute '{Attribute}' was not created with id '{VariableId}' before being set");
@@ -1532,6 +1560,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableId: {1} EntityName: {2}", this.GetType().Name, VariableId, EntityName);
             var relatedlinked = "relatedlinked";
             if (VariableId.Contains(relatedlinked))
             {
@@ -1571,6 +1600,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. EntityId: {1} VariableId: {2} EntityName: {3}", this.GetType().Name, EntityId, VariableId, EntityName);
             var entity = variables[VariableId] as Entity;
             entity.Id = EntityId == null ? Guid.NewGuid() : new Guid(EntityId);
             entity[entity.LogicalName + "id"] = entity.Id;
@@ -1595,6 +1625,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. VariableId: {1} EntityName: {2}", this.GetType().Name, VariableId, EntityName);
             orgService.Update(variables[VariableId] as Entity);
         }
     }
@@ -1616,6 +1647,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. EntityId: {1} OwnerId: {2}", this.GetType().Name, EntityId, OwnerId);
             if (!variables.ContainsKey(OwnerId))
             {
                 throw new WorkflowException($"There is no variable with the id '{OwnerId}'");
@@ -1658,6 +1690,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. EntityId: {1} EntityIdKey: {2} EntityName: {3} StateCode: {4} StatusCode: {5}", this.GetType().Name, EntityId, EntityIdKey, EntityName, StateCode, StatusCode);
             var entity = variables[EntityId] as Entity;
             if (entity.LogicalName != EntityName)
             {
@@ -1692,12 +1725,14 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. Activities Count: {1} VariableNames: {2}", this.GetType().Name, Activities.Length, string.Join(", ", VariableNames));
             Execute(0, ref variables, timeOffset, orgService, factory, trace);
         }
 
         public void Execute(int loopStart, ref Dictionary<string, object> variables, TimeSpan timeOffset,
              IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}", this.GetType().Name);
             foreach (var variableName in VariableNames)
             {
                 if (!variables.ContainsKey(variableName))
@@ -1726,7 +1761,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
-
+            trace.Trace("Entering {0}", this.GetType().Name);
         }
     }
 
@@ -1747,6 +1782,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. Status: {0} MessageId: {1}", this.GetType().Name, status, messageId);
             var sb = new StringBuilder($"Workflow exited with status '{status}'");
             if (variables[messageId] != null && (variables[messageId] as string != ""))
             {
@@ -1793,6 +1829,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. HierarchicalRelationshipName: {1} FilterResult: {2} AggregateResult: {3} Filter Count: {4} Aggregation Count: {5}", this.GetType().Name, HierarchicalRelationshipName, FilterResult, AggregateResult, Filter.Count, Aggregation.Count);
             var primaryEntityKey = "InputEntities(\"primaryEntity\")";
             var relation = Filter.First(x => x is SetAttributeValue) as SetAttributeValue;
             relation.Execute(ref variables, timeOffset, orgService, factory, trace);
@@ -1860,6 +1897,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. CodeActivityName: {1}", GetType().Name, CodeActivityName);
             var variablesInstance = variables;
             var arguments = this.inArguments.Where(arg => !outArguments.ContainsKey(arg.Value) && variablesInstance[arg.Value] != null)
                 .ToDictionary(arg => arg.Key, arg => (outArguments.ContainsKey(arg.Value) ? null : variablesInstance[arg.Value]));
@@ -1911,6 +1949,7 @@ namespace WorkflowExecuter
         public void Execute(ref Dictionary<string, object> variables, TimeSpan timeOffset,
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
+            trace.Trace("Entering {0}. EntityId: {1} DisplayName: {2} Entity: {3}", this.GetType().Name, EntityId, DisplayName, Entity);
             if (EntityId == "{x:Null}")
             {
                 orgService.Create(variables[Entity.TrimEdge()] as Entity);
