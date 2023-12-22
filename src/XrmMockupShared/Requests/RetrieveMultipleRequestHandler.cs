@@ -40,8 +40,6 @@ namespace DG.Tools.XrmMockup {
             db.PrefillDBWithOnlineData(queryExpr);
             var rows = db.GetDBEntityRows(queryExpr.EntityName);
 
-            Console.WriteLine($"\t row count : {rows.Count().ToString()}");
-
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
