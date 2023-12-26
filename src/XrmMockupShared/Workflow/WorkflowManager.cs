@@ -119,7 +119,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
-            var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
+            var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
             var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
             foreach (var waitInfo in waitingWorkflows.ToList()) {
                 waitingWorkflows.Remove(waitInfo);
@@ -128,7 +128,7 @@ namespace DG.Tools.XrmMockup {
 
                 var primaryEntity = shadowService.Retrieve(waitInfo.PrimaryEntity.LogicalName, waitInfo.PrimaryEntity.Id, new ColumnSet(true));
                 variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
-                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, core.TimeOffset, service, provider, new TracingService());
+                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
                 if (variables["Wait"] != null) {
                     waitingWorkflows.Add(variables["Wait"] as WaitInfo);
                 }
@@ -382,9 +382,9 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
-            var provider = new MockupServiceProviderAndFactory(core, pluginContext, new TracingService());
+            var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
-            return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService(typeof(ITracingService)) as ITracingService);
+            return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
         }
 
         internal WorkflowTree ParseWorkflow(Entity workflow) {

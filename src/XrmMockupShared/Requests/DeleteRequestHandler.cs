@@ -59,7 +59,7 @@ namespace DG.Tools.XrmMockup {
                             }, userRef);
                             break;
                         case CascadeType.Restrict:
-                            var trace = core.ServiceFactory.GetService(typeof(ITracingService)) as ITracingService;
+                            var trace = core.ServiceFactory.GetService<ITracingService>();
                             trace.Trace($"Delete restricted for {relatedEntities.Key.SchemaName} when trying to delete {entity.LogicalName} with id {entity.Id}");
                             return new DeleteResponse();
                     }

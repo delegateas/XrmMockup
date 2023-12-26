@@ -24,12 +24,12 @@ namespace DG.Tools.XrmMockup {
         /// Creates new MockupServiceProviderAndFactory object
         /// </summary>
         /// <param name="core"></param>
-        public MockupServiceProviderAndFactory(Core core) : this(core, null, new TracingService()) { }
+        public MockupServiceProviderAndFactory(Core core) : this(core, null, core.TracingServiceFactory) { }
 
-        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, ITracingService tracingService) {
+        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, TracingServiceFactory tracingServiceFactory) {
             this.core = core;
             this.pluginContext = pluginContext;
-            this.tracingService = tracingService;
+            this.tracingService = tracingServiceFactory.GetService();
         }
 
         /// <summary>
@@ -42,6 +42,11 @@ namespace DG.Tools.XrmMockup {
             if (serviceType == typeof(ITracingService)) return this.tracingService;
             if (serviceType == typeof(IOrganizationServiceFactory)) return this;
             return null;
+        }
+
+        public TService GetService<TService>() where TService: class
+        {
+            return GetService(typeof(TService)) as TService;
         }
 
         public IOrganizationService CreateOrganizationService(Guid? userId)

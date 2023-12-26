@@ -40,7 +40,7 @@ namespace DG.Tools.XrmMockup {
                 } else {
                     var tree = WorkflowConstructor.ParseRollUp(definition);
                     var factory = core.ServiceFactory;
-                    var resultTree = tree.Execute(dbEntity, core.TimeOffset, core.GetWorkflowService(), factory, factory.GetService(typeof(ITracingService)) as ITracingService);
+                    var resultTree = tree.Execute(dbEntity, core.TimeOffset, core.GetWorkflowService(), factory, factory.GetService<ITracingService>());
                     var resultLocaltion = ((resultTree.StartActivity as RollUp).Aggregation[1] as Aggregate).VariableName;
                     var result = resultTree.Variables[resultLocaltion];
                     if (result != null) {

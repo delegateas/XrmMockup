@@ -60,6 +60,12 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public MetaPlugin[] IPluginMetadata { get; set; }
 
+        /// <summary>
+        /// <para>Optional factory for creating new instances of ITracingService.</para>
+        /// <para>If not specified, uses the built-in <see cref="TracingService"/></para>
+        /// </summary>
+        public Func<ITracingService> TracingServiceFactory { get; set; }
+
 #if XRM_MOCKUP_365
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
