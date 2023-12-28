@@ -3,15 +3,13 @@ using System;
 
 namespace DG.Tools.XrmMockup
 {
-    internal class TracingServiceFactory
+    public interface ITracingServiceFactory
     {
-        private readonly Func<ITracingService> _factory;
+        ITracingService GetService();
+    }
 
-        public TracingServiceFactory(Func<ITracingService> factory)
-        {
-            _factory = factory;
-        }
-
-        public ITracingService GetService() => _factory?.Invoke() ?? new TracingService();
+    internal class TracingServiceFactory : ITracingServiceFactory
+    {
+        public ITracingService GetService() => new TracingService();
     }
 }

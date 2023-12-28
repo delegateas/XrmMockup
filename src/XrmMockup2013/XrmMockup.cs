@@ -41,10 +41,14 @@ namespace DG.Tools.XrmMockup {
         /// <summary>
         /// Gets an instance of XrmMockup2013 using the same metadata as the provided
         /// </summary>
-        /// <param name="xrmMockup"></param>
-        public static XrmMockup2013 GetInstance(XrmMockup2013 xrmMockup)
+        /// <param name="xrmMockup">The existing instance to copy</param>
+        /// <param name="settings">
+        ///     If provided, will override the settings from the existing instance.<br/>
+        ///     <em>NOTE: Changing <see cref="XrmMockupSettings.MetadataDirectoryPath"/> will not trigger a reload</em>
+        /// </param>
+        public static XrmMockup2013 GetInstance(XrmMockup2013 xrmMockup, XrmMockupSettings settings = null)
         {
-            return new XrmMockup2013(xrmMockup.Settings, xrmMockup.Metadata, xrmMockup.Workflows, xrmMockup.SecurityRoles);
+            return new XrmMockup2013(settings ?? xrmMockup.Settings, xrmMockup.Metadata, xrmMockup.Workflows, xrmMockup.SecurityRoles);
         }
     }
 }

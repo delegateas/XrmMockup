@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="core"></param>
         public MockupServiceProviderAndFactory(Core core) : this(core, null, core.TracingServiceFactory) { }
 
-        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, TracingServiceFactory tracingServiceFactory) {
+        internal MockupServiceProviderAndFactory(Core core, PluginContext pluginContext, ITracingServiceFactory tracingServiceFactory) {
             this.core = core;
             this.pluginContext = pluginContext;
             this.tracingService = tracingServiceFactory.GetService();

@@ -74,7 +74,7 @@ namespace DG.Tools.XrmMockup
         private int baseCurrencyPrecision;
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
-        public TracingServiceFactory TracingServiceFactory { get; }
+        public ITracingServiceFactory TracingServiceFactory { get; }
 
         private List<string> systemAttributeNames;
 
@@ -113,7 +113,7 @@ namespace DG.Tools.XrmMockup
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles,db);
-            this.TracingServiceFactory = new TracingServiceFactory(settings.TracingServiceFactory);
+            this.TracingServiceFactory = settings.TracingServiceFactory ?? new TracingServiceFactory();
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
 
             //add the additional plugin settings to the meta data
