@@ -74,6 +74,7 @@ namespace DG.Tools.XrmMockup
         private int baseCurrencyPrecision;
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; }
+        public ITracingServiceFactory TracingServiceFactory { get; }
 
         private List<string> systemAttributeNames;
 
@@ -112,6 +113,7 @@ namespace DG.Tools.XrmMockup
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
             this.security = new Security(this, metadata, SecurityRoles,db);
+            this.TracingServiceFactory = settings.TracingServiceFactory ?? new TracingServiceFactory();
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
 
             //add the additional plugin settings to the meta data
@@ -1155,14 +1157,14 @@ namespace DG.Tools.XrmMockup
 
                 if (definition == null)
                 {
-                    var trace = this.ServiceFactory.GetService(typeof(ITracingService)) as ITracingService;
+                    var trace = this.ServiceFactory.GetService<ITracingService>();
                     trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
                     return;
                 }
                 var tree = WorkflowConstructor.ParseCalculated(definition);
                 var factory = this.ServiceFactory;
                 tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), this.TimeOffset, this.GetWorkflowService(),
-                    factory, factory.GetService(typeof(ITracingService)) as ITracingService);
+                    factory, factory.GetService<ITracingService>());
             }
         }
 #endif

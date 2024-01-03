@@ -378,7 +378,7 @@ namespace DG.Tools.XrmMockup
                 {
                     // Create the plugin context
                     var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
-                    return new PluginExecutionProvider(pluginExecute, new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService()));
+                    return new PluginExecutionProvider(pluginExecute, new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory));
                 }
 
                 return null;
@@ -398,7 +398,7 @@ namespace DG.Tools.XrmMockup
                     var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
 
                     //Create Serviceprovider, and execute plugin
-                    MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService());
+                    MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory);
                     try
                     {
                         pluginExecute(provider);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.Tools.XrmMockup;
 using Xunit;
+using System.ServiceModel;
 
 namespace DG.XrmMockupTest
 {
@@ -26,14 +27,8 @@ namespace DG.XrmMockupTest
 
             crm.ResetEnvironment();
 
-            try
-            {
-                Contact.Retrieve(orgAdminService, contact.Id);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(ex.Message, $"The record of type '{contact.LogicalName}' with id '{contact.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
-            }
+            var ex = Assert.Throws<FaultException>(() => Contact.Retrieve(orgAdminService, contact.Id));
+            Assert.Equal(ex.Message, $"The record of type '{contact.LogicalName}' with id '{contact.Id}' does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
 
             crm.RestoreZipSnapshot("testfile");
 

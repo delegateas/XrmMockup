@@ -19,10 +19,11 @@ namespace DG.Tools.XrmMockup {
         private static Dictionary<XrmMockupSettings, XrmMockup2013> instances = new Dictionary<XrmMockupSettings, XrmMockup2013>();
 
 
-        private XrmMockup2013(XrmMockupSettings Settings) : 
-            base(Settings) {
+        private XrmMockup2013(XrmMockupSettings Settings, MetadataSkeleton metadata = null, List<Entity> workflows = null, List<SecurityRole> securityRoles = null) :
+            base(Settings, metadata, workflows, securityRoles)
+        {
         }
-        
+
         /// <summary>
         /// Gets an instance of XrmMockup2013
         /// </summary>
@@ -35,6 +36,19 @@ namespace DG.Tools.XrmMockup {
             var instance = new XrmMockup2013(Settings);
             instances[Settings] = instance;
             return instance;
+        }
+
+        /// <summary>
+        /// Gets an instance of XrmMockup2013 using the same metadata as the provided
+        /// </summary>
+        /// <param name="xrmMockup">The existing instance to copy</param>
+        /// <param name="settings">
+        ///     If provided, will override the settings from the existing instance.<br/>
+        ///     <em>NOTE: Changing <see cref="XrmMockupSettings.MetadataDirectoryPath"/> will not trigger a reload</em>
+        /// </param>
+        public static XrmMockup2013 GetInstance(XrmMockup2013 xrmMockup, XrmMockupSettings settings = null)
+        {
+            return new XrmMockup2013(settings ?? xrmMockup.Settings, xrmMockup.Metadata, xrmMockup.Workflows, xrmMockup.SecurityRoles);
         }
     }
 }

@@ -1,3 +1,8 @@
+### 1.12.3 - 22 December 2023
+* Add initializer based on an existing instance, letting us copy an already initialized XrmMockup instance (@mkholt)
+* Add optional tracing class factory to settings (@mkholt)
+* Add timers during initialization (@mkholt)
+
 ### 1.12.2 - 24 August 2023
 * Add flag to mitigate duplicate security role names (@mkholt)
 

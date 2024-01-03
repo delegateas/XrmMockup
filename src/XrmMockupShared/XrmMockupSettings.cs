@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
-using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
@@ -59,6 +58,12 @@ namespace DG.Tools.XrmMockup
         /// Additional Plugin Metatdata for IPlugin direct plugin registration
         /// </summary>
         public MetaPlugin[] IPluginMetadata { get; set; }
+
+        /// <summary>
+        /// <para>Optional factory for creating new instances of ITracingService.</para>
+        /// <para>If not specified, uses the built-in <see cref="TracingService"/></para>
+        /// </summary>
+        public ITracingServiceFactory TracingServiceFactory { get; set; }
 
 #if XRM_MOCKUP_365
         /// <summary>
