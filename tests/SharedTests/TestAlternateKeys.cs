@@ -10,7 +10,7 @@ namespace DG.XrmMockupTest
     {
         public TestAlternateKeys(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact(Skip = "Alternate key implementation should be based on column values")]
+        [Fact]
         public void TestAlternateKeysAll()
         {
             using (var context = new Xrm(orgAdminUIService))
