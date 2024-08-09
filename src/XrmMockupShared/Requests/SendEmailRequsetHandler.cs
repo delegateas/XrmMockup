@@ -18,6 +18,7 @@ namespace DG.Tools.XrmMockup
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<SendEmailRequest>(orgRequest);
+            if (request.EmailId == Guid.Empty) return;
 
             var emailRef = new EntityReference("email", request.EmailId);
 
