@@ -9,6 +9,7 @@ namespace DG.Tools.XrmMockup
     internal class SendEmailRequsetHandler : RequestHandler
     {
         const int EMAIL_STATE_COMPLETED = 1;
+        const int EMAIL_STATUS_DRAFT = 1;
         const int EMAIL_STATUS_PENDING_SEND = 6;
         const int EMAIL_STATUS_SENT = 3;
 
@@ -46,6 +47,16 @@ namespace DG.Tools.XrmMockup
             if (email is null)
             {
                 throw new FaultException($"Email with Id = {request.EmailId} does not exist");
+            }
+
+            if (email.GetAttributeValue<bool>("directioncode") is false)
+            {
+                throw new FaultException("Cannot send incoming email messages");
+            }
+
+            if (email.GetAttributeValue<OptionSetValue>("statuscode").Value != EMAIL_STATUS_DRAFT)
+            {
+                throw new FaultException("Email must be in Draft status to send");
             }
 
             if (email.Contains("from"))
