@@ -47,7 +47,7 @@ namespace DG.Tools.XrmMockup
             var email = db.GetEntityOrNull(emailRef);
             if (email is null)
             {
-                throw new FaultException($"Email with Id = {request.EmailId} does not exist");
+                throw new FaultException($"email with Id = {request.EmailId} does not exist");
             }
 
             if (email.GetAttributeValue<bool>("directioncode") is false)
