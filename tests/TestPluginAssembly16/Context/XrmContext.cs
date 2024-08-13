@@ -22,8 +22,787 @@ using System.Runtime.Serialization;
 
 
 namespace DG.XrmFramework.BusinessDomain.ServiceContext {
-    
-    
+    /// <summary>
+    /// <para>Template for an email message that contains the standard attributes of an email message.</para>
+    /// <para>Display Name: Email Template</para>
+    /// </summary>
+    [EntityLogicalName("template")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class Template : ExtendedEntity<EmptyEnum, EmptyEnum>
+    {
+
+        public const string EntityLogicalName = "template";
+
+        public const int EntityTypeCode = 2010;
+
+        public Template() :
+                base(EntityLogicalName)
+        {
+        }
+
+        public Template(Guid Id) :
+                base(EntityLogicalName, Id)
+        {
+        }
+
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return GetDebuggerDisplay("title");
+            }
+        }
+
+        [AttributeLogicalName("templateid")]
+        public override Guid Id
+        {
+            get
+            {
+                return base.Id;
+            }
+            set
+            {
+                SetId("templateid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the template.</para>
+        /// <para>Display Name: Email Template</para>
+        /// </summary>
+        [AttributeLogicalName("templateid")]
+        public Guid? TemplateId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("templateid");
+            }
+            set
+            {
+                SetId("templateid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Body text of the email template.</para>
+        /// <para>Display Name: Body</para>
+        /// </summary>
+        [AttributeLogicalName("body")]
+        public string Body
+        {
+            get
+            {
+                return GetAttributeValue<string>("body");
+            }
+            set
+            {
+                SetAttributeValue("body", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Component State</para>
+        /// </summary>
+        [AttributeLogicalName("componentstate")]
+        public componentstate? ComponentState
+        {
+            get
+            {
+                return GetOptionSetValue<componentstate>("componentstate");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user who created the email template.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the email template was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the template.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Description of the email template.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description
+        {
+            get
+            {
+                return GetAttributeValue<string>("description");
+            }
+            set
+            {
+                SetAttributeValue("description", value);
+            }
+        }
+
+        [AttributeLogicalName("entityimageid")]
+        public Guid? EntityImageId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("entityimageid");
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Generation Type Code</para>
+        /// </summary>
+        [AttributeLogicalName("generationtypecode")]
+        public int? GenerationTypeCode
+        {
+            get
+            {
+                return GetAttributeValue<int?>("generationtypecode");
+            }
+            set
+            {
+                SetAttributeValue("generationtypecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the data import or data migration that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set
+            {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Version in which the form is introduced.</para>
+        /// <para>Display Name: Introduced Version</para>
+        /// </summary>
+        [AttributeLogicalName("introducedversion")]
+        public string IntroducedVersion
+        {
+            get
+            {
+                return GetAttributeValue<string>("introducedversion");
+            }
+            set
+            {
+                SetAttributeValue("introducedversion", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Information that specifies whether this component can be customized.</para>
+        /// <para>Display Name: Customizable</para>
+        /// </summary>
+        [AttributeLogicalName("iscustomizable")]
+        public BooleanManagedProperty IsCustomizable
+        {
+            get
+            {
+                return GetAttributeValue<BooleanManagedProperty>("iscustomizable");
+            }
+            set
+            {
+                SetAttributeValue("iscustomizable", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Indicates whether the solution component is part of a managed solution.</para>
+        /// <para>Display Name: Is Managed</para>
+        /// </summary>
+        [AttributeLogicalName("ismanaged")]
+        public bool? IsManaged
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("ismanaged");
+            }
+        }
+
+        /// <summary>
+        /// <para>Information about whether the template is personal or is available to all users.</para>
+        /// <para>Display Name: Viewable By</para>
+        /// </summary>
+        [AttributeLogicalName("ispersonal")]
+        public bool? IsPersonal
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("ispersonal");
+            }
+            set
+            {
+                SetAttributeValue("ispersonal", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Indicates if a template is recommended by Dynamics 365.</para>
+        /// <para>Display Name: Recommended</para>
+        /// </summary>
+        [AttributeLogicalName("isrecommended")]
+        public bool? IsRecommended
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isrecommended");
+            }
+        }
+
+        /// <summary>
+        /// <para>Language of the email template.</para>
+        /// <para>Display Name: Language</para>
+        /// </summary>
+        [AttributeLogicalName("languagecode")]
+        public int? LanguageCode
+        {
+            get
+            {
+                return GetAttributeValue<int?>("languagecode");
+            }
+            set
+            {
+                SetAttributeValue("languagecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>MIME type of the email template.</para>
+        /// <para>Display Name: Mime Type</para>
+        /// </summary>
+        [AttributeLogicalName("mimetype")]
+        public string MimeType
+        {
+            get
+            {
+                return GetAttributeValue<string>("mimetype");
+            }
+            set
+            {
+                SetAttributeValue("mimetype", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user who last modified the template.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the email template was last modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who last modified the template.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only. Shows the number of times emails that use this template have been opened.</para>
+        /// <para>Display Name: Open Count</para>
+        /// </summary>
+        [AttributeLogicalName("opencount")]
+        public int? OpenCount
+        {
+            get
+            {
+                return GetAttributeValue<int?>("opencount");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the open rate of this template. This is based on number of opens on followed emails that use this template.</para>
+        /// <para>Display Name: Open Rate</para>
+        /// </summary>
+        [AttributeLogicalName("openrate")]
+        public int? OpenRate
+        {
+            get
+            {
+                return GetAttributeValue<int?>("openrate");
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Record Overwrite Time</para>
+        /// </summary>
+        [AttributeLogicalName("overwritetime")]
+        public DateTime? OverwriteTime
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("overwritetime");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user or team who owns the template for the email activity.</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+            set
+            {
+                SetAttributeValue("ownerid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the business unit that owns the template.</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the team who owns the template.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user who owns the template.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+
+        /// <summary>
+        /// <para>XML data for the body of the email template.</para>
+        /// <para>Display Name: Presentation XML</para>
+        /// </summary>
+        [AttributeLogicalName("presentationxml")]
+        public string PresentationXml
+        {
+            get
+            {
+                return GetAttributeValue<string>("presentationxml");
+            }
+            set
+            {
+                SetAttributeValue("presentationxml", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only. Shows the number of times emails that use this template have received replies.</para>
+        /// <para>Display Name: Reply Count</para>
+        /// </summary>
+        [AttributeLogicalName("replycount")]
+        public int? ReplyCount
+        {
+            get
+            {
+                return GetAttributeValue<int?>("replycount");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the reply rate for this template. This is based on number of replies received on followed emails that use this template.</para>
+        /// <para>Display Name: Reply Rate</para>
+        /// </summary>
+        [AttributeLogicalName("replyrate")]
+        public int? ReplyRate
+        {
+            get
+            {
+                return GetAttributeValue<int?>("replyrate");
+            }
+        }
+
+        /// <summary>
+        /// <para>Safe html of email template.</para>
+        /// <para>Display Name: Safe HTML of email template</para>
+        /// </summary>
+        [AttributeLogicalName("safehtml")]
+        public string SafeHtml
+        {
+            get
+            {
+                return GetAttributeValue<string>("safehtml");
+            }
+            set
+            {
+                SetAttributeValue("safehtml", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the associated solution.</para>
+        /// <para>Display Name: Solution</para>
+        /// </summary>
+        [AttributeLogicalName("solutionid")]
+        public Guid? SolutionId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("solutionid");
+            }
+        }
+
+        /// <summary>
+        /// <para>Subject associated with the email template.</para>
+        /// <para>Display Name: Subject</para>
+        /// </summary>
+        [AttributeLogicalName("subject")]
+        public string Subject
+        {
+            get
+            {
+                return GetAttributeValue<string>("subject");
+            }
+            set
+            {
+                SetAttributeValue("subject", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>XML data for the subject of the email template.</para>
+        /// <para>Display Name: Subject XML</para>
+        /// </summary>
+        [AttributeLogicalName("subjectpresentationxml")]
+        public string SubjectPresentationXml
+        {
+            get
+            {
+                return GetAttributeValue<string>("subjectpresentationxml");
+            }
+            set
+            {
+                SetAttributeValue("subjectpresentationxml", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Safe html of email template subject.</para>
+        /// <para>Display Name: Safe HTML of email template subject</para>
+        /// </summary>
+        [AttributeLogicalName("subjectsafehtml")]
+        public string SubjectSafeHtml
+        {
+            get
+            {
+                return GetAttributeValue<string>("subjectsafehtml");
+            }
+            set
+            {
+                SetAttributeValue("subjectsafehtml", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// </summary>
+        [AttributeLogicalName("templateidunique")]
+        public Guid? TemplateIdUnique
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("templateidunique");
+            }
+        }
+
+        /// <summary>
+        /// <para>Type of email template.</para>
+        /// <para>Display Name: Template Type</para>
+        /// </summary>
+        [AttributeLogicalName("templatetypecode")]
+        public string TemplateTypeCode
+        {
+            get
+            {
+                return GetAttributeValue<string>("templatetypecode");
+            }
+            set
+            {
+                SetAttributeValue("templatetypecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Title of the template.</para>
+        /// <para>Display Name: Title</para>
+        /// </summary>
+        [AttributeLogicalName("title")]
+        public string Title
+        {
+            get
+            {
+                return GetAttributeValue<string>("title");
+            }
+            set
+            {
+                SetAttributeValue("title", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the number of sent emails that use this template.</para>
+        /// <para>Display Name: Sent email count</para>
+        /// </summary>
+        [AttributeLogicalName("usedcount")]
+        public int? UsedCount
+        {
+            get
+            {
+                return GetAttributeValue<int?>("usedcount");
+            }
+        }
+
+        /// <summary>
+        /// <para>Version number of the template.</para>
+        /// <para>Display Name: Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber
+        {
+            get
+            {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+
+        /// <summary>
+        /// <para>Display Name: field</para>
+        /// </summary>
+        [AttributeLogicalName("enhancededitorhtml")]
+        public string enhancededitorhtml
+        {
+            get
+            {
+                return GetAttributeValue<string>("enhancededitorhtml");
+            }
+            set
+            {
+                SetAttributeValue("enhancededitorhtml", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Display Name: isenhancededitorenabled</para>
+        /// </summary>
+        [AttributeLogicalName("isenhancededitorenabled")]
+        public bool? isenhancededitorenabled
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isenhancededitorenabled");
+            }
+            set
+            {
+                SetAttributeValue("isenhancededitorenabled", value);
+            }
+        }
+
+        [RelationshipSchemaName("Email_EmailTemplate")]
+        public IEnumerable<Email> Email_EmailTemplate
+        {
+            get
+            {
+                return GetRelatedEntities<Email>("Email_EmailTemplate", null);
+            }
+            set
+            {
+                SetRelatedEntities("Email_EmailTemplate", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owningbusinessunit")]
+        [RelationshipSchemaName("business_unit_templates")]
+        public BusinessUnit business_unit_templates
+        {
+            get
+            {
+                return GetRelatedEntity<BusinessUnit>("business_unit_templates", null);
+            }
+            set
+            {
+                SetRelatedEntity("business_unit_templates", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_templatebase_createdby")]
+        public SystemUser lk_templatebase_createdby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_templatebase_createdby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_templatebase_createdby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_templatebase_createdonbehalfby")]
+        public SystemUser lk_templatebase_createdonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_templatebase_createdonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_templatebase_createdonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_templatebase_modifiedby")]
+        public SystemUser lk_templatebase_modifiedby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_templatebase_modifiedby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_templatebase_modifiedby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_templatebase_modifiedonbehalfby")]
+        public SystemUser lk_templatebase_modifiedonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_templatebase_modifiedonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_templatebase_modifiedonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owninguser")]
+        [RelationshipSchemaName("system_user_email_templates")]
+        public SystemUser system_user_email_templates
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("system_user_email_templates", null);
+            }
+            set
+            {
+                SetRelatedEntity("system_user_email_templates", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owningteam")]
+        [RelationshipSchemaName("team_email_templates")]
+        public Team team_email_templates
+        {
+            get
+            {
+                return GetRelatedEntity<Team>("team_email_templates", null);
+            }
+            set
+            {
+                SetRelatedEntity("team_email_templates", null, value);
+            }
+        }
+
+        public static Template Retrieve(IOrganizationService service, Guid id, params Expression<Func<Template, object>>[] attrs)
+        {
+            return service.Retrieve(id, attrs);
+        }
+    }
+
     /// <summary>
     /// <para>Business that represents a customer or potential customer. The company that is billed in business transactions.</para>
     /// <para>Display Name: Account</para>
