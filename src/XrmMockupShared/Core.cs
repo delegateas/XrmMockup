@@ -211,8 +211,8 @@ namespace DG.Tools.XrmMockup
             new CloseIncidentRequestHandler(this, db, metadata, security),
             new AddMembersTeamRequestHandler(this, db, metadata, security),
             new RemoveMembersTeamRequestHandler(this, db, metadata, security),
-            new SendEmailRequsetHandler(this, db, metadata, security),
-            new SendEmailFromTemplateRequsetHandler(this, db, metadata, security),
+            new SendEmailRequestHandler(this, db, metadata, security),
+            new SendEmailFromTemplateRequestHandler(this, db, metadata, security),
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             new IsValidStateTransitionRequestHandler(this, db, metadata, security),
             new CalculateRollupFieldRequestHandler(this, db, metadata, security),

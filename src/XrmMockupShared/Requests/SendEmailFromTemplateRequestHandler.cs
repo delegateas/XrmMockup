@@ -6,16 +6,16 @@ using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
-    internal class SendEmailFromTemplateRequsetHandler : RequestHandler
+    internal class SendEmailFromTemplateRequestHandler : RequestHandler
     {
-        private SendEmailRequsetHandler sendEmailRequsetHandler;
+        private SendEmailRequestHandler sendEmailRequestHandler;
         private const int EMAIL_STATE_COMPLETED = 1;
         private const int EMAIL_STATUS_DRAFT = 1;
         private const int EMAIL_STATUS_PENDING_SEND = 6;
 
-        public SendEmailFromTemplateRequsetHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "SendEmailFromTemplate") 
-        { 
-            sendEmailRequsetHandler = new SendEmailRequsetHandler(core, db, metadata, security);
+        public SendEmailFromTemplateRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "SendEmailFromTemplate") 
+        {
+            sendEmailRequestHandler = new SendEmailRequestHandler(core, db, metadata, security);
         }
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
@@ -25,7 +25,7 @@ namespace DG.Tools.XrmMockup
 
             var emailRef = new EntityReference("email", request.Target.Id);
 
-            sendEmailRequsetHandler.ValidateEmailSecurity(emailRef, userRef);
+            sendEmailRequestHandler.ValidateEmailSecurity(emailRef, userRef);
             
             if (request.TemplateId == Guid.Empty) return;
 
@@ -72,7 +72,7 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"email with Id = {request.Target.Id} does not exist");
             }
 
-            sendEmailRequsetHandler.ValidateEmail(email);
+            sendEmailRequestHandler.ValidateEmail(email);
 
             if (email.Contains("regardingobjectid"))
             {

@@ -6,14 +6,14 @@ using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
-    internal class SendEmailRequsetHandler : RequestHandler
+    internal class SendEmailRequestHandler : RequestHandler
     {
         const int EMAIL_STATE_COMPLETED = 1;
         const int EMAIL_STATUS_DRAFT = 1;
         const int EMAIL_STATUS_PENDING_SEND = 6;
         const int EMAIL_STATUS_SENT = 3;
 
-        public SendEmailRequsetHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "SendEmail") { }
+        public SendEmailRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "SendEmail") { }
 
         internal override void CheckSecurity(OrganizationRequest orgRequest, EntityReference userRef)
         {

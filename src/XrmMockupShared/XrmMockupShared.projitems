@@ -14,8 +14,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Requests\SendEmailFromTemplateRequsetHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Requests\SendEmailRequsetHandler.cs" />
+    <Compile Include="..\XrmMockupShared\Requests\SendEmailFromTemplateRequestHandler.cs" />
+    <Compile Include="..\XrmMockupShared\Requests\SendEmailRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\EntityReferenceDTO.cs" />
