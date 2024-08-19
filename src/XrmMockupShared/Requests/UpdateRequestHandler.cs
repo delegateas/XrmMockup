@@ -70,10 +70,16 @@ namespace DG.Tools.XrmMockup
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<UpdateRequest>(orgRequest);
-            var settings = MockupExecutionContext.GetSettings(request);
 
+            if (request.Target.LogicalName is "incident" &&
+                request.Target.GetAttributeValue<OptionSetValue>("statecode").Value is 1 &&
+                !request.Parameters.ContainsKey("CloseIncidentRequestHandler"))
+            {
+                throw new FaultException("This message can not be used to set the state of incident to Resolved. In order to set state of incident to Resolved, use the CloseIncidentRequest message instead.");
+            }
+            
+            var settings = MockupExecutionContext.GetSettings(request);
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
-            var entity = request.Target;
             var row = db.GetDbRow(entRef);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&

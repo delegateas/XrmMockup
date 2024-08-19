@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
@@ -80,12 +76,6 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException($"incident With Id = {incidentRef.Id} is allready cancelled and connot be closed");
             }
 
-            var setStaterequest = new SetStateRequest();
-            setStaterequest.EntityMoniker = incidentRef;
-            setStaterequest.State = new OptionSetValue(1);
-            setStaterequest.Status = request.Status;
-            core.Execute(setStaterequest, userRef);
-
             var incidentResolution = db.GetDbRowOrNull(request.IncidentResolution.ToEntityReference());
 
             if (incidentResolution != null)
@@ -95,6 +85,17 @@ namespace DG.Tools.XrmMockup
 
             db.Add(request.IncidentResolution);
 
+            incident["statecode"] = new OptionSetValue(1);
+            incident["statuscode"] = request.Status;
+
+            var updateRequest = new UpdateRequest
+            {
+                Target = incident,
+                ["CloseIncidentRequestHandler"] = true,
+            };
+
+            core.Execute(updateRequest, userRef);
+            
             return new CloseIncidentResponse();
         }
     }
