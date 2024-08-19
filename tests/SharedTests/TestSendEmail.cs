@@ -49,6 +49,7 @@ namespace DG.XrmMockupTest
 
             var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
             Assert.NotNull(response);
+            Assert.Equal(email.Subject, response.Subject);
 
             using (var context = new Xrm(orgAdminUIService))
             {
@@ -95,6 +96,7 @@ namespace DG.XrmMockupTest
 
             var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
             Assert.NotNull(response);
+            Assert.Equal(email.Subject, response.Subject);
 
             using (var context = new Xrm(orgAdminUIService))
             {
@@ -135,6 +137,7 @@ namespace DG.XrmMockupTest
 
             var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
             Assert.NotNull(response);
+            Assert.Equal(email.Subject, response.Subject);
 
             using (var context = new Xrm(orgAdminUIService))
             {

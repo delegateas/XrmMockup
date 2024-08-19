@@ -128,7 +128,13 @@ namespace DG.Tools.XrmMockup
 
             db.Update(email);
 
-            return new SendEmailResponse();
+            return new SendEmailResponse
+            {
+                Results = new ParameterCollection
+                {
+                    { "Subject", email.Contains("subject") ? email.GetAttributeValue<string>("subject") : null }
+                }
+            };
         }
     }
 }
