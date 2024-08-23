@@ -673,6 +673,10 @@ namespace DG.Tools.XrmMockup
                     pluginContext.OutputParameters["BusinessEntityCollection"] =
                         (response as RetrieveMultipleResponse)?.EntityCollection;
                 }
+                else if (request is RetrieveRequest)
+                {
+                    pluginContext.OutputParameters["BusinessEntity"] = TryRetrieve((request as RetrieveRequest).Target);
+                }
 
                 if (!string.IsNullOrEmpty(eventOp))
                 {

@@ -24,6 +24,7 @@ namespace DG.Tools.XrmMockup {
             { typeof(UpdateRequest), "Target" },
             { typeof(AssociateRequest), "Target" },
             { typeof(DisassociateRequest), "Target" },
+            { typeof(RetrieveRequest), "Target" },
         };
 
         public static Dictionary<Type, string> RequestToEventOperation = new Dictionary<Type, string>()
