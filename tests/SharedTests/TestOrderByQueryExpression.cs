@@ -829,5 +829,38 @@ namespace DG.XrmMockupTest
                 Assert.True(names[7].Equals("222"), "test 222 failed");
             }
         }
+
+        [Fact]
+        public void When_ordering_by_2_columns_nulled_column_is_handled()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account2null = new Account() { Name = "2null", ImportSequenceNumber = 2 }; // Explicitly not setting numberofemployees
+
+                crm.PopulateWith(account11, account12, account21, account2null);
+
+                QueryExpression query = new QueryExpression()
+                {
+                    EntityName = "account",
+                    ColumnSet = new ColumnSet(true),
+                    Orders =
+                    {
+                        new OrderExpression ("importsequencenumber", OrderType.Ascending),
+                        new OrderExpression ("numberofemployees", OrderType.Ascending)
+                    }
+                };
+
+                EntityCollection ec = orgAdminService.RetrieveMultiple(query);
+                var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
+
+                Assert.True(names[0].Equals("11"), "test 11 failed");
+                Assert.True(names[1].Equals("12"), "test 12 failed");
+                Assert.True(names[2].Equals("2null"), "test 2null failed"); 
+                Assert.True(names[3].Equals("21"), "test 21 failed");
+            }
+        }
     }
 }

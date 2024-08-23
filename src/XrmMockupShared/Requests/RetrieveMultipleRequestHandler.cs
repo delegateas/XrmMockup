@@ -105,13 +105,13 @@ namespace DG.Tools.XrmMockup {
             else
             {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    tempSortedList = collection.OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]));
+                    tempSortedList = collection.OrderBy(x => { return x.Value.Attributes.TryGetValue(orders[0].AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null; });
                 else
-                    tempSortedList = collection.OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]));
+                    tempSortedList = collection.OrderByDescending(x => { return x.Value.Attributes.TryGetValue(orders[0].AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null; });
 
                 foreach (var order in orders.Skip(1))
                 {
-                    Func<KeyValuePair<DbRow, Entity>, object> selector = x => Utility.GetComparableAttribute(x.Value.Attributes[order.AttributeName]);
+                    Func<KeyValuePair<DbRow, Entity>, object> selector = (x => { return x.Value.Attributes.TryGetValue(order.AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null; });
                     if (order.OrderType == OrderType.Ascending)
                         tempSortedList = tempSortedList.ThenBy(selector);
                     else

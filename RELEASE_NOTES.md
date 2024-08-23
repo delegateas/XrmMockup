@@ -1,3 +1,6 @@
+### 1.12.4 - 23 August 2024
+* Add support for multiple ThenBy's in retrievemultiple (@misoeli)
+
 ### 1.12.3 - 22 December 2023
 * Add initializer based on an existing instance, letting us copy an already initialized XrmMockup instance (@mkholt)
 * Add optional tracing class factory to settings (@mkholt)
