@@ -92,69 +92,56 @@ namespace DG.Tools.XrmMockup {
                     }
                 }
             });
-            
+
             var orders = queryExpr.Orders;
             var orderedCollection = new EntityCollection();
+            IOrderedEnumerable<KeyValuePair<DbRow, Entity>> tempSortedList;
+
             // TODO: Check the order that the orders are executed in is correct
             if (orders == null || orders.Count == 0)
             {
-                orderedCollection.Entities.AddRange(collection.OrderBy(x => x.Key.Sequence).Select(y=>y.Value));
+                tempSortedList = collection.OrderBy(x => x.Key.Sequence);
             }
-            if (orders.Count > 2) {
-                throw new MockupException("Number of orders are greater than 2, unsupported in crm");
-            } else if (orders.Count == 1) {
+            else
+            {
                 if (orders.First().OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection.OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => x.Key.Sequence)
-                        .Select(y => y.Value));
+                    tempSortedList = collection.OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]));
                 else
-                    orderedCollection.Entities.AddRange(collection.OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName])).Select(y => y.Value));
-            } else if (orders.Count == 2) {
-                if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
-                        .ThenBy(x => x.Key.Sequence)
-                        .Select(y => y.Value));
+                    tempSortedList = collection.OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]));
 
-                else if (orders[0].OrderType == OrderType.Ascending && orders[1].OrderType == OrderType.Descending)
-                    orderedCollection.Entities.AddRange(collection
-                        .OrderBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
-                        .ThenBy(x => x.Key.Sequence)
-                        .Select(y => y.Value));
+                foreach (var order in orders.Skip(1))
+                {
+                    Func<KeyValuePair<DbRow, Entity>, object> selector = x => Utility.GetComparableAttribute(x.Value.Attributes[order.AttributeName]);
+                    if (order.OrderType == OrderType.Ascending)
+                        tempSortedList = tempSortedList.ThenBy(selector);
+                    else
+                        tempSortedList = tempSortedList.ThenByDescending(selector);
 
-                else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Ascending)
-                    orderedCollection.Entities.AddRange(collection
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenBy(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
-                        .ThenBy(x => x.Key.Sequence)
-                        .Select(y => y.Value));
-
-                else if (orders[0].OrderType == OrderType.Descending && orders[1].OrderType == OrderType.Descending)
-                    orderedCollection.Entities.AddRange(collection
-                        .OrderByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[0].AttributeName]))
-                        .ThenByDescending(x => Utility.GetComparableAttribute(x.Value.Attributes[orders[1].AttributeName]))
-                        .ThenBy(x => x.Key.Sequence)
-                        .Select(y => y.Value));
+                }
+                tempSortedList = tempSortedList.ThenBy(x => x.Key.Sequence);
             }
+
+            orderedCollection.Entities.AddRange(tempSortedList.Select(y => y.Value));
 
             var colToReturn = new EntityCollection();
 
-            if (orderedCollection.Entities.Count != 0) {
+            if (orderedCollection.Entities.Count != 0)
+            {
                 Parallel.ForEach(orderedCollection.Entities, entity =>
                 {
                     KeepAttributesAndAliasAttributes(entity, queryExpr.ColumnSet);
                 }
                 );
                 colToReturn = orderedCollection;
-            } else {
+            }
+            else
+            {
                 Parallel.ForEach(collection, kvp =>
                 {
                     KeepAttributesAndAliasAttributes(kvp.Value, queryExpr.ColumnSet);
-                 }
+                }
                );
-                colToReturn = new EntityCollection(collection.Select(x=>x.Value).ToList());
+                colToReturn = new EntityCollection(collection.Select(x => x.Value).ToList());
             }
 
             // According to docs, should return -1 if ReturnTotalRecordCount set to false
@@ -164,6 +151,7 @@ namespace DG.Tools.XrmMockup {
 
             resp.Results["EntityCollection"] = colToReturn;
             return resp;
+
         }
 
 
