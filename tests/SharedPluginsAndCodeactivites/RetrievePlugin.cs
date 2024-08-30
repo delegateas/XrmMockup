@@ -8,18 +8,19 @@ namespace DG.Some.Namespace
     {
         public RetrievePlugin() : base(typeof(RetrievePlugin))
         {
-            RegisterPluginStep<Account>(
+            RegisterPluginStep<Contact>(
                 EventOperation.Retrieve,
                 ExecutionStage.PostOperation,
-                Execute);
+                ExecutePostRetrieve);
         }
 
-        protected void Execute(LocalPluginContext localContext)
+        protected void ExecutePostRetrieve(LocalPluginContext localContext)
         {
             var entity = localContext.PluginExecutionContext.OutputParameters["BusinessEntity"] as Entity;
-            if (entity.ToEntity<Account>().StateCode == AccountState.Inactive)
+
+            if (entity.ToEntity<Contact>().StateCode == ContactState.Inactive)
             {
-                throw new InvalidPluginExecutionException("Inactive accounts cannot be retrieved.");
+                throw new InvalidPluginExecutionException("Inactive contacts cannot be retrieved.");
             }
         }
     }

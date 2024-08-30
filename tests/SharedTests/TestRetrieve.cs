@@ -305,15 +305,15 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestRetrievePlugin()
         {
-            var accountId = orgAdminUIService.Create(new Account());
+            var accountId = orgAdminService.Create(new Contact { LastName = "Test" });
 
-            orgAdminUIService.Update(new Account(accountId)
+            orgAdminUIService.Update(new Contact(accountId)
             {
-                StateCode = AccountState.Inactive,
-                StatusCode = Account_StatusCode.Inactive
+                StateCode = ContactState.Inactive,
+                StatusCode = Contact_StatusCode.Inactive
             });
 
-            Assert.Throws<InvalidPluginExecutionException>(() => orgAdminService.Retrieve(Account.EntityLogicalName, accountId, new ColumnSet(true)));
+            Assert.Throws<InvalidPluginExecutionException>(() => Contact.Retrieve(orgAdminService, accountId, x => x.LastName));
         }
     }
 }
