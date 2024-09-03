@@ -921,5 +921,16 @@ namespace DG.XrmMockupTest
 
             Assert.Equal("MATT", res.Entities.Single().GetAttributeValue<string>("firstname"));
         }
+
+        [Fact]
+        public void TestRetrieveMultipleFailWithNonExistentAttribute()
+        {
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("x")
+            };
+
+            Assert.Throws<AggregateException>(() => orgAdminService.RetrieveMultiple(query));
+        }
     }
 }
