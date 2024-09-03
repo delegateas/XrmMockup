@@ -773,6 +773,44 @@ namespace DG.XrmMockupTest
             Assert.Equal(2, res.Count());
         }
 
+        [Fact]
+        public void RetrieveMultipleWithLinkEntitiesReturnDistinctResults()
+        {
+            var lead = new Lead()
+            {
+                Subject = "Lead",
+                ParentContactId = contact1.ToEntityReference()
+            };
+            orgAdminService.Create(lead);
+
+            var linkEntity = new LinkEntity
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet(false),
+                EntityAlias = "contact",
+                JoinOperator = JoinOperator.LeftOuter,
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Equal, contact1.LastName));
+
+            var query = new QueryExpression("contact")
+            {
+                Distinct = true,
+                ColumnSet = new ColumnSet(),
+                LinkEntities = { linkEntity }
+            };
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+            
+            var distinctIdCount = res.Select(x => x.Id).Distinct().Count();
+
+            Assert.Equal(distinctIdCount, res.Count);
+        }
+
 #endif
 
         [Fact]
