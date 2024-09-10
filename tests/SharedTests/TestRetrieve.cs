@@ -301,5 +301,19 @@ namespace DG.XrmMockupTest
             var users = orgAdminService.RetrieveMultiple(q);
             Assert.Single(users.Entities);
         }
+
+        [Fact]
+        public void TestRetrievePlugin()
+        {
+            var accountId = orgAdminService.Create(new Contact { LastName = "Test" });
+
+            orgAdminUIService.Update(new Contact(accountId)
+            {
+                StateCode = ContactState.Inactive,
+                StatusCode = Contact_StatusCode.Inactive
+            });
+
+            Assert.Throws<InvalidPluginExecutionException>(() => Contact.Retrieve(orgAdminService, accountId, x => x.LastName));
+        }
     }
 }

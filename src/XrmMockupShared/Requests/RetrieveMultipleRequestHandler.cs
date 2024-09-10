@@ -145,6 +145,12 @@ namespace DG.Tools.XrmMockup {
                 colToReturn = new EntityCollection(collection.Select(x => x.Value).ToList());
             }
 
+            if (queryExpr.Distinct)
+            {
+                var uniqueIds = new HashSet<Guid>();
+                colToReturn = new EntityCollection(colToReturn.Entities.Where(entity => uniqueIds.Add(entity.Id)).ToList());
+            }
+
             // According to docs, should return -1 if ReturnTotalRecordCount set to false
             colToReturn.TotalRecordCount = queryExpr.PageInfo.ReturnTotalRecordCount ? colToReturn.Entities.Count : -1;
 
