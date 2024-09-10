@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFrameworks>net462;net6.0</TargetFrameworks>
+        <TargetFrameworks>net462;net6.0;net8.0</TargetFrameworks>
         <DebugType>portable</DebugType>
         <Title>XrmMockup365</Title>
     </PropertyGroup>
@@ -30,7 +30,7 @@
         <DefineConstants>TRACE;XRM_MOCKUP_365</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<PropertyGroup Condition="'$(TargetFramework)' != 'net462'">
 		<DefineConstants>$(DefineConstants);DATAVERSE_SERVICE_CLIENT</DefineConstants>
 	</PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
@@ -58,6 +58,11 @@
 		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net6.0\Metadata" />
 	</ItemGroup>
 	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net8.0\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
 		<None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
@@ -66,7 +71,7 @@
         <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
         <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
     </ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
 		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.0.1" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
