@@ -13,6 +13,7 @@
         <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
         <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
         <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -58,6 +59,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
+		<None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />

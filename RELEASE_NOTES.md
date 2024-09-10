@@ -1,3 +1,11 @@
+### 1.12.5 - 10 September 2024
+* Fix: CloseIncidentRequestHandler now uses UpdateRequest instead of SetStateRequest (@mai98)
+* Fix: Throw FaultException when trying to update a resolved Incident (@mai98)
+* Add support for Retrieve plugins (@mai98)
+* Support Distinct in RetrieveMultipleRequestHandler when using Query Expressions (@mai98)
+* Support for SendEmailRequest and PartyList (@mai98)
+* Add file block upload handlers, without file-storage (@magesoe @nedergaardcloud)
+
 ### 1.12.4 - 23 August 2024
 * Add support for multiple ThenBy's in retrievemultiple (@misoeli)
 

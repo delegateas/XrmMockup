@@ -13,6 +13,7 @@
     <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
     <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
     <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
+	<PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -48,6 +49,7 @@
     <Content Include="..\MetadataGen\MetadataGenerator13\bin\Release\$(TargetFramework)\MetadataGenerator13.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
     <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
     <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
+	<None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="6.1.2" />
