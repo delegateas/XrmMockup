@@ -112,7 +112,7 @@ namespace DG.Tools.XrmMockup
 
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
             this.snapshots = new Dictionary<string, Snapshot>();
-            this.security = new Security(this, metadata, SecurityRoles,db);
+            this.security = new Security(this, metadata, SecurityRoles, db);
             this.TracingServiceFactory = settings.TracingServiceFactory ?? new TracingServiceFactory();
             this.ServiceFactory = new MockupServiceProviderAndFactory(this);
 
@@ -131,7 +131,7 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
-            
+
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             this.orgDetail = settings.OrganizationDetail;
 #endif
@@ -217,8 +217,8 @@ namespace DG.Tools.XrmMockup
             new CalculateRollupFieldRequestHandler(this, db, metadata, security),
 #endif
 #if !(XRM_MOCKUP_2011)
-                new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
-                new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
+            new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
+            new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
 #endif
             
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
@@ -228,10 +228,16 @@ namespace DG.Tools.XrmMockup
 #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             new UpsertRequestHandler(this, db, metadata, security),
 #endif
-                new RetrieveAttributeRequestHandler(this, db, metadata, security),
-                new WhoAmIRequestHandler(this, db, metadata, security),
-                new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
-                new RetrieveMetadataChangesRequestHandler(this, db, metadata, security)
+            new RetrieveAttributeRequestHandler(this, db, metadata, security),
+            new WhoAmIRequestHandler(this, db, metadata, security),
+            new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
+            new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
+
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
+            new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
+            new UploadBlockRequestHandler(this, db, metadata, security),
+            new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
+#endif
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -968,7 +974,7 @@ namespace DG.Tools.XrmMockup
             return resp;
         }
 
-#region EntityImage helpers
+        #region EntityImage helpers
 
         private Tuple<object, string, Guid> GetEntityInfo(OrganizationRequest request)
         {
@@ -1042,7 +1048,7 @@ namespace DG.Tools.XrmMockup
         {
             return Utility.GetBusinessUnit(db, owner);
         }
-#endregion
+        #endregion
 
         internal void DisabelRegisteredPlugins(bool include)
         {
@@ -1143,7 +1149,7 @@ namespace DG.Tools.XrmMockup
             return metadata.EntityMetadata[entityLogicalName];
         }
 
-      #if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal void ExecuteCalculatedFields(DbRow row)
         {
             var attributes = row.Metadata.Attributes.Where(
