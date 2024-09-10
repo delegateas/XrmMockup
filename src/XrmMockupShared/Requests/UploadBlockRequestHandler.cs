@@ -1,4 +1,4 @@
-﻿#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
+﻿#if !(XRM_MOCKUP_2016)
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Crm.Sdk.Messages;

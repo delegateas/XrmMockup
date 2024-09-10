@@ -19,9 +19,7 @@
 //        {
 //            //create a team
 //            var team1 = new Team { Name = "* RECORD OWNER TEAM *", BusinessUnitId = crm.RootBusinessUnit };
-//#if !(XRM_MOCKUP_2011)
 //            team1.TeamType = Team_TeamType.Owner;
-//#endif
 //            team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.MockRecordOwnerTeamRole).ToEntity<Team>();
 
 //            var user1 = new SystemUser() { BusinessUnitId = crm.RootBusinessUnit };

@@ -1,5 +1,4 @@
-﻿#if !(XRM_MOCKUP_2011)
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xrm.Sdk;
@@ -89,4 +88,3 @@ namespace DG.Tools.XrmMockup
         }
     }
 }
-#endif

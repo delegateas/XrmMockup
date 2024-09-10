@@ -141,7 +141,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0) {
                 currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
@@ -151,7 +150,7 @@ namespace DG.Tools.XrmMockup.Database {
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
             }
-#endif
+
             // No identification given for the entity, throw error
             else
             {
@@ -198,7 +197,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0)
             {
@@ -214,7 +212,7 @@ namespace DG.Tools.XrmMockup.Database {
                     return true;
                 }
             }
-#endif
+
             // No identification given for the entity, return false
             else
             {

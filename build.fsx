@@ -36,17 +36,11 @@ let projectPaths =
   [|
     "src" ++ "XrmMockup365"
     "src" ++ "XrmMockup2016"
-    "src" ++ "XrmMockup2015"
-    "src" ++ "XrmMockup2013"
-    "src" ++ "XrmMockup2011"
   |]
 let metaDataGeneratorProjectPaths =
   [|
     "src" ++ "MetadataGen" ++ "MetadataGenerator365"
     "src" ++ "MetadataGen" ++ "MetadataGenerator16"
-    "src" ++ "MetadataGen" ++ "MetadataGenerator15"
-    "src" ++ "MetadataGen" ++ "MetadataGenerator13"
-    "src" ++ "MetadataGen" ++ "MetadataGenerator11"
   |]
 let solutionFile = "XrmMockup.sln"
 let testAssemblies = "tests/**/bin/Release/*Test.dll"
