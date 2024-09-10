@@ -539,5 +539,45 @@ namespace DG.XrmMockupTest
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
             Assert.Equal(IncidentState.Active, retrievedIncident.StateCode);
         }
+
+        [Fact]
+        public void TestRemovalOfResolutionsAfterClose()
+        {
+            var incident = new Incident
+            {
+                Title = "TestRemovalOfResolutionsAfterClose"
+            };
+            incident.Id = orgAdminUIService.Create(incident);
+
+            var incidentResolution = new IncidentResolution
+            {
+                Subject = "Resolved Sample Incident",
+                IncidentId = incident.ToEntityReference()
+            };
+            var closeIncidentRequest = new CloseIncidentRequest
+            {
+                IncidentResolution = incidentResolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+            orgAdminUIService.Execute(closeIncidentRequest);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrievedIncidentResolutions = context.IncidentResolutionSet.Where(x => x.IncidentId.Id == incident.Id);
+                Assert.Empty(retrievedIncidentResolutions);
+            }
+        }
+
+        [Fact]
+        public void TestUpdateIncidentAsResolvedFails()
+        {
+            var incident = new Incident();
+            incident.Id = orgAdminUIService.Create(incident);
+
+            incident.StateCode = IncidentState.Resolved;
+            incident.StatusCode = Incident_StatusCode.ProblemSolved;
+
+            Assert.Throws<FaultException>(() => orgAdminService.Update(incident));
+        }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Microsoft.Xrm.Sdk.Metadata;
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DG.Tools.XrmMockup.Database
 {
@@ -27,7 +27,7 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.Money, typeof(decimal) },
             { AttributeTypeCode.Owner, typeof(DbRow) },
             { AttributeTypeCode.Customer, typeof(DbRow) },
-            { AttributeTypeCode.PartyList, typeof(DbRow[]) },
+            { AttributeTypeCode.PartyList, typeof(EntityCollection) },
             { AttributeTypeCode.String, typeof(string) },
             { AttributeTypeCode.Uniqueidentifier, typeof(Guid) },
             { AttributeTypeCode.Virtual, typeof(DbRow[]) }
@@ -37,7 +37,7 @@ namespace DG.Tools.XrmMockup.Database
             if (value == null) return true;
             _metadataTypeMap.TryGetValue(attrMetadata.AttributeType.Value, out Type expectedType);
             if (expectedType == null) {
-                throw new NotImplementedException($"Attribute of type '{attrMetadata.AttributeType.Value}' is not implemeted in XrmMockup yet.");
+                throw new NotImplementedException($"Attribute of type '{attrMetadata.AttributeType.Value}' is not implemented in XrmMockup yet.");
             }
             if (expectedType.Name == "DbRow[]" && attrMetadata.AttributeType.Value == AttributeTypeCode.Virtual)
                 return true;

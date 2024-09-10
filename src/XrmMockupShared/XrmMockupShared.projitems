@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UploadBlockRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\InitializeFileBlocksUploadRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\SendEmailRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\EntityReferenceDTO.cs" />
