@@ -1871,9 +1871,9 @@ namespace WorkflowExecuter
             workflowContext.PrimaryEntityId = primaryEntity.Id;
             workflowContext.PrimaryEntityName = primaryEntity.LogicalName;
 
-            if (factory is MockupServiceProviderAndFactory serviceProvider)
+            if (factory is IServiceProvider serviceProvider)
             {
-                var pluginExecutionContext = serviceProvider.GetService<IPluginExecutionContext>();
+                var pluginExecutionContext = serviceProvider.GetService(typeof(IPluginExecutionContext)) as IPluginExecutionContext;
                 workflowContext.InitiatingUserId = pluginExecutionContext.InitiatingUserId;
                 workflowContext.UserId = pluginExecutionContext.UserId;
             }
