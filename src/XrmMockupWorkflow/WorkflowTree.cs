@@ -1867,9 +1867,12 @@ namespace WorkflowExecuter
             var codeActivities = variables["CodeActivites"] as Dictionary<string, CodeActivity>;
             var codeActivity = codeActivities[CodeActivityName];
             var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
+            var pluginExecutionContext = (factory as MockupServiceProviderAndFactory).GetService<IPluginExecutionContext>();
             var workflowContext = new XrmWorkflowContext();
             workflowContext.PrimaryEntityId = primaryEntity.Id;
             workflowContext.PrimaryEntityName = primaryEntity.LogicalName;
+            workflowContext.InitiatingUserId = pluginExecutionContext.InitiatingUserId;
+            workflowContext.UserId = pluginExecutionContext.UserId;
             var invoker = new WorkflowInvoker(codeActivity);
             invoker.Extensions.Add(trace);
             invoker.Extensions.Add(workflowContext);
