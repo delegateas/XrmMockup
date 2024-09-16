@@ -21,13 +21,13 @@
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <Optimize>false</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>TRACE;DEBUG;XRM_MOCKUP_365</DefineConstants>
+        <DefineConstants>TRACE;DEBUG</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE;XRM_MOCKUP_365</DefineConstants>
+        <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' != 'net462'">

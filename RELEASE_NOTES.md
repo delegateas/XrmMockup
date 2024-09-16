@@ -1,6 +1,6 @@
 ### 1.13.0 - 10 September 2024
 * Add support for .NET8 (@mkholt)
-* Remove support for CRM versions older than 8.2 (CRM 2016) (@mkholt)
+* Remove support for versions older than 9 (365) (@mkholt)
 
 ### 1.12.5 - 10 September 2024
 * Fix: CloseIncidentRequestHandler now uses UpdateRequest instead of SetStateRequest (@mai98)

@@ -18,12 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup2016", "src\XrmMockup2016\XrmMockup2016.csproj", "{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XrmMockup16Test", "tests\XrmMockup16Test\XrmMockup16Test.csproj", "{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPluginAssembly16", "tests\TestPluginAssembly16\TestPluginAssembly16.csproj", "{3A74D109-C538-4DF5-B277-CC39FFACE93F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MetadataGen", "MetadataGen", "{E75407BE-AEA4-480C-8307-1C41851DB58B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "versions", "versions", "{DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}"
@@ -39,8 +33,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataShared", "src\MetadataShared\MetadataShared.shproj", "{3C2BBE8A-2ACE-44CA-9994-49C768B2CA1D}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataSkeleton", "src\MetadataSkeleton\MetadataSkeleton.shproj", "{FDDB9BF5-4D33-495D-91A4-DFE919CF96CE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator16", "src\MetadataGen\MetadataGenerator16\MetadataGenerator16.csproj", "{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator365", "src\MetadataGen\MetadataGenerator365\MetadataGenerator365.csproj", "{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}"
 EndProject
@@ -68,22 +60,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3A74D109-C538-4DF5-B277-CC39FFACE93F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3A74D109-C538-4DF5-B277-CC39FFACE93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3A74D109-C538-4DF5-B277-CC39FFACE93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3A74D109-C538-4DF5-B277-CC39FFACE93F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -109,12 +85,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{72BA2B8E-B4CF-4F72-A77A-DF3EB9EA5418} = {DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}
-		{A2545FA6-B0A8-4EC6-A5C5-765DE8DAE976} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{3A74D109-C538-4DF5-B277-CC39FFACE93F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{0D9BFA02-4E2D-4229-9256-7D4BF438B917} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{90C1C72B-C544-485A-B718-ACFAEE516106} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{BF6FFAAE-1908-4D6C-A3DD-863B8F36272C} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
 		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
 		{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{54E48688-CE01-4310-90D9-0902E0A51814} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
@@ -125,23 +97,16 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		tests\SharedTests\SharedTests.projitems*{0d9bfa02-4e2d-4229-9256-7d4bf438b917}*SharedItemsImports = 13
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{3a74d109-c538-4df5-b277-cc39fface93f}*SharedItemsImports = 5
 		src\MetadataShared\MetadataShared.projitems*{3c2bbe8a-2ace-44ca-9994-49c768b2ca1d}*SharedItemsImports = 13
 		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 5
 		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 5
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{60cdd422-5f52-4d1f-b61c-b2bcef09302b}*SharedItemsImports = 13
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
-		src\XrmMockupShared\XrmMockupShared.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{72ba2b8e-b4cf-4f72-a77a-df3eb9ea5418}*SharedItemsImports = 5
 		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
 		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
 		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
 		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{90c1c72b-c544-485a-b718-acfaee516106}*SharedItemsImports = 13
-		tests\SharedTests\SharedTests.projitems*{a2545fa6-b0a8-4ec6-a5c5-765de8dae976}*SharedItemsImports = 5
-		src\MetadataShared\MetadataShared.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
-		src\MetadataSkeleton\MetadataSkeleton.projitems*{bf6ffaae-1908-4d6c-a3dd-863b8f36272c}*SharedItemsImports = 5
 		src\XrmMockupShared\XrmMockupShared.projitems*{d4f99f23-a452-4f6f-abf4-54fc5c792d5a}*SharedItemsImports = 13
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
 	EndGlobalSection

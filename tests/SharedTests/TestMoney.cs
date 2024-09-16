@@ -1,5 +1,4 @@
-﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-using System;
+﻿using System;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
@@ -228,4 +227,3 @@ namespace DG.XrmMockupTest
         }
     }
 }
-#endif

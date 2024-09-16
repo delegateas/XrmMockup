@@ -45,11 +45,7 @@ namespace DG.Tools.XrmMockup
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
-#if XRM_MOCKUP_365
     internal class Core : IXrmMockupExtension
-#else
-    internal class Core
-#endif
     {
         #region MyRegion
 
@@ -212,12 +208,9 @@ namespace DG.Tools.XrmMockup
             new WhoAmIRequestHandler(this, db, metadata, security),
             new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
             new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
-
-#if !(XRM_MOCKUP_2016)
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
-#endif
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -436,10 +429,9 @@ namespace DG.Tools.XrmMockup
             if (selection.unshare && HasCascadeBehaviour(cascadeConfiguration.Unshare))
                 return true;
 
-#if !(XRM_MOCKUP_2016)
             if (selection.rollup && HasCascadeBehaviour(cascadeConfiguration.RollupView))
                 return true;
-#endif
+
             return false;
         }
 
@@ -686,7 +678,6 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
 
-#if XRM_MOCKUP_365
             // Trigger Extension
             if (this.settings.MockUpExtensions.Any())
             {
@@ -727,7 +718,6 @@ namespace DG.Tools.XrmMockup
                         null, preImage, userRef);
                     break;
             }
-#endif
 
             return response;
         }
@@ -1170,7 +1160,6 @@ namespace DG.Tools.XrmMockup
             security.AddSecurityRole(role);
         }
 
-#if XRM_MOCKUP_365
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
             Entity preEntity, EntityReference userRef)
         {
@@ -1179,6 +1168,5 @@ namespace DG.Tools.XrmMockup
                 mockUpExtension.TriggerExtension(service, request, currentEntity, preEntity, userRef);
             }
         }
-#endif
     }
 }

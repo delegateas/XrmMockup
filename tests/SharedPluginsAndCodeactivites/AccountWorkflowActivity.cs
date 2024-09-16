@@ -31,7 +31,7 @@ namespace DG.Some.Namespace {
             var account = orgService.Retrieve(Account.EntityLogicalName, accRef.Id, new ColumnSet("name")) as Account;
             account.Name += "setFromCodeActivity";
             orgService.Update(account);
-            this.doubleName.Set(executionContext, account.ToEntityReference());            
+            this.doubleName.Set(executionContext, account.ToEntityReference());
         }
 
         // Define Input/Output Arguments

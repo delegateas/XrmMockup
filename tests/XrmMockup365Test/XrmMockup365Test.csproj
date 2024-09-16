@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net462;net6.0</TargetFrameworks>
+		<TargetFrameworks>net462;net6.0;net8.0</TargetFrameworks>
 		<DebugType>portable</DebugType>
 		<Title>XrmMockup365Test</Title>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<Optimize>false</Optimize>
 		<OutputPath>bin\Debug\</OutputPath>
-		<DefineConstants>TRACE;DEBUG;XRM_MOCKUP_TEST_365</DefineConstants>
+		<DefineConstants>TRACE;DEBUG</DefineConstants>
 		<ErrorReport>prompt</ErrorReport>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<Optimize>true</Optimize>
 		<OutputPath>bin\Release\</OutputPath>
-		<DefineConstants>TRACE;XRM_MOCKUP_TEST_365</DefineConstants>
+		<DefineConstants>TRACE</DefineConstants>
 		<ErrorReport>prompt</ErrorReport>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<DefineConstants>$(DefineConstants);XRM_MOCKUP_TEST_SERVICECLIENT</DefineConstants>
+	<PropertyGroup Condition="'$(TargetFramework)' != 'net462'">
+		<DefineConstants>$(DefineConstants);DATAVERSE_SERVICE_CLIENT</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
 		<Reference Include="System" />
@@ -39,7 +39,7 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
 		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
 		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.0.1" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>

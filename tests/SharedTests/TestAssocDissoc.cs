@@ -313,7 +313,6 @@ namespace DG.XrmMockupTest
             }
         }
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
         [Fact]
         public void TestAssociateWOPrimaryNamePlugin()
         {
@@ -337,9 +336,7 @@ namespace DG.XrmMockupTest
                 Assert.Equal(25, retrievedBus.dg_Ticketprice);
             }
         }
-#endif
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
         [Fact]
         public void TestDisassociateWOPrimaryNamePlugin()
         {
@@ -363,6 +360,5 @@ namespace DG.XrmMockupTest
                 Assert.Equal(26, retrievedBus.dg_Ticketprice);
             }
         }
-#endif
     }
 }

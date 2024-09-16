@@ -1,6 +1,4 @@
-﻿#if !(XRM_MOCKUP_2016)
-
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Crm.Sdk.Messages;
 using DG.Tools.XrmMockup.Database;
 using System;
@@ -27,5 +25,3 @@ namespace DG.Tools.XrmMockup
         }
     }
 }
-
-#endif

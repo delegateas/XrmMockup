@@ -162,12 +162,10 @@ namespace DG.Tools.XrmMockup.Database
                     .Select(e => db.GetDbRow(e))
                     .ToArray();
             }
-#if XRM_MOCKUP_365
             if (value is OptionSetValueCollection optionsets)
             {
                 return new OptionSetValueCollection(optionsets);
             }
-#endif
             return value;
         }
 

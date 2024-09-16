@@ -1180,11 +1180,9 @@ namespace DG.Tools.XrmMockup
                 case "OptionSetValue":
                     var os = attribute.Value as OptionSetValue;
                     return new OptionSetValue(os.Value);
-#if XRM_MOCKUP_365
                 case "OptionSetValueCollection":
                     var osc = attribute.Value as OptionSetValueCollection;
                     return new OptionSetValueCollection(osc);
-#endif
                 default:
                     return attribute.Value;
             }
@@ -1213,7 +1211,6 @@ namespace DG.Tools.XrmMockup
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(refObj);
             }
-#if XRM_MOCKUP_365
             else if (colToSerialize is OptionSetValueCollection)
             {
                 var typedCollection = (OptionSetValueCollection)colToSerialize;
@@ -1223,7 +1220,6 @@ namespace DG.Tools.XrmMockup
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(dto);
             }
-#endif
             else
             {
                 jsonColObj.Value = JsonSerializer.Serialize(colToSerialize);
@@ -1242,7 +1238,6 @@ namespace DG.Tools.XrmMockup
                 var tmpTable = new DbTable(new EntityMetadata { LogicalName = typed.LogicalName });
                 return new DbRow(tmpTable, typed.Id, null);
             }
-#if XRM_MOCKUP_365
             else if (type == typeof(OptionSetValueCollection))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
@@ -1250,7 +1245,6 @@ namespace DG.Tools.XrmMockup
                 var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
                 return newCollection;
             }
-#endif
             else
             {
                 var node = JsonNode.Parse(colToSerialize.Value);

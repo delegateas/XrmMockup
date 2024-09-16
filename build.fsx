@@ -35,12 +35,10 @@ let project = "XrmMockup"
 let projectPaths =
   [|
     "src" ++ "XrmMockup365"
-    "src" ++ "XrmMockup2016"
   |]
 let metaDataGeneratorProjectPaths =
   [|
     "src" ++ "MetadataGen" ++ "MetadataGenerator365"
-    "src" ++ "MetadataGen" ++ "MetadataGenerator16"
   |]
 let solutionFile = "XrmMockup.sln"
 let testAssemblies = "tests/**/bin/Release/*Test.dll"

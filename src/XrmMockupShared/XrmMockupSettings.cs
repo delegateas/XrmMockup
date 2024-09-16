@@ -63,12 +63,10 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public ITracingServiceFactory TracingServiceFactory { get; set; }
 
-#if XRM_MOCKUP_365
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
         public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
-#endif
 
         /// <summary>
         /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
