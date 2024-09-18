@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
 using Microsoft.Xrm.Sdk.Organization;
-#endif
 
 namespace DG.Tools.XrmMockup
 {
@@ -65,18 +63,15 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public ITracingServiceFactory TracingServiceFactory { get; set; }
 
-#if XRM_MOCKUP_365
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
         public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
-#endif
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+
         /// <summary>
         /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
         /// </summary>
         public OrganizationDetail OrganizationDetail { get; set; }
-#endif
     }
 
 

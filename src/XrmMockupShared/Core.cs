@@ -14,10 +14,7 @@ using Microsoft.Xrm.Sdk.Client;
 using WorkflowExecuter;
 using System.Text.Json;
 using DG.Tools.XrmMockup.Serialization;
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
 using Microsoft.Xrm.Sdk.Organization;
-#endif
 
 [assembly: InternalsVisibleTo("SharedTests")]
 
@@ -42,26 +39,18 @@ namespace DG.Tools.XrmMockup
         public bool reparent = false;
         public bool share = false;
         public bool unshare = false;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         public bool rollup = false;
-#endif
     }
 
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
-#if XRM_MOCKUP_365
     internal class Core : IXrmMockupExtension
-#else
-    internal class Core
-#endif
     {
         #region MyRegion
 
         private PluginManager pluginManager;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal OrganizationDetail orgDetail;
-#endif
         private WorkflowManager workflowManager;
         private Security security;
         private XrmMockupSettings settings;
@@ -131,10 +120,7 @@ namespace DG.Tools.XrmMockup
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             this.orgDetail = settings.OrganizationDetail;
-#endif
         }
 
         private void InitializeDB()
@@ -212,32 +198,19 @@ namespace DG.Tools.XrmMockup
             new AddMembersTeamRequestHandler(this, db, metadata, security),
             new RemoveMembersTeamRequestHandler(this, db, metadata, security),
             new SendEmailRequestHandler(this, db, metadata, security),
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             new IsValidStateTransitionRequestHandler(this, db, metadata, security),
             new CalculateRollupFieldRequestHandler(this, db, metadata, security),
-#endif
-#if !(XRM_MOCKUP_2011)
             new AddUserToRecordTeamRequestHandler(this, db, metadata, security),
             new RemoveUserFromRecordTeamRequestHandler(this, db, metadata, security),
-#endif
-            
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             new RetrieveCurrentOrganizationRequestHandler(this, db, metadata, security),
-#endif
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             new UpsertRequestHandler(this, db, metadata, security),
-#endif
             new RetrieveAttributeRequestHandler(this, db, metadata, security),
             new WhoAmIRequestHandler(this, db, metadata, security),
             new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
             new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
-#endif
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -326,9 +299,7 @@ namespace DG.Tools.XrmMockup
             {
                 toReturn = entity.CloneEntity(metadata, colsToKeep);
             }
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             toReturn.KeyAttributes = entity.CloneKeyAttributes();
-#endif
             Utility.PopulateEntityReferenceNames(toReturn, db);
             return toReturn;
         }
@@ -458,10 +429,9 @@ namespace DG.Tools.XrmMockup
             if (selection.unshare && HasCascadeBehaviour(cascadeConfiguration.Unshare))
                 return true;
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015 || XRM_MOCKUP_2016)
             if (selection.rollup && HasCascadeBehaviour(cascadeConfiguration.RollupView))
                 return true;
-#endif
+
             return false;
         }
 
@@ -708,7 +678,6 @@ namespace DG.Tools.XrmMockup
                 workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
             }
 
-#if XRM_MOCKUP_365
             // Trigger Extension
             if (this.settings.MockUpExtensions.Any())
             {
@@ -749,7 +718,6 @@ namespace DG.Tools.XrmMockup
                         null, preImage, userRef);
                     break;
             }
-#endif
 
             return response;
         }
@@ -806,7 +774,6 @@ namespace DG.Tools.XrmMockup
         private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef,
             PluginContext parentPluginContext)
         {
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (request is AssignRequest assignRequest)
             {
                 var targetEntity = db.GetEntityOrNull(assignRequest.Target);
@@ -840,7 +807,7 @@ namespace DG.Tools.XrmMockup
 
                 return new SetStateResponse();
             }
-#endif
+
             if (workflowManager.GetActionDefaultNull(request.RequestName) != null)
             {
                 return ExecuteAction(request);
@@ -1149,7 +1116,6 @@ namespace DG.Tools.XrmMockup
             return metadata.EntityMetadata[entityLogicalName];
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal void ExecuteCalculatedFields(DbRow row)
         {
             var attributes = row.Metadata.Attributes.Where(
@@ -1178,7 +1144,6 @@ namespace DG.Tools.XrmMockup
                     factory, factory.GetService<ITracingService>());
             }
         }
-#endif
 
         internal void ResetTable(string tableName)
         {
@@ -1195,7 +1160,6 @@ namespace DG.Tools.XrmMockup
             security.AddSecurityRole(role);
         }
 
-#if XRM_MOCKUP_365
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
             Entity preEntity, EntityReference userRef)
         {
@@ -1204,6 +1168,5 @@ namespace DG.Tools.XrmMockup
                 mockUpExtension.TriggerExtension(service, request, currentEntity, preEntity, userRef);
             }
         }
-#endif
     }
 }

@@ -42,7 +42,6 @@ namespace DG.Tools.XrmMockup {
 
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             var rowBag = new ConcurrentBag<DbRow>();
             //don't add the rows by passing in via the constructor as it can change the order
             foreach (var row in rows)
@@ -56,7 +55,6 @@ namespace DG.Tools.XrmMockup {
             }
             //get the rows again to include the calulated values
             rows = db.GetDBEntityRows(queryExpr.EntityName);
-#endif
 
             var collection = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
 
@@ -236,12 +234,10 @@ namespace DG.Tools.XrmMockup {
                 linkEntity.EntityAlias = $"{linkEntity.LinkToEntityName}{linkCount}";
                 linkCount++;
             }
-#if !(XRM_MOCKUP_2011)
             if (linkEntity.LinkCriteria != null)
             {
                 FillEntityNameIfEmpty(linkEntity.LinkCriteria, linkEntity.EntityAlias);
             }
-#endif
             if (linkEntity.LinkEntities.Count > 0)
             {
                 foreach (var le in linkEntity.LinkEntities)
@@ -250,7 +246,6 @@ namespace DG.Tools.XrmMockup {
                 }
             }
         }
-#if !(XRM_MOCKUP_2011)
         private void FillEntityNameIfEmpty(FilterExpression filter, string alias)
         {
             foreach (var cond in filter.Conditions)
@@ -271,6 +266,5 @@ namespace DG.Tools.XrmMockup {
             }
             condition.EntityName = alias;
         }
-#endif
     }
 }

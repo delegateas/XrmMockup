@@ -70,8 +70,6 @@ namespace DG.XrmMockupTest
                 });
         }
 
-        // ignored until entityname can be handled correctly for 2011
-#if !(XRM_MOCKUP_TEST_2011)
         [Fact]
         public void TestFetchXmlToQueryExpressionFromXml()
         {
@@ -164,6 +162,5 @@ namespace DG.XrmMockupTest
                 Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
             }
         }
-#endif
     }
 }

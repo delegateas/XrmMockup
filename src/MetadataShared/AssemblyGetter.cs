@@ -63,17 +63,7 @@ namespace DG.Tools.XrmMockup.Metadata
 
         internal static string GetProjectPath() {
             var startDirectory = Program.ParsedArgs[Arguments.UnitTestProjectPath] ?? Directory.GetCurrentDirectory();
-#if XRM_METADATA_2011
-            var owncsproj = "MetadataGenerator11.csproj";
-#elif XRM_METADATA_2013
-            var owncsproj = "MetadataGenerator13.csproj";
-#elif XRM_METADATA_2015
-            var owncsproj = "MetadataGenerator15.csproj";
-#elif XRM_METADATA_2016
-            var owncsproj = "MetadataGenerator16.csproj";
-#elif XRM_METADATA_365
             var owncsproj = "MetadataGenerator365.csproj";
-#endif
             var current = startDirectory;
             try {
                 while (Directory.GetFiles(current, "*.csproj").Length == 0 || Directory.GetFiles(current, "*.csproj")[0].EndsWith(owncsproj)) {

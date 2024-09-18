@@ -25,24 +25,17 @@ namespace DG.Tools.XrmMockup {
             }
 
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (request.ColumnSet == null && request.Target.KeyAttributes.Count == 0) {
                 throw new FaultException("The columnset parameter must not be null when no KeyAttributes are provided");
             }
-#else
-            if (request.ColumnSet == null) {
-                throw new FaultException("The columnset parameter must not be null");
-            }
-#endif
+
             var row = db.GetDbRow(request.Target);
 
             if (!security.HasPermission(row.ToEntity(), AccessRights.ReadAccess, userRef)) {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             core.ExecuteCalculatedFields(row);
-#endif
             row = db.GetDbRow(request.Target);
             var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
 
@@ -52,9 +45,7 @@ namespace DG.Tools.XrmMockup {
                 Utility.RemoveUnsettableAttributes("Retrieve", row.Metadata, entity);
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             Utility.HandlePrecision(metadata, db, entity);
-#endif
             if (request.RelatedEntitiesQuery != null) {
                 core.AddRelatedEntities(entity, request.RelatedEntitiesQuery, userRef);
             }

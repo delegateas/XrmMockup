@@ -58,13 +58,9 @@ namespace DG.Tools.XrmMockup {
             }
 
             if (IncludeAllWorkflows != false) {
-                #if XRM_MOCKUP_2011
-                asynchronousWorkflows.AddRange(workflows);
-                #else 
                 foreach (Entity workflow in workflows) {
                     AddWorkflow(workflow);
                 }
-                #endif
             }
         }
 
@@ -404,15 +400,11 @@ namespace DG.Tools.XrmMockup {
 
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
-#if XRM_MOCKUP_2011
-               asynchronousWorkflows.Add(workflow);
-#else
             if (workflow.GetOptionSetValue<Workflow_Mode>("mode") == Workflow_Mode.Background) {
                 asynchronousWorkflows.Add(workflow);
             } else {
                 synchronousWorkflows.Add(workflow);
             }
-#endif
         }
 
         public Entity GetActionDefaultNull(string requestName) {
