@@ -72,9 +72,10 @@ namespace DG.Tools.XrmMockup
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
 
-            if (request.Target.LogicalName is "incident" &&
-                request.Target.GetAttributeValue<OptionSetValue>("statecode").Value is 1 &&
-                !request.Parameters.ContainsKey("CloseIncidentRequestHandler"))
+            if (request.Target.LogicalName is "incident"
+                && !request.Parameters.ContainsKey("CloseIncidentRequestHandler")
+                && request.Target.TryGetAttributeValue<OptionSetValue>("statecode", out var stateCode)
+                && stateCode.Value is 1)
             {
                 throw new FaultException("This message can not be used to set the state of incident to Resolved. In order to set state of incident to Resolved, use the CloseIncidentRequest message instead.");
             }
