@@ -1,6 +1,7 @@
-### 1.13.0 - 10 September 2024
+### 1.13.0 - 18 September 2024
 * Add support for .NET8 (@mkholt)
 * Remove support for versions older than 9 (365) (@mkholt)
+* Set InitiatingUserId and UserId in workflow context (@mai98)
 
 ### 1.12.5 - 10 September 2024
 * Fix: CloseIncidentRequestHandler now uses UpdateRequest instead of SetStateRequest (@mai98)
