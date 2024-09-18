@@ -17,6 +17,11 @@ namespace DG.Some.Namespace {
             var workflowExecutionContext =
                 executionContext.GetExtension<IWorkflowContext>()
                 as IWorkflowContext;
+
+            // Verify workflow context attributes: Initating User and User
+            if (workflowExecutionContext.InitiatingUserId == Guid.Empty) throw new Exception("Initiating user is empty");
+            if (workflowExecutionContext.UserId == Guid.Empty) throw new Exception("User is empty");
+
             var factory =
                 executionContext.GetExtension<IOrganizationServiceFactory>()
                 as IOrganizationServiceFactory;

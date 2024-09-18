@@ -1870,6 +1870,14 @@ namespace WorkflowExecuter
             var workflowContext = new XrmWorkflowContext();
             workflowContext.PrimaryEntityId = primaryEntity.Id;
             workflowContext.PrimaryEntityName = primaryEntity.LogicalName;
+
+            if (factory is IServiceProvider serviceProvider)
+            {
+                var pluginExecutionContext = serviceProvider.GetService(typeof(IPluginExecutionContext)) as IPluginExecutionContext;
+                workflowContext.InitiatingUserId = pluginExecutionContext.InitiatingUserId;
+                workflowContext.UserId = pluginExecutionContext.UserId;
+            }
+            
             var invoker = new WorkflowInvoker(codeActivity);
             invoker.Extensions.Add(trace);
             invoker.Extensions.Add(workflowContext);
