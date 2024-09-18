@@ -1,3 +1,6 @@
+### 1.13.1 - 18 September 2024
+* Fix: An update request of Incident without a StateCode would throw NullReferenceException (@mkholt)
+
 ### 1.13.0 - 18 September 2024
 * Add support for .NET8 (@mkholt)
 * Remove support for versions older than 9 (365) (@mkholt)

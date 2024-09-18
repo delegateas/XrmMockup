@@ -536,5 +536,22 @@ namespace DG.XrmMockupTest
 
             Assert.Throws<FaultException>(() => orgAdminService.Update(incident));
         }
+
+        [Fact]
+        public void TestCanUpdateOpenIncident()
+        {
+            var incident = new Incident
+            {
+                Description = nameof(TestCanUpdateOpenIncident)
+            };
+
+            incident.Id = orgAdminUIService.Create(incident);
+
+            incident.Description = "Updated description";
+            orgAdminService.Update(incident);
+
+            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
+            Assert.Equal("Updated description", retrievedIncident.Description);
+        }
     }
 }
