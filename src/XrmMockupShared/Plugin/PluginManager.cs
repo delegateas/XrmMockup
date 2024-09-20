@@ -251,36 +251,24 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        /// <summary>
-        /// Trigger all plugin steps which match the given parameters.
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="stage"></param>
-        /// <param name="entity"></param>
-        /// <param name="preImage"></param>
-        /// <param name="postImage"></param>
-        /// <param name="pluginContext"></param>
-        /// <param name="core"></param>
-        public void Trigger(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
-        {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-                registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-                temporaryPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-        }
-
-
-        //Post operation - Trigger Sync and Async in that order
         public void TriggerSync(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
         {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-                registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-                temporaryPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operation, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
+                stagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
+                    .Where(executionOrderFilter)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .ToList()
+                    .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+
+            if (temporaryPlugins.TryGetValue(operation, out var tempOperationPlugins) && tempOperationPlugins.TryGetValue(stage, out var tempStagePlugins))
+                tempStagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
+                    .Where(executionOrderFilter)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .ToList()
+                    .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
         public void StageAsync(string operation, ExecutionStage stage,
