@@ -10,10 +10,10 @@ namespace DG.XrmMockupTest
         public TestExecutionOrder(XrmMockupFixture fixture) : base(fixture) { crm.DisableRegisteredPlugins(true); }
 
         [Fact]
-        public void TestWorkflowBeforePluginSync()
+        public void TestSyncWorkflowThenSyncPlugin()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(Test1Plugin1));                             // Appends: Sync1
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync2.xml"));    // Appends: Sync2
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(Test1Plugin1));                             // Appends: pSync1
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync1.xml"));    // Appends: Sync1
 
             var account = new Account()
             {
@@ -21,16 +21,16 @@ namespace DG.XrmMockupTest
             };
             account.Id = orgAdminService.Create(account);
 
-            account.EMailAddress1 = "trigger";
+            account.EMailAddress1 = "trigger@test.dk";
             orgAdminService.Update(account);
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-            Assert.Equal(account.Name + "Sync1", retrievedAccount.Name);
+            Assert.Equal(account.Name + "pSync1", retrievedAccount.Name);
         }
 
         [Fact]
-        public void TestPluginBeforeWorkflowAsync()
+        public void TestAsyncPluginThenAsyncWorkflow()
         {
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(Test2Plugin1));                             // Appends: ASync1
             crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test1", "Test1WorkflowASync2.xml"));   // Appends: ASync2
@@ -41,19 +41,19 @@ namespace DG.XrmMockupTest
             };
             account.Id = orgAdminService.Create(account);
 
-            account.EMailAddress1 = "trigger";
+            account.EMailAddress1 = "trigger@test.dk";
             orgAdminService.Update(account);
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-            Assert.Equal(account.Name + "ASync1" + "ASync2", retrievedAccount.Name);
+            Assert.Equal(account.Name + "ASync1ASync2", retrievedAccount.Name);
         }
 
         [Fact]
-        public void TestPluginBeforeWorkflowSync()
+        public void TestSyncWorkflowThenAsyncPlugin()
         {
-            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(TestPlugin0));                              // Appends: Sync0
-            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync2.xml"));    // Appends: Sync2
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(Test2Plugin1));                             // Appends: ASync1
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync1.xml"));    // Appends: Sync1
 
             var account = new Account()
             {
@@ -61,38 +61,52 @@ namespace DG.XrmMockupTest
             };
             account.Id = orgAdminService.Create(account);
 
-            account.EMailAddress1 = "trigger";
+            account.EMailAddress1 = "trigger@test.dk";
             orgAdminService.Update(account);
 
             var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-            Assert.Equal(account.Name + "Sync2", retrievedAccount.Name);
+            Assert.Equal(account.Name + "Sync1ASync1", retrievedAccount.Name);
         }
 
-        //[Fact]
-        //public void TestGeneralEexecutionOrder()
-        //{
-        //    crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
-        //        typeof(Test1Plugin1),   // Sync
-        //        typeof(Test2Plugin1));  // Async
+        [Fact]
+        public void TestSyncPluginThenAsyncWorkflow()
+        {
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(Test1Plugin1));                             // Appends: pSync1
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test1", "Test1WorkflowASync2.xml"));   // Appends: ASync2
 
-        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync2.xml"));    // Sync
-        //    crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test1", "Test1WorkflowASync2.xml"));   // Async
+            var account = new Account()
+            {
+                Name = "Test",
+            };
+            account.Id = orgAdminService.Create(account);
 
-        //    var account = new Account()
-        //    {
-        //        Name = "Test",
-        //    };
-        //    account.Id = orgAdminService.Create(account);
+            account.EMailAddress1 = "trigger@test.dk";
+            orgAdminService.Update(account);
 
-        //    account.EMailAddress1 = "trigger";
-        //    orgAdminService.Update(account);
+            var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
 
-        //    var expectedName = account.Name + "Sync2" + "Sync1" + "ASync1" + "ASync2";
+            Assert.Equal(account.Name + "pSync1ASync2", retrievedAccount.Name);
+        }
 
-        //    var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
+        [Fact]
+        public void TestSyncPluginThenSyncWorkflow()
+        {
+            crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(TestPlugin0));                              // Appends: Sync0
+            crm.AddWorkflow(Path.Combine("../../..", "Metadata", "Workflows", "TestSyncAsyncWorkflows", "Test2", "Test2WorkflowSync1.xml"));    // Appends: Sync1
 
-        //    Assert.Equal(expectedName, retrievedAccount.Name);
-        //}
+            var account = new Account()
+            {
+                Name = "Test",
+            };
+            account.Id = orgAdminService.Create(account);
+
+            account.EMailAddress1 = "trigger@test.dk";
+            orgAdminService.Update(account);
+
+            var retrievedAccount = Account.Retrieve(orgAdminService, account.Id, x => x.Name);
+
+            Assert.Equal(account.Name + "Sync1", retrievedAccount.Name);
+        }
     }
 }
