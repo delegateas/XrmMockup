@@ -1,25 +1,23 @@
-﻿namespace DG.Some.Namespace.Test
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
+using System;
+
+namespace DG.Some.Namespace.Test
 {
-    using System;
-    using Microsoft.Xrm.Sdk;
-    using DG.XrmFramework.BusinessDomain.ServiceContext;
-    
-    public class Test1Plugin1 : TestPlugin
+    public class TestPlugin0 : TestPlugin
     {
-        public Test1Plugin1()
-            : base(typeof(Test1Plugin1))
+        public TestPlugin0()
+            : base(typeof(TestPlugin0))
         {
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
-                Sync1NameUpdate)
+                Sync0NameUpdate)
                 .AddImage(ImageType.PostImage, x => x.Name)
                 .AddFilteredAttributes(x => x.EMailAddress1)
-                .SetExecutionMode(ExecutionMode.Synchronous)
-                .SetExecutionOrder(1);
+                .SetExecutionOrder(0);
         }
 
-        protected void Sync1NameUpdate(LocalPluginContext localContext)
+        protected void Sync0NameUpdate(LocalPluginContext localContext)
         {
             if (localContext == null)
             {
@@ -28,12 +26,11 @@
 
             var service = localContext.OrganizationService;
 
-            //var account = Account.Retrieve(service, localContext.PluginExecutionContext.PrimaryEntityId, x => x.Name);
             var account = GetPostImage<Account>(localContext, "PostImage");
 
             var accountUpd = new Account(account.Id)
             {
-                Name = account.Name + "pSync1"
+                Name = account.Name + "Sync0"
             };
             service.Update(accountUpd);
         }
