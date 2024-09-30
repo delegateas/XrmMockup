@@ -274,18 +274,21 @@ namespace DG.Tools.XrmMockup
         public void StageAsync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-            {
-                var asyncExecutors = registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core));
-                asyncExecutors.ToList().ForEach(x => pendingAsyncPlugins.Enqueue(x));
-            }
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-            {
-                var asyncExecutors = temporaryPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core));
-                asyncExecutors.ToList().ForEach(x => pendingAsyncPlugins.Enqueue(x));
-            }
+            if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operation, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
+                stagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core))
+                    .ToList()
+                    .ForEach(pendingAsyncPlugins.Enqueue);
+
+            if (temporaryPlugins.TryGetValue(operation, out var tempOperationPlugins) && tempOperationPlugins.TryGetValue(stage, out var tempStagePlugins))
+                tempStagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core))
+                    .ToList()
+                    .ForEach(pendingAsyncPlugins.Enqueue);
         }
 
         public void TriggerAsyncWaitingJobs()
