@@ -23,17 +23,17 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[] 
-                { 
-                    new ActivityParty 
-                    { 
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
                         PartyId = crm.AdminUser
-                    } 
+                    }
                 },
-                To = new ActivityParty[] 
-                { 
-                    new ActivityParty 
-                    { 
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
                         PartyId = contact.ToEntityReference()
                     }
                 },
@@ -356,6 +356,22 @@ namespace DG.XrmMockupTest
             };
 
             Assert.Throws<FaultException>(() => orgAdminUIService.Execute(sendEmailRequest));
+        }
+
+        [Fact]
+        public void TestInstantiateTemplateRequestReturnsInstantiateTemplateResponseWithEmail()
+        {
+            var templateRequest = new InstantiateTemplateRequest
+            {
+                TemplateId = Guid.NewGuid(),
+                ObjectId = Guid.NewGuid(),
+                ObjectType = "account"
+            };
+
+            var response = orgAdminUIService.Execute(templateRequest) as InstantiateTemplateResponse;
+
+            Assert.Single(response.EntityCollection.Entities);
+            Assert.Equal("email", response.EntityCollection.Entities[0].LogicalName);
         }
     }
 }
