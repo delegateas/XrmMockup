@@ -1,6 +1,8 @@
 using DG.Tools.XrmMockup.Database;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
+using System;
+using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
@@ -11,6 +13,15 @@ namespace DG.Tools.XrmMockup
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<InstantiateTemplateRequest>(orgRequest);
+
+            if (request.TemplateId == Guid.Empty)
+                throw new FaultException("Template id should be set.");
+
+            if (request.ObjectId == Guid.Empty)
+                throw new FaultException("Object id should be set.");
+
+            if (string.IsNullOrEmpty(request.ObjectType))
+                throw new FaultException("ObjectType is missing");
 
             var entity = new Entity("email");
 
