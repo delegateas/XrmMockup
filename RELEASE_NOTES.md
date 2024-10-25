@@ -1,3 +1,6 @@
+### 1.13.2 - 25 October 2024
+* Support for InstantiateTemplateRequest (@nedergaardcloud)
+
 ### 1.13.1 - 18 September 2024
 * Fix: An update request of Incident without a StateCode would throw NullReferenceException (@mkholt)
 
