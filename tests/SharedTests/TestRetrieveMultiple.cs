@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Globalization;
-using Microsoft.Xrm.Sdk.Query;
+﻿using DG.Tools.XrmMockup;
 using DG.XrmContext;
-using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Xunit;
 
 namespace DG.XrmMockupTest
@@ -801,7 +801,7 @@ namespace DG.XrmMockupTest
             };
 
             var res = orgAdminService.RetrieveMultiple(query).Entities;
-            
+
             var distinctIdCount = res.Select(x => x.Id).Distinct().Count();
 
             Assert.Equal(distinctIdCount, res.Count);
@@ -963,6 +963,49 @@ namespace DG.XrmMockupTest
             };
 
             Assert.Throws<AggregateException>(() => orgAdminService.RetrieveMultiple(query));
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleTopCount()
+        {
+            var query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet("accountid"),
+                TopCount = 1
+            };
+
+            var res = orgAdminService.RetrieveMultiple(query);
+
+            Assert.Single(res.Entities);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleTake()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                Assert.Single(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Take(1)
+                    .ToList());
+            }
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleSkip()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                Assert.Empty(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Skip(4)
+                    .ToList());
+
+                Assert.Single(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Skip(3)
+                    .ToList());
+            }
         }
     }
 }
