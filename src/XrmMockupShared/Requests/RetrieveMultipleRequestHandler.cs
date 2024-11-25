@@ -121,28 +121,9 @@ namespace DG.Tools.XrmMockup
                 tempSortedList = tempSortedList.ThenBy(x => x.Key.Sequence);
             }
 
-            var orderedEntities = tempSortedList.Select(y => y.Value);
-
-            IEnumerable<Entity> entitiesToReturn;
-
-            if (orderedEntities.Any())
-            {
-                Parallel.ForEach(orderedEntities, entity =>
-                {
-                    KeepAttributesAndAliasAttributes(entity, queryExpr.ColumnSet);
-                }
-                );
-                entitiesToReturn = orderedEntities;
-            }
-            else
-            {
-                Parallel.ForEach(collection, kvp =>
-                {
-                    KeepAttributesAndAliasAttributes(kvp.Value, queryExpr.ColumnSet);
-                }
-               );
-                entitiesToReturn = collection.Select(x => x.Value);
-            }
+            var entitiesToReturn = RefineEntityAttributes(
+                tempSortedList.Any() ? tempSortedList.Select(x => x.Value) : collection.Select(x => x.Value),
+                queryExpr.ColumnSet);
 
             if (queryExpr.Distinct)
             {
@@ -150,7 +131,7 @@ namespace DG.Tools.XrmMockup
                 entitiesToReturn = entitiesToReturn.Where(entity => uniqueIds.Add(entity.Id));
             }
 
-            if (queryExpr.TopCount.HasValue || queryExpr.PageInfo.Count > 0)
+            if (queryExpr.TopCount.HasValue || (queryExpr.PageInfo?.Count ?? 0) > 0)
             {
                 entitiesToReturn = entitiesToReturn.Take(queryExpr.TopCount ?? queryExpr.PageInfo.Count); // QueryExpression TopCount or Linq query Take operator
             }
@@ -167,6 +148,14 @@ namespace DG.Tools.XrmMockup
 
         }
 
+        private IEnumerable<Entity> RefineEntityAttributes(IEnumerable<Entity> entities, ColumnSet columnSet)
+        {
+            Parallel.ForEach(entities, entity =>
+            {
+                KeepAttributesAndAliasAttributes(entity, columnSet);
+            });
+            return entities;
+        }
 
         private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db)
         {
@@ -230,7 +219,7 @@ namespace DG.Tools.XrmMockup
         {
             var clone = entity.CloneEntity(metadata.EntityMetadata.GetMetadata(entity.LogicalName), toKeep);
             if (toKeep != null && !toKeep.AllColumns)
-                clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains(".")));
+                clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains('.')));
             entity.Attributes.Clear();
             entity.Attributes.AddRange(clone.Attributes);
         }
