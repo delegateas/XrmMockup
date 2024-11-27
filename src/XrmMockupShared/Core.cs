@@ -603,7 +603,6 @@ namespace DG.Tools.XrmMockup
             }
 
             Entity preImage = null;
-            Entity postImage = null;
 
             if (settings.TriggerProcesses && entityInfo != null)
             {
@@ -615,9 +614,9 @@ namespace DG.Tools.XrmMockup
             if (settings.TriggerProcesses && entityInfo != null)
             {
                 // System Pre-validation
-                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this);
                 // Pre-validation
-                pluginManager.Trigger(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSync(eventOp, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this, (_) => true);
             }
 
             //perform security checks for the request
@@ -630,11 +629,12 @@ namespace DG.Tools.XrmMockup
                 pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
-                pluginManager.Trigger(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                workflowManager.TriggerSync(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSync(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
+                workflowManager.TriggerSync(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                pluginManager.TriggerSync(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
 
                 // System Pre-operation
-                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                pluginManager.TriggerSystem(eventOp, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
             }
 
             // Core operation
@@ -643,8 +643,6 @@ namespace DG.Tools.XrmMockup
             // Post-operation
             if (settings.TriggerProcesses && entityInfo != null)
             {
-                postImage = TryRetrieve(primaryRef);
-
                 // In RetrieveMultipleRequests, the OutputParameters bag contains the entity collection
                 if (request is RetrieveMultipleRequest)
                 {
@@ -658,15 +656,21 @@ namespace DG.Tools.XrmMockup
 
                 if (!string.IsNullOrEmpty(eventOp))
                 {
+                    var syncPostImage = TryRetrieve(primaryRef);
+
                     //copy the createon etc system attributes onto the target so they are available for postoperation processing
-                    CopySystemAttributes(postImage, entityInfo.Item1 as Entity);
+                    CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
 
-                    pluginManager.TriggerSystem(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    pluginManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSystem(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
 
-                    workflowManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
-                    workflowManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, postImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
+                    workflowManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+                    pluginManager.TriggerSync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
+
+                    var asyncPostImage = TryRetrieve(primaryRef);
+
+                    pluginManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+                    workflowManager.StageAsync(eventOp, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
                 }
 
                 //When last Sync has been executed we trigger the Async jobs.

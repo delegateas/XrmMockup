@@ -237,16 +237,14 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void Test3Sync1AndAsync2PostPluginSucceedsWhenOnlyAsync2Applies()
+        public void Test3Sync1AndAsync2PostPluginSucceedsWhenBothApplies()
         {
-            /* Sync and Async trigger of same emailAddress1 update - Only Async applies Since it is executed last and does not use the postimage of the sync Operation */
-
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Test3Plugin1),
                 typeof(Test3Plugin2));
 
             oldAccountName = "Test";
-            newAccountName = oldAccountName + "ASync2";
+            newAccountName = oldAccountName + "Sync1" + "ASync2";
 
             account = new Account()
             {
@@ -267,7 +265,7 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void Test7Sync1TriggersAsync2Sync3PostPluginSucceedsWhenSync1AndAsync2Applies()
+        public void Test7Sync1TriggersAsync2Sync3PostPluginSucceedsWhenSync3AndAsync2Applies()
         {
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Test7Plugin1),
@@ -275,7 +273,7 @@ namespace DG.XrmMockupTest
                 typeof(Test7Plugin3));
 
             oldAccountName = "Test";
-            newAccountName = oldAccountName + "Sync1ASync2";
+            newAccountName = oldAccountName + "Sync3ASync2";
 
             account = new Account()
             {
@@ -297,7 +295,7 @@ namespace DG.XrmMockupTest
 
 
         [Fact]
-        public void Test8Async2Sync1TriggersSync3SucceedsWhenAsync2Applies()
+        public void Test8Async2Sync1TriggersSync3SucceedsWhenAllApplies()
         {
             crm.RegisterAdditionalPlugins(Tools.XrmMockup.PluginRegistrationScope.Temporary,
                 typeof(Test8Plugin1),
@@ -305,7 +303,7 @@ namespace DG.XrmMockupTest
                 typeof(Test8Plugin3));
 
             oldAccountName = "Test";
-            newAccountName = oldAccountName + "ASync2";
+            newAccountName = oldAccountName + "Sync1" + "Sync3" + "ASync2";
 
             account = new Account()
             {
