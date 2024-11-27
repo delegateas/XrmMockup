@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestCWAAccountOptional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExecutionOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestInstantiateTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSendEmail.cs" />
     <Compile Include="..\SharedTests\TestZipSnapshot.cs" />

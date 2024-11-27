@@ -1,6 +1,5 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
-using System;
 using System.Linq;
 using System.ServiceModel;
 using Xunit;
@@ -23,17 +22,17 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[] 
-                { 
-                    new ActivityParty 
-                    { 
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
                         PartyId = crm.AdminUser
-                    } 
+                    }
                 },
-                To = new ActivityParty[] 
-                { 
-                    new ActivityParty 
-                    { 
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
                         PartyId = contact.ToEntityReference()
                     }
                 },

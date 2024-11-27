@@ -1,20 +1,20 @@
-﻿using System;
+﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Serialization;
+using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.Xrm.Sdk.Organization;
+using Microsoft.Xrm.Sdk.Query;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
-using Microsoft.Xrm.Sdk.Metadata;
-using DG.Tools.XrmMockup.Database;
-using Microsoft.Xrm.Sdk.Client;
-using WorkflowExecuter;
 using System.Text.Json;
-using DG.Tools.XrmMockup.Serialization;
-using Microsoft.Xrm.Sdk.Organization;
+using WorkflowExecuter;
 
 [assembly: InternalsVisibleTo("SharedTests")]
 
@@ -211,6 +211,7 @@ namespace DG.Tools.XrmMockup
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
+            new InstantiateTemplateRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -699,8 +700,8 @@ namespace DG.Tools.XrmMockup
             switch (request.RequestName)
             {
                 case "Create":
-                    var createResponse = (CreateResponse) response;
-                    var entityLogicalName = ((Entity) request.Parameters["Target"]).LogicalName;
+                    var createResponse = (CreateResponse)response;
+                    var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
 
                     var createdEntity =
                         GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
@@ -710,7 +711,7 @@ namespace DG.Tools.XrmMockup
                         createdEntity, null, userRef);
                     break;
                 case "Update":
-                    var target = (Entity) request.Parameters["Target"];
+                    var target = (Entity)request.Parameters["Target"];
                     var updatedEntity = GetDbRow(target.ToEntityReferenceWithKeyAttributes()).ToEntity();
                     TriggerExtension(
                         new MockupService(this, userRef.Id, pluginContext), request,
