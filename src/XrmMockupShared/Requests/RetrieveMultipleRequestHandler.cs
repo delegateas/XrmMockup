@@ -1,28 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using DG.Tools.XrmMockup.Database;
+using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
-using System.Linq;
-using Microsoft.Crm.Sdk.Messages;
-using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
-using DG.Tools.XrmMockup.Database;
-using System.Diagnostics;
+using Microsoft.Xrm.Sdk.Query;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
-namespace DG.Tools.XrmMockup {
-    internal class RetrieveMultipleRequestHandler : RequestHandler {
+namespace DG.Tools.XrmMockup
+{
+    internal class RetrieveMultipleRequestHandler : RequestHandler
+    {
         internal RetrieveMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "RetrieveMultiple") { }
 
-        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
+        internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
+        {
             var request = MakeRequest<RetrieveMultipleRequest>(orgRequest);
             var queryExpr = request.Query as QueryExpression;
             var fetchExpr = request.Query as FetchExpression;
             var queryByAttr = request.Query as QueryByAttribute;
-            if (fetchExpr != null) {
+            if (fetchExpr != null)
+            {
                 queryExpr = XmlHandling.FetchXmlToQueryExpression(fetchExpr.Query);
             }
             else if (queryByAttr != null)
@@ -92,7 +94,6 @@ namespace DG.Tools.XrmMockup {
             });
 
             var orders = queryExpr.Orders;
-            var orderedCollection = new EntityCollection();
             IOrderedEnumerable<KeyValuePair<DbRow, Entity>> tempSortedList;
 
             // TODO: Check the order that the orders are executed in is correct
@@ -120,34 +121,22 @@ namespace DG.Tools.XrmMockup {
                 tempSortedList = tempSortedList.ThenBy(x => x.Key.Sequence);
             }
 
-            orderedCollection.Entities.AddRange(tempSortedList.Select(y => y.Value));
-
-            var colToReturn = new EntityCollection();
-
-            if (orderedCollection.Entities.Count != 0)
-            {
-                Parallel.ForEach(orderedCollection.Entities, entity =>
-                {
-                    KeepAttributesAndAliasAttributes(entity, queryExpr.ColumnSet);
-                }
-                );
-                colToReturn = orderedCollection;
-            }
-            else
-            {
-                Parallel.ForEach(collection, kvp =>
-                {
-                    KeepAttributesAndAliasAttributes(kvp.Value, queryExpr.ColumnSet);
-                }
-               );
-                colToReturn = new EntityCollection(collection.Select(x => x.Value).ToList());
-            }
+            var entitiesToReturn = RefineEntityAttributes(
+                tempSortedList.Any() ? tempSortedList.Select(x => x.Value) : collection.Select(x => x.Value),
+                queryExpr.ColumnSet);
 
             if (queryExpr.Distinct)
             {
                 var uniqueIds = new HashSet<Guid>();
-                colToReturn = new EntityCollection(colToReturn.Entities.Where(entity => uniqueIds.Add(entity.Id)).ToList());
+                entitiesToReturn = entitiesToReturn.Where(entity => uniqueIds.Add(entity.Id));
             }
+
+            if (queryExpr.TopCount.HasValue || (queryExpr.PageInfo?.Count ?? 0) > 0)
+            {
+                entitiesToReturn = entitiesToReturn.Take(queryExpr.TopCount ?? queryExpr.PageInfo.Count); // QueryExpression TopCount or Linq query Take operator
+            }
+
+            var colToReturn = new EntityCollection(entitiesToReturn.ToList());
 
             // According to docs, should return -1 if ReturnTotalRecordCount set to false
             colToReturn.TotalRecordCount = queryExpr.PageInfo.ReturnTotalRecordCount ? colToReturn.Entities.Count : -1;
@@ -159,26 +148,40 @@ namespace DG.Tools.XrmMockup {
 
         }
 
+        private IEnumerable<Entity> RefineEntityAttributes(IEnumerable<Entity> entities, ColumnSet columnSet)
+        {
+            Parallel.ForEach(entities, entity =>
+            {
+                KeepAttributesAndAliasAttributes(entity, columnSet);
+            });
+            return entities;
+        }
 
-        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db) {
+        private List<Entity> GetAliasedValuesFromLinkentity(LinkEntity linkEntity, Entity parent, Entity toAdd, XrmDb db)
+        {
             var collection = new List<Entity>();
-            foreach (var linkedRow in db[linkEntity.LinkToEntityName]) {
+            foreach (var linkedRow in db[linkEntity.LinkToEntityName])
+            {
                 var linkedEntity = linkedRow.ToEntity();
 
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
-                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName)) {
+                    parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName))
+                {
                     var linkedAttr = Utility.ConvertToComparableObject(
                         linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
                     var entAttr = Utility.ConvertToComparableObject(
                             parent.Attributes[linkEntity.LinkFromAttributeName]);
 
-                    if (linkedAttr.Equals(entAttr)) {
+                    if (linkedAttr.Equals(entAttr))
+                    {
                         var aliasedEntity = GetEntityWithAliasAttributes(linkEntity.EntityAlias, toAdd,
                                 metadata.EntityMetadata.GetMetadata(toAdd.LogicalName), linkedEntity.Attributes);
 
-                        if (linkEntity.LinkEntities.Count > 0) {
+                        if (linkEntity.LinkEntities.Count > 0)
+                        {
                             var subEntities = new List<Entity>();
-                            foreach (var nestedLinkEntity in linkEntity.LinkEntities) {
+                            foreach (var nestedLinkEntity in linkEntity.LinkEntities)
+                            {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
                                 var alliasedLinkValues = GetAliasedValuesFromLinkentity(
                                         nestedLinkEntity, linkedEntity, aliasedEntity, db);
@@ -186,31 +189,37 @@ namespace DG.Tools.XrmMockup {
                                         .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
                             collection.AddRange(subEntities);
-                        } else if(Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria)) {
+                        }
+                        else if (Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria))
+                        {
                             collection.Add(aliasedEntity);
                         }
 
                     }
                 }
             }
-            if (linkEntity.JoinOperator == JoinOperator.LeftOuter && collection.Count == 0) {
+            if (linkEntity.JoinOperator == JoinOperator.LeftOuter && collection.Count == 0)
+            {
                 collection.Add(toAdd);
             }
             return collection;
         }
 
-        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes) {
+        private Entity GetEntityWithAliasAttributes(string alias, Entity toAdd, EntityMetadata metadata, AttributeCollection attributes)
+        {
             var parentClone = core.GetStronglyTypedEntity(toAdd, metadata, null);
-            foreach (var attr in attributes.Keys) {
+            foreach (var attr in attributes.Keys)
+            {
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }
             return parentClone;
         }
 
-        private void KeepAttributesAndAliasAttributes(Entity entity, ColumnSet toKeep) {
+        private void KeepAttributesAndAliasAttributes(Entity entity, ColumnSet toKeep)
+        {
             var clone = entity.CloneEntity(metadata.EntityMetadata.GetMetadata(entity.LogicalName), toKeep);
             if (toKeep != null && !toKeep.AllColumns)
-                clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains(".")));
+                clone.Attributes.AddRange(entity.Attributes.Where(x => x.Key.Contains('.')));
             entity.Attributes.Clear();
             entity.Attributes.AddRange(clone.Attributes);
         }
@@ -229,7 +238,7 @@ namespace DG.Tools.XrmMockup {
 
         private void FillAliasIfEmpty(LinkEntity linkEntity, ref int linkCount)
         {
-            if(linkEntity.EntityAlias == null)
+            if (linkEntity.EntityAlias == null)
             {
                 linkEntity.EntityAlias = $"{linkEntity.LinkToEntityName}{linkCount}";
                 linkCount++;
