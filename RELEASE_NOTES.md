@@ -1,3 +1,7 @@
+### 1.13.3 - 29 November 2024
+* Extend RetrieveMultipleRequestHandler with support for TopCount and Take (@mai98)
+* Fix plugin vs workflow execution order (@mai98)
+
 ### 1.13.2 - 25 October 2024
 * Support for InstantiateTemplateRequest (@nedergaardcloud)
 
