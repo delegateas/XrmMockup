@@ -79,6 +79,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="System.Text.Json" Version="6.0.2" />
+		<Compile Include="..\XrmMockupShared\Requests\CreateMultipleRequestHandler.cs" />
 	</ItemGroup>
     <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
     <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />

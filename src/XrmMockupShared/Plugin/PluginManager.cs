@@ -269,6 +269,33 @@ namespace DG.Tools.XrmMockup
                     .OrderBy(p => p.GetExecutionOrder())
                     .ToList()
                     .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+
+            // Trigger CreateMultipleRequest plugins when a CreateRequest is executed
+            if (operation == "create")
+            {
+                var createMultiplePluginContext = pluginContext.Clone();
+                createMultiplePluginContext.PrimaryEntityName = "CreateMultipleRequest";
+                createMultiplePluginContext.InputParameters["Target"] = new CreateMultipleRequest
+                {
+                    Requests = new OrganizationRequestCollection { new CreateRequest { Target = (Entity)entity } }
+                };
+
+                TriggerSync("createmultiple", stage, entity, preImage, postImage, createMultiplePluginContext, core, executionOrderFilter);
+            }
+
+            // Trigger CreateRequest plugins for each request in CreateMultipleRequest
+            if (operation == "createmultiple")
+            {
+                var createMultipleRequest = pluginContext.InputParameters["Target"] as CreateMultipleRequest;
+                foreach (var createRequest in createMultipleRequest.Requests)
+                {
+                    var createPluginContext = pluginContext.Clone();
+                    createPluginContext.PrimaryEntityName = "Create";
+                    createPluginContext.InputParameters["Target"] = createRequest.Parameters["Target"];
+
+                    TriggerSync("create", stage, createRequest.Parameters["Target"], preImage, postImage, createPluginContext, core, executionOrderFilter);
+                }
+            }
         }
 
         public void StageAsync(string operation, ExecutionStage stage,
