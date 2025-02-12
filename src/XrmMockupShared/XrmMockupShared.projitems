@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\CustomApiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)requests\InstantiateTemplateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UploadBlockRequestHandler.cs" />
