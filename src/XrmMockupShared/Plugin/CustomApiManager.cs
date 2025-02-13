@@ -27,6 +27,10 @@ namespace DG.Tools.XrmMockup
         public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
         {
             registeredApis = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>();
+            if (baseCustomApiTypes == null)
+            {
+                return;
+            }
 
             RegisterCustomApis(baseCustomApiTypes);
         }
