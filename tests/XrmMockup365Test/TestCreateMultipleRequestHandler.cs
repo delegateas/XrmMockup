@@ -17,20 +17,21 @@ namespace DG.XrmMockupTest
             var contact1 = new Contact { FirstName = "John", LastName = "Doe" };
             var contact2 = new Contact { FirstName = "Jane", LastName = "Doe" };
 
-            var createRequest1 = new CreateRequest { Target = contact1 };
-            var createRequest2 = new CreateRequest { Target = contact2 };
-
             var createMultipleRequest = new CreateMultipleRequest
             {
-                Requests = new OrganizationRequestCollection { createRequest1, createRequest2 }
+                Targets = new EntityCollection
+                {
+                    EntityName = Contact.EntityLogicalName,
+                    Entities = { contact1, contact2 }
+                }
             };
 
             var response = (CreateMultipleResponse)orgAdminService.Execute(createMultipleRequest);
 
-            Assert.Equal(2, response.Responses.Count);
+            Assert.Equal(2, response.Ids.Length);
 
-            var createdContact1 = Contact.Retrieve(orgAdminService, ((CreateResponse)response.Responses[0].Response).id);
-            var createdContact2 = Contact.Retrieve(orgAdminService, ((CreateResponse)response.Responses[1].Response).id);
+            var createdContact1 = Contact.Retrieve(orgAdminService, response.Ids[0]);
+            var createdContact2 = Contact.Retrieve(orgAdminService, response.Ids[1]);
 
             Assert.Equal(contact1.FirstName, createdContact1.FirstName);
             Assert.Equal(contact2.FirstName, createdContact2.FirstName);

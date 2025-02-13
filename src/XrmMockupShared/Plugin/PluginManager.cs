@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -254,6 +252,41 @@ namespace DG.Tools.XrmMockup
         public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
         {
+            TriggerSyncInternal(operation, stage, entity, preImage, postImage, pluginContext, core, executionOrderFilter);
+
+            // Trigger CreateMultipleRequest plugins when a CreateRequest is executed
+            if (operation == "create")
+            {
+                var createMultiplePluginContext = pluginContext.Clone();
+                var entityCollection = new EntityCollection()
+                {
+                    EntityName = pluginContext.PrimaryEntityName,
+                    Entities = { (Entity)entity },
+                };
+                createMultiplePluginContext.InputParameters["Targets"] = entityCollection;
+                createMultiplePluginContext.MessageName = "CreateMultiple";
+
+                TriggerSyncInternal("createmultiple", stage, entityCollection, preImage, postImage, createMultiplePluginContext, core, executionOrderFilter);
+            }
+
+            // Trigger CreateRequest plugins for each request in CreateMultipleRequest
+            if (operation == "createmultiple")
+            {
+                var targets = pluginContext.InputParameters["Targets"] as EntityCollection;
+                foreach (var targetEntity in targets.Entities)
+                {
+                    var createPluginContext = pluginContext.Clone();
+                    createPluginContext.InputParameters["Target"] = targetEntity;
+                    createPluginContext.MessageName = "Create";
+
+                    TriggerSyncInternal("create", stage, targetEntity, preImage, postImage, createPluginContext, core, executionOrderFilter);
+                }
+            }
+        }
+
+        private void TriggerSyncInternal(string operation, ExecutionStage stage,
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
+        {
             if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operation, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
                 stagePlugins
                     .Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
@@ -269,33 +302,6 @@ namespace DG.Tools.XrmMockup
                     .OrderBy(p => p.GetExecutionOrder())
                     .ToList()
                     .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-
-            // Trigger CreateMultipleRequest plugins when a CreateRequest is executed
-            if (operation == "create")
-            {
-                var createMultiplePluginContext = pluginContext.Clone();
-                createMultiplePluginContext.PrimaryEntityName = "CreateMultipleRequest";
-                createMultiplePluginContext.InputParameters["Target"] = new CreateMultipleRequest
-                {
-                    Requests = new OrganizationRequestCollection { new CreateRequest { Target = (Entity)entity } }
-                };
-
-                TriggerSync("createmultiple", stage, entity, preImage, postImage, createMultiplePluginContext, core, executionOrderFilter);
-            }
-
-            // Trigger CreateRequest plugins for each request in CreateMultipleRequest
-            if (operation == "createmultiple")
-            {
-                var createMultipleRequest = pluginContext.InputParameters["Target"] as CreateMultipleRequest;
-                foreach (var createRequest in createMultipleRequest.Requests)
-                {
-                    var createPluginContext = pluginContext.Clone();
-                    createPluginContext.PrimaryEntityName = "Create";
-                    createPluginContext.InputParameters["Target"] = createRequest.Parameters["Target"];
-
-                    TriggerSync("create", stage, createRequest.Parameters["Target"], preImage, postImage, createPluginContext, core, executionOrderFilter);
-                }
-            }
         }
 
         public void StageAsync(string operation, ExecutionStage stage,
@@ -407,9 +413,20 @@ namespace DG.Tools.XrmMockup
                 // Check if it is supposed to execute. Returns preemptively, if it should not.
                 var entity = entityObject as Entity;
                 var entityRef = entityObject as EntityReference;
+                var entityCollection = entityObject as EntityCollection;
 
-                var guid = (entity != null) ? entity.Id : entityRef.Id;
-                var logicalName = (entity != null) ? entity.LogicalName : entityRef.LogicalName;
+                var guid = 
+                    entity != null
+                    ? entity.Id : 
+                    entityRef != null 
+                    ? entityRef.Id
+                    : Guid.Empty;
+                var logicalName = 
+                    entity != null 
+                    ? entity.LogicalName : 
+                    entityRef != null 
+                    ? entityRef.LogicalName
+                    : entityCollection.EntityName;
 
                 if (VerifyPluginTrigger(entity, logicalName, guid, preImage, postImage, pluginContext))
                 {

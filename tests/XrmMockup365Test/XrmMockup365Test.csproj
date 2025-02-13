@@ -37,10 +37,10 @@
 		<ProjectReference Include="..\TestPluginAssembly365\TestPluginAssembly365.csproj" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
+		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.59" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
-		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.0.1" />
+		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.3" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>

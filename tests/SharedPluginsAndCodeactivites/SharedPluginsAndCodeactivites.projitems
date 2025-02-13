@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Closeincidentplugin.cs" />
+    <Compile Include="..\SharedPluginsAndCodeactivites\SetCityOnCreateMultiple.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IncidentDeleteAllRelatedResolutionsOnClose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
@@ -56,5 +57,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SetCountryOnCreate.cs" />
   </ItemGroup>
 </Project>

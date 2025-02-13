@@ -12,28 +12,43 @@ namespace DG.XrmMockupTest
         public TestCreateMultipleRequestPlugin(XrmMockupFixture fixture) : base(fixture) { }
 
         [Fact]
-        public void TestCreateMultipleEntitiesPlugin()
+        public void TestCreateMultipleEntitiesPlugin_CreateMultiple()
         {
-            var contact1 = new Contact { FirstName = "John", LastName = "Doe" };
-            var contact2 = new Contact { FirstName = "Jane", LastName = "Doe" };
+            var contact1 = new Contact { Address2_City = "Texas", Address2_Country = "USA" };
+            var contact2 = new Contact { Address2_City = "Nuuk", Address2_Country = "Greenland" };
 
-            var createRequest1 = new CreateRequest { Target = contact1 };
-            var createRequest2 = new CreateRequest { Target = contact2 };
-
-            var createMultipleRequest = new CreateMultipleRequest
+            var createMultipleRequest = new CreateMultipleRequest()
             {
-                Requests = new OrganizationRequestCollection { createRequest1, createRequest2 }
+                Targets = new EntityCollection() {
+                    EntityName = Contact.EntityLogicalName,
+                    Entities = { contact1, contact2 }
+                }
             };
 
             var response = (CreateMultipleResponse)orgAdminService.Execute(createMultipleRequest);
 
-            Assert.Equal(2, response.Responses.Count);
+            Assert.Equal(2, response.Ids.Length);
 
-            var createdContact1 = Contact.Retrieve(orgAdminService, ((CreateResponse)response.Responses[0].Response).id);
-            var createdContact2 = Contact.Retrieve(orgAdminService, ((CreateResponse)response.Responses[1].Response).id);
+            var createdContact1 = Contact.Retrieve(orgAdminService, response.Ids[0]);
+            var createdContact2 = Contact.Retrieve(orgAdminService, response.Ids[1]);
 
-            Assert.Equal("Bob", createdContact1.FirstName);
-            Assert.Equal("Bob", createdContact2.FirstName);
+            Assert.Equal("Copenhagen", createdContact1.Address2_City);
+            Assert.Equal("Denmark", createdContact1.Address2_Country);
+
+            Assert.Equal("Copenhagen", createdContact2.Address2_City);
+            Assert.Equal("Denmark", createdContact2.Address2_Country);
+        }
+
+        [Fact]
+        public void TestCreateMultipleEntitiesPlugin_Create()
+        {
+            var contact = new Contact { Address2_City = "Texas", Address2_Country = "USA" };
+            contact.Id = orgAdminService.Create(contact);
+
+            var retrievedContact = Contact.Retrieve(orgAdminService, contact.Id);
+
+            Assert.Equal("Copenhagen", retrievedContact.Address2_City);
+            Assert.Equal("Denmark", retrievedContact.Address2_Country);
         }
     }
 }

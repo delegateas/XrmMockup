@@ -751,6 +751,7 @@
         CopyDynamicListToStatic,
         CopySystemForm,
         Create,
+        CreateMultiple,
         CreateException,
         CreateInstance,
         CreateKnowledgeArticleTranslation,

@@ -70,6 +70,7 @@ namespace DG.Tools.XrmMockup {
         CopyDynamicListToStatic,
         CopySystemForm,
         Create,
+        CreateMultiple,
         CreateException,
         CreateInstance,
         CreateKnowledgeArticleTranslation,

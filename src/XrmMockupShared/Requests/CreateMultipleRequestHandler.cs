@@ -17,20 +17,20 @@ namespace DG.Tools.XrmMockup
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<CreateMultipleRequest>(orgRequest);
-            var response = new CreateMultipleResponse();
-            var responses = new List<CreateResponseItem>();
 
-            foreach (var createRequest in request.Requests)
-            {
-                var createResponse = core.Execute(createRequest, userRef) as CreateResponse;
-                responses.Add(new CreateResponseItem
+            var ids =
+                request.Targets.Entities.Select(entity =>
                 {
-                    RequestIndex = request.Requests.IndexOf(createRequest),
-                    Response = createResponse
-                });
-            }
+                    var createRequest = new CreateRequest
+                    {
+                        Target = entity
+                    };
+                    var createResponse = core.Execute(createRequest, userRef) as CreateResponse;
+                    return createResponse.id;
+                }).ToArray();
 
-            response.Results["Responses"] = responses;
+            var response = new CreateMultipleResponse();
+            response.Results["Ids"] = ids;
             return response;
         }
     }
