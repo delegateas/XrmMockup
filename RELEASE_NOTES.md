@@ -1,3 +1,7 @@
+### 1.14.1 - 14 December 2025
+* Add support for UpdateMultipleRequest (@mkholt)
+* Add support for UpsertMultipleRequest (@mkholt)
+
 ### 1.14.0 - 14 December 2025
 * Add support for CustomAPI execution (@magesoe)
 * Support for CreateMultipleRequest (@magesoe)
