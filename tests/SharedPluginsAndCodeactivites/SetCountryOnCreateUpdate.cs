@@ -4,12 +4,17 @@ using Microsoft.Xrm.Sdk;
 
 namespace DG.Some.Namespace
 {
-    public class SetCountryOnCreate : Plugin
+    public class SetCountryOnCreateUpdate : Plugin
     {
-        public SetCountryOnCreate() : base(typeof(SetCountryOnCreate))
+        public SetCountryOnCreateUpdate() : base(typeof(SetCountryOnCreateUpdate))
         {
             RegisterPluginStep<Contact>(
                 EventOperation.Create,
+                ExecutionStage.PreOperation,
+                Execute);
+
+            RegisterPluginStep<Contact>(
+                EventOperation.Update,
                 ExecutionStage.PreOperation,
                 Execute);
         }

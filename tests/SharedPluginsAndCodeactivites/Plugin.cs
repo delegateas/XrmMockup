@@ -824,6 +824,7 @@
         UnlockInvoicePricing,
         UnlockSalesOrderPricing,
         Update,
+        UpdateMultiple,
         ValidateRecurrenceRule,
         Win
     }

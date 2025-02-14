@@ -75,7 +75,7 @@ namespace DG.Tools.XrmMockup {
         /// <param name="postImage"></param>
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
-        public void TriggerSync(string operation, ExecutionStage stage,
+        public void TriggerSync(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             var toExecute = synchronousWorkflows.Where(x => ShouldExecute(x, operation, stage, entity, pluginContext)).ToList();
@@ -104,7 +104,7 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        public void StageAsync(string operation, ExecutionStage stage,
+        public void StageAsync(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             var toExecute = asynchronousWorkflows.Where(x => ShouldStage(x, operation, stage, entity, pluginContext)).ToList();
@@ -167,7 +167,7 @@ namespace DG.Tools.XrmMockup {
             return thisPluginContext;
         }
 
-        private void Stage(Entity workflow, string operation, ExecutionStage stage,
+        private void Stage(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, PluginContext pluginContext)
         {
             if (workflow.LogicalName != "workflow") return;
@@ -181,9 +181,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation == nameof(EventOperation.Create).ToLower();
-            var isUpdate = operation == nameof(EventOperation.Update).ToLower();
-            var isDelete = operation == nameof(EventOperation.Delete).ToLower();
+            var isCreate = operation == EventOperation.Create;
+            var isUpdate = operation == EventOperation.Update;
+            var isDelete = operation == EventOperation.Delete;
 
             if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return;
             
@@ -217,7 +217,7 @@ namespace DG.Tools.XrmMockup {
             pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
         }
 
-        private bool ShouldStage(Entity workflow, string operation, ExecutionStage stage,
+        private bool ShouldStage(Entity workflow, EventOperation operation, ExecutionStage stage,
             object entityObject, PluginContext pluginContext)
         {
             if (workflow.LogicalName != "workflow") return false;
@@ -231,9 +231,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation == nameof(EventOperation.Create).ToLower();
-            var isUpdate = operation == nameof(EventOperation.Update).ToLower();
-            var isDelete = operation == nameof(EventOperation.Delete).ToLower();
+            var isCreate = operation == EventOperation.Create;
+            var isUpdate = operation == EventOperation.Update;
+            var isDelete = operation == EventOperation.Delete;
 
             if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return false;
 
@@ -275,7 +275,7 @@ namespace DG.Tools.XrmMockup {
             return true;
         }
 
-        private bool ShouldExecute(Entity workflow, string operation, ExecutionStage stage, object entityObject, PluginContext pluginContext)
+        private bool ShouldExecute(Entity workflow, EventOperation operation, ExecutionStage stage, object entityObject, PluginContext pluginContext)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             if (workflow.LogicalName != "workflow") return false;
@@ -289,9 +289,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation.ToLower() == nameof(EventOperation.Create).ToString().ToLower();
-            var isUpdate = operation.ToLower() == nameof(EventOperation.Update).ToString().ToLower();
-            var isDelete = operation.ToLower() == nameof(EventOperation.Delete).ToString().ToLower();
+            var isCreate = operation == EventOperation.Create;
+            var isUpdate = operation == EventOperation.Update;
+            var isDelete = operation == EventOperation.Delete;
 
             if (!ShouldTriggerOnAction(isCreate, isUpdate, isDelete, workflow)) return false;
 
@@ -325,7 +325,7 @@ namespace DG.Tools.XrmMockup {
             return true;
         }
 
-        private void Execute(Entity workflow, string operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        private void Execute(Entity workflow, EventOperation operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             var entity = entityObject as Entity;
@@ -336,9 +336,9 @@ namespace DG.Tools.XrmMockup {
 
             checkInfiniteRecursion(pluginContext);
 
-            var isCreate = operation.ToLower() == nameof(EventOperation.Create).ToString().ToLower();
-            var isUpdate = operation.ToLower() == nameof(EventOperation.Update).ToString().ToLower();
-            var isDelete = operation.ToLower() == nameof(EventOperation.Delete).ToString().ToLower();
+            var isCreate = operation == EventOperation.Create;
+            var isUpdate = operation == EventOperation.Update;
+            var isDelete = operation == EventOperation.Delete;
 
             var triggerFields = new HashSet<string>();
             if (workflow.GetAttributeValue<string>("triggeronupdateattributelist") != null)

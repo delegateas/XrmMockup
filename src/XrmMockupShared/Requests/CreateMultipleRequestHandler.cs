@@ -10,7 +10,7 @@ namespace DG.Tools.XrmMockup
     internal class CreateMultipleRequestHandler : RequestHandler
     {
         internal CreateMultipleRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) 
-            : base(core, db, metadata, security, "CreateMultiple")
+            : base(core, db, metadata, security, nameof(EventOperation.CreateMultiple))
         {
         }
 

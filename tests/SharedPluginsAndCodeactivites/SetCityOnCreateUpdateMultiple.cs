@@ -7,12 +7,17 @@ using Microsoft.Xrm.Sdk.Messages;
 
 namespace DG.Some.Namespace
 {
-    public class SetCityOnCreateMultiple : Plugin
+    public class SetCityOnCreateUpdateMultiple : Plugin
     {
-        public SetCityOnCreateMultiple() : base(typeof(SetCityOnCreateMultiple))
+        public SetCityOnCreateUpdateMultiple() : base(typeof(SetCityOnCreateUpdateMultiple))
         {
             RegisterPluginStep<Contact>(
                 EventOperation.CreateMultiple,
+                ExecutionStage.PreOperation,
+                Execute);
+
+            RegisterPluginStep<Contact>(
+                EventOperation.UpdateMultiple,
                 ExecutionStage.PreOperation,
                 Execute);
         }
