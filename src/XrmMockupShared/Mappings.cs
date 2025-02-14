@@ -4,6 +4,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace DG.Tools.XrmMockup {
@@ -29,30 +30,48 @@ namespace DG.Tools.XrmMockup {
             { typeof(UpdateMultipleRequest), "Targets" },
         };
 
-        public static Dictionary<Type, string> RequestToEventOperation = new Dictionary<Type, string>()
+        public static Dictionary<Type, EventOperation?> RequestToEventOperation = new Dictionary<Type, EventOperation?>()
         {
-            { typeof(AssignRequest), nameof(EventOperation.Assign).ToLower() },
-            { typeof(AssociateRequest), nameof(EventOperation.Associate).ToLower() },
-            { typeof(CreateRequest),nameof( EventOperation.Create).ToLower() },
-            { typeof(DeleteRequest), nameof(EventOperation.Delete).ToLower() },
-            { typeof(DisassociateRequest), nameof(EventOperation.Disassociate).ToLower() },
-            { typeof(GrantAccessRequest), nameof(EventOperation.GrantAccess).ToLower() },
-            { typeof(MergeRequest), nameof(EventOperation.Merge).ToLower() },
-            { typeof(ModifyAccessRequest), nameof(EventOperation.ModifyAccess).ToLower() },
-            { typeof(RetrieveRequest), nameof(EventOperation.Retrieve).ToLower() },
-            { typeof(RetrieveMultipleRequest), nameof(EventOperation.RetrieveMultiple).ToLower() },
-            { typeof(RetrievePrincipalAccessRequest), nameof(EventOperation.RetrievePrincipalAccess).ToLower() },
+            { typeof(AssignRequest), EventOperation.Assign },
+            { typeof(AssociateRequest), EventOperation.Associate },
+            { typeof(CreateRequest), EventOperation.Create },
+            { typeof(DeleteRequest), EventOperation.Delete },
+            { typeof(DisassociateRequest), EventOperation.Disassociate },
+            { typeof(GrantAccessRequest), EventOperation.GrantAccess },
+            { typeof(MergeRequest), EventOperation.Merge },
+            { typeof(ModifyAccessRequest), EventOperation.ModifyAccess },
+            { typeof(RetrieveRequest), EventOperation.Retrieve },
+            { typeof(RetrieveMultipleRequest), EventOperation.RetrieveMultiple },
+            { typeof(RetrievePrincipalAccessRequest), EventOperation.RetrievePrincipalAccess },
             //{ typeof(RetrieveSharedPrincipalAccessRequest), EventOperation.RetrieveSharedPrincipalAccess }, // No such request
-            { typeof(RevokeAccessRequest), nameof(EventOperation.RevokeAccess).ToLower() },
-            { typeof(SetStateRequest), nameof(EventOperation.SetState).ToLower() },
+            { typeof(RevokeAccessRequest), EventOperation.RevokeAccess },
+            { typeof(SetStateRequest), EventOperation.SetState },
             //{ typeof(SetStateDynamicEntityRequest), EventOperation.SetStateDynamicEntity }, // No such request
-            { typeof(UpdateRequest), nameof(EventOperation.Update).ToLower() },
-            { typeof(WinOpportunityRequest), nameof(EventOperation.Win).ToLower() },
-            { typeof(LoseOpportunityRequest), nameof(EventOperation.Lose).ToLower() },
-            { typeof(CloseIncidentRequest), nameof(EventOperation.Close).ToLower() },
-            { typeof(CreateMultipleRequest), nameof(EventOperation.CreateMultiple).ToLower() },
-            { typeof(UpdateMultipleRequest), nameof(EventOperation.UpdateMultiple).ToLower() }
+            { typeof(UpdateRequest), EventOperation.Update },
+            { typeof(WinOpportunityRequest), EventOperation.Win },
+            { typeof(LoseOpportunityRequest), EventOperation.Lose },
+            { typeof(CloseIncidentRequest), EventOperation.Close },
+            { typeof(CreateMultipleRequest), EventOperation.CreateMultiple },
+            { typeof(UpdateMultipleRequest), EventOperation.UpdateMultiple }
         };
+
+        public static Dictionary<EventOperation, EventOperation> RequestToMultipleRequest = new Dictionary<EventOperation, EventOperation>()
+        {
+            { EventOperation.Create, EventOperation.CreateMultiple },
+            { EventOperation.Update, EventOperation.UpdateMultiple }
+        };
+
+        public static EventOperation? SingleOperationFromMultiple(EventOperation operation)
+        {
+            if (!RequestToMultipleRequest.ContainsValue(operation)) return null;
+            return RequestToMultipleRequest.First(x => x.Value == operation).Key;
+        }
+
+        public static Type EventOperationToRequest(EventOperation operation)
+        {
+            if (!RequestToEventOperation.ContainsValue(operation)) return null;
+            return RequestToEventOperation.First(x => x.Value == operation).Key;
+        }
 
         public static readonly Dictionary<string, ConditionOperator> ConditionalOperator = new Dictionary<string, ConditionOperator>
         {
