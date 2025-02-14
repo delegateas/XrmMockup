@@ -13,6 +13,7 @@ public class XrmMockupFixture : IDisposable
         var settings = new XrmMockupSettings
         {
             BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif) },
+            BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(CustomAPI)) },
             CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
             EnableProxyTypes = true,
             IncludeAllWorkflows = false,

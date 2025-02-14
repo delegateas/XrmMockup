@@ -50,6 +50,7 @@ namespace DG.Tools.XrmMockup
         #region MyRegion
 
         private PluginManager pluginManager;
+        private CustomApiManager customApiManager;
         internal OrganizationDetail orgDetail;
         private WorkflowManager workflowManager;
         private Security security;
@@ -114,6 +115,7 @@ namespace DG.Tools.XrmMockup
             this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
                 Workflows, metadata.EntityMetadata);
+            this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
 
             this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
@@ -638,7 +640,7 @@ namespace DG.Tools.XrmMockup
             }
 
             // Core operation
-            OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext);
+            OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext, pluginContext);
 
             // Post-operation
             if (settings.TriggerProcesses && entityInfo != null)
@@ -776,8 +778,11 @@ namespace DG.Tools.XrmMockup
             TriggerWaitingWorkflows();
         }
 
-        private OrganizationResponse ExecuteRequest(OrganizationRequest request, EntityReference userRef,
-            PluginContext parentPluginContext)
+        private OrganizationResponse ExecuteRequest(
+            OrganizationRequest request, 
+            EntityReference userRef,
+            PluginContext parentPluginContext,
+            PluginContext pluginContext)
         {
             if (request is AssignRequest assignRequest)
             {
@@ -816,6 +821,11 @@ namespace DG.Tools.XrmMockup
             if (workflowManager.GetActionDefaultNull(request.RequestName) != null)
             {
                 return ExecuteAction(request);
+            }
+
+            if (customApiManager.HandlesRequest(request.RequestName))
+            {
+                return customApiManager.Execute(request, this, pluginContext);
             }
 
             var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));

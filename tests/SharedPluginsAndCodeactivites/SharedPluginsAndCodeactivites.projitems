@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Closeincidentplugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateAccountApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IncidentDeleteAllRelatedResolutionsOnClose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
