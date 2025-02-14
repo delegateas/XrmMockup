@@ -72,6 +72,12 @@ namespace DG.Tools.XrmMockup
         /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
         /// </summary>
         public OrganizationDetail OrganizationDetail { get; set; }
+
+        /// <summary>
+        /// List of base-types with their prefix which all your custom apis extend.
+        /// This is used to locate the assemblies required.
+        /// </summary>
+        public IEnumerable<Tuple<string, Type>> BaseCustomApiTypes { get; set; }
     }
 
 
