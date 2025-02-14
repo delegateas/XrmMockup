@@ -1,3 +1,7 @@
+### 1.14.0 - 14 December 2025
+* Add support for CustomAPI execution (@magesoe)
+* Support for CreateMultipleRequest (@magesoe)
+
 ### 1.13.3 - 29 November 2024
 * Extend RetrieveMultipleRequestHandler with support for TopCount and Take (@mai98)
 * Fix plugin vs workflow execution order (@mai98)
