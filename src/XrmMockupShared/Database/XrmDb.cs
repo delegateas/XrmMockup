@@ -183,7 +183,7 @@ namespace DG.Tools.XrmMockup.Database {
             DbRow currentDbRow = null;
             dbRow = null;
 
-            if (reference?.Id != Guid.Empty)
+            if (reference?.Id != default && reference?.Id != Guid.Empty)
             {
                 currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null)

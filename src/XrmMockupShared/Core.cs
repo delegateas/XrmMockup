@@ -215,7 +215,8 @@ namespace DG.Tools.XrmMockup
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
             new CreateMultipleRequestHandler(this, db, metadata, security),
-            new UpdateMultipleRequestHandler(this, db, metadata, security)
+            new UpdateMultipleRequestHandler(this, db, metadata, security),
+            new UpsertMultipleRequestHandler(this, db, metadata, security)
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -668,16 +669,18 @@ namespace DG.Tools.XrmMockup
                     var syncPostImage = TryRetrieve(primaryRef);
 
                     //copy the createon etc system attributes onto the target so they are available for postoperation processing
-                    CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
+                    if (syncPostImage != null)
+                    {
+                        CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
+                    }
 
                     pluginManager.TriggerSystem(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
 
                     pluginManager.TriggerSync(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
                     workflowManager.TriggerSync(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
                     pluginManager.TriggerSync(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
-
+                    
                     var asyncPostImage = TryRetrieve(primaryRef);
-
                     pluginManager.StageAsync(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
                     workflowManager.StageAsync(operation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
                 }

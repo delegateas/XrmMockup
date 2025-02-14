@@ -13,21 +13,23 @@ namespace DG.Tools.XrmMockup {
 
         public static Dictionary<Type, string> EntityImageProperty = new Dictionary<Type, string>()
         {
-            { typeof(AssignRequest), "Target" },
-            { typeof(CreateRequest), "Target" },
-            { typeof(DeleteRequest), "Target" },
-            { typeof(DeliverIncomingEmailRequest), "EmailId" },
-            { typeof(DeliverPromoteEmailRequest), "EmailId" },
-            { typeof(ExecuteWorkflowRequest), "Target" },
-            { typeof(MergeRequest), "Target" },
-            { typeof(SendEmailRequest), "EmailId" },
-            { typeof(SetStateRequest), "EntityMoniker" },
-            { typeof(UpdateRequest), "Target" },
-            { typeof(AssociateRequest), "Target" },
-            { typeof(DisassociateRequest), "Target" },
-            { typeof(RetrieveRequest), "Target" },
-            { typeof(CreateMultipleRequest), "Targets" },
-            { typeof(UpdateMultipleRequest), "Targets" },
+            { typeof(AssignRequest), nameof(AssignRequest.Target) },
+            { typeof(AssociateRequest), nameof(AssociateRequest.Target) },
+            { typeof(CreateMultipleRequest), nameof(CreateMultipleRequest.Targets) },
+            { typeof(CreateRequest), nameof(CreateRequest.Target) },
+            { typeof(DeleteRequest), nameof(DeleteRequest.Target) },
+            { typeof(DeliverIncomingEmailRequest), nameof(DeliverIncomingEmailRequest.MessageId) },
+            { typeof(DeliverPromoteEmailRequest), nameof(DeliverPromoteEmailRequest.EmailId) },
+            { typeof(DisassociateRequest), nameof(DisassociateRequest.Target) },
+            { typeof(ExecuteWorkflowRequest), nameof(ExecuteWorkflowRequest.EntityId) },
+            { typeof(MergeRequest), nameof(MergeRequest.Target) },
+            { typeof(RetrieveRequest), nameof(RetrieveRequest.Target) },
+            { typeof(SendEmailRequest), nameof(SendEmailRequest.EmailId) },
+            { typeof(SetStateRequest), nameof(SetStateRequest.EntityMoniker) },
+            { typeof(UpdateMultipleRequest), nameof(UpdateMultipleRequest.Targets) },
+            { typeof(UpdateRequest), nameof(UpdateRequest.Target) },
+            { typeof(UpsertMultipleRequest), nameof(UpsertMultipleRequest.Targets) },
+            { typeof(UpsertRequest), nameof(UpsertRequest.Target) },
         };
 
         public static Dictionary<Type, EventOperation?> RequestToEventOperation = new Dictionary<Type, EventOperation?>()
@@ -48,17 +50,20 @@ namespace DG.Tools.XrmMockup {
             { typeof(SetStateRequest), EventOperation.SetState },
             //{ typeof(SetStateDynamicEntityRequest), EventOperation.SetStateDynamicEntity }, // No such request
             { typeof(UpdateRequest), EventOperation.Update },
+            { typeof(UpsertRequest), EventOperation.Upsert },
             { typeof(WinOpportunityRequest), EventOperation.Win },
             { typeof(LoseOpportunityRequest), EventOperation.Lose },
             { typeof(CloseIncidentRequest), EventOperation.Close },
             { typeof(CreateMultipleRequest), EventOperation.CreateMultiple },
-            { typeof(UpdateMultipleRequest), EventOperation.UpdateMultiple }
+            { typeof(UpdateMultipleRequest), EventOperation.UpdateMultiple },
+            { typeof(UpsertMultipleRequest), EventOperation.UpsertMultiple }
         };
 
         public static Dictionary<EventOperation, EventOperation> RequestToMultipleRequest = new Dictionary<EventOperation, EventOperation>()
         {
             { EventOperation.Create, EventOperation.CreateMultiple },
-            { EventOperation.Update, EventOperation.UpdateMultiple }
+            { EventOperation.Update, EventOperation.UpdateMultiple },
+            { EventOperation.Upsert, EventOperation.UpsertMultiple }
         };
 
         public static EventOperation? SingleOperationFromMultiple(EventOperation operation)
@@ -149,6 +154,8 @@ namespace DG.Tools.XrmMockup {
                     return createRequest.Target.ToEntityReferenceWithKeyAttributes();
                 case UpdateRequest updateRequest:
                     return updateRequest.Target.ToEntityReferenceWithKeyAttributes();
+                case UpsertRequest upsertRequest:
+                    return upsertRequest.Target.ToEntityReferenceWithKeyAttributes();
                 case DeleteRequest deleteRequest:
                     return deleteRequest.Target;
                 case SetStateRequest setStateRequest:
@@ -169,10 +176,6 @@ namespace DG.Tools.XrmMockup {
                     return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
                 case CloseIncidentRequest closeIncidentRequest:
                     return closeIncidentRequest.IncidentResolution?.GetAttributeValue<EntityReference>("incidentid");
-                case CreateMultipleRequest createMultipleRequest:
-                    return new EntityReference(createMultipleRequest.Targets.EntityName, Guid.Empty);
-                case UpdateMultipleRequest updateMultipleRequest:
-                    return new EntityReference(updateMultipleRequest.Targets.EntityName, Guid.Empty);
             }
 
             return null;

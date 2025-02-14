@@ -2,6 +2,7 @@
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using Microsoft.Xrm.Sdk;
 
 namespace DG.XrmMockupTest
 {
@@ -12,45 +13,50 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestUpsertMultipleAll()
         {
-            throw new System.NotImplementedException();
-            //using (var context = new Xrm(orgAdminUIService))
-            //{
-            //    var account1 = new Account { Name = "Account 1" };
-            //    var account2 = new Account { Name = "Account 2" };
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var account1 = new Account { Name = "Account 1" };
 
-            //    var _account1id = orgAdminUIService.Create(account1);
-            //    Assert.Single(
-            //         context.AccountSet
-            //         .Where(x => x.Name.StartsWith("Account"))
-            //         .ToList()
-            //     );
-            //    Assert.Equal("Account 1", context.AccountSet.First().Name);
+                var _account1id = orgAdminUIService.Create(account1);
+                Assert.Single(
+                     context.AccountSet
+                     .Where(x => x.Name.StartsWith("Account"))
+                     .ToList()
+                 );
+                Assert.Equal("Account 1", context.AccountSet.First().Name);
 
-            //    var bla = Account.Retrieve_dg_name(orgAdminUIService, "Account 2");
+                var bla = Account.Retrieve_dg_name(orgAdminUIService, "Account 2");
 
-            //    context.ClearChanges();
-            //    var req = new UpsertRequest
-            //    {
-            //        Target = new Account { Name = "New Account 1", Id = _account1id }
-            //    };
-            //    var resp = orgAdminUIService.Execute(req) as UpsertResponse;
-            //    Assert.False(resp.RecordCreated);
-            //    Assert.Single(
-            //         context.AccountSet
-            //         .Where(x => x.Name.StartsWith("New Account"))
-            //         .ToList());
-            //    Assert.Equal("New Account 1", context.AccountSet.First().Name);
+                context.ClearChanges();
 
-            //    context.ClearChanges();
-            //    req.Target = account2;
-            //    resp = orgAdminUIService.Execute(req) as UpsertResponse;
-            //    Assert.True(resp.RecordCreated);
-            //    Assert.Equal(2, context.AccountSet.AsEnumerable().Where(
-            //         x => x.Name.StartsWith("Account") || x.Name.StartsWith("New Account")).Count());
+                var req = new UpsertMultipleRequest
+                {
+                    Targets = new EntityCollection
+                    {
+                        EntityName = Account.EntityLogicalName,
+                        Entities = {
+                            new Account(_account1id)
+                            {
+                                Name = "New Account 1"
+                            },
+                            new Account { Name = "Account 2" }
+                        }
+                    }
+                };
 
+                var resp = orgAdminUIService.Execute(req) as UpsertMultipleResponse;
 
-            //}
+                Assert.Collection(resp.Results,
+                    r => Assert.False(r.RecordCreated),
+                    r => Assert.True(r.RecordCreated)
+                );
+
+                Assert.Equal(2, context.AccountSet.AsEnumerable()
+                    .Count(x => x.Name.StartsWith("Account") || x.Name.StartsWith("New Account")));
+
+                Assert.Equal("New Account 1", context.AccountSet.First().Name);
+                Assert.Equal("Account 2", context.AccountSet.Skip(1).First().Name);
+            }
         }
     }
-
 }
