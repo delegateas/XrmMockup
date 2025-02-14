@@ -25,6 +25,7 @@ namespace DG.Tools.XrmMockup {
             { typeof(AssociateRequest), "Target" },
             { typeof(DisassociateRequest), "Target" },
             { typeof(RetrieveRequest), "Target" },
+            { typeof(CreateMultipleRequest), "Targets" },
         };
 
         public static Dictionary<Type, string> RequestToEventOperation = new Dictionary<Type, string>()
@@ -48,8 +49,7 @@ namespace DG.Tools.XrmMockup {
             { typeof(WinOpportunityRequest), nameof(EventOperation.Win).ToLower() },
             { typeof(LoseOpportunityRequest), nameof(EventOperation.Lose).ToLower() },
             { typeof(CloseIncidentRequest), nameof(EventOperation.Close).ToLower() },
-
-
+            { typeof(CreateMultipleRequest), nameof(EventOperation.CreateMultiple).ToLower() },
         };
 
         public static readonly Dictionary<string, ConditionOperator> ConditionalOperator = new Dictionary<string, ConditionOperator>
@@ -148,6 +148,8 @@ namespace DG.Tools.XrmMockup {
                     return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
                 case CloseIncidentRequest closeIncidentRequest:
                     return closeIncidentRequest.IncidentResolution?.GetAttributeValue<EntityReference>("incidentid");
+                case CreateMultipleRequest createMultipleRequest:
+                    return new EntityReference(createMultipleRequest.Targets.EntityName, Guid.Empty);
             }
 
             return null;

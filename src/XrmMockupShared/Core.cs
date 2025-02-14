@@ -214,6 +214,7 @@ namespace DG.Tools.XrmMockup
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
+            new CreateMultipleRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly)
@@ -1015,6 +1016,11 @@ namespace DG.Tools.XrmMockup
             if (obj is EntityReference entityRef)
             {
                 return new Tuple<object, string, Guid>(obj, entityRef.LogicalName, entityRef.Id);
+            }
+
+            if (obj is EntityCollection entityCollection)
+            {
+                return new Tuple<object, string, Guid>(obj, entityCollection.EntityName, Guid.Empty);
             }
 
             return null;

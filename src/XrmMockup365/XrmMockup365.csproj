@@ -66,19 +66,19 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
-		<None Include="..\..\readme.md" Pack="true" PackagePath="\"/>
+		<None Include="..\..\readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
+        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.59" />
         <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
         <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
     </ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
-		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.0.1" />
+		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.3" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="System.Text.Json" Version="6.0.2" />
+		<Compile Include="..\XrmMockupShared\Requests\CreateMultipleRequestHandler.cs" />
 	</ItemGroup>
     <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
     <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />

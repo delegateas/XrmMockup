@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Closeincidentplugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\SetCityOnCreateMultiple.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateAccountApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IncidentDeleteAllRelatedResolutionsOnClose.cs" />
@@ -58,5 +59,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SetCountryOnCreate.cs" />
   </ItemGroup>
 </Project>
