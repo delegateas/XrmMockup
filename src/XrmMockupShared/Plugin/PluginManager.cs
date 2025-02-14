@@ -282,6 +282,33 @@ namespace DG.Tools.XrmMockup
                     TriggerSyncInternal("create", stage, targetEntity, preImage, postImage, createPluginContext, core, executionOrderFilter);
                 }
             }
+
+            // Trigger UpdateMultipleRequest plugins when an UpdateRequest is executed
+            if (operation == "update")
+            {
+                var updateMultiplePluginContext = pluginContext.Clone();
+                var entityCollection = new EntityCollection()
+                {
+                    EntityName = pluginContext.PrimaryEntityName,
+                    Entities = { (Entity)entity },
+                };
+                updateMultiplePluginContext.InputParameters["Targets"] = entityCollection;
+                updateMultiplePluginContext.MessageName = "UpdateMultiple";
+                TriggerSyncInternal("updatemultiple", stage, entityCollection, preImage, postImage, updateMultiplePluginContext, core, executionOrderFilter);
+            }
+
+            // Trigger UpdateRequest plugins for each request in UpdateMultipleRequest
+            if (operation == "updatemultiple")
+            {
+                var targets = pluginContext.InputParameters["Targets"] as EntityCollection;
+                foreach (var targetEntity in targets.Entities)
+                {
+                    var updatePluginContext = pluginContext.Clone();
+                    updatePluginContext.InputParameters["Target"] = targetEntity;
+                    updatePluginContext.MessageName = "Update";
+                    TriggerSyncInternal("update", stage, targetEntity, preImage, postImage, updatePluginContext, core, executionOrderFilter);
+                }
+            }
         }
 
         private void TriggerSyncInternal(string operation, ExecutionStage stage,

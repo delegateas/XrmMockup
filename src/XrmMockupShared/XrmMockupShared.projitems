@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CustomApiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)requests\InstantiateTemplateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UploadBlockRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\InitializeFileBlocksUploadRequestHandler.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableColumnDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableDTO.cs" />

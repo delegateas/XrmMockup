@@ -143,6 +143,7 @@ namespace DG.Tools.XrmMockup {
         UnlockInvoicePricing,
         UnlockSalesOrderPricing,
         Update,
+        UpdateMultiple,
         ValidateRecurrenceRule,
         Win
     }

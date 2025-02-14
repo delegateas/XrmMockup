@@ -215,6 +215,7 @@ namespace DG.Tools.XrmMockup
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
             new CreateMultipleRequestHandler(this, db, metadata, security),
+            new UpdateMultipleRequestHandler(this, db, metadata, security)
         };
 
         internal void EnableProxyTypes(Assembly assembly)
