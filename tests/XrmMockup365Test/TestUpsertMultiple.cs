@@ -3,6 +3,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
 using Microsoft.Xrm.Sdk;
+using System.ServiceModel;
 
 namespace DG.XrmMockupTest
 {
@@ -24,8 +25,6 @@ namespace DG.XrmMockupTest
                      .ToList()
                  );
                 Assert.Equal("Account 1", context.AccountSet.First().Name);
-
-                var bla = Account.Retrieve_dg_name(orgAdminUIService, "Account 2");
 
                 context.ClearChanges();
 
@@ -57,6 +56,34 @@ namespace DG.XrmMockupTest
                 Assert.Equal("New Account 1", context.AccountSet.First().Name);
                 Assert.Equal("Account 2", context.AccountSet.Skip(1).First().Name);
             }
+        }
+
+        [Fact]
+        public void TestUpsertMultipleThrowsFaultOnMultipleWithSameKey()
+        {
+            var account1 = new Account { Name = "Account 1" };
+            var _account1id = orgAdminUIService.Create(account1);
+
+            var req = new UpsertMultipleRequest
+            {
+                Targets = new EntityCollection
+                {
+                    EntityName = Account.EntityLogicalName,
+                    Entities = {
+                        new Account(_account1id)
+                        {
+                            Name = "New Account 1"
+                        },
+                        new Account(_account1id)
+                        {
+                            Name = "New Account 2"
+                        }
+                    }
+                }
+            };
+
+            var exception = Assert.Throws<FaultException>(() => orgAdminUIService.Execute(req));
+            Assert.Equal($"Duplicate Ids are not allowed in the Target list of an UpsertMultipleRequest: {_account1id}.", exception.Message);
         }
     }
 }
