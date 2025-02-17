@@ -76,6 +76,8 @@
 	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
 		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.3" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.8.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Include="..\XrmMockupShared\Requests\CreateMultipleRequestHandler.cs" />
