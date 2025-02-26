@@ -22,12 +22,13 @@ namespace DG.Tools.XrmMockup.Metadata
 
             var referenceLookup = new Dictionary<string, string>();
             foreach (var reference in references) {
-                if (reference.Attribute("Include") != null && reference.Element("HintPath") != null) {
+                var hintPathElement = reference.Elements().FirstOrDefault(e => e.Name.LocalName == "HintPath");
+                if (reference.Attribute("Include") != null && hintPathElement != null) {
                     var key = reference.Attribute("Include").Value;
                     if (key.Contains(",")) {
                         key = key.Split(',')[0];
                     }
-                    referenceLookup.Add(key, reference.Element("HintPath").Value);
+                    referenceLookup.Add(key, hintPathElement.Value);
                 }
             }
             if (Name.Contains(",")) {
