@@ -13,21 +13,21 @@ namespace DG.Tools.XrmMockup.Metadata
         internal static Assembly GetAssemblyFromName(string Name) {
             var projectFilePath = Directory.GetFiles(GetProjectPath(), "*.csproj")[0];
             var projectFile = XDocument.Load(projectFilePath);
-            var references =
-                projectFile
-                .Element(msbuild + "Project")
-                .Descendants(msbuild + "ItemGroup")
-                .Elements(msbuild + "Reference")
-                .Where(r => r.Attribute("Include") != null && r.HasElements);
+            var references = 
+                projectFile.Root
+                .Descendants()
+                .Where(e => e.Name.LocalName == "ItemGroup")
+                .Elements()
+                .Where(e => e.Name.LocalName == "Reference" && e.Attribute("Include") != null && e.HasElements);
 
             var referenceLookup = new Dictionary<string, string>();
             foreach (var reference in references) {
-                if (reference.Attribute("Include") != null && reference.Element(msbuild + "HintPath") != null) {
+                if (reference.Attribute("Include") != null && reference.Element("HintPath") != null) {
                     var key = reference.Attribute("Include").Value;
                     if (key.Contains(",")) {
                         key = key.Split(',')[0];
-                    }   
-                    referenceLookup.Add(key, reference.Element(msbuild + "HintPath").Value);
+                    }
+                    referenceLookup.Add(key, reference.Element("HintPath").Value);
                 }
             }
             if (Name.Contains(",")) {
