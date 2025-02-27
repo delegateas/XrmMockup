@@ -46,13 +46,13 @@ namespace DG.Tools.XrmMockup.Metadata
             var projectPath = GetProjectPath();
             var projectFilePath = Directory.GetFiles(projectPath, "*.csproj")[0];
             var projectFile = XDocument.Load(projectFilePath);
+            var projectRoot = projectFile.Root ?? projectFile.Element(msbuild + "Project");
 
-            return projectFile
-                .Element(msbuild + "Project")
-                .Elements(msbuild + "PropertyGroup")
-                .Where(e => e.Element(msbuild + "OutputPath") != null)
-                .Select(e => e.Element(msbuild + "OutputPath").Value)
-                .Where(path => Directory.Exists(Path.Combine(projectPath, path)))
+            return projectRoot
+                .Elements()
+                .Where(e => e.Name.LocalName == "PropertyGroup")
+                .Select(e => e.Elements().FirstOrDefault(o => o.Name.LocalName == "OutputPath")?.Value)
+                .Where(path => !string.IsNullOrEmpty(path) && Directory.Exists(Path.Combine(projectPath, path)))
                 .Select(path => Directory.GetFiles(Path.Combine(projectPath, path), "*.dll"))
                 .Select(dirs => dirs.Select(file => AssemblyName.GetAssemblyName(file)))
                 .Aggregate((current, next) => current.Concat(next))
