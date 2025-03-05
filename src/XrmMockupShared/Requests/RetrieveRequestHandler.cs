@@ -39,7 +39,7 @@ namespace DG.Tools.XrmMockup {
             row = db.GetDbRow(request.Target);
             var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
 
-            Utility.SetFormmattedValues(db, entity, row.Metadata);
+            Utility.SetFormattedValues(db, entity, row.Metadata);
 
             if (!settings.SetUnsettableFields) {
                 Utility.RemoveUnsettableAttributes("Retrieve", row.Metadata, entity);
