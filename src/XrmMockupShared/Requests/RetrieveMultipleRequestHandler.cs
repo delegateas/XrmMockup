@@ -77,7 +77,7 @@ namespace DG.Tools.XrmMockup
                         {
                             if (security.HasPermission(m, AccessRights.ReadAccess, userRef))
                             {
-                                Utility.SetFormmattedValues(db, m, entityMetadata);
+                                Utility.SetFormattedValues(db, m, entityMetadata);
                                 collection.Add(new KeyValuePair<DbRow, Entity>(row, m));
                             }
                         });
@@ -87,7 +87,7 @@ namespace DG.Tools.XrmMockup
                 {
                     if (security.HasPermission(toAdd, AccessRights.ReadAccess, userRef))
                     {
-                        Utility.SetFormmattedValues(db, toAdd, entityMetadata);
+                        Utility.SetFormattedValues(db, toAdd, entityMetadata);
                         collection.Add(new KeyValuePair<DbRow, Entity>(row, toAdd));
                     }
                 }

@@ -1059,18 +1059,21 @@ namespace DG.Tools.XrmMockup
                 attributeMetadata is DecimalAttributeMetadata;
         }
 
-        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
+        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity, string attrName)
         {
-            if (metadataAtt is PicklistAttributeMetadata)
+            if (metadataAtt is PicklistAttributeMetadata picklistAttributeMetadata)
             {
-                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
-                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
-                return optionset.Label.UserLocalizedLabel.Label;
+                var optionset = picklistAttributeMetadata.OptionSet.Options
+                    .FirstOrDefault(opt => opt.Value == (value as OptionSetValue).Value);
+                
+                return optionset == null
+                    ? throw new MockupException($"Value '{(value as OptionSetValue).Value}' for attribute '{attrName}' on entity '{entity.LogicalName}' not found in OptionSet '{picklistAttributeMetadata.OptionSet.Name}'")
+                    : optionset.Label.UserLocalizedLabel.Label;
             }
 
-            if (metadataAtt is BooleanAttributeMetadata)
+            if (metadataAtt is BooleanAttributeMetadata booleanAttributeMetadata)
             {
-                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var booleanOptions = booleanAttributeMetadata.OptionSet;
                 var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
                 return label.UserLocalizedLabel.Label;
             }
@@ -1110,7 +1113,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
+        internal static void SetFormattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
         {
             var validMetadata = metadata.Attributes.Where(a => IsValidForFormattedValues(a));
 
@@ -1119,7 +1122,7 @@ namespace DG.Tools.XrmMockup
             Parallel.ForEach(entity.Attributes.Where(x=>x.Value != null), a =>
              {
                  var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
-                 var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
+                 var formattedValuePair = new KeyValuePair<string, string>(a.Key, GetFormattedValueLabel(db, metadataAtt, a.Value, entity, a.Key));
                  if (formattedValuePair.Value != null)
                  {
                      formattedValues.Add(formattedValuePair);
