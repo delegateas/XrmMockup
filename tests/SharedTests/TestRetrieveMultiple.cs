@@ -1007,5 +1007,43 @@ namespace DG.XrmMockupTest
                     .ToList());
             }
         }
+
+        [Fact]
+        public void TestColumnComparison()
+        {
+            var sameName = new Contact()
+            {
+                FirstName = "Some strange name",
+                LastName = "Some strange name",
+            };
+            sameName.Id = orgAdminService.Create(sameName);
+
+            var retrieved = Contact.Retrieve(orgAdminService, sameName.Id, x => x.FirstName, x => x.LastName);
+            Assert.Equal(sameName.FirstName, retrieved.FirstName);
+
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression(Contact.EntityLogicalName)
+                {
+                    Criteria = new FilterExpression
+                    {
+                        Conditions =
+                        {
+                            new ConditionExpression(
+                                Contact.EntityLogicalName,
+                                Contact.GetColumnName<Contact>(x => x.FirstName),
+                                ConditionOperator.Equal,
+                                true,
+                                Contact.GetColumnName<Contact>(x => x.LastName)),
+                        }
+                    }
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+                var entities = res.Entities.Select(x => x.ToEntity<Contact>()).ToList();
+                Assert.Single(entities);
+                Assert.Equal(sameName.Id, entities[0].Id);
+            }
+        }
     }
 }

@@ -585,6 +585,17 @@ namespace DG.Tools.XrmMockup
             object attr = null;
             switch (condition)
             {
+                case var c when condition.CompareColumns == true:
+                    if (!row.Contains(condition.AttributeName))
+                        return false;
+                    var columnAttr = condition.Values.FirstOrDefault() as string;
+                    if (columnAttr == null)
+                        throw new NotImplementedException("CompareColumns only supports string values");
+                    if (!row.Contains(columnAttr))
+                        return false;
+
+                    return Matches(row[condition.AttributeName], c.Operator, new[] { row[columnAttr] });
+
                 case var c when condition.AttributeName == null:
                     return Matches(row.Id, condition.Operator, condition.Values);
 
