@@ -1,3 +1,7 @@
+### 1.14.3 - 05 March 2025
+* Add column comparison in MatchesCriteria (@magesoe)
+* Throw better exception when attempting to format an invalid OptionSet value (@mkholt)
+
 ### 1.14.2 - 27 February 2025
 * Fix assembly lookup to support SDK-Style .csproj files (@Kageschwump)
 
