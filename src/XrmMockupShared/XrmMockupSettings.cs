@@ -80,6 +80,11 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public IEnumerable<Tuple<string, Type>> BaseCustomApiTypes { get; set; }
 
+        /// <summary>
+        /// Optional:
+        /// Proxy type assemblies to load. Used for specifying specific context types.
+        /// If left empty, assemblies are found relative to dll.
+        /// </summary>
         public IEnumerable<Assembly> Assemblies { get; set; }
     }
 
