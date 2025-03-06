@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
+using System.Reflection;
 
 namespace DG.Tools.XrmMockup
 {
@@ -78,6 +79,8 @@ namespace DG.Tools.XrmMockup
         /// This is used to locate the assemblies required.
         /// </summary>
         public IEnumerable<Tuple<string, Type>> BaseCustomApiTypes { get; set; }
+
+        public IEnumerable<Assembly> Assemblies { get; set; }
     }
 
 
