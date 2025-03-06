@@ -103,7 +103,7 @@ namespace DG.Tools.XrmMockup
         private void EnableProxyTypes() {
             if (HasProxyTypes) return;
 
-            if (Settings.Assemblies.Any())
+            if (Settings.Assemblies?.Any() ?? false)
             {
                 foreach (var assembly in Settings.Assemblies)
                 {
