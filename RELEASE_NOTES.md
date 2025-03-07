@@ -1,3 +1,6 @@
+### 1.14.4 - 07 March 2025
+* Add ability to specify proxy classes through list of assemblies (@Lucki2g)
+
 ### 1.14.3 - 05 March 2025
 * Add column comparison in MatchesCriteria (@magesoe)
 * Throw better exception when attempting to format an invalid OptionSet value (@mkholt)
