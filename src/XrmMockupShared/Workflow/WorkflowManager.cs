@@ -411,10 +411,13 @@ namespace DG.Tools.XrmMockup {
             return actions.FirstOrDefault(e => e.GetAttributeValue<string>("name") == requestName);
         }
 
-        internal void ResetWorkflows() {
-            synchronousWorkflows = new List<Entity>();
-            asynchronousWorkflows = new List<Entity>();
-            parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
+        internal void ResetWorkflows(bool? IncludeAllWorkflows) {
+            if (IncludeAllWorkflows == false)
+            {
+                synchronousWorkflows = new List<Entity>();
+                asynchronousWorkflows = new List<Entity>();
+                parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
+            }
             waitingWorkflows = new List<WaitInfo>();
         }
     }
