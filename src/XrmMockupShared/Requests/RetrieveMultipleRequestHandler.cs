@@ -103,7 +103,7 @@ namespace DG.Tools.XrmMockup
             }
             else
             {
-                Func<KeyValuePair<DbRow, Entity>, object> selector = x => { return x.Value.Attributes.TryGetValue(orders[0].AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null; };
+                Func<KeyValuePair<DbRow, Entity>, object> selector = x => x.Value.Attributes.TryGetValue(orders[0].AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null;
                 if (orders.First().OrderType == OrderType.Ascending)
                     tempSortedList = collection.OrderBy(selector);
                 else
@@ -111,7 +111,7 @@ namespace DG.Tools.XrmMockup
 
                 foreach (var order in orders.Skip(1))
                 {
-                    selector = (x => { return x.Value.Attributes.TryGetValue(order.AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null; });
+                    selector = (x => x.Value.Attributes.TryGetValue(order.AttributeName, out var a) ? Utility.GetComparableAttribute(a) : null);
                     if (order.OrderType == OrderType.Ascending)
                         tempSortedList = tempSortedList.ThenBy(selector);
                     else
@@ -121,9 +121,9 @@ namespace DG.Tools.XrmMockup
                 tempSortedList = tempSortedList.ThenBy(x => x.Key.Sequence);
             }
 
-            var entitiesToReturn = RefineEntityAttributes(
-                tempSortedList.Any() ? tempSortedList.Select(x => x.Value) : collection.Select(x => x.Value),
-                queryExpr.ColumnSet);
+            // Convert to array to lock-in the ordering (if we are ordering by something that doesn't exist in the columnset, the ordering will fail afterwards)
+            var orderedEntities = tempSortedList.Select(x => x.Value).ToArray();
+            var entitiesToReturn = RefineEntityAttributes(orderedEntities, queryExpr.ColumnSet);
 
             if (queryExpr.Distinct)
             {
