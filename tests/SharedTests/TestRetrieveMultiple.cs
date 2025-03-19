@@ -478,6 +478,47 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestOrderByLambdaSyntax()
+        {
+            orgAdminService.Update(new Account(account1.Id) { NumberOfEmployees = 10 });
+            orgAdminService.Update(new Account(account2.Id) { NumberOfEmployees = 20 });
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query = context.AccountSet
+                        .Where(acc => acc.Address1_City == "Virum")
+                        .OrderBy(acc => acc.NumberOfEmployees)
+                        .Select(acc => new { acc.AccountId });
+
+                var result = query.ToArray();
+                Assert.Equal(2, result.Length);
+                Assert.Equal(account1.Id, result[0].AccountId);
+                Assert.Equal(account2.Id, result[1].AccountId);
+            }
+        }
+
+        [Fact]
+        public void TestOrderByDescendingLambdaSyntax()
+        {
+            orgAdminService.Update(new Account(account1.Id) { NumberOfEmployees = 10 });
+            orgAdminService.Update(new Account(account2.Id) { NumberOfEmployees = 20 });
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query = context.AccountSet
+                        .Where(acc => acc.Address1_City == "Virum")
+                        .OrderByDescending(acc => acc.NumberOfEmployees)
+                        .Select(acc => new { acc.AccountId });
+
+                var result = query.ToArray();
+                Assert.Equal(2, result.Length);
+                Assert.Equal(account2.Id, result[0].AccountId);
+                Assert.Equal(account1.Id, result[1].AccountId);
+            }
+        }
+
+
+        [Fact]
         public void RetrieveMultipleNotEqualsNullCheck()
         {
             using (var context = new Xrm(orgAdminUIService))
