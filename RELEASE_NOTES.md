@@ -1,3 +1,6 @@
+### 1.14.5 - 19 March 2025
+* Fix: Ordering failing in RetrieveMultipleRequestHandler when not selecting the attribute to order by (@mkholt)
+
 ### 1.14.4 - 07 March 2025
 * Add ability to specify proxy classes through list of assemblies (@Lucki2g)
 
