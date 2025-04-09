@@ -155,4 +155,12 @@ namespace DG.Tools.XrmMockup {
         PostImage = 1,
         Both = 2,
     }
+
+    internal enum SourceType
+    {
+        SimpleAttribute = 0,
+        CalculatedAttribute = 1,
+        RollupAttribute = 2,
+        FormulaAttribute = 3
+    }
 }
