@@ -1159,15 +1159,17 @@ namespace DG.Tools.XrmMockup
             foreach (var attr in attributes)
             {
                 var definition = Utility.GetFormulaDefinition(attr, SourceType.CalculatedAttribute);
+
                 if (definition == null)
                 {
-                    var trace = this.ServiceFactory.GetService<ITracingService>();
+                    var trace = ServiceFactory.GetService<ITracingService>();
                     trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
-                    return;
+                    continue;
                 }
+
                 var tree = WorkflowConstructor.ParseCalculated(definition);
-                var factory = this.ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), this.TimeOffset, this.GetWorkflowService(),
+                var factory = ServiceFactory;
+                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
             }
         }
@@ -1178,11 +1180,12 @@ namespace DG.Tools.XrmMockup
             foreach (var attr in attributes)
             {
                 var definition = Utility.GetFormulaDefinition(attr, SourceType.FormulaAttribute);
+
                 if (definition == null)
                 {
                     var trace = ServiceFactory.GetService<ITracingService>();
                     trace.Trace($"Formula field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
-                    return;
+                    continue;
                 }
 
                 entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity);
