@@ -1,3 +1,8 @@
+### 1.15.0-rc1 - 11 April 2025
+* Add: Support for PowerFx based Formula fields in Retrieve and RetrieveMultiple requests (@mkholt)
+* Fix: Waiting workflows weren't cleared on reset (@magesoe)
+* Fix: AlternateKeys weren't handled correctly in Create and Update (@magesoe)
+
 ### 1.14.5 - 19 March 2025
 * Fix: Ordering failing in RetrieveMultipleRequestHandler when not selecting the attribute to order by (@mkholt)
 
