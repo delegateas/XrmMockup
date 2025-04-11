@@ -7,21 +7,7 @@ using System.Linq;
 
 namespace DG.XrmMockupTest
 {
-#if XRM_MOCKUP_TEST_2011
-    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup11Test")]
-#endif
-#if XRM_MOCKUP_TEST_2013
-    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup13Test")]
-#endif
-#if XRM_MOCKUP_TEST_2015
-    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup15Test")]
-#endif
-#if XRM_MOCKUP_TEST_2016
-    [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup16Test")]
-#endif
-#if XRM_MOCKUP_TEST_365
     [TestCaseOrderer("DG.XrmMockupTest.PriorityOrderer", "XrmMockup365Test")]
-#endif
 
     public class TestResetTables : UnitTestBaseNoReset
     {

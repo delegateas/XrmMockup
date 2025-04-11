@@ -43,28 +43,36 @@ namespace DG.XrmMockupTest
             businessUnit2 = new BusinessUnit { ParentBusinessUnitId = businessUnitId, Name = "Business Unit 2" };
             businessUnit2.Id = orgAdminService.Create(businessUnit2);
 
-            team1 = new Team { Name = "Team 1", BusinessUnitId = businessUnit1.ToEntityReference() };
-#if !(XRM_MOCKUP_2011)
-            team1.TeamType = Team_TeamType.Owner;
-#endif
+            team1 = new Team
+            {
+                Name = "Team 1",
+                BusinessUnitId = businessUnit1.ToEntityReference(),
+                TeamType = Team_TeamType.Owner
+            };
             team1 = crm.CreateTeam(orgAdminService, team1, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
-            team2 = new Team { Name = "Team 2", BusinessUnitId = businessUnit1.ToEntityReference() };
-#if !(XRM_MOCKUP_2011)
-            team2.TeamType = Team_TeamType.Owner;
-#endif
+            team2 = new Team
+            {
+                Name = "Team 2",
+                BusinessUnitId = businessUnit1.ToEntityReference(),
+                TeamType = Team_TeamType.Owner
+            };
             team2 = crm.CreateTeam(orgAdminService, team2, SecurityRoles.SystemCustomizer).ToEntity<Team>();
 
-            team3 = new Team { Name = "Team 3", BusinessUnitId = businessUnit1.ToEntityReference() };
-#if !(XRM_MOCKUP_2011)
-            team3.TeamType = Team_TeamType.Owner;
-#endif
+            team3 = new Team
+            {
+                Name = "Team 3",
+                BusinessUnitId = businessUnit1.ToEntityReference(),
+                TeamType = Team_TeamType.Owner
+            };
             team3 = crm.CreateTeam(orgAdminService, team3, SecurityRoles.SystemAdministrator).ToEntity<Team>();
 
-            team4 = new Team { Name = "Team 4", BusinessUnitId = businessUnit1.ToEntityReference() };
-#if !(XRM_MOCKUP_2011)
-            team4.TeamType = Team_TeamType.Owner;
-#endif
+            team4 = new Team
+            {
+                Name = "Team 4",
+                BusinessUnitId = businessUnit1.ToEntityReference(),
+                TeamType = Team_TeamType.Owner
+            };
             team4 = crm.CreateTeam(orgAdminService, team4, SecurityRoles.SystemAdministrator).ToEntity<Team>();
 
             // SystemCustomizer - read account - user level, write account - user level
@@ -94,9 +102,7 @@ namespace DG.XrmMockupTest
             {
                 var fetchedTeam = context.TeamSet.FirstOrDefault(x => x.Id == team.Id);
                 Assert.NotNull(fetchedTeam);
-#if !(XRM_MOCKUP_2011)
                 Assert.Equal(Team_TeamType.Owner, fetchedTeam.TeamType);
-#endif
             }
         }
 

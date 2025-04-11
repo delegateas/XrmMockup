@@ -4,9 +4,7 @@ using System;
 using System.Configuration;
 using System.Net;
 using System.IO;
-#if XRM_METADATA_365
 using Microsoft.Xrm.Tooling.Connector;
-#endif
 
 namespace DG.Tools.XrmMockup.Metadata
 {
@@ -119,7 +117,6 @@ namespace DG.Tools.XrmMockup.Metadata
         {
             switch (this.method)
             {
-#if XRM_METADATA_365
                 case ConnectionType.OAuth:
                     {
                         if (this.username == null || this.password == null || this.clientId == null || this.returnUrl == null)
@@ -172,7 +169,7 @@ namespace DG.Tools.XrmMockup.Metadata
 
                         return client;
                     }
-#endif
+
                 case ConnectionType.Proxy:
                 default:
                     var m = ServiceConfigurationFactory.CreateManagement<IOrganizationService>(new Uri(url));

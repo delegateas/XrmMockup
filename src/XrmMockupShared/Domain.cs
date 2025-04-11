@@ -70,6 +70,7 @@ namespace DG.Tools.XrmMockup {
         CopyDynamicListToStatic,
         CopySystemForm,
         Create,
+        CreateMultiple,
         CreateException,
         CreateInstance,
         CreateKnowledgeArticleTranslation,
@@ -142,6 +143,9 @@ namespace DG.Tools.XrmMockup {
         UnlockInvoicePricing,
         UnlockSalesOrderPricing,
         Update,
+        UpdateMultiple,
+        Upsert,
+        UpsertMultiple,
         ValidateRecurrenceRule,
         Win
     }
@@ -150,5 +154,13 @@ namespace DG.Tools.XrmMockup {
         PreImage = 0,
         PostImage = 1,
         Both = 2,
+    }
+
+    internal enum SourceType
+    {
+        SimpleAttribute = 0,
+        CalculatedAttribute = 1,
+        RollupAttribute = 2,
+        FormulaAttribute = 3
     }
 }

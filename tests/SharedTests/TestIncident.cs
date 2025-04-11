@@ -19,13 +19,10 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
+
             orgAdminUIService.Update(incident);
-#endif
             var incidentResolution = new IncidentResolution
             {
                 IncidentId = incident.ToEntityReference(),
@@ -58,13 +55,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
             var incidentResolution = new IncidentResolution
             {
                 IncidentId = incident.ToEntityReference(),
@@ -119,13 +112,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var request = new CloseIncidentRequest()
             {
@@ -149,13 +138,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new Entity();
             incidentResolution.Attributes["incidentid"] = incident.ToEntityReference();
@@ -183,13 +168,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new Entity
             {
@@ -222,13 +203,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new Account
             {
@@ -259,13 +236,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -295,13 +268,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -332,13 +301,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -369,13 +334,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -433,13 +394,9 @@ namespace DG.XrmMockupTest
             var incident = new Incident();
             incident.Id = orgAdminUIService.Create(incident);
 
-#if (XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-            incident.SetState(orgAdminService, IncidentState.Active, Incident_StatusCode.InProgress);
-#else
             incident.StateCode = IncidentState.Active;
             incident.StatusCode = Incident_StatusCode.InProgress;
             orgAdminUIService.Update(incident);
-#endif
 
             var incidentResolution = new IncidentResolution
             {
@@ -538,6 +495,63 @@ namespace DG.XrmMockupTest
 
             var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
             Assert.Equal(IncidentState.Active, retrievedIncident.StateCode);
+        }
+
+        [Fact]
+        public void TestRemovalOfResolutionsAfterClose()
+        {
+            var incident = new Incident
+            {
+                Title = "TestRemovalOfResolutionsAfterClose"
+            };
+            incident.Id = orgAdminUIService.Create(incident);
+
+            var incidentResolution = new IncidentResolution
+            {
+                Subject = "Resolved Sample Incident",
+                IncidentId = incident.ToEntityReference()
+            };
+            var closeIncidentRequest = new CloseIncidentRequest
+            {
+                IncidentResolution = incidentResolution,
+                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+            };
+            orgAdminUIService.Execute(closeIncidentRequest);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrievedIncidentResolutions = context.IncidentResolutionSet.Where(x => x.IncidentId.Id == incident.Id);
+                Assert.Empty(retrievedIncidentResolutions);
+            }
+        }
+
+        [Fact]
+        public void TestUpdateIncidentAsResolvedFails()
+        {
+            var incident = new Incident();
+            incident.Id = orgAdminUIService.Create(incident);
+
+            incident.StateCode = IncidentState.Resolved;
+            incident.StatusCode = Incident_StatusCode.ProblemSolved;
+
+            Assert.Throws<FaultException>(() => orgAdminService.Update(incident));
+        }
+
+        [Fact]
+        public void TestCanUpdateOpenIncident()
+        {
+            var incident = new Incident
+            {
+                Description = nameof(TestCanUpdateOpenIncident)
+            };
+
+            incident.Id = orgAdminUIService.Create(incident);
+
+            incident.Description = "Updated description";
+            orgAdminService.Update(incident);
+
+            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
+            Assert.Equal("Updated description", retrievedIncident.Description);
         }
     }
 }

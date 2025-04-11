@@ -276,7 +276,6 @@ namespace DG.XrmMockupTest
         }
 
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015 || XRM_MOCKUP_TEST_2016)
         [Fact]
         public void TestEmptyCalculatedFieldss()
         {
@@ -286,7 +285,22 @@ namespace DG.XrmMockupTest
                 dg_animal.Retrieve(orgAdminService, id1, x => x.dg_EmptyCalculatedField);
             }
         }
-#endif
+
+        [Fact]
+        public void TestFormulaFields()
+        {
+            var adminUserId = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c");
+            var animalId = orgAdminService.Create(new dg_animal
+            {
+                dg_name = "Fluffy",
+                OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId)
+            });
+
+            var userName = SystemUser.Retrieve(orgAdminService, adminUserId, x => x.FirstName).FirstName;
+
+            var animal = dg_animal.Retrieve(orgAdminService, animalId, x => x.dg_AnimalOwner);
+            Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
+        }
 
         [Fact]
         public void TestRetrieveUserByFullName()
@@ -300,6 +314,20 @@ namespace DG.XrmMockupTest
             q.Criteria.AddCondition("fullname", ConditionOperator.Equal, "Matt");
             var users = orgAdminService.RetrieveMultiple(q);
             Assert.Single(users.Entities);
+        }
+
+        [Fact]
+        public void TestRetrievePlugin()
+        {
+            var accountId = orgAdminService.Create(new Contact { LastName = "Test" });
+
+            orgAdminUIService.Update(new Contact(accountId)
+            {
+                StateCode = ContactState.Inactive,
+                StatusCode = Contact_StatusCode.Inactive
+            });
+
+            Assert.Throws<InvalidPluginExecutionException>(() => Contact.Retrieve(orgAdminService, accountId, x => x.LastName));
         }
     }
 }

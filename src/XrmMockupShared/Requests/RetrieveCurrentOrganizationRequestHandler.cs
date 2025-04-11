@@ -15,13 +15,9 @@ namespace DG.Tools.XrmMockup
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             var response = new RetrieveCurrentOrganizationResponse();
             response.Results["Detail"] = core.orgDetail;
             return response;
-#else
-            return new OrganizationResponse();
-#endif
         }
     }
 }

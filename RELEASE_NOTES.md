@@ -1,3 +1,50 @@
+### 1.14.5 - 19 March 2025
+* Fix: Ordering failing in RetrieveMultipleRequestHandler when not selecting the attribute to order by (@mkholt)
+
+### 1.14.4 - 07 March 2025
+* Add ability to specify proxy classes through list of assemblies (@Lucki2g)
+
+### 1.14.3 - 05 March 2025
+* Add column comparison in MatchesCriteria (@magesoe)
+* Throw better exception when attempting to format an invalid OptionSet value (@mkholt)
+
+### 1.14.2 - 27 February 2025
+* Fix assembly lookup to support SDK-Style .csproj files (@Kageschwump)
+
+### 1.14.1 - 14 February 2025
+* Add support for UpdateMultipleRequest (@mkholt)
+* Add support for UpsertMultipleRequest (@mkholt)
+
+### 1.14.0 - 14 February 2025
+* Add support for CustomAPI execution (@magesoe)
+* Support for CreateMultipleRequest (@magesoe)
+
+### 1.13.3 - 29 November 2024
+* Extend RetrieveMultipleRequestHandler with support for TopCount and Take (@mai98)
+* Fix plugin vs workflow execution order (@mai98)
+
+### 1.13.2 - 25 October 2024
+* Support for InstantiateTemplateRequest (@nedergaardcloud)
+
+### 1.13.1 - 18 September 2024
+* Fix: An update request of Incident without a StateCode would throw NullReferenceException (@mkholt)
+
+### 1.13.0 - 18 September 2024
+* Add support for .NET8 (@mkholt)
+* Remove support for versions older than 9 (365) (@mkholt)
+* Set InitiatingUserId and UserId in workflow context (@mai98)
+
+### 1.12.5 - 10 September 2024
+* Fix: CloseIncidentRequestHandler now uses UpdateRequest instead of SetStateRequest (@mai98)
+* Fix: Throw FaultException when trying to update a resolved Incident (@mai98)
+* Add support for Retrieve plugins (@mai98)
+* Support Distinct in RetrieveMultipleRequestHandler when using Query Expressions (@mai98)
+* Support for SendEmailRequest and PartyList (@mai98)
+* Add file block upload handlers, without file-storage (@magesoe @nedergaardcloud)
+
+### 1.12.4 - 23 August 2024
+* Add support for multiple ThenBy's in retrievemultiple (@misoeli)
+
 ### 1.12.3 - 22 December 2023
 * Add initializer based on an existing instance, letting us copy an already initialized XrmMockup instance (@mkholt)
 * Add optional tracing class factory to settings (@mkholt)

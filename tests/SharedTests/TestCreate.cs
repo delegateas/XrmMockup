@@ -30,7 +30,7 @@ namespace DG.XrmMockupTest
             Assert.Equal(contact.FirstName, dbContact.FirstName);
         }
 
-#if NET6_0_OR_GREATER
+#if DATAVERSE_SERVICE_CLIENT
         [Fact]
         public async System.Threading.Tasks.Task TestCreateSimpleWithRetrieve()
         {

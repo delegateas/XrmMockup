@@ -1,5 +1,4 @@
-﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013 || XRM_MOCKUP_TEST_2015)
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
@@ -114,4 +113,3 @@ namespace DG.XrmMockupTest
         }
     }
 }
-#endif

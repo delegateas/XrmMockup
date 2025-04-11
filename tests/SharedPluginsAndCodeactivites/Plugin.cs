@@ -751,6 +751,7 @@
         CopyDynamicListToStatic,
         CopySystemForm,
         Create,
+        CreateMultiple,
         CreateException,
         CreateInstance,
         CreateKnowledgeArticleTranslation,
@@ -823,6 +824,7 @@
         UnlockInvoicePricing,
         UnlockSalesOrderPricing,
         Update,
+        UpdateMultiple,
         ValidateRecurrenceRule,
         Win
     }

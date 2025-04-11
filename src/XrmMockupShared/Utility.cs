@@ -71,7 +71,6 @@ namespace DG.Tools.XrmMockup
             return CloneEntity(entity, null, null);
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
         {
             var kac = new KeyAttributeCollection();
@@ -81,7 +80,6 @@ namespace DG.Tools.XrmMockup
             }
             return kac;
         }
-#endif
 
         public static Entity CloneEntity(this Entity entity, EntityMetadata metadata, ColumnSet cols)
         {
@@ -95,10 +93,7 @@ namespace DG.Tools.XrmMockup
                 clone[metadata.PrimaryIdAttribute] = entity.Id;
             }
             clone.EntityState = entity.EntityState;
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             clone.KeyAttributes = entity.CloneKeyAttributes();
-#endif
 
             return clone.SetAttributes(entity.Attributes, metadata, cols);
         }
@@ -307,7 +302,6 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
         internal static void CheckStatusTransitions(EntityMetadata metadata, Entity newEntity, Entity prevEntity)
         {
             if (newEntity == null || prevEntity == null) return;
@@ -354,7 +348,7 @@ namespace DG.Tools.XrmMockup
             }
             return false;
         }
-#endif
+
         internal static OptionMetadataCollection GetStatusOptionMetadata(EntityMetadata metadata)
         {
             return (metadata.Attributes
@@ -591,9 +585,20 @@ namespace DG.Tools.XrmMockup
             object attr = null;
             switch (condition)
             {
+                case var c when condition.CompareColumns == true:
+                    if (!row.Contains(condition.AttributeName))
+                        return false;
+                    var columnAttr = condition.Values.FirstOrDefault() as string;
+                    if (columnAttr == null)
+                        throw new NotImplementedException("CompareColumns only supports string values");
+                    if (!row.Contains(columnAttr))
+                        return false;
+
+                    return Matches(row[condition.AttributeName], c.Operator, new[] { row[columnAttr] });
+
                 case var c when condition.AttributeName == null:
                     return Matches(row.Id, condition.Operator, condition.Values);
-#if !XRM_MOCKUP_2011
+
                 case var c when condition.EntityName != null:
                     var key = $"{condition.EntityName}.{condition.AttributeName}";
                     if (row != null && row.Contains(key))
@@ -605,7 +610,7 @@ namespace DG.Tools.XrmMockup
                         attr = row[condition.AttributeName];
                     }
                     break;
-#endif
+
                 default:
                     if (row.Contains(condition.AttributeName))
                     {
@@ -990,18 +995,14 @@ namespace DG.Tools.XrmMockup
         internal static EntityReference ToEntityReferenceWithKeyAttributes(this Entity entity)
         {
             var reference = entity.ToEntityReference();
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             reference.KeyAttributes = entity.KeyAttributes;
-#endif
             return reference;
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal static string ToPrettyString(this KeyAttributeCollection keys)
         {
             return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
-#endif
 
         internal static Entity ToActivityPointer(this Entity entity)
         {
@@ -1026,10 +1027,8 @@ namespace DG.Tools.XrmMockup
             pointer["scheduledend"] = entity.GetAttributeValue<DateTime>("scheduledend");
             pointer["scheduledstart"] = entity.GetAttributeValue<DateTime>("scheduledstart");
             pointer["subject"] = entity.GetAttributeValue<string>("subject");
-#if !(XRM_MOCKUP_2011)
             pointer["senton"] = entity.GetAttributeValue<DateTime>("senton");
             pointer["deliveryprioritycode"] = entity.GetAttributeValue<OptionSetValue>("deliveryprioritycode");
-#endif
 
 
             switch (entity.GetAttributeValue<OptionSetValue>("statecode").Value)
@@ -1071,18 +1070,21 @@ namespace DG.Tools.XrmMockup
                 attributeMetadata is DecimalAttributeMetadata;
         }
 
-        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity)
+        private static string GetFormattedValueLabel(XrmDb db, AttributeMetadata metadataAtt, object value, Entity entity, string attrName)
         {
-            if (metadataAtt is PicklistAttributeMetadata)
+            if (metadataAtt is PicklistAttributeMetadata picklistAttributeMetadata)
             {
-                var optionset = (metadataAtt as PicklistAttributeMetadata).OptionSet.Options
-                    .Where(opt => opt.Value == (value as OptionSetValue).Value).FirstOrDefault();
-                return optionset.Label.UserLocalizedLabel.Label;
+                var optionset = picklistAttributeMetadata.OptionSet.Options
+                    .FirstOrDefault(opt => opt.Value == (value as OptionSetValue).Value);
+                
+                return optionset == null
+                    ? throw new MockupException($"Value '{(value as OptionSetValue).Value}' for attribute '{attrName}' on entity '{entity.LogicalName}' not found in OptionSet '{picklistAttributeMetadata.OptionSet.Name}'")
+                    : optionset.Label.UserLocalizedLabel.Label;
             }
 
-            if (metadataAtt is BooleanAttributeMetadata)
+            if (metadataAtt is BooleanAttributeMetadata booleanAttributeMetadata)
             {
-                var booleanOptions = (metadataAtt as BooleanAttributeMetadata).OptionSet;
+                var booleanOptions = booleanAttributeMetadata.OptionSet;
                 var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
                 return label.UserLocalizedLabel.Label;
             }
@@ -1122,7 +1124,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal static void SetFormmattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
+        internal static void SetFormattedValues(XrmDb db, Entity entity, EntityMetadata metadata)
         {
             var validMetadata = metadata.Attributes.Where(a => IsValidForFormattedValues(a));
 
@@ -1131,7 +1133,7 @@ namespace DG.Tools.XrmMockup
             Parallel.ForEach(entity.Attributes.Where(x=>x.Value != null), a =>
              {
                  var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
-                 var formattedValuePair = new KeyValuePair<string, string>(a.Key, Utility.GetFormattedValueLabel(db, metadataAtt, a.Value, entity));
+                 var formattedValuePair = new KeyValuePair<string, string>(a.Key, GetFormattedValueLabel(db, metadataAtt, a.Value, entity, a.Key));
                  if (formattedValuePair.Value != null)
                  {
                      formattedValues.Add(formattedValuePair);
@@ -1166,9 +1168,7 @@ namespace DG.Tools.XrmMockup
         {
             var defaultTeam = new Entity(LogicalNames.Team);
             defaultTeam["name"] = rootBusinessUnit.Attributes["name"];
-#if !(XRM_MOCKUP_2011)
             defaultTeam["teamtype"] = new OptionSetValue(0);
-#endif
             defaultTeam["isdefault"] = true;
             defaultTeam["description"] = "Default team for the parent business unit. The name and membership for default team are inherited from their parent business unit.";
             defaultTeam["administratorid"] = useReference;
@@ -1194,11 +1194,9 @@ namespace DG.Tools.XrmMockup
                 case "OptionSetValue":
                     var os = attribute.Value as OptionSetValue;
                     return new OptionSetValue(os.Value);
-#if XRM_MOCKUP_365
                 case "OptionSetValueCollection":
                     var osc = attribute.Value as OptionSetValueCollection;
                     return new OptionSetValueCollection(osc);
-#endif
                 default:
                     return attribute.Value;
             }
@@ -1227,7 +1225,6 @@ namespace DG.Tools.XrmMockup
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(refObj);
             }
-#if XRM_MOCKUP_365
             else if (colToSerialize is OptionSetValueCollection)
             {
                 var typedCollection = (OptionSetValueCollection)colToSerialize;
@@ -1237,7 +1234,6 @@ namespace DG.Tools.XrmMockup
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(dto);
             }
-#endif
             else
             {
                 jsonColObj.Value = JsonSerializer.Serialize(colToSerialize);
@@ -1256,7 +1252,6 @@ namespace DG.Tools.XrmMockup
                 var tmpTable = new DbTable(new EntityMetadata { LogicalName = typed.LogicalName });
                 return new DbRow(tmpTable, typed.Id, null);
             }
-#if XRM_MOCKUP_365
             else if (type == typeof(OptionSetValueCollection))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
@@ -1264,7 +1259,6 @@ namespace DG.Tools.XrmMockup
                 var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
                 return newCollection;
             }
-#endif
             else
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
@@ -1304,6 +1298,34 @@ namespace DG.Tools.XrmMockup
                 var json = Encoding.UTF8.GetString(ms.ToArray());
                 return json;
             }
+        }
+
+        public static string GetFormulaDefinition(AttributeMetadata field, SourceType sourceType)
+        {
+            if (field.SourceType != (int)sourceType)
+            {
+                return null;
+            }
+
+            switch (field)
+            {
+                case BooleanAttributeMetadata booleanField:
+                    return booleanField.FormulaDefinition;
+                case DateTimeAttributeMetadata dateTimeField:
+                    return dateTimeField.FormulaDefinition;
+                case DecimalAttributeMetadata decimalField:
+                    return decimalField.FormulaDefinition;
+                case IntegerAttributeMetadata integerField:
+                    return integerField.FormulaDefinition;
+                case MoneyAttributeMetadata moneyField:
+                    return moneyField.FormulaDefinition;
+                case PicklistAttributeMetadata picklistField:
+                    return picklistField.FormulaDefinition;
+                case StringAttributeMetadata stringField:
+                    return stringField.FormulaDefinition;
+            }
+
+            return null;
         }
     }
 

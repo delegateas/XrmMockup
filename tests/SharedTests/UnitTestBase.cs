@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Crm.Sdk.Messages;
 using System.Linq;
 
-#if NET6_0_OR_GREATER
+#if DATAVERSE_SERVICE_CLIENT
 using Microsoft.PowerPlatform.Dataverse.Client;
 #endif
 
@@ -17,7 +17,7 @@ namespace DG.XrmMockupTest
     {
         private static DateTime _startTime { get; set; }
 
-#if NET6_0_OR_GREATER
+#if DATAVERSE_SERVICE_CLIENT
         protected IOrganizationServiceAsync2 orgAdminUIService;
         protected IOrganizationServiceAsync2 orgAdminService;
         protected IOrganizationServiceAsync2 orgGodService;
@@ -47,17 +47,7 @@ namespace DG.XrmMockupTest
 
         protected Entity contactWriteAccessTeamTemplate;
 
-#if XRM_MOCKUP_TEST_2011
-        static protected XrmMockup2011 crm;
-#elif XRM_MOCKUP_TEST_2013
-        static protected XrmMockup2013 crm;
-#elif XRM_MOCKUP_TEST_2015
-        static protected XrmMockup2015 crm;
-#elif XRM_MOCKUP_TEST_2016
-        static protected XrmMockup2016 crm;
-#elif XRM_MOCKUP_TEST_365
         static protected XrmMockup365 crm;
-#endif
 
         public UnitTestBase(XrmMockupFixture fixture)
         {
@@ -74,6 +64,9 @@ namespace DG.XrmMockupTest
             adminUser["businessunitid"] = crm.RootBusinessUnit;
             adminUser["internalemailaddress"] = "test@test.com";
             adminUser["islicensed"] = true;
+            adminUser["firstname"] = "Admin";
+            adminUser["lastname"] = "User";
+            adminUser["fullname"] = "Admin User";
 
             adminUser = crm.CreateUser(orgAdminService, adminUser, SecurityRoles.SystemAdministrator);
             
@@ -143,6 +136,7 @@ namespace DG.XrmMockupTest
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
+            
             testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser1Service = crm.CreateOrganizationService(testUser1.Id);
 

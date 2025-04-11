@@ -72,8 +72,15 @@ namespace DG.Tools.XrmMockup
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
 
+            if (request.Target.LogicalName is "incident"
+                && !request.Parameters.ContainsKey("CloseIncidentRequestHandler")
+                && request.Target.TryGetAttributeValue<OptionSetValue>("statecode", out var stateCode)
+                && stateCode.Value is 1)
+            {
+                throw new FaultException("This message can not be used to set the state of incident to Resolved. In order to set state of incident to Resolved, use the CloseIncidentRequest message instead.");
+            }
+            
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
-            var entity = request.Target;
             var row = db.GetDbRow(entRef);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
@@ -104,7 +111,6 @@ namespace DG.Tools.XrmMockup
             var xrmEntity = row.ToEntity();
 
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null)
             {
                 if (xrmEntity.Contains("ownerid") && request.Target.Contains("ownerid")
@@ -114,7 +120,6 @@ namespace DG.Tools.XrmMockup
                     security.CheckAssignPermission(xrmEntity, ownerRef, userRef);
                 }
             }
-#endif
 
             var updEntity = request.Target.CloneEntity(row.Metadata, new ColumnSet(true));
 
@@ -142,11 +147,7 @@ namespace DG.Tools.XrmMockup
                 }
             }
 
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             Utility.CheckStatusTransitions(row.Metadata, updEntity, xrmEntity);
-#endif
-
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, updEntity))
             {
@@ -192,19 +193,15 @@ namespace DG.Tools.XrmMockup
                 Utility.HandleCurrencies(metadata, db, xrmEntity);
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (updEntity.Attributes.ContainsKey("statecode") || updEntity.Attributes.ContainsKey("statuscode"))
             {
                 Utility.HandleCurrencies(metadata, db, xrmEntity);
             }
-#endif
 
             if (ownerRef != null)
             {
                 Utility.SetOwner(db, security, metadata, xrmEntity, ownerRef);
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
-#endif
             }
 
             if (Utility.Activities.Contains(xrmEntity.LogicalName))

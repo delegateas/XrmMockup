@@ -33,7 +33,7 @@
 
             var accountUpd = new Account(account.Id)
             {
-                Name = account.Name + "Sync1"
+                Name = account.Name + "pSync1"
             };
             service.Update(accountUpd);
         }

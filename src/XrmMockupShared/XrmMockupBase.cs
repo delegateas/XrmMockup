@@ -102,44 +102,57 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         private void EnableProxyTypes() {
             if (HasProxyTypes) return;
-            List<string> exclude = new List<string> {
-                "Microsoft.Xrm.Sdk.dll",
-                "Microsoft.Crm.Sdk.Proxy.dll"
-            };
 
-            var regex = new Regex("^XrmMockup.*\\.dll$");
-            var assemblies = new List<Assembly>();
-            var addedAssemblies = new HashSet<string>();
-
-            var exeAsm = AppDomain.CurrentDomain.GetAssemblies();
-            assemblies.AddRange(exeAsm);
-            foreach (var name in exeAsm.Select(x => x.FullName))
+            if (Settings.Assemblies?.Any() ?? false)
             {
-                addedAssemblies.Add(name);
-            }
-
-            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            foreach (string dll in Directory.GetFiles(path, "*.dll"))
-            {
-                var asm = Assembly.LoadFrom(dll);
-                if (addedAssemblies.Contains(asm.FullName)) continue;
-
-                assemblies.Add(asm);
-                addedAssemblies.Add(asm.FullName);
-            }
-
-            var useableAssemblies =
-                assemblies
-                .Where(asm => asm.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("ProxyTypesAssemblyAttribute")))
-                .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name))
-                .ToList();
-
-            if (useableAssemblies?.Any() == true) {
-                foreach (var asm in useableAssemblies)
+                foreach (var assembly in Settings.Assemblies)
                 {
-                    Core.EnableProxyTypes(asm);
+                    Core.EnableProxyTypes(assembly);
                 }
                 HasProxyTypes = true;
+            }
+            else
+            {
+                List<string> exclude = new List<string> {
+                    "Microsoft.Xrm.Sdk.dll",
+                    "Microsoft.Crm.Sdk.Proxy.dll"
+                };
+
+                var regex = new Regex("^XrmMockup.*\\.dll$");
+                var assemblies = new List<Assembly>();
+                var addedAssemblies = new HashSet<string>();
+
+                var exeAsm = AppDomain.CurrentDomain.GetAssemblies();
+                assemblies.AddRange(exeAsm);
+                foreach (var name in exeAsm.Select(x => x.FullName))
+                {
+                    addedAssemblies.Add(name);
+                }
+
+                string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                foreach (string dll in Directory.GetFiles(path, "*.dll"))
+                {
+                    var asm = Assembly.LoadFrom(dll);
+                    if (addedAssemblies.Contains(asm.FullName)) continue;
+
+                    assemblies.Add(asm);
+                    addedAssemblies.Add(asm.FullName);
+                }
+
+                var useableAssemblies =
+                    assemblies
+                    .Where(asm => asm.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("ProxyTypesAssemblyAttribute")))
+                    .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name))
+                    .ToList();
+
+                if (useableAssemblies?.Any() == true)
+                {
+                    foreach (var asm in useableAssemblies)
+                    {
+                        Core.EnableProxyTypes(asm);
+                    }
+                    HasProxyTypes = true;
+                }
             }
         }
 

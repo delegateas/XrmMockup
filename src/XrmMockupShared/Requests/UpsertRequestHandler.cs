@@ -1,6 +1,4 @@
-﻿#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xrm.Sdk;
@@ -14,7 +12,7 @@ using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup {
     internal class UpsertRequestHandler : RequestHandler {
-        internal UpsertRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, "Upsert") {}
+        internal UpsertRequestHandler(Core core, XrmDb db, MetadataSkeleton metadata, Security security) : base(core, db, metadata, security, nameof(EventOperation.Upsert)) {}
 
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<UpsertRequest>(orgRequest);
@@ -40,4 +38,3 @@ namespace DG.Tools.XrmMockup {
         }
     }
 }
-#endif

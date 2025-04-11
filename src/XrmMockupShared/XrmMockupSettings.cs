@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
 using Microsoft.Xrm.Sdk.Organization;
-#endif
+using System.Reflection;
 
 namespace DG.Tools.XrmMockup
 {
@@ -65,18 +64,28 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public ITracingServiceFactory TracingServiceFactory { get; set; }
 
-#if XRM_MOCKUP_365
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
         public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
-#endif
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
+
         /// <summary>
         /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
         /// </summary>
         public OrganizationDetail OrganizationDetail { get; set; }
-#endif
+
+        /// <summary>
+        /// List of base-types with their prefix which all your custom apis extend.
+        /// This is used to locate the assemblies required.
+        /// </summary>
+        public IEnumerable<Tuple<string, Type>> BaseCustomApiTypes { get; set; }
+
+        /// <summary>
+        /// Optional:
+        /// Proxy type assemblies to load. Used for specifying specific context types.
+        /// If left empty, assemblies are found relative to dll.
+        /// </summary>
+        public IEnumerable<Assembly> Assemblies { get; set; }
     }
 
 
