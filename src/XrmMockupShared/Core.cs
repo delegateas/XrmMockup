@@ -719,17 +719,15 @@ namespace DG.Tools.XrmMockup
                 case "Create":
                     var createResponse = (CreateResponse)response;
                     var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
+                    var reference = primaryRef ?? new EntityReference(entityLogicalName, createResponse.id);
 
-                    var createdEntity =
-                        GetDbRow(new EntityReference(entityLogicalName, createResponse.id))
-                            .ToEntity();
+                    var createdEntity = GetDbRow(reference).ToEntity();
                     TriggerExtension(
                         new MockupService(this, userRef.Id, pluginContext), request,
                         createdEntity, null, userRef);
                     break;
                 case "Update":
-                    var target = (Entity)request.Parameters["Target"];
-                    var updatedEntity = GetDbRow(target.ToEntityReferenceWithKeyAttributes()).ToEntity();
+                    var updatedEntity = GetDbRow(primaryRef).ToEntity();
                     TriggerExtension(
                         new MockupService(this, userRef.Id, pluginContext), request,
                         updatedEntity, preImage, userRef);
