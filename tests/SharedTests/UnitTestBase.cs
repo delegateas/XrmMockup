@@ -64,6 +64,9 @@ namespace DG.XrmMockupTest
             adminUser["businessunitid"] = crm.RootBusinessUnit;
             adminUser["internalemailaddress"] = "test@test.com";
             adminUser["islicensed"] = true;
+            adminUser["firstname"] = "Admin";
+            adminUser["lastname"] = "User";
+            adminUser["fullname"] = "Admin User";
 
             adminUser = crm.CreateUser(orgAdminService, adminUser, SecurityRoles.SystemAdministrator);
             
@@ -133,6 +136,7 @@ namespace DG.XrmMockupTest
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
+            
             testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser1Service = crm.CreateOrganizationService(testUser1.Id);
 

@@ -287,6 +287,22 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestFormulaFields()
+        {
+            var adminUserId = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c");
+            var animalId = orgAdminService.Create(new dg_animal
+            {
+                dg_name = "Fluffy",
+                OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId)
+            });
+
+            var userName = SystemUser.Retrieve(orgAdminService, adminUserId, x => x.FirstName).FirstName;
+
+            var animal = dg_animal.Retrieve(orgAdminService, animalId, x => x.dg_AnimalOwner);
+            Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
+        }
+
+        [Fact]
         public void TestRetrieveUserByFullName()
         {
             var user = new Entity("systemuser");

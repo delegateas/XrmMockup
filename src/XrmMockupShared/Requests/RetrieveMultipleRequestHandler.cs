@@ -55,6 +55,7 @@ namespace DG.Tools.XrmMockup
             {
                 core.ExecuteCalculatedFields(row);
             }
+
             //get the rows again to include the calulated values
             rows = db.GetDBEntityRows(queryExpr.EntityName);
 
@@ -123,6 +124,11 @@ namespace DG.Tools.XrmMockup
 
             // Convert to array to lock-in the ordering (if we are ordering by something that doesn't exist in the columnset, the ordering will fail afterwards)
             var orderedEntities = tempSortedList.Select(x => x.Value).ToArray();
+
+            // Calculate formula fields before we filter the fetched columns
+            Parallel.ForEach(orderedEntities, entity => core.ExecuteFormulaFields(entityMetadata, entity).GetAwaiter().GetResult());
+
+            // Refine and filter the columns
             var entitiesToReturn = RefineEntityAttributes(orderedEntities, queryExpr.ColumnSet);
 
             if (queryExpr.Distinct)

@@ -66,6 +66,8 @@ namespace DG.Tools.XrmMockup
         public MockupServiceProviderAndFactory ServiceFactory { get; }
         public ITracingServiceFactory TracingServiceFactory { get; }
 
+        private FormulaFieldEvaluator FormulaFieldEvaluator { get; }
+
         private List<string> systemAttributeNames;
 
         public EntityReference AdminUserRef;
@@ -123,6 +125,8 @@ namespace DG.Tools.XrmMockup
             InitializeDB();
             this.security.InitializeSecurityRoles(db);
             this.orgDetail = settings.OrganizationDetail;
+
+            this.FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
         }
 
         private void InitializeDB()
@@ -208,6 +212,7 @@ namespace DG.Tools.XrmMockup
             new UpsertRequestHandler(this, db, metadata, security),
             new RetrieveAttributeRequestHandler(this, db, metadata, security),
             new WhoAmIRequestHandler(this, db, metadata, security),
+            new RetrieveAllEntitiesRequestHandler(this, db, metadata, security),
             new RetrievePrincipalAccessRequestHandler(this, db, metadata, security),
             new RetrieveMetadataChangesRequestHandler(this, db, metadata, security),
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
@@ -1149,29 +1154,41 @@ namespace DG.Tools.XrmMockup
         internal void ExecuteCalculatedFields(DbRow row)
         {
             var attributes = row.Metadata.Attributes.Where(
-                m => m.SourceType == 1 && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
+                m => m.SourceType == (int)SourceType.CalculatedAttribute && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
             foreach (var attr in attributes)
             {
-                string definition = (attr as BooleanAttributeMetadata)?.FormulaDefinition;
-                if (attr is BooleanAttributeMetadata) definition = (attr as BooleanAttributeMetadata).FormulaDefinition;
-                else if (attr is DateTimeAttributeMetadata) definition = (attr as DateTimeAttributeMetadata).FormulaDefinition;
-                else if (attr is DecimalAttributeMetadata) definition = (attr as DecimalAttributeMetadata).FormulaDefinition;
-                else if (attr is IntegerAttributeMetadata) definition = (attr as IntegerAttributeMetadata).FormulaDefinition;
-                else if (attr is MoneyAttributeMetadata) definition = (attr as MoneyAttributeMetadata).FormulaDefinition;
-                else if (attr is PicklistAttributeMetadata) definition = (attr as PicklistAttributeMetadata).FormulaDefinition;
-                else if (attr is StringAttributeMetadata) definition = (attr as StringAttributeMetadata).FormulaDefinition;
+                var definition = Utility.GetFormulaDefinition(attr, SourceType.CalculatedAttribute);
 
                 if (definition == null)
                 {
-                    var trace = this.ServiceFactory.GetService<ITracingService>();
+                    var trace = ServiceFactory.GetService<ITracingService>();
                     trace.Trace($"Calculated field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
-                    return;
+                    continue;
                 }
+
                 var tree = WorkflowConstructor.ParseCalculated(definition);
-                var factory = this.ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), this.TimeOffset, this.GetWorkflowService(),
+                var factory = ServiceFactory;
+                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
+            }
+        }
+
+        internal async System.Threading.Tasks.Task ExecuteFormulaFields(EntityMetadata entityMetadata, Entity entity)
+        {
+            var attributes = entityMetadata.Attributes.Where(m => m.SourceType == (int)SourceType.FormulaAttribute);
+            foreach (var attr in attributes)
+            {
+                var definition = Utility.GetFormulaDefinition(attr, SourceType.FormulaAttribute);
+
+                if (definition == null)
+                {
+                    var trace = ServiceFactory.GetService<ITracingService>();
+                    trace.Trace($"Formula field on {attr.EntityLogicalName} field {attr.LogicalName} is empty");
+                    continue;
+                }
+
+                entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity);
             }
         }
 

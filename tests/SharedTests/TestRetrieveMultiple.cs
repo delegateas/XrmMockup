@@ -1086,5 +1086,24 @@ namespace DG.XrmMockupTest
                 Assert.Equal(sameName.Id, entities[0].Id);
             }
         }
+
+        [Fact]
+        public void TestFormulaFieldEvaluated()
+        {
+            var adminUserId = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c");
+            var animalId = orgAdminService.Create(new dg_animal
+            {
+                dg_name = "Fluffy",
+                OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId)
+            });
+
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var userName = xrm.SystemUserSet.Where(u => u.SystemUserId == adminUserId).Select(u => u.FirstName).First();
+                var animal = xrm.dg_animalSet.Where(a => a.dg_animalId == animalId).Select(a => new { a.dg_name, a.dg_AnimalOwner }).First();
+
+                Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
+            }
+        }
     }
 }

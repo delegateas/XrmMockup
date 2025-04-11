@@ -1299,6 +1299,34 @@ namespace DG.Tools.XrmMockup
                 return json;
             }
         }
+
+        public static string GetFormulaDefinition(AttributeMetadata field, SourceType sourceType)
+        {
+            if (field.SourceType != (int)sourceType)
+            {
+                return null;
+            }
+
+            switch (field)
+            {
+                case BooleanAttributeMetadata booleanField:
+                    return booleanField.FormulaDefinition;
+                case DateTimeAttributeMetadata dateTimeField:
+                    return dateTimeField.FormulaDefinition;
+                case DecimalAttributeMetadata decimalField:
+                    return decimalField.FormulaDefinition;
+                case IntegerAttributeMetadata integerField:
+                    return integerField.FormulaDefinition;
+                case MoneyAttributeMetadata moneyField:
+                    return moneyField.FormulaDefinition;
+                case PicklistAttributeMetadata picklistField:
+                    return picklistField.FormulaDefinition;
+                case StringAttributeMetadata stringField:
+                    return stringField.FormulaDefinition;
+            }
+
+            return null;
+        }
     }
 
     internal class LogicalNames

@@ -36,8 +36,14 @@ namespace DG.Tools.XrmMockup {
             }
 
             core.ExecuteCalculatedFields(row);
+
             row = db.GetDbRow(request.Target);
-            var entity = core.GetStronglyTypedEntity(row.ToEntity(), row.Metadata, request.ColumnSet);
+
+            // Calculate the formula fields before we filter the fetched columns
+            var looseEntity = row.ToEntity();
+            core.ExecuteFormulaFields(row.Metadata, looseEntity).GetAwaiter().GetResult();
+
+            var entity = core.GetStronglyTypedEntity(looseEntity, row.Metadata, request.ColumnSet);
 
             Utility.SetFormattedValues(db, entity, row.Metadata);
 
@@ -49,7 +55,7 @@ namespace DG.Tools.XrmMockup {
             if (request.RelatedEntitiesQuery != null) {
                 core.AddRelatedEntities(entity, request.RelatedEntitiesQuery, userRef);
             }
-            
+
             var resp = new RetrieveResponse();
             resp.Results["Entity"] = entity;
             return resp;

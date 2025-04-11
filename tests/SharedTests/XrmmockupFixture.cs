@@ -1,5 +1,6 @@
 ﻿using DG.Some.Namespace;
 using DG.Tools.XrmMockup;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using System;
 

@@ -79503,6 +79503,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
                 return GetAttributeValue<string>("dg_emptycalculatedfield");
             }
         }
+
+        /// <summary>
+        /// <para>Display Name: AnimalOwner</para>
+        /// </summary>
+        [AttributeLogicalName("dg_animalowner")]
+        public string dg_AnimalOwner
+        {
+            get {
+                return GetAttributeValue<string>("dg_animalowner");
+            }
+        }
         
         /// <summary>
         /// <para>The name of the custom entity.</para>
