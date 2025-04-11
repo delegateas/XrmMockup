@@ -1134,10 +1134,7 @@ namespace DG.Tools.XrmMockup
         internal void ResetEnvironment()
         {
             this.TimeOffset = new TimeSpan();
-            if (settings.IncludeAllWorkflows == false)
-            {
-                workflowManager.ResetWorkflows();
-            }
+            workflowManager.ResetWorkflows(settings.IncludeAllWorkflows);
 
             pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
