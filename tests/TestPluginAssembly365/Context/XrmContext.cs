@@ -80673,7 +80673,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
                 return GetMoneyValue("dg_udregnet");
             }
         }
-        
+
+        /// <summary>
+        /// <para>Display Name: Whole numberUdregnetMoney</para>
+        /// </summary>
+        [AttributeLogicalName("dg_wholenumberudregnetmoney")]
+        public decimal? dg_WholeNumberUdregnetMoney
+        {
+            get
+            {
+                return GetMoneyValue("dg_wholenumberudregnetmoney");
+            }
+        }
+
         /// <summary>
         /// <para>Display Name: Whole numberUdregnet</para>
         /// </summary>

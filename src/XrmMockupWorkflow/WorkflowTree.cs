@@ -463,14 +463,8 @@ namespace WorkflowExecuter
             switch (TargetType)
             {
                 case "Money":
-                    dec1 =
-                        var1 == null ? 0 :
-                        var1 is Money ? (var1 as Money).Value : 
-                        (decimal)var1;
-                    dec2 = 
-                        var2 == null ? 0 :
-                        var2 is Money ? (var2 as Money).Value : 
-                        (decimal)var2;
+                    dec1 = ConvertMoneyToDecimal(var1);
+                    dec2 = ConvertMoneyToDecimal(var2);
                     break;
                 case "Int32":
                     dec1 = var1 == null ? 0 : (int)var1;
@@ -527,6 +521,15 @@ namespace WorkflowExecuter
                 default:
                     break;
             }
+        }
+
+        private static decimal? ConvertMoneyToDecimal(object value)
+        {
+            if (value is null) return 0;
+            if (value is Money moneyValue) return moneyValue.Value;
+            if (value is decimal decimalValue) return decimalValue;
+            if (value is int intValue) return intValue;
+            throw new NotImplementedException($"Unknown type when converting to money: {value.GetType()}");
         }
     }
 
