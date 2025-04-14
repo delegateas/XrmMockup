@@ -1,3 +1,6 @@
+### 1.15.0-rc2 - 14 April 2025
+* Fix: Calculations between Money and WholeNumber fields (@mkholt)
+
 ### 1.15.0-rc1 - 11 April 2025
 * Add: Support for PowerFx based Formula fields in Retrieve and RetrieveMultiple requests (@mkholt)
 * Fix: Waiting workflows weren't cleared on reset (@magesoe)
