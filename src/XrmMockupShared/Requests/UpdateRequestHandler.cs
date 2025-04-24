@@ -229,7 +229,7 @@ namespace DG.Tools.XrmMockup
                             $"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
                     }
 
-                    if (relatedEntities.Value.Entities.Any(e => Guid.Empty == e.Id))
+                    if (relatedEntities.Value.Entities.Any(e => e.Id == Guid.Empty))
                     {
                         // MS Error = System.ServiceModel.FaultException`1[[Microsoft.Xrm.Sdk.OrganizationServiceFault, Microsoft.Xrm.Sdk, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]] : Entity Id must be specified for Operation
                         throw new FaultException($"Entity Id must be specified for Operation");
