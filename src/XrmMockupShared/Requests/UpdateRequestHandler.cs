@@ -6,6 +6,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
+using System;
 
 namespace DG.Tools.XrmMockup
 {
@@ -216,6 +217,34 @@ namespace DG.Tools.XrmMockup
             }
 
             Utility.Touch(xrmEntity, row.Metadata, core.TimeOffset, userRef);
+
+            if (request.Target.RelatedEntities.Count > 0)
+            {
+                foreach (var relatedEntities in request.Target.RelatedEntities)
+                {
+                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata,
+                        relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
+                    {
+                        throw new FaultException(
+                            $"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
+                    }
+
+                    if (relatedEntities.Value.Entities.Any(e => e.Id == Guid.Empty))
+                    {
+                        // MS Error = System.ServiceModel.FaultException`1[[Microsoft.Xrm.Sdk.OrganizationServiceFault, Microsoft.Xrm.Sdk, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]] : Entity Id must be specified for Operation
+                        throw new FaultException($"Entity Id must be specified for Operation");
+                    }
+
+                    var associateReq = new AssociateRequest
+                    {
+                        Target = request.Target.ToEntityReference(),
+                        Relationship = relatedEntities.Key,
+                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities
+                            .Select(e => e.ToEntityReference()).ToList())
+                    };
+                    core.Execute(associateReq, userRef);
+                }
+            }
 
             db.Update(xrmEntity);
 

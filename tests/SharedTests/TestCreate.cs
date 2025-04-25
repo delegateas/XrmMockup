@@ -263,5 +263,36 @@ namespace DG.XrmMockupTest
             Assert.NotNull(lead.PriorityCode);
             Assert.NotNull(lead.SalesStageCode);
         }
+
+
+        [Fact]
+        public void CreateEntityWithRelatedEntitiesShouldAssociateCorrectly()
+        {
+            // Arrange
+            var testName = nameof(CreateEntityWithRelatedEntitiesShouldAssociateCorrectly);
+            var account = new Account() { Name = testName };
+            var relatedContacts = new[] { new Contact() { LastName = testName, EMailAddress1 = $"{testName}@delegate.delegate" } };
+            account.contact_customer_accounts = relatedContacts;
+
+            // Act (create & retrieve)
+            var createdAccountId = orgAdminService.Create(account);
+            var query = new QueryExpression(Account.EntityLogicalName) { ColumnSet = new ColumnSet(true), Criteria = new FilterExpression() };
+            query.Criteria.AddCondition(new ConditionExpression(Account.GetColumnName<Account>(a => a.AccountId), ConditionOperator.Equal, createdAccountId));
+            query.LinkEntities.Add(new LinkEntity
+            {
+                Columns = new ColumnSet(true),
+                EntityAlias = Account.GetColumnName<Account>(a => a.contact_customer_accounts),
+                JoinOperator = JoinOperator.LeftOuter,
+                LinkFromEntityName = Account.EntityLogicalName,
+                LinkToEntityName = Contact.EntityLogicalName,
+                LinkFromAttributeName = Account.GetColumnName<Account>(a => a.AccountId),
+                LinkToAttributeName = Contact.GetColumnName<Contact>(c => c.contact_customer_accounts)
+            });
+            var retrievedAccount = orgAdminService.RetrieveMultiple(query).Entities.FirstOrDefault();
+
+            // Assert
+            Assert.NotNull(retrievedAccount);
+            Assert.Contains(retrievedAccount.Attributes, attr => attr.Key.Contains(Account.GetColumnName<Account>(a => a.contact_customer_accounts)));
+        }
     }
 }

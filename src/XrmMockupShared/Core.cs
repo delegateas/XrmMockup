@@ -302,6 +302,7 @@ namespace DG.Tools.XrmMockup
             {
                 toReturn = GetEntity(entity.LogicalName);
                 toReturn.SetAttributes(entity.Attributes, metadata, colsToKeep);
+                toReturn.RelatedEntities = entity.RelatedEntities;
 
                 toReturn.Id = entity.Id;
                 toReturn.EntityState = entity.EntityState;
