@@ -1,3 +1,6 @@
+### 1.15.0-rc3 - 25 April 2025
+* Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
+
 ### 1.15.0-rc2 - 14 April 2025
 * Fix: Calculations between Money and WholeNumber fields (@mkholt)
 
