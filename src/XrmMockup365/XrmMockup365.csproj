@@ -78,9 +78,9 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="Delegate.XrmPluginCore.Abstractions" Version="0.0.3" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
         <PackageReference Include="Microsoft.PowerFx.Dataverse.Eval" Version="1.2.0-build.20231002-1005" />
 	</ItemGroup>
-    <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
-    <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />
     <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />
 </Project>

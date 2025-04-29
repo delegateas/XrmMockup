@@ -29,6 +29,9 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 		<ProjectReference Include="..\..\src\XrmMockup365\XrmMockup365.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.4" />
+	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
 		<Reference Include="System" />
 		<Reference Include="System.Activities" />
@@ -48,5 +51,4 @@
 		<Reference Include="System.Net.Http" />
 		<Reference Include="System.Xml" />
 	</ItemGroup>
-	<Import Project="..\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems" Label="Shared" />
 </Project>

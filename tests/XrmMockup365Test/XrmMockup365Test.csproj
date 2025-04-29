@@ -44,6 +44,9 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.4" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -51,5 +54,4 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-	<Import Project="..\SharedTests\SharedTests.projitems" Label="Shared" />
 </Project>

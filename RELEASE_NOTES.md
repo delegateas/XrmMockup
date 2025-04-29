@@ -1,3 +1,6 @@
+### 1.15.0-rc4 - 29 April 2025
+* Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+
 ### 1.15.0-rc3 - 25 April 2025
 * Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
 
