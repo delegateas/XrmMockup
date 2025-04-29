@@ -64,6 +64,7 @@ namespace DG.Tools.XrmMockup {
         public string AssemblyName;
         public string PluginTypeAssemblyName;
         public string PrimaryEntity;
+        public bool AsyncAutoDelete;
         public List<MetaImage> Images;
         public Guid? ImpersonatingUserId;
     }

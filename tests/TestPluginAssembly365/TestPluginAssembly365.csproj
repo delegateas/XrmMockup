@@ -30,7 +30,7 @@
 		<ProjectReference Include="..\..\src\XrmMockup365\XrmMockup365.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.4" />
+		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.5" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
 		<Reference Include="System" />

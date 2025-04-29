@@ -52,6 +52,7 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
                     ExecutionOrder = metaStep.Rank,
                     FilteredAttributes = metaStep.FilteredAttributes,
                     ImpersonatingUserId = metaStep.ImpersonatingUserId ?? (Guid?)null,
+                    AsyncAutoDelete = metaStep.AsyncAutoDelete,
                     ImageSpecifications = metaStep.Images?.Select(x => new ImageSpecification
                     {
                         ImageName = x.Name,

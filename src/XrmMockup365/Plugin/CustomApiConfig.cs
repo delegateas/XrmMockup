@@ -39,7 +39,7 @@ namespace DG.Tools.XrmMockup
 
         public IEnumerable<IRequestParameter> RequestParameters { get; set; }
 
-        public IEnumerable<IResponseProperty> ResponseParameters { get; set; }
+        public IEnumerable<IResponseProperty> ResponseProperties { get; set; }
     }
 
     internal class RequestParameter : IRequestParameter

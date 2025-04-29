@@ -44,7 +44,7 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.4" />
+		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.5" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />

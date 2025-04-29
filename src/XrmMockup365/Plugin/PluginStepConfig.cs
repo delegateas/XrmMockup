@@ -25,6 +25,8 @@ namespace DG.Tools.XrmMockup
 
         public Guid? ImpersonatingUserId { get; internal set; }
 
+        public bool AsyncAutoDelete { get; internal set; }
+
         public IEnumerable<IImageSpecification> ImageSpecifications { get; internal set; }
     }
 }

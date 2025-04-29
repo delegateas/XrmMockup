@@ -144,6 +144,7 @@ namespace DG.Tools.XrmMockup.Metadata
                     PluginTypeAssemblyName = pluginStep.GetAttributeValue<AliasedValue>("plugintype.assemblyname").Value.ToString(),
                     ImpersonatingUserId = pluginStep.Contains("impersonatinguserid") ? pluginStep.GetAttributeValue<EntityReference>("impersonatinguserid").Id : (Guid?)null,
                     PrimaryEntity = pluginStep.GetAttributeValue<AliasedValue>("sdkmessagefilter.primaryobjecttypecode")?.Value as string ?? "",  // In case of AnyEntity use ""
+                    AsyncAutoDelete = pluginStep.Contains("asyncautodelete") && pluginStep.GetAttributeValue<bool>("asyncautodelete"),
                     Images = images.Entities
                         .Where(x => x.GetAttributeValue<EntityReference>("sdkmessageprocessingstepid").Id == pluginStep.Id)
                         .Select(x => new MetaImage

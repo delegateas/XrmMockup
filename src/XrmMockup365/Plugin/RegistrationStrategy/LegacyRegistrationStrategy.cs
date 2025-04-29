@@ -59,7 +59,7 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
                     LogicalEntityName = r.Item6,
                     TypeCode = (AttributeTypeCode)r.Item7
                 }),
-                ResponseParameters = configs.Item4.Select(r => new ResponseProperty
+                ResponseProperties = configs.Item4.Select(r => new ResponseProperty
                 {
                     Name = r.Item1,
                     UniqueName = r.Item2,
@@ -98,6 +98,7 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
                     ExecutionOrder = c.Item2.Item4,
                     FilteredAttributes = c.Item2.Item5,
                     ImpersonatingUserId = hasImpersonatingUser ? impersonatingUserId : (Guid?)null,
+                    AsyncAutoDelete = false,
                     ImageSpecifications = c.Item3.Select(i => new ImageSpecification
                     {
                         ImageName = i.Item1,
