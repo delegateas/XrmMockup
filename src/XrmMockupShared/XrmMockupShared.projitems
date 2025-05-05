@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CustomApiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormulaFieldEvaluator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\ExecuteTransactionRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)requests\RetrieveAllEntitiesRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpsertMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateMultipleRequestHandler.cs" />
