@@ -15,7 +15,7 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void TestTransactionSuccesfull()
+        public void TestTransactionSuccessful()
         {
             var request = new ExecuteTransactionRequest
             {
