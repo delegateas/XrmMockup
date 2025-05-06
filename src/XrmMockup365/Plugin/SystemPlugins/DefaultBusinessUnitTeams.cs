@@ -7,7 +7,7 @@ using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
-    internal class DefaultBusinessUnitTeams : SystemPluginBase
+    internal class DefaultBusinessUnitTeams : AbstractSystemPlugin
     {
         internal DefaultBusinessUnitTeams()
         {

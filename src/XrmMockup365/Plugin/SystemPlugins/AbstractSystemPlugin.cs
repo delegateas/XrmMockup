@@ -10,13 +10,13 @@ using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
-    internal abstract class SystemPluginBase
+    internal abstract class AbstractSystemPlugin
         : IPluginDefinition, IPlugin
     {
         private readonly List<PluginRegistration> PluginRegistrations = new List<PluginRegistration>();
         private string ChildClassName { get; }
 
-        protected SystemPluginBase()
+        protected AbstractSystemPlugin()
         {
             ChildClassName = GetType().ToString();
         }

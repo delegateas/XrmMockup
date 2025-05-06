@@ -10,11 +10,13 @@ using DG.XrmPluginCore.Enums;
 using DG.XrmPluginCore.Interfaces.Plugin;
 using DG.Tools.XrmMockup.SystemPlugins;
 using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+using System.Drawing.Text;
 
 namespace DG.Tools.XrmMockup
 {
     internal class PluginManager
     {
+        // TODO: We can probably optimize lookup by creating a key record and using that instead of a Dictionary of Dictionaries
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
@@ -22,10 +24,11 @@ namespace DG.Tools.XrmMockup
         // Queue for AsyncPlugins
         private readonly Queue<PluginExecutionProvider> pendingAsyncPlugins = new Queue<PluginExecutionProvider>();
 
+        // If true, registered plugins will not be executed
         private bool disableRegisteredPlugins = false;
 
         // List of SystemPlugins to execute
-        private readonly List<SystemPluginBase> systemPlugins = new List<SystemPluginBase>
+        private readonly List<AbstractSystemPlugin> systemPlugins = new List<AbstractSystemPlugin>
         {
             new UpdateInactiveIncident(),
             new DefaultBusinessUnitTeams(),
@@ -42,10 +45,22 @@ namespace DG.Tools.XrmMockup
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
+            // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
+            // TODO: How do we filter CustomAPIs?
+            // TODO: Should basePluginTypes act as an optional filter?
+
             RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
             RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
             RegisterSystemPlugins(registeredSystemPlugins, metadata);
         }
+
+        internal List<string> PluginRegistrations => FlattenPluginDictionary(registeredPlugins);
+        internal List<string> TemporaryPluginRegistrations => FlattenPluginDictionary(temporaryPlugins);
+        internal List<string> SystemPluginRegistrations => FlattenPluginDictionary(registeredSystemPlugins);
+
+        private static List<string> FlattenPluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> plugins) => plugins
+            .SelectMany(kvpOperation => kvpOperation.Value.SelectMany(kvpStage => kvpStage.Value.Select(z => $"{kvpOperation.Key} {kvpStage.Key} {z.EntityName ?? "AnyEntity"}: {z.PluginExecute.Target.GetType().Name}")))
+            .ToList();
 
         private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
@@ -55,35 +70,37 @@ namespace DG.Tools.XrmMockup
 
                 // Look for any currently loaded types in the AppDomain that implement the base type
                 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(a => a.GetLoadableTypes()
-                        .Where(t => t.BaseType != null && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))))
-                    .ToList();
+                    .SelectMany(a => a.GetLoadableTypes().Where(t => !t.IsAbstract && t.IsPublic && t.BaseType != null && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))));
 
-                pluginTypes.ForEach(type => RegisterPlugin(type, metadata, plugins, register));
-            }
-            SortAllLists(register);
-        }
-
-        private void RegisterDirectPlugins(IEnumerable<Type> pluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
-        {
-            if (pluginTypes == null) return;
-
-            foreach (var pluginType in pluginTypes)
-            {
-                if (pluginType == null) continue;
-                Assembly proxyTypeAssembly = pluginType.Assembly;
-
-                foreach (var type in proxyTypeAssembly.GetLoadableTypes())
+                foreach (var type in pluginTypes)
                 {
-                    if (!type.IsAbstract && type.GetInterface(nameof(IPlugin)) == typeof(IPlugin) && type.BaseType == typeof(object))
-                    {
-                        RegisterPlugin(type, metadata, plugins, register);
-                    }
+                    RegisterPlugin(type, metadata, plugins, register);
                 }
             }
             SortAllLists(register);
         }
 
+        private void RegisterDirectPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        {
+            if (basePluginTypes == null) return;
+
+            foreach (var pluginType in basePluginTypes)
+            {
+                if (pluginType == null) continue;
+
+                Assembly proxyTypeAssembly = pluginType.Assembly;
+
+                // Look for any currently loaded types in assembly that implement IPlugin
+                var types = proxyTypeAssembly.GetLoadableTypes()
+                    .Where(t => t.BaseType == typeof(object) && !t.IsAbstract && t.IsPublic && typeof(IPlugin).IsAssignableFrom(t));
+
+                foreach (var type in types)
+                {
+                    RegisterPlugin(type, metadata, plugins, register);
+                }
+            }
+            SortAllLists(register);
+        }
 
         private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
@@ -94,6 +111,7 @@ namespace DG.Tools.XrmMockup
             }
 
             // Filter the known strategies, with fallback to the metadata strategy
+            // TODO: Add ability to warn on no relevant strategy
             var relevantStrategy = registrationStrategies.FirstOrDefault(r => r.IsValidForPlugin(pluginType))
                 ?? throw new MockupException($"No relevant registration strategy found for plugin '{pluginType.FullName}'.");
 
@@ -136,6 +154,7 @@ namespace DG.Tools.XrmMockup
         {
             var registrations = new List<IPluginStepConfig>();
 
+            // TODO: Auto-discover system plugins instead of hardcoding the types, we know they all implement the same class
             foreach (var plugin in systemPlugins)
             {
                 registrations.AddRange(plugin.GetRegistrations());
@@ -213,7 +232,8 @@ namespace DG.Tools.XrmMockup
                     ? request.RequestName
                     : throw new MockupException($"Could not create request for operation {operation}");
 
-                TriggerSyncInternal(multipleOperation, stage, entityCollection, preImage, postImage, multiplePluginContext, core, executionOrderFilter);
+                // TODO: Images for multiple are handled in IPluginExecutionContext4
+                TriggerSyncInternal(multipleOperation, stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
             }
 
             // Check if this is a Multiple -> Single request
@@ -252,6 +272,7 @@ namespace DG.Tools.XrmMockup
                     singlePluginContext.InputParameters[singleImageProperty] = targetEntity;
                     singlePluginContext.MessageName = singleMessageName;
                     
+                    // TODO: Recalculate preImage and postImage here
                     TriggerSyncInternal(singleOperation, stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
                 }
             }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 using System.Linq;
@@ -28,21 +27,23 @@ namespace DG.Tools.XrmMockup
             RegisterCustomApis(baseCustomApiTypes);
         }
 
-        private void RegisterCustomApis(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
+        private void RegisterCustomApis(IEnumerable<Tuple<string, Type>> customApiBaseTypeMappings)
         {
-            foreach (var baseType in baseCustomApiTypes)
+            foreach (var customApiMapping in customApiBaseTypeMappings)
             {
-                if (baseType == null) continue;
+                if (customApiMapping == null) continue;
 
-                var prefix = baseType.Item1;
-                var baseApiType = baseType.Item2;
+                var prefix = customApiMapping.Item1;
+                var baseApiType = customApiMapping.Item2;
 
                 var customApiTypes = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(a => a.GetLoadableTypes()
-                        .Where(t => t.BaseType != null && (t.BaseType == baseApiType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == baseApiType))))
+                    .SelectMany(a => a.GetLoadableTypes().Where(t => !t.IsAbstract && t.IsPublic && t.BaseType != null && (t.BaseType == baseApiType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == baseApiType))))
                     .ToList();
 
-                customApiTypes.ForEach(type => RegisterApi(prefix, type));
+                foreach (var type in customApiTypes)
+                {
+                    RegisterApi(prefix, type);
+                }
             }
         }
 

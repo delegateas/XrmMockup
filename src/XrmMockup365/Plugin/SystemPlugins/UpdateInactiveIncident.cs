@@ -6,7 +6,7 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
-    internal class UpdateInactiveIncident : SystemPluginBase
+    internal class UpdateInactiveIncident : AbstractSystemPlugin
     {
         // Register when/how to execute
         public UpdateInactiveIncident()

@@ -1057,6 +1057,10 @@ namespace DG.Tools.XrmMockup
             pluginManager.DisableRegisteredPlugins(include);
         }
 
+        internal List<string> PluginRegistrations => pluginManager.PluginRegistrations;
+        internal List<string> TemporaryPluginRegistrations => pluginManager.TemporaryPluginRegistrations;
+        internal List<string> SystemPluginRegistrations => pluginManager.SystemPluginRegistrations;
+
         internal XrmMockupSettings GetMockupSettings()
         {
             return settings;

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
-    internal class DefaultBusinessUnitTeamMembers : SystemPluginBase
+    internal class DefaultBusinessUnitTeamMembers : AbstractSystemPlugin
     {
         internal DefaultBusinessUnitTeamMembers()
         {

@@ -11,9 +11,11 @@ using System.Runtime.ExceptionServices;
 using XrmMockupShared.Plugin;
 using DG.XrmPluginCore.Enums;
 using DG.XrmPluginCore.Interfaces.Plugin;
+using System.Diagnostics;
 
 namespace DG.Tools.XrmMockup
 {
+    [DebuggerDisplay("{Stage} {Operation} {EntityName}")]
     internal class PluginTrigger : IComparable<PluginTrigger>
     {
         public Action<MockupServiceProviderAndFactory> PluginExecute { get; }

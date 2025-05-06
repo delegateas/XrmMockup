@@ -11,7 +11,7 @@
         <Company>Delegate</Company>
         <Description>Engine which simulates your exact Dynamics 365/CRM instance locally including all of it's logic!</Description>
         <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
-        <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
+        <Copyright>Copyright (c) Delegate A/S 2017-2025</Copyright>
         <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
@@ -50,18 +50,18 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
 	<ItemGroup>
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
 		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net6.0\Metadata" />
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net6.0\Metadata" />
 		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net6.0\Metadata" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net8.0\Metadata" />
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net8.0\Metadata" />
 		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net8.0\Metadata" />
 	</ItemGroup>
 	<ItemGroup>
@@ -78,7 +78,7 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Delegate.XrmPluginCore.Abstractions" Version="0.0.4" />
+		<PackageReference Include="Delegate.XrmPluginCore.Abstractions" Version="0.0.5" />
 		<PackageReference Include="System.Text.Json" Version="8.0.5" />
         <PackageReference Include="Microsoft.PowerFx.Dataverse.Eval" Version="1.2.0-build.20231002-1005" />
 	</ItemGroup>

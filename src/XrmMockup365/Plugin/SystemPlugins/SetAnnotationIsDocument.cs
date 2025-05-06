@@ -4,7 +4,7 @@ using Microsoft.Xrm.Sdk;
 
 namespace DG.Tools.XrmMockup.SystemPlugins
 {
-    internal class SetAnnotationIsDocument : SystemPluginBase
+    internal class SetAnnotationIsDocument : AbstractSystemPlugin
     {
         // Register when/how to execute
         public SetAnnotationIsDocument()
