@@ -636,6 +636,9 @@ namespace DG.Tools.XrmMockup
             //perform security checks for the request
             CheckRequestSecurity(request, userRef);
 
+            //perform initialization of preoperation 
+            InitializePreOperation(request, userRef, preImage);
+
             if (shouldTrigger)
             {
                 if (eventOp is EventOperation operation)
@@ -865,9 +868,15 @@ namespace DG.Tools.XrmMockup
             {
                 handler.CheckSecurity(request, userRef);
             }
-            return;
+        }
 
-            throw new NotImplementedException($"CheckRequestSecurity for the request '{request.RequestName}' has not been implemented yet.");
+        private void InitializePreOperation(OrganizationRequest request, EntityReference userRef, Entity preImage)
+        {
+            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
+            if(handler != null)
+            {
+                handler.InitializePreOperation(request, userRef, preImage);
+            }
         }
 
         private string RequestNameToMessageName(string requestName)
