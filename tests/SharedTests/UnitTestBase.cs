@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using Microsoft.Crm.Sdk.Messages;
 using System.Linq;
 
+#if DATAVERSE_SERVICE_CLIENT
+using Microsoft.PowerPlatform.Dataverse.Client;
+#endif
+
 namespace DG.XrmMockupTest
 {
     [Collection("Xrm Collection")]
@@ -13,38 +17,37 @@ namespace DG.XrmMockupTest
     {
         private static DateTime _startTime { get; set; }
 
+#if DATAVERSE_SERVICE_CLIENT
+        protected IOrganizationServiceAsync2 orgAdminUIService;
+        protected IOrganizationServiceAsync2 orgAdminService;
+        protected IOrganizationServiceAsync2 orgGodService;
+        protected IOrganizationServiceAsync2 orgRealDataService;
+
+        protected IOrganizationServiceAsync2 testUser1Service;
+        protected IOrganizationServiceAsync2 testUser2Service;
+        protected IOrganizationServiceAsync2 testUser3Service;
+        protected IOrganizationServiceAsync2 testUser4Service;
+#else
         protected IOrganizationService orgAdminUIService;
         protected IOrganizationService orgAdminService;
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
 
-        protected Entity testUser1;
         protected IOrganizationService testUser1Service;
-
-        protected Entity testUser2;
         protected IOrganizationService testUser2Service;
-
-        protected Entity testUser3;
         protected IOrganizationService testUser3Service;
-
-        protected Entity testUser4;
         protected IOrganizationService testUser4Service;
+#endif
 
+        protected Entity testUser1;
+        protected Entity testUser2;
+        protected Entity testUser3;
+        protected Entity testUser4;
         protected Entity testUser5;
 
         protected Entity contactWriteAccessTeamTemplate;
 
-#if XRM_MOCKUP_TEST_2011
-        static protected XrmMockup2011 crm;
-#elif XRM_MOCKUP_TEST_2013
-        static protected XrmMockup2013 crm;
-#elif XRM_MOCKUP_TEST_2015
-        static protected XrmMockup2015 crm;
-#elif XRM_MOCKUP_TEST_2016
-        static protected XrmMockup2016 crm;
-#elif XRM_MOCKUP_TEST_365
         static protected XrmMockup365 crm;
-#endif
 
         public UnitTestBase(XrmMockupFixture fixture)
         {
@@ -61,6 +64,9 @@ namespace DG.XrmMockupTest
             adminUser["businessunitid"] = crm.RootBusinessUnit;
             adminUser["internalemailaddress"] = "test@test.com";
             adminUser["islicensed"] = true;
+            adminUser["firstname"] = "Admin";
+            adminUser["lastname"] = "User";
+            adminUser["fullname"] = "Admin User";
 
             adminUser = crm.CreateUser(orgAdminService, adminUser, SecurityRoles.SystemAdministrator);
             
@@ -130,6 +136,7 @@ namespace DG.XrmMockupTest
             user["internalemailaddress"] = "camstestuser1@official.mod.uk";
             user["businessunitid"] = crm.RootBusinessUnit;
             user["islicensed"] = true;
+            
             testUser1 = crm.CreateUser(orgAdminService, user, new Guid[] { crm.GetSecurityRole("AccessTeamTest").RoleId });
             testUser1Service = crm.CreateOrganizationService(testUser1.Id);
 

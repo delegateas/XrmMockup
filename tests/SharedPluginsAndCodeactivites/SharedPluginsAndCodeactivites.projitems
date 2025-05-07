@@ -10,6 +10,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Closeincidentplugin.cs" />
+    <Compile Include="..\SharedPluginsAndCodeactivites\SetCityOnCreateUpdateMultiple.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateAccountApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomAPI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IncidentDeleteAllRelatedResolutionsOnClose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentPostCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChildPreCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NotePostOperationPlugin.cs" />
@@ -17,6 +21,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)AccountCustomActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccountBothImagePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FaxPreOperationPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RetrievePlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncAsyncTest\TestPlugin0.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UpdateIdInCreatePlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContactPostPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectPlugins\ContactIPluginDirectPostOp.cs" />
@@ -53,5 +59,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)OpportunityWinLose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginNonDaxif.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SetCountryOnCreateUpdate.cs" />
   </ItemGroup>
 </Project>

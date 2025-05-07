@@ -1,13 +1,13 @@
 ﻿using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
 using System.Threading;
+using DG.Tools.XrmMockup.Serialization;
 
 namespace DG.Tools.XrmMockup.Database {
 
@@ -141,7 +141,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0) {
                 currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
@@ -151,7 +150,7 @@ namespace DG.Tools.XrmMockup.Database {
                         "does not exist. If you use hard-coded records from CRM, then make sure you create those records before retrieving them.");
                 }
             }
-#endif
+
             // No identification given for the entity, throw error
             else
             {
@@ -184,7 +183,7 @@ namespace DG.Tools.XrmMockup.Database {
             DbRow currentDbRow = null;
             dbRow = null;
 
-            if (reference?.Id != Guid.Empty)
+            if (reference?.Id != default && reference?.Id != Guid.Empty)
             {
                 currentDbRow = this[reference.LogicalName][reference.Id];
                 if (currentDbRow == null)
@@ -198,7 +197,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0)
             {
@@ -214,7 +212,7 @@ namespace DG.Tools.XrmMockup.Database {
                     return true;
                 }
             }
-#endif
+
             // No identification given for the entity, return false
             else
             {
@@ -257,6 +255,29 @@ namespace DG.Tools.XrmMockup.Database {
             {
                 TableDict = clonedTables
             };
+
+            return clonedDB;
+        }
+        public DbDTO ToSerializableDTO()
+        {
+            var jsonObj = new DbDTO
+            {
+                Tables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.ToSerializableDTO())
+            };
+            return jsonObj;
+        }
+        public static XrmDb RestoreSerializableDTO(XrmDb current, DbDTO model)
+        {
+            var clonedTables = model.Tables.ToDictionary(x => x.Key, x => DbTable.RestoreSerializableDTO(new DbTable(current.EntityMetadata[x.Key]), x.Value));
+            var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineProxy)
+            {
+                TableDict = clonedTables
+            };
+
+            foreach (var table in clonedTables)
+            {
+                table.Value.RestoreFromDTOPostProcess(clonedDB);
+            }
 
             return clonedDB;
         }

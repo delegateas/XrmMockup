@@ -1,3 +1,98 @@
+### 1.15.0-rc3 - 25 April 2025
+* Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
+
+### 1.15.0-rc2 - 14 April 2025
+* Fix: Calculations between Money and WholeNumber fields (@mkholt)
+
+### 1.15.0-rc1 - 11 April 2025
+* Add: Support for PowerFx based Formula fields in Retrieve and RetrieveMultiple requests (@mkholt)
+* Fix: Waiting workflows weren't cleared on reset (@magesoe)
+* Fix: AlternateKeys weren't handled correctly in Create and Update (@magesoe)
+
+### 1.14.5 - 19 March 2025
+* Fix: Ordering failing in RetrieveMultipleRequestHandler when not selecting the attribute to order by (@mkholt)
+
+### 1.14.4 - 07 March 2025
+* Add ability to specify proxy classes through list of assemblies (@Lucki2g)
+
+### 1.14.3 - 05 March 2025
+* Add column comparison in MatchesCriteria (@magesoe)
+* Throw better exception when attempting to format an invalid OptionSet value (@mkholt)
+
+### 1.14.2 - 27 February 2025
+* Fix assembly lookup to support SDK-Style .csproj files (@Kageschwump)
+
+### 1.14.1 - 14 February 2025
+* Add support for UpdateMultipleRequest (@mkholt)
+* Add support for UpsertMultipleRequest (@mkholt)
+
+### 1.14.0 - 14 February 2025
+* Add support for CustomAPI execution (@magesoe)
+* Support for CreateMultipleRequest (@magesoe)
+
+### 1.13.3 - 29 November 2024
+* Extend RetrieveMultipleRequestHandler with support for TopCount and Take (@mai98)
+* Fix plugin vs workflow execution order (@mai98)
+
+### 1.13.2 - 25 October 2024
+* Support for InstantiateTemplateRequest (@nedergaardcloud)
+
+### 1.13.1 - 18 September 2024
+* Fix: An update request of Incident without a StateCode would throw NullReferenceException (@mkholt)
+
+### 1.13.0 - 18 September 2024
+* Add support for .NET8 (@mkholt)
+* Remove support for versions older than 9 (365) (@mkholt)
+* Set InitiatingUserId and UserId in workflow context (@mai98)
+
+### 1.12.5 - 10 September 2024
+* Fix: CloseIncidentRequestHandler now uses UpdateRequest instead of SetStateRequest (@mai98)
+* Fix: Throw FaultException when trying to update a resolved Incident (@mai98)
+* Add support for Retrieve plugins (@mai98)
+* Support Distinct in RetrieveMultipleRequestHandler when using Query Expressions (@mai98)
+* Support for SendEmailRequest and PartyList (@mai98)
+* Add file block upload handlers, without file-storage (@magesoe @nedergaardcloud)
+
+### 1.12.4 - 23 August 2024
+* Add support for multiple ThenBy's in retrievemultiple (@misoeli)
+
+### 1.12.3 - 22 December 2023
+* Add initializer based on an existing instance, letting us copy an already initialized XrmMockup instance (@mkholt)
+* Add optional tracing class factory to settings (@mkholt)
+* Add timers during initialization (@mkholt)
+
+### 1.12.2 - 24 August 2023
+* Add flag to mitigate duplicate security role names (@mkholt)
+
+### 1.12.1 - 12 May 2023
+* Use Mockup service instead of XrmExtension (@magesoe)
+
+### 1.12.0 - 16 December 2022
+* Add support for RetrieveCurrentOrganization Request (@kato88)
+
+### 1.11.2 - 23 November 2022
+* Ensure metadata folder is added in both packages (@mkholt)
+* Implement IOrganizationServiceAsync2 (@mkholt)
+
+### 1.11.1 - 21 November 2022
+* Ensure dlls are not loaded multiple times (@magesoe)
+
+### 1.11.0 - 10 November 2022
+* Add support for .NET6 (@mkholt)
+
+### 1.10.1 - 24 August 2022
+* Add TargetType to SetEntityProperty actions in workflow handling to ensure differing types are handled correctly (@mkholt)
+
+### 1.10.0 - 14 March 2022
+* Added SDK message processing step to plugin query (@kato88)
+* Added snapshot to file feature (@tvbirch)
+
+### 1.9.0 - 13 December 2021
+* Added support for virtual datatype (@nillas12)
+
+### 1.8.2 - 27 September 2021
+* Log when metadata has been generated
+
 ### 1.8.1 - 25 May 2021
 * Handle duplicate access right for same security role
 

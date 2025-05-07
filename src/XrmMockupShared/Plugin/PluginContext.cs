@@ -210,7 +210,10 @@ namespace DG.Tools.XrmMockup {
         public Guid PrimaryEntityId {
             get {
                 _propertyBag.TryGetValue("PrimaryEntityId", out object PrimaryEntityId);
-                return (Guid)PrimaryEntityId;
+
+                return (PrimaryEntityId is Guid guid)
+                    ? guid
+                    : Guid.Empty;
             }
             set {
                 _propertyBag["PrimaryEntityId"] = value;

@@ -787,5 +787,80 @@ namespace DG.XrmMockupTest
                 Assert.True(names[5].Equals("12"), "Test 12 failed");
             }
         }
+
+        [Fact]
+        public void When_ordering_by_3_columns_simultaneously_right_result_is_returned()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var account111 = new Account() { Name = "111", ImportSequenceNumber = 1, NumberOfEmployees = 1, AccountNumber = "1" };
+                var account112 = new Account() { Name = "112", ImportSequenceNumber = 1, NumberOfEmployees = 1, AccountNumber = "2" };
+                var account121 = new Account() { Name = "121", ImportSequenceNumber = 1, NumberOfEmployees = 2, AccountNumber = "1" };
+                var account122 = new Account() { Name = "122", ImportSequenceNumber = 1, NumberOfEmployees = 2, AccountNumber = "2" };
+                var account211 = new Account() { Name = "211", ImportSequenceNumber = 2, NumberOfEmployees = 1, AccountNumber = "1" };
+                var account212 = new Account() { Name = "212", ImportSequenceNumber = 2, NumberOfEmployees = 1, AccountNumber = "2" };
+                var account221 = new Account() { Name = "221", ImportSequenceNumber = 2, NumberOfEmployees = 2, AccountNumber = "1" };
+                var account222 = new Account() { Name = "222", ImportSequenceNumber = 2, NumberOfEmployees = 2, AccountNumber = "2" };
+
+                crm.PopulateWith(account211, account221, account112, account122, account222, account212, account121, account111);
+
+                QueryExpression query = new QueryExpression()
+                {
+                    EntityName = "account",
+                    ColumnSet = new ColumnSet(true),
+                    Orders =
+            {
+                new OrderExpression("importsequencenumber", OrderType.Ascending),
+                new OrderExpression("numberofemployees", OrderType.Ascending),
+                new OrderExpression("accountnumber", OrderType.Ascending)
+            }
+                };
+
+                EntityCollection ec = orgAdminService.RetrieveMultiple(query);
+                var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
+
+                Assert.True(names[0].Equals("111"), "test 111 failed");
+                Assert.True(names[1].Equals("112"), "test 112 failed");
+                Assert.True(names[2].Equals("121"), "test 121 failed");
+                Assert.True(names[3].Equals("122"), "test 122 failed");
+                Assert.True(names[4].Equals("211"), "test 211 failed");
+                Assert.True(names[5].Equals("212"), "test 221 failed");
+                Assert.True(names[6].Equals("221"), "test 212 failed");
+                Assert.True(names[7].Equals("222"), "test 222 failed");
+            }
+        }
+
+        [Fact]
+        public void When_ordering_by_2_columns_nulled_column_is_handled()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                var account11 = new Account() { Name = "11", ImportSequenceNumber = 1, NumberOfEmployees = 1 };
+                var account12 = new Account() { Name = "12", ImportSequenceNumber = 1, NumberOfEmployees = 2 };
+                var account21 = new Account() { Name = "21", ImportSequenceNumber = 2, NumberOfEmployees = 1 };
+                var account2null = new Account() { Name = "2null", ImportSequenceNumber = 2 }; // Explicitly not setting numberofemployees
+
+                crm.PopulateWith(account11, account12, account21, account2null);
+
+                QueryExpression query = new QueryExpression()
+                {
+                    EntityName = "account",
+                    ColumnSet = new ColumnSet(true),
+                    Orders =
+                    {
+                        new OrderExpression ("importsequencenumber", OrderType.Ascending),
+                        new OrderExpression ("numberofemployees", OrderType.Ascending)
+                    }
+                };
+
+                EntityCollection ec = orgAdminService.RetrieveMultiple(query);
+                var names = ec.Entities.Select(e => e.ToEntity<Account>().Name).ToList();
+
+                Assert.True(names[0].Equals("11"), "test 11 failed");
+                Assert.True(names[1].Equals("12"), "test 12 failed");
+                Assert.True(names[2].Equals("2null"), "test 2null failed"); 
+                Assert.True(names[3].Equals("21"), "test 21 failed");
+            }
+        }
     }
 }

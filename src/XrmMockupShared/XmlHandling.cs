@@ -74,11 +74,7 @@ namespace DG.Tools.XrmMockup {
                 else {
                     values = new[] { condition.Attribute("value").Value };
                 }
-#if XRM_MOCKUP_2011
-                filterExp.AddCondition(attr, op, values);
-#else
                 filterExp.AddCondition(entityName, attr, op, values);
-#endif
             }
 
             foreach (var subFilter in filter.Elements("filter")) {

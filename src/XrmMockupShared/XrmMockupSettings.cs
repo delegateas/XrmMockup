@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xrm.Sdk.Organization;
+using System.Reflection;
 
 namespace DG.Tools.XrmMockup
 {
@@ -14,7 +16,7 @@ namespace DG.Tools.XrmMockup
         /// This is used to locate the assemblies required.
         /// </summary>
         public IEnumerable<Type> BasePluginTypes { get; set; }
-        
+
         /// <summary>
         /// List of at least one instance of a CodeActivity in each of your projects that contain CodeActivities. 
         /// This is used to locate the assemblies required to find all CodeActivity.
@@ -56,12 +58,34 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public MetaPlugin[] IPluginMetadata { get; set; }
 
-#if XRM_MOCKUP_365
+        /// <summary>
+        /// <para>Optional factory for creating new instances of ITracingService.</para>
+        /// <para>If not specified, uses the built-in <see cref="TracingService"/></para>
+        /// </summary>
+        public ITracingServiceFactory TracingServiceFactory { get; set; }
+
         /// <summary>
         /// List of Extensions to XrmMockup. This can be used to extend XrmMockup functionality to a certain degree.
         /// </summary>
         public List<IXrmMockupExtension> MockUpExtensions { get; set; } = new List<IXrmMockupExtension>();
-#endif
+
+        /// <summary>
+        /// Optional configuration required for RetrieveCurrenctOrganizationRequest.
+        /// </summary>
+        public OrganizationDetail OrganizationDetail { get; set; }
+
+        /// <summary>
+        /// List of base-types with their prefix which all your custom apis extend.
+        /// This is used to locate the assemblies required.
+        /// </summary>
+        public IEnumerable<Tuple<string, Type>> BaseCustomApiTypes { get; set; }
+
+        /// <summary>
+        /// Optional:
+        /// Proxy type assemblies to load. Used for specifying specific context types.
+        /// If left empty, assemblies are found relative to dll.
+        /// </summary>
+        public IEnumerable<Assembly> Assemblies { get; set; }
     }
 
 

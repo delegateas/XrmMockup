@@ -88,8 +88,15 @@ namespace DG.Tools.XrmMockup
             var request = MakeRequest<UpdateRequest>(orgRequest);
             var settings = MockupExecutionContext.GetSettings(request);
 
+            if (request.Target.LogicalName is "incident"
+                && !request.Parameters.ContainsKey("CloseIncidentRequestHandler")
+                && request.Target.TryGetAttributeValue<OptionSetValue>("statecode", out var stateCode)
+                && stateCode.Value is 1)
+            {
+                throw new FaultException("This message can not be used to set the state of incident to Resolved. In order to set state of incident to Resolved, use the CloseIncidentRequest message instead.");
+            }
+            
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
-            var entity = request.Target;
             var row = db.GetDbRow(entRef);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
@@ -120,7 +127,6 @@ namespace DG.Tools.XrmMockup
             var xrmEntity = row.ToEntity();
 
             var ownerRef = request.Target.GetAttributeValue<EntityReference>("ownerid");
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (ownerRef != null)
             {
                 if (xrmEntity.Contains("ownerid") && request.Target.Contains("ownerid")
@@ -130,7 +136,6 @@ namespace DG.Tools.XrmMockup
                     security.CheckAssignPermission(xrmEntity, ownerRef, userRef);
                 }
             }
-#endif
 
             var updEntity = request.Target.CloneEntity(row.Metadata, new ColumnSet(true));
 
@@ -158,11 +163,7 @@ namespace DG.Tools.XrmMockup
                 }
             }
 
-
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
             Utility.CheckStatusTransitions(row.Metadata, updEntity, xrmEntity);
-#endif
-
 
             if (Utility.HasCircularReference(metadata.EntityMetadata, updEntity))
             {
@@ -208,19 +209,15 @@ namespace DG.Tools.XrmMockup
                 Utility.HandleCurrencies(metadata, db, xrmEntity);
             }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
             if (updEntity.Attributes.ContainsKey("statecode") || updEntity.Attributes.ContainsKey("statuscode"))
             {
                 Utility.HandleCurrencies(metadata, db, xrmEntity);
             }
-#endif
 
             if (ownerRef != null)
             {
                 Utility.SetOwner(db, security, metadata, xrmEntity, ownerRef);
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
-#endif
             }
 
             if (Utility.Activities.Contains(xrmEntity.LogicalName))
@@ -235,6 +232,34 @@ namespace DG.Tools.XrmMockup
             }
 
             Utility.Touch(xrmEntity, row.Metadata, core.TimeOffset, userRef);
+
+            if (request.Target.RelatedEntities.Count > 0)
+            {
+                foreach (var relatedEntities in request.Target.RelatedEntities)
+                {
+                    if (Utility.GetRelationshipMetadataDefaultNull(metadata.EntityMetadata,
+                        relatedEntities.Key.SchemaName, Guid.Empty, userRef) == null)
+                    {
+                        throw new FaultException(
+                            $"Relationship with schemaname '{relatedEntities.Key.SchemaName}' does not exist in metadata");
+                    }
+
+                    if (relatedEntities.Value.Entities.Any(e => e.Id == Guid.Empty))
+                    {
+                        // MS Error = System.ServiceModel.FaultException`1[[Microsoft.Xrm.Sdk.OrganizationServiceFault, Microsoft.Xrm.Sdk, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]] : Entity Id must be specified for Operation
+                        throw new FaultException($"Entity Id must be specified for Operation");
+                    }
+
+                    var associateReq = new AssociateRequest
+                    {
+                        Target = request.Target.ToEntityReference(),
+                        Relationship = relatedEntities.Key,
+                        RelatedEntities = new EntityReferenceCollection(relatedEntities.Value.Entities
+                            .Select(e => e.ToEntityReference()).ToList())
+                    };
+                    core.Execute(associateReq, userRef);
+                }
+            }
 
             db.Update(xrmEntity);
 

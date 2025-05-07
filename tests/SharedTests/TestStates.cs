@@ -27,7 +27,6 @@ namespace DG.XrmMockupTest
             Assert.Equal(AccountState.Inactive, retrieved.StateCode);
         }
 
-#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
         [Fact]
         public void TestStatusTransitions()
         {
@@ -286,7 +285,6 @@ namespace DG.XrmMockupTest
                 Assert.IsType<FaultException>(e);
             }
         }
-#endif
 
         [Fact]
         public void TestStateStatuscodeCreate()

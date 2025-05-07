@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net462</TargetFramework>
+        <TargetFrameworks>net462;net6.0;net8.0</TargetFrameworks>
         <DebugType>portable</DebugType>
         <Title>XrmMockup365</Title>
     </PropertyGroup>
@@ -13,27 +13,34 @@
         <PackageTags>dynamics-365 dynamics-crm csharp testing unit-testing mockup simulation-engine</PackageTags>
         <Copyright>Copyright (c) Delegate A/S 2017</Copyright>
         <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/delegateas/XrmMockup</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <Optimize>false</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>TRACE;DEBUG;XRM_MOCKUP_365</DefineConstants>
+        <DefineConstants>TRACE;DEBUG</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE;XRM_MOCKUP_365</DefineConstants>
+        <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
     </PropertyGroup>
-    <ItemGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' != 'net462'">
+		<DefineConstants>$(DefineConstants);DATAVERSE_SERVICE_CLIENT</DefineConstants>
+	</PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
         <Reference Include="System" />
         <Reference Include="System.Activities" />
         <Reference Include="System.configuration" />
         <Reference Include="System.Core" />
+		<Reference Include="System.IO.Compression" />
         <Reference Include="System.Web.Extensions" />
         <Reference Include="System.Xml.Linq" />
         <Reference Include="System.Data.DataSetExtensions" />
@@ -42,17 +49,37 @@
         <Reference Include="System.Net.Http" />
         <Reference Include="System.Xml" />
     </ItemGroup>
-    <ItemGroup>
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\$(TargetFramework)\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
-        <Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\$(TargetFramework)\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
-        <Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
-        <None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
+	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net6.0\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net6.0\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\MetadataGen\MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net8.0\Metadata" />
+		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net8.0\Metadata" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" />
+		<None Include="..\..\readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.28" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+        <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.59" />
         <PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
         <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
     </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
+		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.3" />
+		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+        <PackageReference Include="Microsoft.PowerFx.Dataverse.Eval" Version="1.2.0-build.20231002-1005" />
+	</ItemGroup>
     <Import Project="..\XrmMockupShared\XrmMockupShared.projitems" Label="Shared" />
     <Import Project="..\XrmMockupWorkflow\XrmMockupWorkflow.projitems" Label="Shared" />
     <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />

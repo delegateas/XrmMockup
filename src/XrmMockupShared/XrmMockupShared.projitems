@@ -12,6 +12,24 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbAttributeTypeMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DbTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\CustomApiManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FormulaFieldEvaluator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\ExecuteTransactionRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)requests\RetrieveAllEntitiesRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\UpsertMultipleRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateMultipleRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)requests\InstantiateTemplateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\UploadBlockRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\InitializeFileBlocksUploadRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\SendEmailRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\EntityReferenceDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\SecurityModelDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\SnapshotDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\XrmDb.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\DeviceIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginExecutionProvider.cs" />
@@ -26,6 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CloseIncidentRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\IsValidStateTransitionRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RemoveUserFromRecordTeamRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveCurrentOrganizationRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveMetadataChangesRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrievePrincipalAccessRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveAttributeRequestHandler.cs" />
@@ -67,12 +86,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RetrieveMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpdateRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requests\CreateMultipleRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\RequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableColumnDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableRowDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TracingServiceFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Workflow\WorkflowManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlHandling.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmMockupBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmMockupBaseAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmMockupSettings.cs" />
   </ItemGroup>
 </Project>

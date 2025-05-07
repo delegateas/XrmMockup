@@ -1,4 +1,5 @@
 ﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Serialization;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
@@ -176,7 +177,6 @@ namespace DG.Tools.XrmMockup
             return ret;
         }
 
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013 || XRM_MOCKUP_2015)
         internal void CascadeOwnerUpdate(Entity dbEntity, EntityReference userRef, EntityReference ownerRef)
         {
             // Cascade like Assign, but with UpdateRequests
@@ -229,7 +229,6 @@ namespace DG.Tools.XrmMockup
                 }
             }
         }
-#endif
 
         internal void CheckAssignPermission(Entity entity, EntityReference assignee, EntityReference userRef)
         {
@@ -550,10 +549,9 @@ namespace DG.Tools.XrmMockup
             // check if any of the Teams that the caller is a member of has access
             if (HasTeamMemberPermission(entity, access, caller)) return true;
 
-#if !(XRM_MOCKUP_2011)
             // check if any of the Teams that the caller is a member of has access
             if (HasAccessTeamMemberPermission(entity, access, caller)) return true;
-#endif
+
             // check if there are any shares of the entity with the caller
             if (HasSharePermission(entity, access, caller)) return true;
 
@@ -592,6 +590,30 @@ namespace DG.Tools.XrmMockup
             s.PrinciplePrivilages = this.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
             return s;
         }
+
+        public SecurityModelDTO ToSerializableDTO()
+        {
+            var jsonObj = new SecurityModelDTO
+            {
+                AddedRoles = this.addedRoles,
+                PrinciplePrivilages = this.PrinciplePrivilages,
+                SecurityRoleMapping = this.SecurityRoleMapping,
+                Shares = this.Shares.ToDictionary(x => new EntityReferenceDTO { Id = x.Key.Id, LogicalName = x.Key.LogicalName}, x => x.Value.ToDictionary(y => new EntityReferenceDTO { Id = y.Key.Id, LogicalName = y.Key.LogicalName}, y => y.Value))
+            };
+            return jsonObj;
+        }
+        internal static Security RestoreSerializableDTO(Security current, SecurityModelDTO model)
+        {
+            var s = new Security(current.Core, current.Metadata, current.SecurityRoles.Values.ToList(), current.db)
+            {
+                SecurityRoleMapping = model.SecurityRoleMapping.ToDictionary(x => x.Key, x => x.Value),
+                Shares = model.Shares.ToDictionary(x => new EntityReference { Id = x.Key.Id, LogicalName = x.Key.LogicalName }, x => x.Value.ToDictionary(y => new EntityReference { Id = y.Key.Id, LogicalName = y.Key.LogicalName }, y => y.Value)),
+                addedRoles = new List<Guid>(model.AddedRoles)
+            };
+            s.PrinciplePrivilages = model.PrinciplePrivilages.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value));
+            return s;
+        }
+
         internal SecurityRole GetSecurityRole(string name)
         {
             return SecurityRoles.Single(x => x.Value.Name == name).Value;

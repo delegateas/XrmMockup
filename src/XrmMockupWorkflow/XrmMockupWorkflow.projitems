@@ -9,13 +9,52 @@
     <Import_RootNamespace>XrmMockupWorkflow</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IWorkflowContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NamespaceIgnoreXmlReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseStructure.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Util.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WaitInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowArgument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowConstructor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\ActivityList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\AddTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Aggregate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Arithmetic.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Assign.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\AssignEntity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\CallCodeActivity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Concat.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Condition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\ConditionExp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\ConvertType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\CreateEntity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\CreateVariable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\CustomOperationArguments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\DiffInTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\GetEntityProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\IWorkflowNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\LogicalComparison.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Persist.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Postpone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\RetrieveCurrentTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\RetrieveLastExecutionTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\RollUp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SelectFirstNonNull.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SendEmail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SetAttributeValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SetEntityProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SetState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Skip.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\SubtractTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\TerminateWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\Trim.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\UpdateEntity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkflowNode\WaitStart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkflowTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XrmTimeSpan.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmWorkflowContext.cs" />
   </ItemGroup>
 </Project>

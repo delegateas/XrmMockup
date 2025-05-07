@@ -24,9 +24,7 @@ namespace DG.Tools.XrmMockup {
                 var prevEntity = record.CloneEntity();
                 record["statecode"] = request.State;
                 record["statuscode"] = request.Status;
-#if !(XRM_MOCKUP_2011 || XRM_MOCKUP_2013)
                 Utility.CheckStatusTransitions(row.Metadata, record, prevEntity);
-#endif
                 Utility.HandleCurrencies(metadata, db, record);
                 Utility.Touch(record, row.Metadata, core.TimeOffset, userRef);
 

@@ -13,21 +13,22 @@ namespace DG.Tools.XrmMockup.Metadata
         internal static Assembly GetAssemblyFromName(string Name) {
             var projectFilePath = Directory.GetFiles(GetProjectPath(), "*.csproj")[0];
             var projectFile = XDocument.Load(projectFilePath);
-            var references =
-                projectFile
-                .Element(msbuild + "Project")
-                .Descendants(msbuild + "ItemGroup")
-                .Elements(msbuild + "Reference")
-                .Where(r => r.Attribute("Include") != null && r.HasElements);
+            var references = 
+                projectFile.Root
+                .Descendants()
+                .Where(e => e.Name.LocalName == "ItemGroup")
+                .Elements()
+                .Where(e => e.Name.LocalName == "Reference" && e.Attribute("Include") != null && e.HasElements);
 
             var referenceLookup = new Dictionary<string, string>();
             foreach (var reference in references) {
-                if (reference.Attribute("Include") != null && reference.Element(msbuild + "HintPath") != null) {
+                var hintPathElement = reference.Elements().FirstOrDefault(e => e.Name.LocalName == "HintPath");
+                if (reference.Attribute("Include") != null && hintPathElement != null) {
                     var key = reference.Attribute("Include").Value;
                     if (key.Contains(",")) {
                         key = key.Split(',')[0];
-                    }   
-                    referenceLookup.Add(key, reference.Element(msbuild + "HintPath").Value);
+                    }
+                    referenceLookup.Add(key, hintPathElement.Value);
                 }
             }
             if (Name.Contains(",")) {
@@ -45,13 +46,13 @@ namespace DG.Tools.XrmMockup.Metadata
             var projectPath = GetProjectPath();
             var projectFilePath = Directory.GetFiles(projectPath, "*.csproj")[0];
             var projectFile = XDocument.Load(projectFilePath);
+            var projectRoot = projectFile.Root ?? projectFile.Element(msbuild + "Project");
 
-            return projectFile
-                .Element(msbuild + "Project")
-                .Elements(msbuild + "PropertyGroup")
-                .Where(e => e.Element(msbuild + "OutputPath") != null)
-                .Select(e => e.Element(msbuild + "OutputPath").Value)
-                .Where(path => Directory.Exists(Path.Combine(projectPath, path)))
+            return projectRoot
+                .Elements()
+                .Where(e => e.Name.LocalName == "PropertyGroup")
+                .Select(e => e.Elements().FirstOrDefault(o => o.Name.LocalName == "OutputPath")?.Value)
+                .Where(path => !string.IsNullOrEmpty(path) && Directory.Exists(Path.Combine(projectPath, path)))
                 .Select(path => Directory.GetFiles(Path.Combine(projectPath, path), "*.dll"))
                 .Select(dirs => dirs.Select(file => AssemblyName.GetAssemblyName(file)))
                 .Aggregate((current, next) => current.Concat(next))
@@ -63,17 +64,7 @@ namespace DG.Tools.XrmMockup.Metadata
 
         internal static string GetProjectPath() {
             var startDirectory = Program.ParsedArgs[Arguments.UnitTestProjectPath] ?? Directory.GetCurrentDirectory();
-#if XRM_METADATA_2011
-            var owncsproj = "MetadataGenerator11.csproj";
-#elif XRM_METADATA_2013
-            var owncsproj = "MetadataGenerator13.csproj";
-#elif XRM_METADATA_2015
-            var owncsproj = "MetadataGenerator15.csproj";
-#elif XRM_METADATA_2016
-            var owncsproj = "MetadataGenerator16.csproj";
-#elif XRM_METADATA_365
             var owncsproj = "MetadataGenerator365.csproj";
-#endif
             var current = startDirectory;
             try {
                 while (Directory.GetFiles(current, "*.csproj").Length == 0 || Directory.GetFiles(current, "*.csproj")[0].EndsWith(owncsproj)) {

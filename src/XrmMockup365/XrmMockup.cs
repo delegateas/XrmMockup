@@ -16,11 +16,11 @@ namespace DG.Tools.XrmMockup {
     /// </summary>
     public class XrmMockup365 : XrmMockupBase {
 
-        private static Dictionary<XrmMockupSettings, XrmMockup365> instances = new Dictionary<XrmMockupSettings, XrmMockup365>();
+        private static readonly Dictionary<XrmMockupSettings, XrmMockup365> instances = new Dictionary<XrmMockupSettings, XrmMockup365>();
 
-
-        private XrmMockup365(XrmMockupSettings Settings) : 
-            base(Settings) {
+        private XrmMockup365(XrmMockupSettings Settings, MetadataSkeleton metadata = null, List<Entity> workflows = null, List<SecurityRole> securityRoles = null) :
+            base(Settings, metadata, workflows, securityRoles)
+        {
         }
         
         /// <summary>
@@ -35,6 +35,19 @@ namespace DG.Tools.XrmMockup {
             var instance = new XrmMockup365(Settings);
             instances[Settings] = instance;
             return instance;
+        }
+
+        /// <summary>
+        /// Gets an instance of XrmMockup365 using the same metadata as the provided
+        /// </summary>
+        /// <param name="xrmMockup">The existing instance to copy</param>
+        /// <param name="settings">
+        ///     If provided, will override the settings from the existing instance.<br/>
+        ///     <em>NOTE: Changing <see cref="XrmMockupSettings.MetadataDirectoryPath"/> will not trigger a reload</em>
+        /// </param>
+        public static XrmMockup365 GetInstance(XrmMockup365 xrmMockup, XrmMockupSettings settings = null)
+        {
+            return new XrmMockup365(settings ?? xrmMockup.Settings, xrmMockup.Metadata, xrmMockup.Workflows, xrmMockup.SecurityRoles);
         }
     }
 }

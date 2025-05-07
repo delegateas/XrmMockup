@@ -2121,6 +2121,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: Anonymized</para>
+        /// </summary>
+        [AttributeLogicalName("dg_anonymized")]
+        public DateTime? dg_Anonymized {
+            get {
+                return GetAttributeValue<DateTime?>("dg_anonymized");
+            }
+            set {
+                SetAttributeValue("dg_anonymized", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Display Name: Multiselect</para>
         /// </summary>
         [AttributeLogicalName("dg_multiselect")]
@@ -6048,6 +6061,136 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        /// <summary>
+        /// <para>Display Name: ci_call_summary_control_field</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_call_summary_control_field")]
+        public int? msdyn_ci_call_summary_control_field {
+            get {
+                return GetAttributeValue<int?>("msdyn_ci_call_summary_control_field");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_call_summary_control_field", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Conversation Id</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_id")]
+        public string msdyn_ci_id {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_id");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_id", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Insights Json</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_insights_json")]
+        public string msdyn_ci_insights_json {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_insights_json");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_insights_json", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Conversation Keywords</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_keywords")]
+        public string msdyn_ci_keywords {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_keywords");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_keywords", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Media Reference Id</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_media_reference_id")]
+        public string msdyn_ci_media_reference_id {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_media_reference_id");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_media_reference_id", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: CI Transcript</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_transcript")]
+        public string msdyn_ci_transcript {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_transcript");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_transcript", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Transcript Json</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_transcript_json")]
+        public string msdyn_ci_transcript_json {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_transcript_json");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_transcript_json", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: CI Translated Transcript</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_translated_transcript")]
+        public string msdyn_ci_translated_transcript {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_translated_transcript");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_translated_transcript", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Translated Transcript Json</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_translated_transcript_json")]
+        public string msdyn_ci_translated_transcript_json {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_translated_transcript_json");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_translated_transcript_json", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Conversation Url</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_url")]
+        public string msdyn_ci_url {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_url");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_url", value);
+            }
+        }
+        
         [AttributeLogicalName("regardingobjectid")]
         [RelationshipSchemaName("Account_Appointments")]
         public Account Account_Appointments {
@@ -6954,6 +7097,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Enable appointments to display on the new schedule board and be considered in availability search for resources.</para>
+        /// <para>Display Name: Include Appointments</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_enableappointments")]
+        public msdyn_enableappointmentsoption? msdyn_EnableAppointments {
+            get {
+                return GetOptionSetValue<msdyn_enableappointmentsoption>("msdyn_enableappointments");
+            }
+            set {
+                SetOptionSetValue("msdyn_enableappointments", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Enables drip scheduling on the mobile app.</para>
         /// <para>Display Name: Enable Drip Scheduling</para>
         /// </summary>
@@ -6968,8 +7125,22 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Set this field to Yes if this resource requires access to the Field Service Mobile application.</para>
-        /// <para>Display Name: Enabled for Field Service Mobile</para>
+        /// <para>This only applies when directly calling the API. It does not apply when the Book button is clicked on the Schedule Board or on any schedulable entity.</para>
+        /// <para>Display Name: Include Outlook Free/Busy in Search Resource Availability API</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_enableoutlookschedules")]
+        public msdyn_enableappointmentsoption? msdyn_EnableOutlookSchedules {
+            get {
+                return GetOptionSetValue<msdyn_enableappointmentsoption>("msdyn_enableoutlookschedules");
+            }
+            set {
+                SetOptionSetValue("msdyn_enableoutlookschedules", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Set this field to Yes if this resource requires access to the legacy Field Service Mobile application.</para>
+        /// <para>Display Name: Enable for Field Service Mobile (legacy Xamarin app)</para>
         /// </summary>
         [AttributeLogicalName("msdyn_enabledforfieldservicemobile")]
         public bool? msdyn_EnabledForFieldServiceMobile {
@@ -7036,6 +7207,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>The location latitude.</para>
         /// <para>Display Name: Latitude</para>
         /// </summary>
         [AttributeLogicalName("msdyn_latitude")]
@@ -7049,6 +7221,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>The location longitude.</para>
         /// <para>Display Name: Longitude</para>
         /// </summary>
         [AttributeLogicalName("msdyn_longitude")]
@@ -7138,6 +7311,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public decimal? msdyn_hourlyrate_Base {
             get {
                 return GetMoneyValue("msdyn_hourlyrate_base");
+            }
+        }
+        
+        /// <summary>
+        /// <para>The location timestamp.</para>
+        /// <para>Display Name: Location Timestamp</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_locationtimestamp")]
+        public DateTime? msdyn_locationtimestamp {
+            get {
+                return GetAttributeValue<DateTime?>("msdyn_locationtimestamp");
+            }
+            set {
+                SetAttributeValue("msdyn_locationtimestamp", value);
             }
         }
         
@@ -7879,7 +8066,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Shows the total travel duration. If you leave this field blank the system automatically determines the travel duration by calculating the resource journal details.</para>
+        /// <para>Shows the total travel duration. Calculated based on the difference between the Bookable Resource Booking's start time and actual arrival time.</para>
         /// <para>Display Name: Actual Travel Duration</para>
         /// </summary>
         [AttributeLogicalName("msdyn_actualtravelduration")]
@@ -7931,6 +8118,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("msdyn_appointmentbookingid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>The Base travel duration indicates the travel time without traffic</para>
+        /// <para>Display Name: Base Travel Duration</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_basetravelduration")]
+        public int? msdyn_BaseTravelDuration {
+            get {
+                return GetAttributeValue<int?>("msdyn_basetravelduration");
+            }
+            set {
+                SetAttributeValue("msdyn_basetravelduration", value);
             }
         }
         
@@ -8240,6 +8441,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Travel Time Calculation</para>
+        /// <para>Display Name: Travel Time Calculation</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_traveltimecalculationtype")]
+        public msdyn_traveltimetype? msdyn_TravelTimeCalculationType {
+            get {
+                return GetOptionSetValue<msdyn_traveltimetype>("msdyn_traveltimecalculationtype");
+            }
+            set {
+                SetOptionSetValue("msdyn_traveltimecalculationtype", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Display Name: Travel Time Rescheduling (Deprecated)</para>
         /// </summary>
         [AttributeLogicalName("msdyn_traveltimerescheduling")]
@@ -8308,6 +8523,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Internal For Quick note pcf control actions</para>
+        /// <para>Display Name: Quick note actions</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_quickNoteAction")]
+        public msdyn_quicknote_type? msdyn_quickNoteAction {
+            get {
+                return GetOptionSetValue<msdyn_quicknote_type>("msdyn_quickNoteAction");
+            }
+            set {
+                SetOptionSetValue("msdyn_quickNoteAction", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Requirement Group</para>
         /// <para>Display Name: Requirement Group</para>
         /// </summary>
@@ -8318,6 +8547,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("msdyn_requirementgroupid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Requirement Group Set</para>
+        /// <para>Display Name: Requirement Group Set</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_requirementgroupset")]
+        public string msdyn_requirementgroupset {
+            get {
+                return GetAttributeValue<string>("msdyn_requirementgroupset");
+            }
+            set {
+                SetAttributeValue("msdyn_requirementgroupset", value);
             }
         }
         
@@ -16104,10 +16347,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>Date and time that the record was migrated.</para>
-        /// <para>Display Name: Record Created On</para>
-        /// </summary>
         [AttributeLogicalName("overriddencreatedon")]
         public DateTime? OverriddenCreatedOn {
             get {
@@ -18005,10 +18244,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>Date and time that the record was migrated.</para>
-        /// <para>Display Name: Record Created On</para>
-        /// </summary>
         [AttributeLogicalName("overriddencreatedon")]
         public DateTime? OverriddenCreatedOn {
             get {
@@ -18946,7 +19181,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     }
     
     /// <summary>
-    /// <para>Skills, education and certifications of resources.</para>
+    /// <para>Skills and Characteristics for front line worker</para>
     /// <para>Display Name: Characteristic</para>
     /// </summary>
     [EntityLogicalName("characteristic")]
@@ -23742,6 +23977,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("dg_child_PrimaryContact_Contact")]
+        public IEnumerable<dg_child> dg_child_PrimaryContact_Contact {
+            get {
+                return GetRelatedEntities<dg_child>("dg_child_PrimaryContact_Contact", null);
+            }
+            set {
+                SetRelatedEntities("dg_child_PrimaryContact_Contact", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("dg_contact_dg_country")]
         public IEnumerable<dg_country> dg_contact_dg_country {
             get {
@@ -26427,6 +26672,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>The Entity that Accepted the Email</para>
+        /// <para>Display Name: Accepting Entity</para>
+        /// </summary>
+        [AttributeLogicalName("acceptingentityid")]
+        public EntityReference AcceptingEntityId {
+            get {
+                return GetAttributeValue<EntityReference>("acceptingentityid");
+            }
+            set {
+                SetAttributeValue("acceptingentityid", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>For internal use only.</para>
         /// <para>Display Name: Additional Parameters</para>
         /// </summary>
@@ -26607,6 +26866,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("conversationtrackingid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Correlated Activity Id</para>
+        /// <para>Display Name: Correlated Activity Id</para>
+        /// </summary>
+        [AttributeLogicalName("correlatedactivityid")]
+        public EntityReference CorrelatedActivityId {
+            get {
+                return GetAttributeValue<EntityReference>("correlatedactivityid");
+            }
+            set {
+                SetAttributeValue("correlatedactivityid", value);
             }
         }
         
@@ -27237,6 +27510,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>The Mailbox that Received the Email.</para>
+        /// <para>Display Name: Receiving Mailbox</para>
+        /// </summary>
+        [AttributeLogicalName("receivingmailboxid")]
+        public EntityReference ReceivingMailboxId {
+            get {
+                return GetAttributeValue<EntityReference>("receivingmailboxid");
+            }
+            set {
+                SetAttributeValue("receivingmailboxid", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Unique identifier of the object with which the e-mail is associated.</para>
         /// <para>Display Name: Regarding</para>
         /// </summary>
@@ -27635,6 +27922,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        /// <summary>
+        /// <para>Individual email will be sent to each recipient.</para>
+        /// <para>Display Name: Recipient List</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_recipientlist")]
+        public string msdyn_RecipientList {
+            get {
+                return GetAttributeValue<string>("msdyn_recipientlist");
+            }
+            set {
+                SetAttributeValue("msdyn_recipientlist", value);
+            }
+        }
+        
         [AttributeLogicalName("emailsender")]
         [RelationshipSchemaName("Account_Email_EmailSender")]
         public Account Account_Email_EmailSender {
@@ -27820,6 +28121,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [RelationshipSchemaName("email_email_CorrelatedActivityId", EntityRole.Referenced)]
+        public IEnumerable<Email> Referencedemail_email_CorrelatedActivityId {
+            get {
+                return GetRelatedEntities<Email>("email_email_CorrelatedActivityId", EntityRole.Referenced);
+            }
+            set {
+                SetRelatedEntities("email_email_CorrelatedActivityId", EntityRole.Referenced, value);
+            }
+        }
+        
         [RelationshipSchemaName("email_email_parentactivityid", EntityRole.Referenced)]
         public IEnumerable<Email> Referencedemail_email_parentactivityid {
             get {
@@ -27827,6 +28138,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("email_email_parentactivityid", EntityRole.Referenced, value);
+            }
+        }
+        
+        [AttributeLogicalName("correlatedactivityid")]
+        [RelationshipSchemaName("email_email_CorrelatedActivityId", EntityRole.Referencing)]
+        public Email Referencingemail_email_CorrelatedActivityId {
+            get {
+                return GetRelatedEntity<Email>("email_email_CorrelatedActivityId", EntityRole.Referencing);
+            }
+            set {
+                SetRelatedEntity("email_email_CorrelatedActivityId", EntityRole.Referencing, value);
             }
         }
         
@@ -27940,6 +28262,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("acceptingentityid")]
+        [RelationshipSchemaName("email_acceptingentity_systemuser")]
+        public SystemUser email_acceptingentity_systemuser {
+            get {
+                return GetRelatedEntity<SystemUser>("email_acceptingentity_systemuser", null);
+            }
+            set {
+                SetRelatedEntity("email_acceptingentity_systemuser", null, value);
+            }
+        }
+        
         [RelationshipSchemaName("email_activity_parties")]
         public IEnumerable<ActivityParty> email_activity_parties {
             get {
@@ -28043,6 +28376,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntity("lk_email_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("receivingmailboxid")]
+        [RelationshipSchemaName("mailbox_email_ReceivingMailboxId")]
+        public Mailbox mailbox_email_ReceivingMailboxId {
+            get {
+                return GetRelatedEntity<Mailbox>("mailbox_email_ReceivingMailboxId", null);
+            }
+            set {
+                SetRelatedEntity("mailbox_email_ReceivingMailboxId", null, value);
             }
         }
         
@@ -28169,6 +28513,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>AAD ResourceId used for OAuth athentication scheme</para>
+        /// <para>Display Name: AAD ResourceId</para>
+        /// </summary>
+        [AttributeLogicalName("aadresourceid")]
+        public string AadResourceId {
+            get {
+                return GetAttributeValue<string>("aadresourceid");
+            }
+            set {
+                SetAttributeValue("aadresourceid", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Shows who created the record.</para>
         /// <para>Display Name: Created By</para>
         /// </summary>
@@ -28201,10 +28559,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>Information about server credentials</para>
-        /// <para>Display Name: Information about server credentials</para>
-        /// </summary>
         [AttributeLogicalName("credentialinfo")]
         public string CredentialInfo {
             get {
@@ -28215,10 +28569,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>encryption key used for CredentialInfo</para>
-        /// <para>Display Name: encryption key used for CredentialInfo</para>
-        /// </summary>
         [AttributeLogicalName("dataencryptionkey")]
         public string DataEncryptionKey {
             get {
@@ -29086,6 +29436,34 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public long? VersionNumber {
             get {
                 return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+        
+        /// <summary>
+        /// <para>The Azure Key Vault reference id</para>
+        /// <para>Display Name: Key Vault Reference Id</para>
+        /// </summary>
+        [AttributeLogicalName("keyvaultreferenceid")]
+        public EntityReference keyvaultreferenceid {
+            get {
+                return GetAttributeValue<EntityReference>("keyvaultreferenceid");
+            }
+            set {
+                SetAttributeValue("keyvaultreferenceid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>The managed identity id</para>
+        /// <para>Display Name: Managed Identity Id</para>
+        /// </summary>
+        [AttributeLogicalName("managedidentityid")]
+        public EntityReference managedidentityid {
+            get {
+                return GetAttributeValue<EntityReference>("managedidentityid");
+            }
+            set {
+                SetAttributeValue("managedidentityid", value);
             }
         }
         
@@ -33867,6 +34245,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Case's functional location</para>
+        /// <para>Display Name: Functional Location</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_functionallocation")]
+        public EntityReference msdyn_FunctionalLocation {
+            get {
+                return GetAttributeValue<EntityReference>("msdyn_functionallocation");
+            }
+            set {
+                SetAttributeValue("msdyn_functionallocation", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Unique identifier for Incident Type associated with Case.</para>
         /// <para>Display Name: Incident Type</para>
         /// </summary>
@@ -37928,6 +38320,47 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Ingested article URL</para>
+        /// <para>Display Name: Ingested Article URL</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ingestedarticleurl")]
+        public string msdyn_ingestedarticleurl {
+            get {
+                return GetAttributeValue<string>("msdyn_ingestedarticleurl");
+            }
+            set {
+                SetAttributeValue("msdyn_ingestedarticleurl", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Value is true for all Ingested articles</para>
+        /// <para>Display Name: Is Ingested Article</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_isingestedarticle")]
+        public bool? msdyn_isingestedarticle {
+            get {
+                return GetAttributeValue<bool?>("msdyn_isingestedarticle");
+            }
+            set {
+                SetAttributeValue("msdyn_isingestedarticle", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Keywords and Description Suggestion control</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_keywordsdescsuggestioncontrol")]
+        public bool? msdyn_keywordsdescsuggestioncontrol {
+            get {
+                return GetAttributeValue<bool?>("msdyn_keywordsdescsuggestioncontrol");
+            }
+            set {
+                SetAttributeValue("msdyn_keywordsdescsuggestioncontrol", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Contains the id of the primary author associated with the article.</para>
         /// <para>Display Name: Primary Author Id</para>
         /// </summary>
@@ -40382,7 +40815,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Lead Grade</para>
+        /// <para>Display Name: Anonymized</para>
+        /// </summary>
+        [AttributeLogicalName("dg_anonymized")]
+        public DateTime? dg_Anonymized {
+            get {
+                return GetAttributeValue<DateTime?>("dg_anonymized");
+            }
+            set {
+                SetAttributeValue("dg_anonymized", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: (Deprecated) Lead Grade</para>
         /// </summary>
         [AttributeLogicalName("msdyn_leadgrade")]
         public msdyn_leadgradeoptset? msdyn_LeadGrade {
@@ -40395,7 +40841,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Lead Score</para>
+        /// <para>Display Name: (Deprecated) Lead Score</para>
         /// </summary>
         [AttributeLogicalName("msdyn_leadscore")]
         public int? msdyn_LeadScore {
@@ -40408,7 +40854,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Lead Score Trend</para>
+        /// <para>Display Name: (Deprecated) Lead Score Trend</para>
         /// </summary>
         [AttributeLogicalName("msdyn_leadscoretrend")]
         public msdyn_leadscoretrendoptset? msdyn_LeadScoreTrend {
@@ -40435,7 +40881,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Score History</para>
+        /// <para>Display Name: (Deprecated) Score History</para>
         /// </summary>
         [AttributeLogicalName("msdyn_scorehistory")]
         public string msdyn_ScoreHistory {
@@ -40448,7 +40894,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Score Reasons</para>
+        /// <para>Display Name: (Deprecated) Score Reasons</para>
         /// </summary>
         [AttributeLogicalName("msdyn_scorereasons")]
         public string msdyn_ScoreReasons {
@@ -40499,6 +40945,34 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetOptionSetValue("msdyn_ordertype", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Result of the assignment rule process</para>
+        /// <para>Display Name: Assignment Rule Result</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_salesassignmentresult")]
+        public Lead_msdyn_salesassignmentresult? msdyn_salesassignmentresult {
+            get {
+                return GetOptionSetValue<Lead_msdyn_salesassignmentresult>("msdyn_salesassignmentresult");
+            }
+            set {
+                SetOptionSetValue("msdyn_salesassignmentresult", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for Segment associated with Lead.</para>
+        /// <para>Display Name: Segment Id</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_segmentid")]
+        public EntityReference msdyn_segmentid {
+            get {
+                return GetAttributeValue<EntityReference>("msdyn_segmentid");
+            }
+            set {
+                SetAttributeValue("msdyn_segmentid", value);
             }
         }
         
@@ -42167,7 +42641,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         /// <summary>
         /// <para>Unique identifier of the marketing list.</para>
-        /// <para>Display Name: List</para>
+        /// <para>Display Name: Marketing List</para>
         /// </summary>
         [AttributeLogicalName("listid")]
         public Guid? ListId {
@@ -43307,10 +43781,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>Information about server credentials</para>
-        /// <para>Display Name: Information about server credentials</para>
-        /// </summary>
         [AttributeLogicalName("credentialinfo")]
         public string CredentialInfo {
             get {
@@ -43321,10 +43791,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>encryption key used for CredentialInfo</para>
-        /// <para>Display Name: encryption key used for CredentialInfo</para>
-        /// </summary>
         [AttributeLogicalName("dataencryptionkey")]
         public string DataEncryptionKey {
             get {
@@ -43796,6 +44262,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Identifies the last MessageId that has been processed for tagging in the remote system.</para>
+        /// <para>Display Name: Last Tagged MessageId</para>
+        /// </summary>
+        [AttributeLogicalName("lasttaggedmessageid")]
+        public string LastTaggedMessageId {
+            get {
+                return GetAttributeValue<string>("lasttaggedmessageid");
+            }
+            set {
+                SetAttributeValue("lasttaggedmessageid", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>For internal use only.</para>
         /// <para>Display Name: Processing Context of the Mailbox</para>
         /// </summary>
@@ -43864,6 +44344,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("name", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>The next scheduled ACT sync delay, in seconds, to apply to the mailbox.</para>
+        /// <para>Display Name: Next Scheduled ACT Sync Delay In Seconds</para>
+        /// </summary>
+        [AttributeLogicalName("nextscheduledactsyncinseconds")]
+        public int? NextScheduledACTSyncInSeconds {
+            get {
+                return GetAttributeValue<int?>("nextscheduledactsyncinseconds");
             }
         }
         
@@ -44274,6 +44765,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Identifies the timestamp after for which emails should be tagged in the remote system.</para>
+        /// <para>Display Name: Tag Emails After</para>
+        /// </summary>
+        [AttributeLogicalName("tagemailsafter")]
+        public DateTime? TagEmailsAfter {
+            get {
+                return GetAttributeValue<DateTime?>("tagemailsafter");
+            }
+            set {
+                SetAttributeValue("tagemailsafter", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Shows the number of times an email configuration test has been performed.</para>
         /// <para>Display Name: Test Email Configuration Retry Count</para>
         /// </summary>
@@ -44530,6 +45035,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntity("lk_mailbox_modifiedonbehalfby", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("mailbox_email_ReceivingMailboxId")]
+        public IEnumerable<Email> mailbox_email_ReceivingMailboxId {
+            get {
+                return GetRelatedEntities<Email>("mailbox_email_ReceivingMailboxId", null);
+            }
+            set {
+                SetRelatedEntities("mailbox_email_ReceivingMailboxId", null, value);
             }
         }
         
@@ -46081,7 +46596,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Opportunity Grade</para>
+        /// <para>Display Name: (Deprecated) Opportunity Grade</para>
         /// </summary>
         [AttributeLogicalName("msdyn_opportunitygrade")]
         public msdyn_opportunitygradeoptset? msdyn_OpportunityGrade {
@@ -46094,7 +46609,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Opportunity Score</para>
+        /// <para>Display Name: (Deprecated) Opportunity Score</para>
         /// </summary>
         [AttributeLogicalName("msdyn_opportunityscore")]
         public int? msdyn_OpportunityScore {
@@ -46107,7 +46622,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Opportunity Score Trend</para>
+        /// <para>Display Name: (Deprecated) Opportunity Score Trend</para>
         /// </summary>
         [AttributeLogicalName("msdyn_opportunityscoretrend")]
         public msdyn_opportunityscoretrendoptset? msdyn_OpportunityScoreTrend {
@@ -46148,7 +46663,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Score History</para>
+        /// <para>Display Name: (Deprecated) Score History</para>
         /// </summary>
         [AttributeLogicalName("msdyn_scorehistory")]
         public string msdyn_ScoreHistory {
@@ -46161,7 +46676,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Display Name: Score Reasons</para>
+        /// <para>Display Name: (Deprecated) Score Reasons</para>
         /// </summary>
         [AttributeLogicalName("msdyn_scorereasons")]
         public string msdyn_ScoreReasons {
@@ -46226,6 +46741,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("msdyn_opportunitykpiid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Unique identifier for Segment associated with Opportunity.</para>
+        /// <para>Display Name: Segment Id</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_segmentid")]
+        public EntityReference msdyn_segmentid {
+            get {
+                return GetAttributeValue<EntityReference>("msdyn_segmentid");
+            }
+            set {
+                SetAttributeValue("msdyn_segmentid", value);
             }
         }
         
@@ -48591,6 +49120,62 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Flag to indicate if the display column options on a view in model-driven apps is enabled</para>
+        /// <para>Display Name: Advanced column editor enabled</para>
+        /// </summary>
+        [AttributeLogicalName("advancedcolumneditorenabled")]
+        public bool? AdvancedColumnEditorEnabled {
+            get {
+                return GetAttributeValue<bool?>("advancedcolumneditorenabled");
+            }
+            set {
+                SetAttributeValue("advancedcolumneditorenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Flag to indicate if the advanced column filtering in a view in model-driven apps is enabled</para>
+        /// <para>Display Name: Advanced column filtering enabled</para>
+        /// </summary>
+        [AttributeLogicalName("advancedcolumnfilteringenabled")]
+        public bool? AdvancedColumnFilteringEnabled {
+            get {
+                return GetAttributeValue<bool?>("advancedcolumnfilteringenabled");
+            }
+            set {
+                SetAttributeValue("advancedcolumnfilteringenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Flag to indicate if the advanced filtering on all tables in a model-driven app is enabled</para>
+        /// <para>Display Name: Advanced filtering enabled</para>
+        /// </summary>
+        [AttributeLogicalName("advancedfilteringenabled")]
+        public bool? AdvancedFilteringEnabled {
+            get {
+                return GetAttributeValue<bool?>("advancedfilteringenabled");
+            }
+            set {
+                SetAttributeValue("advancedfilteringenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Flag to indicate if the Advanced Lookup feature is enabled for lookup controls</para>
+        /// <para>Display Name: Advanced lookup enabled</para>
+        /// </summary>
+        [AttributeLogicalName("advancedlookupenabled")]
+        public bool? AdvancedLookupEnabled {
+            get {
+                return GetAttributeValue<bool?>("advancedlookupenabled");
+            }
+            set {
+                SetAttributeValue("advancedlookupenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Indicates whether background address book synchronization in Microsoft Office Outlook is allowed.</para>
         /// <para>Display Name: Allow Address Book Synchronization</para>
         /// </summary>
@@ -48745,6 +49330,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Control whether the organization Allow Redirect Legacy Admin Settings To Modern UI</para>
+        /// <para>Display Name: Allow Redirect Legacy Admin Settings To Modern UI</para>
+        /// </summary>
+        [AttributeLogicalName("allowredirectadminsettingstomodernui")]
+        public bool? AllowRedirectAdminSettingsToModernUI {
+            get {
+                return GetAttributeValue<bool?>("allowredirectadminsettingstomodernui");
+            }
+            set {
+                SetAttributeValue("allowredirectadminsettingstomodernui", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Indicates whether users are allowed to send email to unresolved parties (parties must still have an email address).</para>
         /// <para>Display Name: Allow Unresolved Address Email Send</para>
         /// </summary>
@@ -48769,6 +49368,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("allowuserformmodepreference", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Flag to indicate if allow end users to hide system views in model-driven apps is enabled</para>
+        /// <para>Display Name: Allow users hiding system views</para>
+        /// </summary>
+        [AttributeLogicalName("allowusershidingsystemviews")]
+        public bool? AllowUsersHidingSystemViews {
+            get {
+                return GetAttributeValue<bool?>("allowusershidingsystemviews");
+            }
+            set {
+                SetAttributeValue("allowusershidingsystemviews", value);
             }
         }
         
@@ -49061,6 +49674,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Indicates whether the organization can opt out of the new Relevance search experience (released in Oct 2020)</para>
+        /// <para>Display Name: Can disable Oct 2020 Search</para>
+        /// </summary>
+        [AttributeLogicalName("canoptoutnewsearchexperience")]
+        public bool? CanOptOutNewSearchExperience {
+            get {
+                return GetAttributeValue<bool?>("canoptoutnewsearchexperience");
+            }
+            set {
+                SetAttributeValue("canoptoutnewsearchexperience", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Flag to cascade Update on incident.</para>
         /// <para>Display Name: Cascade Status Update</para>
         /// </summary>
@@ -49141,6 +49768,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("contractprefix", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Refresh rate for copresence data in seconds.</para>
+        /// <para>Display Name: CopresenceRefreshRate</para>
+        /// </summary>
+        [AttributeLogicalName("copresencerefreshrate")]
+        public int? CopresenceRefreshRate {
+            get {
+                return GetAttributeValue<int?>("copresencerefreshrate");
+            }
+            set {
+                SetAttributeValue("copresencerefreshrate", value);
             }
         }
         
@@ -49575,6 +50216,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Indicates whether the default teams linked chat title is the record name</para>
+        /// <para>Display Name: Indicates whether the default teams linked chat title is the record name</para>
+        /// </summary>
+        [AttributeLogicalName("defaultteamschattitlerecordname")]
+        public bool? DefaultTeamsChatTitleRecordName {
+            get {
+                return GetAttributeValue<bool?>("defaultteamschattitlerecordname");
+            }
+            set {
+                SetAttributeValue("defaultteamschattitlerecordname", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Default theme data for the organization.</para>
         /// <para>Display Name: Default Theme Data</para>
         /// </summary>
@@ -49768,6 +50423,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Control whether the organization Switch Maker Portal to Classic</para>
+        /// <para>Display Name: Switch Maker Portal to Classic</para>
+        /// </summary>
+        [AttributeLogicalName("enablemakerswitchtoclassic")]
+        public bool? EnableMakerSwitchToClassic {
+            get {
+                return GetAttributeValue<bool?>("enablemakerswitchtoclassic");
+            }
+            set {
+                SetAttributeValue("enablemakerswitchtoclassic", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Enable Integration with Microsoft Flow</para>
         /// <para>Display Name: Enable Integration with Microsoft Flow</para>
         /// </summary>
@@ -49792,6 +50461,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("enablepricingoncreate", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Indicates whether privacy and sensitivity attributes for new team creation has been enabled</para>
+        /// <para>Display Name: Indicates whether privacy and sensitivity attributes for new team creation has been enabled</para>
+        /// </summary>
+        [AttributeLogicalName("enablesensitivitylabelsforteamscollab")]
+        public bool? EnableSensitivityLabelsForTeamsCollab {
+            get {
+                return GetAttributeValue<bool?>("enablesensitivitylabelsforteamscollab");
+            }
+            set {
+                SetAttributeValue("enablesensitivitylabelsforteamscollab", value);
             }
         }
         
@@ -49834,6 +50517,34 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("enforcereadonlyplugins", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>JSON string containing settings for enhanced add products experience in Sales</para>
+        /// <para>Display Name: Enhanced Add Products Settings</para>
+        /// </summary>
+        [AttributeLogicalName("enhancedaddproductssettings")]
+        public string EnhancedAddProductsSettings {
+            get {
+                return GetAttributeValue<string>("enhancedaddproductssettings");
+            }
+            set {
+                SetAttributeValue("enhancedaddproductssettings", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>JSON string containing settings for enhanced add products experience in Sales</para>
+        /// <para>Display Name: Enhanced Add Products Settings</para>
+        /// </summary>
+        [AttributeLogicalName("enhancedoqoiaddproductssettings")]
+        public string EnhancedOQOIAddProductsSettings {
+            get {
+                return GetAttributeValue<string>("enhancedoqoiaddproductssettings");
+            }
+            set {
+                SetAttributeValue("enhancedoqoiaddproductssettings", value);
             }
         }
         
@@ -50350,6 +51061,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Indicates whether an organization has consented to sharing search query data to help improve search results</para>
+        /// <para>Display Name: Share search query data</para>
+        /// </summary>
+        [AttributeLogicalName("improvesearchloggingenabled")]
+        public bool? ImproveSearchLoggingEnabled {
+            get {
+                return GetAttributeValue<bool?>("improvesearchloggingenabled");
+            }
+            set {
+                SetAttributeValue("improvesearchloggingenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Information that specifies whether Inactivity timeout is enabled</para>
         /// <para>Display Name: Inactivity timeout enabled</para>
         /// </summary>
@@ -50613,6 +51338,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: IsCollaborationExperienceEnabled</para>
+        /// </summary>
+        [AttributeLogicalName("iscollaborationexperienceenabled")]
+        public bool? IsCollaborationExperienceEnabled {
+            get {
+                return GetAttributeValue<bool?>("iscollaborationexperienceenabled");
+            }
+            set {
+                SetAttributeValue("iscollaborationexperienceenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Information that specifies whether conflict detection for mobile client is enabled.</para>
         /// <para>Display Name: Is Conflict Detection for Mobile Client enabled</para>
         /// </summary>
@@ -50830,6 +51568,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("isemailserverprofilecontentfilteringenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Indicates whether embed Teams collaboration has been enabled for the organization</para>
+        /// <para>Display Name: Indicates whether embed Teams collaboration has been enabled for the organization</para>
+        /// </summary>
+        [AttributeLogicalName("isembedteamscollabenabled")]
+        public bool? IsEmbedTeamsCollabEnabled {
+            get {
+                return GetAttributeValue<bool?>("isembedteamscollabenabled");
+            }
+            set {
+                SetAttributeValue("isembedteamscollabenabled", value);
             }
         }
         
@@ -51380,6 +52132,33 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Indicates whether Sales Mobile Preview has been enabled for the organization</para>
+        /// <para>Display Name: Indicates whether Sales Mobile Preview has been enabled for the organization</para>
+        /// </summary>
+        [AttributeLogicalName("issalesmobilepreviewenabled")]
+        public bool? IsSalesMobilePreviewEnabled {
+            get {
+                return GetAttributeValue<bool?>("issalesmobilepreviewenabled");
+            }
+            set {
+                SetAttributeValue("issalesmobilepreviewenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: IsSharingInOrgAllowed</para>
+        /// </summary>
+        [AttributeLogicalName("issharinginorgallowed")]
+        public bool? IsSharingInOrgAllowed {
+            get {
+                return GetAttributeValue<bool?>("issharinginorgallowed");
+            }
+            set {
+                SetAttributeValue("issharinginorgallowed", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Information on whether text wrap is enabled.</para>
         /// <para>Display Name: Enable Text Wrap</para>
         /// </summary>
@@ -51506,6 +52285,34 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Minimum number of characters that should be entered in the lookup control before resolving for suggestions</para>
+        /// <para>Display Name: Minimum number of characters before resolving suggestions in lookup</para>
+        /// </summary>
+        [AttributeLogicalName("lookupcharactercountbeforeresolve")]
+        public int? LookupCharacterCountBeforeResolve {
+            get {
+                return GetAttributeValue<int?>("lookupcharactercountbeforeresolve");
+            }
+            set {
+                SetAttributeValue("lookupcharactercountbeforeresolve", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Minimum delay (in milliseconds) between consecutive inputs in a lookup control that will trigger a search for suggestions</para>
+        /// <para>Display Name: Minimum delay (in milliseconds) for debouncing lookup control input</para>
+        /// </summary>
+        [AttributeLogicalName("lookupresolvedelayms")]
+        public int? LookupResolveDelayMS {
+            get {
+                return GetAttributeValue<int?>("lookupresolvedelayms");
+            }
+            set {
+                SetAttributeValue("lookupresolvedelayms", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Lower Threshold For Mailbox Intermittent Issue.</para>
         /// <para>Display Name: Lower Threshold For Mailbox Intermittent Issue</para>
         /// </summary>
@@ -51544,6 +52351,34 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("maxactionstepsinbpf", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Maximum Allowed Pending Rollup Job Count</para>
+        /// <para>Display Name: MaxAllowedPendingRollupJobCount</para>
+        /// </summary>
+        [AttributeLogicalName("maxallowedpendingrollupjobcount")]
+        public int? MaxAllowedPendingRollupJobCount {
+            get {
+                return GetAttributeValue<int?>("maxallowedpendingrollupjobcount");
+            }
+            set {
+                SetAttributeValue("maxallowedpendingrollupjobcount", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Percentage Of Entity Table Size For Kicking Off Bootstrap Job</para>
+        /// <para>Display Name: MaxAllowedPendingRollupJobPercentage</para>
+        /// </summary>
+        [AttributeLogicalName("maxallowedpendingrollupjobpercentage")]
+        public int? MaxAllowedPendingRollupJobPercentage {
+            get {
+                return GetAttributeValue<int?>("maxallowedpendingrollupjobpercentage");
+            }
+            set {
+                SetAttributeValue("maxallowedpendingrollupjobpercentage", value);
             }
         }
         
@@ -51943,6 +52778,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Indicates whether an organization has enabled the new Relevance search experience (released in Oct 2020) for the organization</para>
+        /// <para>Display Name: Oct 2020 Search enabled</para>
+        /// </summary>
+        [AttributeLogicalName("newsearchexperienceenabled")]
+        public bool? NewSearchExperienceEnabled {
+            get {
+                return GetAttributeValue<bool?>("newsearchexperienceenabled");
+            }
+            set {
+                SetAttributeValue("newsearchexperienceenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Next token to be placed on the subject line of an email message.</para>
         /// <para>Display Name: Next Tracking Number</para>
         /// </summary>
@@ -52336,6 +53185,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Flag to indicate if the feature to use quick action to open records in search side pane is enabled</para>
+        /// <para>Display Name: Enable quick actions to open records in search side pane</para>
+        /// </summary>
+        [AttributeLogicalName("quickactiontoopenrecordsinsidepaneenabled")]
+        public bool? QuickActionToOpenRecordsInSidePaneEnabled {
+            get {
+                return GetAttributeValue<bool?>("quickactiontoopenrecordsinsidepaneenabled");
+            }
+            set {
+                SetAttributeValue("quickactiontoopenrecordsinsidepaneenabled", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Indicates whether a quick find record limit should be enabled for this organization (allows for faster Quick Find queries but prevents overly broad searches).</para>
         /// <para>Display Name: Quick Find Record Limit Enabled</para>
         /// </summary>
@@ -52360,6 +53223,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("quoteprefix", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Indicates whether SLA Recalculation has been enabled for the organization</para>
+        /// <para>Display Name: Indicates whether SLA Recalculation has been enabled for the organization</para>
+        /// </summary>
+        [AttributeLogicalName("recalculatesla")]
+        public bool? RecalculateSLA {
+            get {
+                return GetAttributeValue<bool?>("recalculatesla");
+            }
+            set {
+                SetAttributeValue("recalculatesla", value);
             }
         }
         
@@ -52430,6 +53307,48 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("referencesitemapxml", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Release Wave Applied to Environment.</para>
+        /// <para>Display Name: Release Wave</para>
+        /// </summary>
+        [AttributeLogicalName("releasewavename")]
+        public string ReleaseWaveName {
+            get {
+                return GetAttributeValue<string>("releasewavename");
+            }
+            set {
+                SetAttributeValue("releasewavename", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Indicates whether relevance search was enabled for the environment as part of Dataverse's relevance search on-by-default sweep</para>
+        /// <para>Display Name: Relevance search enabled automatically by Dataverse</para>
+        /// </summary>
+        [AttributeLogicalName("relevancesearchenabledbyplatform")]
+        public bool? RelevanceSearchEnabledByPlatform {
+            get {
+                return GetAttributeValue<bool?>("relevancesearchenabledbyplatform");
+            }
+            set {
+                SetAttributeValue("relevancesearchenabledbyplatform", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>This setting contains the last modified date for relevance search setting that appears as a toggle in PPAC.</para>
+        /// <para>Display Name: RelevanceSearchModifiedOnDate</para>
+        /// </summary>
+        [AttributeLogicalName("relevancesearchmodifiedon")]
+        public DateTime? RelevanceSearchModifiedOn {
+            get {
+                return GetAttributeValue<DateTime?>("relevancesearchmodifiedon");
+            }
+            set {
+                SetAttributeValue("relevancesearchmodifiedon", value);
             }
         }
         
@@ -52640,6 +53559,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("servestaticresourcesfromazurecdn", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Enable the session recording feature to record user sessions in UCI</para>
+        /// <para>Display Name: Enable the session recording feature</para>
+        /// </summary>
+        [AttributeLogicalName("sessionrecordingenabled")]
+        public bool? SessionRecordingEnabled {
+            get {
+                return GetAttributeValue<bool?>("sessionrecordingenabled");
+            }
+            set {
+                SetAttributeValue("sessionrecordingenabled", value);
             }
         }
         
@@ -53004,6 +53937,20 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("taskbasedflowenabled", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Instrumentation key for Application Insights used to log plugins telemetry.</para>
+        /// <para>Display Name: Telemetry Instrumentation Key</para>
+        /// </summary>
+        [AttributeLogicalName("telemetryinstrumentationkey")]
+        public string TelemetryInstrumentationKey {
+            get {
+                return GetAttributeValue<string>("telemetryinstrumentationkey");
+            }
+            set {
+                SetAttributeValue("telemetryinstrumentationkey", value);
             }
         }
         
@@ -54349,6 +55296,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: ci_call_summary_control_field</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_call_summary_control_field")]
+        public int? msdyn_ci_call_summary_control_field {
+            get {
+                return GetAttributeValue<int?>("msdyn_ci_call_summary_control_field");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_call_summary_control_field", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Display Name: Conversation Id</para>
         /// </summary>
         [AttributeLogicalName("msdyn_ci_id")]
@@ -54401,6 +55361,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: CI Transcript</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_transcript")]
+        public string msdyn_ci_transcript {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_transcript");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_transcript", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Display Name: Transcript Json</para>
         /// </summary>
         [AttributeLogicalName("msdyn_ci_transcript_json")]
@@ -54410,6 +55383,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("msdyn_ci_transcript_json", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: CI Translated Transcript</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_ci_translated_transcript")]
+        public string msdyn_ci_translated_transcript {
+            get {
+                return GetAttributeValue<string>("msdyn_ci_translated_transcript");
+            }
+            set {
+                SetAttributeValue("msdyn_ci_translated_transcript", value);
             }
         }
         
@@ -59868,7 +60854,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Enter the user or team who owns the SLA. This field is updated every time the item assignment is changed.</para>
+        /// <para>Enter the user or team who owns the SLA. This field is updated every time the item is assigned to a different user.</para>
         /// <para>Display Name: Owner</para>
         /// </summary>
         [AttributeLogicalName("ownerid")]
@@ -62844,10 +63830,6 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
-        /// <summary>
-        /// <para>Date and time that the record was migrated.</para>
-        /// <para>Display Name: Record Created On</para>
-        /// </summary>
         [AttributeLogicalName("overriddencreatedon")]
         public DateTime? OverriddenCreatedOn {
             get {
@@ -68380,7 +69362,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>License type of user.</para>
+        /// <para>License type of user. This is used only in the on-premises version of the product. Online licenses are managed through Microsoft 365 Office Portal</para>
         /// <para>Display Name: License Type</para>
         /// </summary>
         [AttributeLogicalName("caltype")]
@@ -68470,6 +69452,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public string DefaultOdbFolderName {
             get {
                 return GetAttributeValue<string>("defaultodbfoldername");
+            }
+        }
+        
+        /// <summary>
+        /// <para>User delete state</para>
+        /// <para>Display Name: Deleted State</para>
+        /// </summary>
+        [AttributeLogicalName("deletedstate")]
+        public SystemUser_DeletedState? DeletedState {
+            get {
+                return GetOptionSetValue<SystemUser_DeletedState>("deletedstate");
             }
         }
         
@@ -69581,6 +70574,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntities("createdby_connection", null, value);
+            }
+        }
+        
+        [RelationshipSchemaName("email_acceptingentity_systemuser")]
+        public IEnumerable<Email> email_acceptingentity_systemuser {
+            get {
+                return GetRelatedEntities<Email>("email_acceptingentity_systemuser", null);
+            }
+            set {
+                SetRelatedEntities("email_acceptingentity_systemuser", null, value);
             }
         }
         
@@ -73349,6 +74352,23 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public static SystemUser Retrieve(IOrganizationService service, Guid id, params Expression<Func<SystemUser,object>>[] attrs) {
             return service.Retrieve(id, attrs);
         }
+        
+        /// <summary>
+        /// <para>Retrieves the record using the alternate key called 'AAD ObjectId'</para>
+        /// </summary>
+        public static SystemUser Retrieve_aadobjectid(IOrganizationService service, Guid AzureActiveDirectoryObjectId, params Expression<Func<SystemUser,object>>[] attrs) {
+            KeyAttributeCollection keys = new KeyAttributeCollection();
+            keys.Add("azureactivedirectoryobjectid", AzureActiveDirectoryObjectId);
+            return Retrieve_AltKey(service, keys, attrs);
+        }
+        
+        /// <summary>
+        /// <para>Set values for the alternate key called 'AAD ObjectId'</para>
+        /// </summary>
+        public void AltKey_aadobjectid(Guid AzureActiveDirectoryObjectId) {
+            KeyAttributes.Clear();
+            KeyAttributes.Add("azureactivedirectoryobjectid", AzureActiveDirectoryObjectId);
+        }
     }
     
     /// <summary>
@@ -74601,6 +75621,13 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
         }
         
+        [AttributeLogicalName("issastokenset")]
+        public bool? IsSasTokenSet {
+            get {
+                return GetAttributeValue<bool?>("issastokenset");
+            }
+        }
+        
         /// <summary>
         /// <para>Display Name: Membership Type</para>
         /// </summary>
@@ -74725,6 +75752,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetAttributeValue("regardingobjectid", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Share Link Qualifier</para>
+        /// </summary>
+        [AttributeLogicalName("sharelinkqualifier")]
+        public string ShareLinkQualifier {
+            get {
+                return GetAttributeValue<string>("sharelinkqualifier");
             }
         }
         
@@ -77660,7 +78698,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Status of the process.</para>
+        /// <para>Status of the workflow</para>
         /// <para>Display Name: Status</para>
         /// </summary>
         [AttributeLogicalName("statecode")]
@@ -77674,7 +78712,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
-        /// <para>Additional information about status of the process.</para>
+        /// <para>Reason for the status of the workflow</para>
         /// <para>Display Name: Status Reason</para>
         /// </summary>
         [AttributeLogicalName("statuscode")]
@@ -77758,6 +78796,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>For Internal Use Only.</para>
+        /// <para>Display Name: Trusted Access</para>
+        /// </summary>
+        [AttributeLogicalName("trustedaccess")]
+        public bool? TrustedAccess {
+            get {
+                return GetAttributeValue<bool?>("trustedaccess");
+            }
+        }
+        
+        /// <summary>
         /// <para>Type of the process.</para>
         /// <para>Display Name: Type</para>
         /// </summary>
@@ -77784,7 +78833,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         /// <summary>
         /// <para>Type of the UI Flow process.</para>
-        /// <para>Display Name: UI Flow Type</para>
+        /// <para>Display Name: Desktop Flow Type</para>
         /// </summary>
         [AttributeLogicalName("uiflowtype")]
         public Workflow_UIFlowType? UIFlowType {
@@ -78452,6 +79501,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public string dg_EmptyCalculatedField {
             get {
                 return GetAttributeValue<string>("dg_emptycalculatedfield");
+            }
+        }
+
+        /// <summary>
+        /// <para>Display Name: AnimalOwner</para>
+        /// </summary>
+        [AttributeLogicalName("dg_animalowner")]
+        public string dg_AnimalOwner
+        {
+            get {
+                return GetAttributeValue<string>("dg_animalowner");
             }
         }
         
@@ -79613,7 +80673,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
                 return GetMoneyValue("dg_udregnet");
             }
         }
-        
+
+        /// <summary>
+        /// <para>Display Name: Whole numberUdregnetMoney</para>
+        /// </summary>
+        [AttributeLogicalName("dg_wholenumberudregnetmoney")]
+        public decimal? dg_WholeNumberUdregnetMoney
+        {
+            get
+            {
+                return GetMoneyValue("dg_wholenumberudregnetmoney");
+            }
+        }
+
         /// <summary>
         /// <para>Display Name: Whole numberUdregnet</para>
         /// </summary>
@@ -79675,6 +80747,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         public decimal? dg_avgallowance_Base {
             get {
                 return GetMoneyValue("dg_avgallowance_base");
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Dokumenttyper</para>
+        /// </summary>
+        [AttributeLogicalName("dg_dokumenttyper")]
+        public IEnumerable<dg_dokumenttyper> dg_dokumenttyper {
+            get {
+                return GetOptionSetCollectionValue<dg_dokumenttyper>("dg_dokumenttyper");
+            }
+            set {
+                SetOptionSetCollectionValue("dg_dokumenttyper", value);
             }
         }
         
@@ -80222,6 +81307,32 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         }
         
         /// <summary>
+        /// <para>Display Name: Anonymized</para>
+        /// </summary>
+        [AttributeLogicalName("dg_anonymized")]
+        public DateTime? dg_Anonymized {
+            get {
+                return GetAttributeValue<DateTime?>("dg_anonymized");
+            }
+            set {
+                SetAttributeValue("dg_anonymized", value);
+            }
+        }
+        
+        /// <summary>
+        /// <para>Display Name: Primary Contact</para>
+        /// </summary>
+        [AttributeLogicalName("dg_primarycontact")]
+        public EntityReference dg_PrimaryContact {
+            get {
+                return GetAttributeValue<EntityReference>("dg_primarycontact");
+            }
+            set {
+                SetAttributeValue("dg_primarycontact", value);
+            }
+        }
+        
+        /// <summary>
         /// <para>Display Name: Skolebus</para>
         /// </summary>
         [AttributeLogicalName("dg_skolebus")]
@@ -80341,6 +81452,17 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             }
             set {
                 SetRelatedEntity("dg_bus_parental", null, value);
+            }
+        }
+        
+        [AttributeLogicalName("dg_primarycontact")]
+        [RelationshipSchemaName("dg_child_PrimaryContact_Contact")]
+        public Contact dg_child_PrimaryContact_Contact {
+            get {
+                return GetRelatedEntity<Contact>("dg_child_PrimaryContact_Contact", null);
+            }
+            set {
+                SetRelatedEntity("dg_child_PrimaryContact_Contact", null, value);
             }
         }
         
@@ -88723,19 +89845,19 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         Letter = 3,
         
         [EnumMember()]
-        LetterviaMailMerge = 4,
+        LetterviaMailMergedeprecated = 4,
         
         [EnumMember()]
         Fax = 5,
         
         [EnumMember()]
-        FaxviaMailMerge = 6,
+        FaxviaMailMergedeprecated = 6,
         
         [EnumMember()]
         Email = 7,
         
         [EnumMember()]
-        EmailviaMailMerge = 8,
+        EmailviaMailMergedeprecated = 8,
         
         [EnumMember()]
         Other = 9,
@@ -89314,6 +90436,15 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         SequenceTarget = 10375,
+        
+        [EnumMember()]
+        CustomerVoicealert = 10416,
+        
+        [EnumMember()]
+        AssignmentRule = 10537,
+        
+        [EnumMember()]
+        AssignmentMap = 10540,
     }
     
     [DataContract()]
@@ -89672,6 +90803,15 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         SequenceTarget = 10375,
+        
+        [EnumMember()]
+        CustomerVoicealert = 10416,
+        
+        [EnumMember()]
+        AssignmentRule = 10537,
+        
+        [EnumMember()]
+        AssignmentMap = 10540,
     }
     
     [DataContract()]
@@ -90300,6 +91440,12 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         GmailOAuth = 5,
+        
+        [EnumMember()]
+        ExchangeHybridModernAuthHMA = 6,
+        
+        [EnumMember()]
+        AzureActiveDirectoryOAuth = 7,
     }
     
     [DataContract()]
@@ -90355,6 +91501,12 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         GmailOAuth = 5,
+        
+        [EnumMember()]
+        ExchangeHybridModernAuthHMA = 6,
+        
+        [EnumMember()]
+        AzureActiveDirectoryOAuth = 7,
     }
     
     [DataContract()]
@@ -91216,6 +92368,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     }
     
     [DataContract()]
+    public enum Lead_msdyn_salesassignmentresult {
+        
+        [EnumMember()]
+        Succeeded = 0,
+        
+        [EnumMember()]
+        Failed = 1,
+    }
+    
+    [DataContract()]
     public enum LetterState {
         
         [EnumMember()]
@@ -91928,10 +93090,10 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     public enum Organization_SchedulingEngine {
         
         [EnumMember()]
-        LegacySchedulingEngine = 0,
+        DefaultSchedulingEngine = 0,
         
         [EnumMember()]
-        UniversalResourceScheduling = 192350000,
+        DeprecatedUniversalResourceScheduling = 192350000,
     }
     
     [DataContract()]
@@ -92126,6 +93288,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         KnowledgeArticleTemplate = 10309,
+        
+        [EnumMember()]
+        CustomerVoicealert = 10416,
     }
     
     [DataContract()]
@@ -92563,6 +93728,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         FileAttachment = 55,
+        
+        [EnumMember()]
+        SystemUserAuthorizationChangeTracker = 60,
         
         [EnumMember()]
         VirtualEntityDataProvider = 78,
@@ -93573,6 +94741,12 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         RelationshipAttribute = 9814,
         
         [EnumMember()]
+        EntityIndex = 9815,
+        
+        [EnumMember()]
+        IndexAttribute = 9816,
+        
+        [EnumMember()]
         MobileOfflineProfile = 9866,
         
         [EnumMember()]
@@ -94467,13 +95641,13 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         IoTAlerttoCaseProcess = 10356,
         
         [EnumMember()]
-        DataAnalyticsAdminSettings = 10358,
+        DataAnalyticsAdminSettingsDeprecated = 10358,
         
         [EnumMember()]
         DataAnalyticsReport = 10359,
         
         [EnumMember()]
-        DynamicsCustomerServiceAnalytics = 10360,
+        DeprecatedDynamicsCustomerServiceAnalytics = 10360,
         
         [EnumMember()]
         ServiceConfiguration = 10361,
@@ -94621,6 +95795,465 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Chatbotsubcomponent = 10412,
+        
+        [EnumMember()]
+        CustomerVoicealert = 10416,
+        
+        [EnumMember()]
+        CustomerVoicealertrule = 10417,
+        
+        [EnumMember()]
+        Worklistusersetting = 10418,
+        
+        [EnumMember()]
+        DataLakeFolder = 10419,
+        
+        [EnumMember()]
+        DataLakeFolderPermission = 10420,
+        
+        [EnumMember()]
+        ProvisionLanguageForUser = 10421,
+        
+        [EnumMember()]
+        Catalog = 10423,
+        
+        [EnumMember()]
+        CatalogAssignment = 10424,
+        
+        [EnumMember()]
+        InternalCatalogAssignment = 10425,
+        
+        [EnumMember()]
+        CustomAPI = 10426,
+        
+        [EnumMember()]
+        CustomAPIRequestParameter = 10427,
+        
+        [EnumMember()]
+        CustomAPIResponseProperty = 10428,
+        
+        [EnumMember()]
+        Activitymonitor = 10429,
+        
+        [EnumMember()]
+        AvailableTimesDataSource = 10430,
+        
+        [EnumMember()]
+        resourcegroupdatasource = 10431,
+        
+        [EnumMember()]
+        AvailableTimes = 10432,
+        
+        [EnumMember()]
+        VirtualResourceGroupResource = 10433,
+        
+        [EnumMember()]
+        Migrationtracker = 10434,
+        
+        [EnumMember()]
+        AssetCategoryTemplateAssociation = 10435,
+        
+        [EnumMember()]
+        AssetTemplateAssociation = 10436,
+        
+        [EnumMember()]
+        CustomerAssetAttachment = 10437,
+        
+        [EnumMember()]
+        FunctionalLocation = 10438,
+        
+        [EnumMember()]
+        PropertyDefinition = 10439,
+        
+        [EnumMember()]
+        PropertyAssetAssociation = 10440,
+        
+        [EnumMember()]
+        PropertyLog = 10441,
+        
+        [EnumMember()]
+        PropertyTemplateAssociation = 10442,
+        
+        [EnumMember()]
+        TemplateForProperties = 10443,
+        
+        [EnumMember()]
+        Appprofile = 10445,
+        
+        [EnumMember()]
+        ApplicationExtension = 10446,
+        
+        [EnumMember()]
+        ApplicationTabTemplate = 10447,
+        
+        [EnumMember()]
+        NotificationField = 10448,
+        
+        [EnumMember()]
+        NotificationTemplate = 10449,
+        
+        [EnumMember()]
+        SessionTemplate = 10450,
+        
+        [EnumMember()]
+        TemplateParameter = 10451,
+        
+        [EnumMember()]
+        ChannelIntegrationFrameworkv20Provider = 10457,
+        
+        [EnumMember()]
+        Productivitypaneconfiguration = 10459,
+        
+        [EnumMember()]
+        Panetabconfiguration = 10460,
+        
+        [EnumMember()]
+        Panetoolconfiguration = 10461,
+        
+        [EnumMember()]
+        Agentscript = 10463,
+        
+        [EnumMember()]
+        Agentscriptstep = 10464,
+        
+        [EnumMember()]
+        ActionInputParameter = 10466,
+        
+        [EnumMember()]
+        ActionOutputParameter = 10467,
+        
+        [EnumMember()]
+        MacroActionTemplate = 10468,
+        
+        [EnumMember()]
+        MacroSolutionConfiguration = 10469,
+        
+        [EnumMember()]
+        MacroConnector = 10470,
+        
+        [EnumMember()]
+        MacroRunHistory = 10471,
+        
+        [EnumMember()]
+        Parameterdefinition = 10472,
+        
+        [EnumMember()]
+        AdaptiveCardConfiguration = 10475,
+        
+        [EnumMember()]
+        Smartassistconfiguration = 10476,
+        
+        [EnumMember()]
+        CaseEnrichment = 10478,
+        
+        [EnumMember()]
+        CaseSuggestion = 10479,
+        
+        [EnumMember()]
+        CaseSuggestionRequestPayload = 10480,
+        
+        [EnumMember()]
+        CaseSuggestionsDataSouce = 10481,
+        
+        [EnumMember()]
+        KBEnrichment = 10482,
+        
+        [EnumMember()]
+        KnowledgeArticleSuggestion = 10483,
+        
+        [EnumMember()]
+        KnowledgeArticleSuggestionDataSource = 10484,
+        
+        [EnumMember()]
+        SuggestionInteraction = 10485,
+        
+        [EnumMember()]
+        Suggestionrequestpayload = 10486,
+        
+        [EnumMember()]
+        SuggestionsModelSummary = 10487,
+        
+        [EnumMember()]
+        SuggestionsSetting = 10488,
+        
+        [EnumMember()]
+        Insights = 10489,
+        
+        [EnumMember()]
+        CaseTopic = 10490,
+        
+        [EnumMember()]
+        CaseTopicSetting = 10491,
+        
+        [EnumMember()]
+        CaseTopicSummary = 10492,
+        
+        [EnumMember()]
+        CasetopicIncidentmapping = 10493,
+        
+        [EnumMember()]
+        CustomerServicehistoricalanalytics = 10494,
+        
+        [EnumMember()]
+        Knowledgesearchanalytics = 10495,
+        
+        [EnumMember()]
+        KnowledgeFederatedArticle = 10496,
+        
+        [EnumMember()]
+        KnowledgeFederatedArticleIncident = 10497,
+        
+        [EnumMember()]
+        Searchprovider = 10498,
+        
+        [EnumMember()]
+        InspectionTemplate = 10499,
+        
+        [EnumMember()]
+        InspectionAttachment = 10500,
+        
+        [EnumMember()]
+        InspectionTemplateVersion = 10501,
+        
+        [EnumMember()]
+        InspectionResponse = 10502,
+        
+        [EnumMember()]
+        AssetSuggestion = 10503,
+        
+        [EnumMember()]
+        ProblematicAssetFeedback = 10504,
+        
+        [EnumMember()]
+        GeolocationSettings = 10505,
+        
+        [EnumMember()]
+        GeolocationTracking = 10506,
+        
+        [EnumMember()]
+        AssetSuggestionsSetting = 10507,
+        
+        [EnumMember()]
+        Fieldservicehistoricalanalytics = 10508,
+        
+        [EnumMember()]
+        Resourcedurationpreview = 10509,
+        
+        [EnumMember()]
+        Predictivedurationpreview = 10510,
+        
+        [EnumMember()]
+        PredictiveWorkHourDurationSetting = 10511,
+        
+        [EnumMember()]
+        SearchTelemetry = 10512,
+        
+        [EnumMember()]
+        RevokeInheritedAccessRecordsTracker = 10515,
+        
+        [EnumMember()]
+        CustomerVoicesurveyreminder = 10524,
+        
+        [EnumMember()]
+        OrganizationSetting = 10526,
+        
+        [EnumMember()]
+        OrganizationDataSyncSubscription = 10527,
+        
+        [EnumMember()]
+        OrganizationDataSyncSubscriptionEntity = 10528,
+        
+        [EnumMember()]
+        ModelDrivenAppUserSetting = 10529,
+        
+        [EnumMember()]
+        TeamMobileOfflineProfileMembership = 10530,
+        
+        [EnumMember()]
+        UserMobileOfflineProfileMembership = 10531,
+        
+        [EnumMember()]
+        TeamsDialerAdminsettings = 10532,
+        
+        [EnumMember()]
+        KeyVaultReference = 10533,
+        
+        [EnumMember()]
+        ManagedIdentity = 10534,
+        
+        [EnumMember()]
+        CustomerVoicefileresponse = 10536,
+        
+        [EnumMember()]
+        AssignmentRule = 10537,
+        
+        [EnumMember()]
+        Attribute_2 = 10538,
+        
+        [EnumMember()]
+        AttributeValue = 10539,
+        
+        [EnumMember()]
+        AssignmentMap = 10540,
+        
+        [EnumMember()]
+        SalesAssignmentSetting = 10541,
+        
+        [EnumMember()]
+        ExtendedUserSetting = 10543,
+        
+        [EnumMember()]
+        Segment = 10544,
+        
+        [EnumMember()]
+        ActivityFileAttachment = 10547,
+        
+        [EnumMember()]
+        FlowMachine = 10548,
+        
+        [EnumMember()]
+        FlowMachineGroup = 10549,
+        
+        [EnumMember()]
+        Inspection = 10550,
+        
+        [EnumMember()]
+        IncidentTypeResolution = 10557,
+        
+        [EnumMember()]
+        Resolution = 10558,
+        
+        [EnumMember()]
+        WorkOrderResolution = 10561,
+        
+        [EnumMember()]
+        BookableResourceBookingQuickNote = 10562,
+        
+        [EnumMember()]
+        Knowledgepersonalization = 10563,
+        
+        [EnumMember()]
+        Knowledgearticlelanguagesetting = 10564,
+        
+        [EnumMember()]
+        Knowledgesearchpersonalfilterconfig = 10565,
+        
+        [EnumMember()]
+        Knowledgesearchfilter = 10566,
+        
+        [EnumMember()]
+        UnifiedRoutingSetupTracker = 10567,
+        
+        [EnumMember()]
+        GDPRData = 10568,
+        
+        [EnumMember()]
+        SegmentsUtil = 10569,
+        
+        [EnumMember()]
+        Tour = 10570,
+        
+        [EnumMember()]
+        VirtualEntityMetadata = 10571,
+        
+        [EnumMember()]
+        MarketingFormDisplayAttributes = 10607,
+        
+        [EnumMember()]
+        FeatureControlSetting = 10608,
+        
+        [EnumMember()]
+        PluginPackage = 10609,
+        
+        [EnumMember()]
+        SolutionComponentBatchConfiguration = 10610,
+        
+        [EnumMember()]
+        ServicePlanMapping = 10611,
+        
+        [EnumMember()]
+        PrincipalEntityBusinessUnitMap = 10612,
+        
+        [EnumMember()]
+        AppAction = 10613,
+        
+        [EnumMember()]
+        Recording = 10614,
+        
+        [EnumMember()]
+        PMInferredTask = 10615,
+        
+        [EnumMember()]
+        PMRecording = 10616,
+        
+        [EnumMember()]
+        Notification_2 = 10617,
+        
+        [EnumMember()]
+        dealmanageraccess = 10618,
+        
+        [EnumMember()]
+        Dealmanagersettings = 10619,
+        
+        [EnumMember()]
+        MicrosoftTeamschatassociationentity = 10620,
+        
+        [EnumMember()]
+        MicrosoftTeamschatsuggestion = 10621,
+        
+        [EnumMember()]
+        ConversationDataDeprecated = 10622,
+        
+        [EnumMember()]
+        KPIEventData = 10623,
+        
+        [EnumMember()]
+        KPIEventDefinition = 10624,
+        
+        [EnumMember()]
+        SessionDataDeprecated = 10625,
+        
+        [EnumMember()]
+        SessionParticipantDataDeprecated = 10626,
+        
+        [EnumMember()]
+        KnowledgeArticleAttachment = 10627,
+        
+        [EnumMember()]
+        SolutionComponentCountSummary = 10629,
+        
+        [EnumMember()]
+        SolutionComponentCountDataSource = 10630,
+        
+        [EnumMember()]
+        Comment_2 = 10631,
+        
+        [EnumMember()]
+        Entitylinkchatconfiguration = 10637,
+        
+        [EnumMember()]
+        DataflowRefreshHistory = 10688,
+        
+        [EnumMember()]
+        EntityRefreshHistory = 10689,
+        
+        [EnumMember()]
+        KeywordsDescriptionSuggestionSetting = 10690,
+        
+        [EnumMember()]
+        TeamsContactSuggestionbyAI = 10701,
+        
+        [EnumMember()]
+        Contactsuggestionrule = 10702,
+        
+        [EnumMember()]
+        Contactsuggestionruleset = 10703,
+        
+        [EnumMember()]
+        SequenceStat = 10704,
+        
+        [EnumMember()]
+        Salesroutingrun = 10705,
     }
     
     [DataContract()]
@@ -95082,6 +96715,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     }
     
     [DataContract()]
+    public enum SystemUser_DeletedState {
+        
+        [EnumMember()]
+        Notdeleted = 0,
+        
+        [EnumMember()]
+        Softdeleted = 1,
+    }
+    
+    [DataContract()]
     public enum SystemUser_EmailRouterAccessApproval {
         
         [EnumMember()]
@@ -95292,6 +96935,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Activated = 1,
+        
+        [EnumMember()]
+        Suspended = 2,
     }
     
     [DataContract()]
@@ -95326,7 +96972,10 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         ModernFlow = 5,
         
         [EnumMember()]
-        Reserved = 6,
+        DesktopFlow = 6,
+        
+        [EnumMember()]
+        WebClientAPIFlow = 9000,
     }
     
     [DataContract()]
@@ -95373,6 +97022,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Activated = 2,
+        
+        [EnumMember()]
+        CompanyDLPViolation = 3,
     }
     
     [DataContract()]
@@ -95392,13 +97044,16 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     public enum Workflow_UIFlowType {
         
         [EnumMember()]
-        Desktop = 0,
+        WindowsrecorderV1 = 0,
         
         [EnumMember()]
         SeleniumIDE = 1,
         
         [EnumMember()]
-        PowerShell = 2,
+        PowerAutomateDesktop = 2,
+        
+        [EnumMember()]
+        Recording = 101,
     }
     
     [DataContract()]
@@ -95878,6 +97533,9 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         BookingAlert = 10164,
+        
+        [EnumMember()]
+        CustomerVoicealert = 10416,
     }
     
     [DataContract()]
@@ -95910,13 +97568,23 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     public enum msdyn_crewstrategy {
         
         [EnumMember()]
-        CascadeandAcceptCascadeCompletely = 192350000,
+        CascadeandAcceptCascadeCompletelyNotRecommended = 192350000,
         
         [EnumMember()]
         CrewLeaderManagement = 192350001,
         
         [EnumMember()]
         CrewMemberSelfManagement = 192350002,
+    }
+    
+    [DataContract()]
+    public enum msdyn_enableappointmentsoption {
+        
+        [EnumMember()]
+        No = 192350000,
+        
+        [EnumMember()]
+        Yes = 192350001,
     }
     
     [DataContract()]
@@ -95972,6 +97640,28 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
     }
     
     [DataContract()]
+    public enum msdyn_quicknote_type {
+        
+        [EnumMember()]
+        none = 100000000,
+        
+        [EnumMember()]
+        text = 100000001,
+        
+        [EnumMember()]
+        photo = 100000002,
+        
+        [EnumMember()]
+        video = 100000003,
+        
+        [EnumMember()]
+        audio = 100000004,
+        
+        [EnumMember()]
+        file = 100000005,
+    }
+    
+    [DataContract()]
     public enum msdyn_resourceschedulesource {
         
         [EnumMember()]
@@ -95991,6 +97681,22 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         SystemAgreementSchedule = 690970005,
+    }
+    
+    [DataContract()]
+    public enum msdyn_traveltimetype {
+        
+        [EnumMember()]
+        BingMapswithouthistoricaltraffic = 192350000,
+        
+        [EnumMember()]
+        BingMapswithhistoricaltraffic = 192350001,
+        
+        [EnumMember()]
+        CustomMapProvider = 192350002,
+        
+        [EnumMember()]
+        Approximate = 192350003,
     }
     
     [DataContract()]
@@ -96888,6 +98594,22 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Postoperation = 40,
+    }
+    
+    [DataContract()]
+    public enum dg_dokumenttyper {
+        
+        [EnumMember()]
+        Doc = 554190000,
+        
+        [EnumMember()]
+        Docx = 554190001,
+        
+        [EnumMember()]
+        PDF = 554190002,
+        
+        [EnumMember()]
+        txt = 554190003,
     }
     
     [DataContract()]

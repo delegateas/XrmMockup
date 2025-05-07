@@ -1,5 +1,4 @@
-﻿#if !(XRM_MOCKUP_TEST_2011) && !(XRM_MOCKUP_TEST_2013) && !(XRM_MOCKUP_TEST_2015) && !(XRM_MOCKUP_TEST_2016)
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
 using System.IO;
 
@@ -200,4 +199,3 @@ namespace DG.XrmMockupTest
         }
     }
 }
-#endif

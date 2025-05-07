@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -100,12 +98,8 @@ namespace DG.Tools.XrmMockup
             {
                 plugin = Activator.CreateInstance(basePluginType);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Source == "mscorlib" || ex.Source == "System.Private.CoreLib")
             {
-                if (ex.Source != "mscorlib")
-                {
-                    throw;
-                }
             }
 
             if (plugin == null)
@@ -255,53 +249,120 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        /// <summary>
-        /// Trigger all plugin steps which match the given parameters.
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="stage"></param>
-        /// <param name="entity"></param>
-        /// <param name="preImage"></param>
-        /// <param name="postImage"></param>
-        /// <param name="pluginContext"></param>
-        /// <param name="core"></param>
-        public void Trigger(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        public void TriggerSync(EventOperation operation, ExecutionStage stage,
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
         {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-                registeredPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-                temporaryPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            TriggerSyncInternal(operation, stage, entity, preImage, postImage, pluginContext, core, executionOrderFilter);
+
+            // Check if this is a Single -> Multiple request
+            if (Mappings.RequestToMultipleRequest.TryGetValue(operation, out var multipleOperation))
+            {
+                var multiplePluginContext = pluginContext.Clone();
+                var entityCollection = new EntityCollection()
+                {
+                    EntityName = pluginContext.PrimaryEntityName,
+                    Entities = { (Entity)entity },
+                };
+
+                // Try to get the request type for the multiple
+                var multipleRequestType = Mappings.EventOperationToRequest(multipleOperation)
+                    ?? throw new MockupException($"Could not find request type for operation {multipleOperation}");
+
+                // Now try to get the image property for the multiple request
+                if (!Mappings.EntityImageProperty.TryGetValue(multipleRequestType, out var imageProperty))
+                {
+                    throw new MockupException($"Could not find image property for operation {multipleOperation} using request type {multipleRequestType}");
+                }
+
+                multiplePluginContext.InputParameters[imageProperty] = entityCollection;
+                multiplePluginContext.MessageName = Activator.CreateInstance(multipleRequestType) is OrganizationRequest request
+                    ? request.RequestName
+                    : throw new MockupException($"Could not create request for operation {operation}");
+
+                TriggerSyncInternal(multipleOperation, stage, entityCollection, preImage, postImage, multiplePluginContext, core, executionOrderFilter);
+            }
+
+            // Check if this is a Multiple -> Single request
+            if (Mappings.SingleOperationFromMultiple(operation) is EventOperation singleOperation)
+            {
+                // Try to get the request type for the multiple
+                var multipleRequestType = Mappings.EventOperationToRequest(operation)
+                    ?? throw new MockupException($"Could not find request type for operation {operation}");
+
+                // Now try to get the image property for the multiple request
+                if (!Mappings.EntityImageProperty.TryGetValue(multipleRequestType, out var multipleImageProperty))
+                {
+                    throw new MockupException($"Could not find image property for operation {operation} using request type {multipleRequestType}");
+                }
+
+                // Try to get the request type for the single
+                var singleRequestType = Mappings.EventOperationToRequest(singleOperation)
+                    ?? throw new MockupException($"Could not find request type for operation {singleOperation}");
+
+                // Now try to get the image property for the single request
+                if (!Mappings.EntityImageProperty.TryGetValue(singleRequestType, out var singleImageProperty))
+                {
+                    throw new MockupException($"Could not find image property for operation {singleOperation} using request type {singleRequestType}");
+                }
+
+                // Get the message for the single message
+                var singleMessageName = Activator.CreateInstance(singleRequestType) is OrganizationRequest request
+                    ? request.RequestName
+                    : throw new MockupException($"Could not create request for operation {operation}");
+
+                var targets = pluginContext.InputParameters[multipleImageProperty] as EntityCollection;
+
+                foreach (var targetEntity in targets.Entities)
+                {
+                    var singlePluginContext = pluginContext.Clone();
+                    singlePluginContext.InputParameters[singleImageProperty] = targetEntity;
+                    singlePluginContext.MessageName = singleMessageName;
+                    
+                    TriggerSyncInternal(singleOperation, stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
+                }
+            }
         }
 
-
-        //Post operation - Trigger Sync and Async in that order
-        public void TriggerSync(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        private void TriggerSyncInternal(EventOperation operation, ExecutionStage stage,
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
         {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-                registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-                temporaryPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            var operationName = operation.ToString().ToLower();
+            if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operationName, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
+                stagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
+                    .Where(executionOrderFilter)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .ToList()
+                    .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+
+            if (temporaryPlugins.TryGetValue(operationName, out var tempOperationPlugins) && tempOperationPlugins.TryGetValue(stage, out var tempStagePlugins))
+                tempStagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Synchronous)
+                    .Where(executionOrderFilter)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .ToList()
+                    .ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
-        public void StageAsync(string operation, ExecutionStage stage,
+        public void StageAsync(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            if (!disableRegisteredPlugins && registeredPlugins.ContainsKey(operation) && registeredPlugins[operation].ContainsKey(stage))
-            {
-                var asyncExecutors = registeredPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core));
-                asyncExecutors.ToList().ForEach(x => pendingAsyncPlugins.Enqueue(x));
-            }
-            if (temporaryPlugins.ContainsKey(operation) && temporaryPlugins[operation].ContainsKey(stage))
-            {
-                var asyncExecutors = temporaryPlugins[operation][stage].Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
-                    .OrderBy(p => p.GetExecutionOrder()).ToList().Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core));
-                asyncExecutors.ToList().ForEach(x => pendingAsyncPlugins.Enqueue(x));
-            }
+            var operationName = operation.ToString().ToLower();
+            if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operationName, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
+                stagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core))
+                    .ToList()
+                    .ForEach(pendingAsyncPlugins.Enqueue);
+
+            if (temporaryPlugins.TryGetValue(operationName, out var tempOperationPlugins) && tempOperationPlugins.TryGetValue(stage, out var tempStagePlugins))
+                tempStagePlugins
+                    .Where(p => p.GetExecutionMode() == ExecutionMode.Asynchronous)
+                    .OrderBy(p => p.GetExecutionOrder())
+                    .Select(p => p.ToPluginExecution(entity, preImage, postImage, pluginContext, core))
+                    .ToList()
+                    .ForEach(pendingAsyncPlugins.Enqueue);
         }
 
         public void TriggerAsyncWaitingJobs()
@@ -317,13 +378,22 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        public void TriggerSystem(string operation, ExecutionStage stage,
+        public void TriggerSystem(EventOperation operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
         {
-            if (!this.registeredSystemPlugins.ContainsKey(operation)) return;
-            if (!this.registeredSystemPlugins[operation].ContainsKey(stage)) return;
+            var operationName = operation.ToString().ToLower();
 
-            registeredSystemPlugins[operation][stage].ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+            if (!registeredSystemPlugins.TryGetValue(operationName, out var stagePlugins))
+            {
+                return;
+            }
+
+            if (!stagePlugins.TryGetValue(stage, out var plugins))
+            {
+                return;
+            }
+
+            plugins.ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
         }
 
         internal class PluginTrigger : IComparable<PluginTrigger>
@@ -382,7 +452,7 @@ namespace DG.Tools.XrmMockup
                 {
                     // Create the plugin context
                     var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
-                    return new PluginExecutionProvider(pluginExecute, new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService()));
+                    return new PluginExecutionProvider(pluginExecute, new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory));
                 }
 
                 return null;
@@ -393,16 +463,27 @@ namespace DG.Tools.XrmMockup
                 // Check if it is supposed to execute. Returns preemptively, if it should not.
                 var entity = entityObject as Entity;
                 var entityRef = entityObject as EntityReference;
+                var entityCollection = entityObject as EntityCollection;
 
-                var guid = (entity != null) ? entity.Id : entityRef.Id;
-                var logicalName = (entity != null) ? entity.LogicalName : entityRef.LogicalName;
+                var guid = 
+                    entity != null
+                    ? entity.Id : 
+                    entityRef != null 
+                    ? entityRef.Id
+                    : Guid.Empty;
+                var logicalName = 
+                    entity != null 
+                    ? entity.LogicalName : 
+                    entityRef != null 
+                    ? entityRef.LogicalName
+                    : entityCollection.EntityName;
 
                 if (VerifyPluginTrigger(entity, logicalName, guid, preImage, postImage, pluginContext))
                 {
                     var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
 
                     //Create Serviceprovider, and execute plugin
-                    MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, new TracingService());
+                    MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory);
                     try
                     {
                         pluginExecute(provider);

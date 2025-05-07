@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
-using System.Globalization;
-using Microsoft.Xrm.Sdk.Query;
+﻿using DG.Tools.XrmMockup;
 using DG.XrmContext;
-using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Xunit;
 
 namespace DG.XrmMockupTest
@@ -124,8 +124,6 @@ namespace DG.XrmMockupTest
             }
         }
 
-        // ignored until entityname can be handled correctly for 2011
-#if !(XRM_MOCKUP_TEST_2011)
         [Fact]
         public void TestFilterOnJoin()
         {
@@ -142,7 +140,7 @@ namespace DG.XrmMockupTest
                 Assert.Equal(2, result.Count());
             }
         }
-#endif
+
         [Fact]
         public void TestAllColumns()
         {
@@ -480,6 +478,47 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestOrderByLambdaSyntax()
+        {
+            orgAdminService.Update(new Account(account1.Id) { NumberOfEmployees = 10 });
+            orgAdminService.Update(new Account(account2.Id) { NumberOfEmployees = 20 });
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query = context.AccountSet
+                        .Where(acc => acc.Address1_City == "Virum")
+                        .OrderBy(acc => acc.NumberOfEmployees)
+                        .Select(acc => new { acc.AccountId });
+
+                var result = query.ToArray();
+                Assert.Equal(2, result.Length);
+                Assert.Equal(account1.Id, result[0].AccountId);
+                Assert.Equal(account2.Id, result[1].AccountId);
+            }
+        }
+
+        [Fact]
+        public void TestOrderByDescendingLambdaSyntax()
+        {
+            orgAdminService.Update(new Account(account1.Id) { NumberOfEmployees = 10 });
+            orgAdminService.Update(new Account(account2.Id) { NumberOfEmployees = 20 });
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query = context.AccountSet
+                        .Where(acc => acc.Address1_City == "Virum")
+                        .OrderByDescending(acc => acc.NumberOfEmployees)
+                        .Select(acc => new { acc.AccountId });
+
+                var result = query.ToArray();
+                Assert.Equal(2, result.Length);
+                Assert.Equal(account2.Id, result[0].AccountId);
+                Assert.Equal(account1.Id, result[1].AccountId);
+            }
+        }
+
+
+        [Fact]
         public void RetrieveMultipleNotEqualsNullCheck()
         {
             using (var context = new Xrm(orgAdminUIService))
@@ -681,8 +720,6 @@ namespace DG.XrmMockupTest
             Assert.Equal(leadCount, res.Count());
         }
 
-#if !(XRM_MOCKUP_TEST_2011)
-
         [Fact]
         public void TestQueryExpressionLinkEntity()
         {
@@ -773,7 +810,43 @@ namespace DG.XrmMockupTest
             Assert.Equal(2, res.Count());
         }
 
-#endif
+        [Fact]
+        public void RetrieveMultipleWithLinkEntitiesReturnDistinctResults()
+        {
+            var lead = new Lead()
+            {
+                Subject = "Lead",
+                ParentContactId = contact1.ToEntityReference()
+            };
+            orgAdminService.Create(lead);
+
+            var linkEntity = new LinkEntity
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet(false),
+                EntityAlias = "contact",
+                JoinOperator = JoinOperator.LeftOuter,
+            };
+
+            var filter = new FilterExpression(LogicalOperator.And);
+            filter.AddCondition(new ConditionExpression("lastname", ConditionOperator.Equal, contact1.LastName));
+
+            var query = new QueryExpression("contact")
+            {
+                Distinct = true,
+                ColumnSet = new ColumnSet(),
+                LinkEntities = { linkEntity }
+            };
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+
+            var distinctIdCount = res.Select(x => x.Id).Distinct().Count();
+
+            Assert.Equal(distinctIdCount, res.Count);
+        }
 
         [Fact]
         public void RetrieveMultipleWithQueryByAttribute()
@@ -920,6 +993,117 @@ namespace DG.XrmMockupTest
             var res = orgAdminService.RetrieveMultiple(q);
 
             Assert.Equal("MATT", res.Entities.Single().GetAttributeValue<string>("firstname"));
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFailWithNonExistentAttribute()
+        {
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("x")
+            };
+
+            Assert.Throws<AggregateException>(() => orgAdminService.RetrieveMultiple(query));
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleTopCount()
+        {
+            var query = new QueryExpression("account")
+            {
+                ColumnSet = new ColumnSet("accountid"),
+                TopCount = 1
+            };
+
+            var res = orgAdminService.RetrieveMultiple(query);
+
+            Assert.Single(res.Entities);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleTake()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                Assert.Single(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Take(1)
+                    .ToList());
+            }
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleSkip()
+        {
+            using (var context = new Xrm(orgAdminService))
+            {
+                Assert.Empty(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Skip(4)
+                    .ToList());
+
+                Assert.Single(context.AccountSet
+                    .Select(a => a.AccountId)
+                    .Skip(3)
+                    .ToList());
+            }
+        }
+
+        [Fact]
+        public void TestColumnComparison()
+        {
+            var sameName = new Contact()
+            {
+                FirstName = "Some strange name",
+                LastName = "Some strange name",
+            };
+            sameName.Id = orgAdminService.Create(sameName);
+
+            var retrieved = Contact.Retrieve(orgAdminService, sameName.Id, x => x.FirstName, x => x.LastName);
+            Assert.Equal(sameName.FirstName, retrieved.FirstName);
+
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = new QueryExpression(Contact.EntityLogicalName)
+                {
+                    Criteria = new FilterExpression
+                    {
+                        Conditions =
+                        {
+                            new ConditionExpression(
+                                Contact.EntityLogicalName,
+                                Contact.GetColumnName<Contact>(x => x.FirstName),
+                                ConditionOperator.Equal,
+                                true,
+                                Contact.GetColumnName<Contact>(x => x.LastName)),
+                        }
+                    }
+                };
+
+                var res = orgAdminService.RetrieveMultiple(query);
+                var entities = res.Entities.Select(x => x.ToEntity<Contact>()).ToList();
+                Assert.Single(entities);
+                Assert.Equal(sameName.Id, entities[0].Id);
+            }
+        }
+
+        [Fact]
+        public void TestFormulaFieldEvaluated()
+        {
+            var adminUserId = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c");
+            var animalId = orgAdminService.Create(new dg_animal
+            {
+                dg_name = "Fluffy",
+                OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId)
+            });
+
+            using (var xrm = new Xrm(orgAdminService))
+            {
+                var userName = xrm.SystemUserSet.Where(u => u.SystemUserId == adminUserId).Select(u => u.FirstName).First();
+                var animal = xrm.dg_animalSet.Where(a => a.dg_animalId == animalId).Select(a => new { a.dg_name, a.dg_AnimalOwner }).First();
+
+                Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿#if !(XRM_MOCKUP_TEST_2011 || XRM_MOCKUP_TEST_2013)
-using System;
+﻿using System;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
@@ -45,6 +44,7 @@ namespace DG.XrmMockupTest
             {
                 var retrieved = orgAdminUIService.Retrieve(dg_bus.EntityLogicalName, bus.Id, new ColumnSet(true)) as dg_bus;
                 Assert.Equal(bus.dg_Ticketprice * 20, retrieved.dg_Udregnet);
+                Assert.Equal(bus.dg_EtHelTal * 20, retrieved.dg_WholeNumberUdregnetMoney);
                 Assert.Equal(bus.dg_EtHelTal - 2, retrieved.dg_WholenumberUdregnet);
                 Assert.Equal(bus.dg_Udkoerselsdato.Value.AddDays(2), retrieved.dg_DateTimeUdregnet);
                 Assert.Equal(bus.dg_name.Substring(2), retrieved.dg_TrimLeft);
@@ -228,4 +228,3 @@ namespace DG.XrmMockupTest
         }
     }
 }
-#endif
