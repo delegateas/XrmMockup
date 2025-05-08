@@ -1,3 +1,6 @@
+### 1.15.0-rc4 - 08 May 2025
+* Add: Support for ExecuteTransactionRequest (@magesoe)
+
 ### 1.15.0-rc3 - 25 April 2025
 * Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
 
