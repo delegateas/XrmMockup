@@ -86,6 +86,13 @@ namespace DG.Tools.XrmMockup
         /// If left empty, assemblies are found relative to dll.
         /// </summary>
         public IEnumerable<Assembly> Assemblies { get; set; }
+
+        /// <summary>
+        /// Optional:
+        /// Enable the evaluation of PowerFx fields.
+        /// Default is true.
+        /// </summary>
+        public bool EnablePowerFxFields { get; set; } = true;
     }
 
 
