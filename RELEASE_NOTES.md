@@ -1,3 +1,6 @@
+### 1.15.0-rc5 - 12 May 2025
+* Fix: Made PowerFx evaluation optional, since not all methods in PowerFx is supported by the Eval engine yet.
+
 ### 1.15.0-rc4 - 08 May 2025
 * Add: Support for ExecuteTransactionRequest (@magesoe)
 
