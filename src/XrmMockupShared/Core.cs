@@ -703,7 +703,7 @@ namespace DG.Tools.XrmMockup
             }
 
             // Trigger Extension
-            if (this.settings.MockUpExtensions.Any())
+            if (this.settings.MockUpExtensions.Count != 0)
             {
                 /*
                  * When moving business units, more than eight layers occur...
@@ -1173,6 +1173,9 @@ namespace DG.Tools.XrmMockup
 
         internal async System.Threading.Tasks.Task ExecuteFormulaFields(EntityMetadata entityMetadata, Entity entity)
         {
+            if (!settings.EnablePowerFxFields)
+                return;
+
             var attributes = entityMetadata.Attributes.Where(m => m.SourceType == (int)SourceType.FormulaAttribute);
             foreach (var attr in attributes)
             {
