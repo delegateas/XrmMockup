@@ -74,12 +74,12 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.IsValidAttribute("modifiedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
-                entity["modifiedon"] = preImage["modifiedon"];
+                entity["modifiedon"] = preImage.Contains("modifiedon") ? preImage["modifiedon"] : null;
             }
 
             if (Utility.IsValidAttribute("modifiedby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
-                entity["modifiedby"] = preImage["modifiedby"];
+                entity["modifiedby"] = preImage.Contains("modifiedby") ? preImage["modifiedby"] : null;
             }
         }
 

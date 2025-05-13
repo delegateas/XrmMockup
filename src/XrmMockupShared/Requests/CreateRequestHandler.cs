@@ -77,10 +77,11 @@ namespace DG.Tools.XrmMockup
         internal override void InitializePreOperation(OrganizationRequest orgRequest, EntityReference userRef, Entity preImage)
         {
             var entity = orgRequest["Target"] as Entity;
+            var createdOn = DateTime.UtcNow.Add(core.TimeOffset);
 
             if (Utility.IsValidAttribute("createdon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
-                entity["createdon"] = DateTime.UtcNow.Add(core.TimeOffset);
+                entity["createdon"] = createdOn;
             }
 
             if (Utility.IsValidAttribute("createdby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
@@ -90,12 +91,12 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.IsValidAttribute("modifiedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
-                entity["modifiedon"] = entity["createdon"];
+                entity["modifiedon"] = createdOn;
             }
 
             if (Utility.IsValidAttribute("modifiedby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
-                entity["modifiedby"] = entity["createdby"];
+                entity["modifiedby"] = userRef;
             }
         }
 
