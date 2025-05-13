@@ -42,6 +42,15 @@ namespace XrmMockup365Test
             Assert.Equal("Test: Fluffy eats Meatballs", result);
         }
 
+        [Fact(Skip = "Function not implemented in Eval yet")]
+        public async System.Threading.Tasks.Task CanEvaluateExpressionWithUtcToday()
+        {
+            var evaluator = new FormulaFieldEvaluator(this);
+
+            var result = await evaluator.Evaluate("UTCToday()", new dg_animal());
+            Assert.NotNull(result);
+        }
+
         private TEntity Create<TEntity>(TEntity entity) where TEntity : Entity
         {
             var id = orgAdminService.Create(entity);
