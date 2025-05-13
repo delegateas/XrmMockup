@@ -1,17 +1,11 @@
-### 1.15.0-rc5 - 12 May 2025
-* Fix: Made PowerFx evaluation optional, since not all methods in PowerFx is supported by the Eval engine yet.
-
-### 1.15.0-rc4 - 08 May 2025
+### 1.15.0 - 13 May 2025
 * Add: Support for ExecuteTransactionRequest (@magesoe)
-
-### 1.15.0-rc3 - 25 April 2025
 * Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
-
-### 1.15.0-rc2 - 14 April 2025
-* Fix: Calculations between Money and WholeNumber fields (@mkholt)
-
-### 1.15.0-rc1 - 11 April 2025
 * Add: Support for PowerFx based Formula fields in Retrieve and RetrieveMultiple requests (@mkholt)
+
+* Fix: Set system fields (createdon, modifiedon, createdby, modifiedby) in the pre-operation stage of Create and Update requests (@mlRosenquist)
+* Fix: Made PowerFx evaluation optional, since not all methods in PowerFx is supported by the Eval engine yet. (@magesoe)
+* Fix: Calculations between Money and WholeNumber fields (@mkholt)
 * Fix: Waiting workflows weren't cleared on reset (@magesoe)
 * Fix: AlternateKeys weren't handled correctly in Create and Update (@magesoe)
 
