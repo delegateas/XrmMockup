@@ -1,3 +1,6 @@
+### 1.15.1 - 14 May 2025
+* Update: Update to production release of Microsoft.PowerFx.Dataverse.Eval dependency (@mkholt)
+
 ### 1.15.0 - 13 May 2025
 * Add: Support for ExecuteTransactionRequest (@magesoe)
 * Add: Support for updating RelatedEntities via Create- and UpdateRequests (@Lucki2g)
