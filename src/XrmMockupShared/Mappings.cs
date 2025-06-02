@@ -80,7 +80,9 @@ namespace DG.Tools.XrmMockup {
 
         public static readonly Dictionary<string, ConditionOperator> ConditionalOperator = new Dictionary<string, ConditionOperator>
         {
+            { "begins-with", ConditionOperator.BeginsWith },
             { "between", ConditionOperator.Between },
+            { "ends-with", ConditionOperator.EndsWith },
             { "eq", ConditionOperator.Equal },
             { "eq-businessid", ConditionOperator.EqualBusinessId },
             { "eq-userid", ConditionOperator.EqualUserId },
@@ -107,6 +109,7 @@ namespace DG.Tools.XrmMockup {
             { "last-x-years", ConditionOperator.LastXYears },
             { "last-year", ConditionOperator.LastYear },
             { "le", ConditionOperator.LessEqual },
+            { "like", ConditionOperator.Like },
             { "lt", ConditionOperator.LessThan },
             { "next-seven-days", ConditionOperator.Next7Days },
             { "next-fiscal-period", ConditionOperator.NextFiscalPeriod },
