@@ -40,6 +40,7 @@ namespace DG.Tools.XrmMockup
 
         private void Initialize()
         {
+            this.PrinciplePrivilages = new Dictionary<Guid, Privileges>();
             this.SecurityRoleMapping = new Dictionary<Guid, Guid>();
             this.Shares = new Dictionary<EntityReference, Dictionary<EntityReference, AccessRights>>();
         }
