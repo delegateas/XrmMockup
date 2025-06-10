@@ -445,7 +445,7 @@ namespace DG.Tools.XrmMockup
                         }
                     }
 
-                    var rounded = Math.Round(((Money)attr.Value).Value, precision.Value);
+                    var rounded = Math.Round((new Money((decimal)attr.Value)).Value, precision.Value);
                     if (rounded < (decimal)attributeMetadata.MinValue.Value || rounded > (decimal)attributeMetadata.MaxValue.Value)
                     {
                         throw new FaultException($"'{attr.Key}' was outside the ranges '{attributeMetadata.MinValue}','{attributeMetadata.MaxValue}' with value '{rounded}' ");
