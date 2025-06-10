@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Messages;
-using System.Reflection;
-using Microsoft.Xrm.Sdk.Client;
-using System.Globalization;
-using System.Collections;
-using System.Text.RegularExpressions;
-using System.Collections.ObjectModel;
-using System.Runtime.Serialization;
-using Microsoft.Xrm.Sdk.Metadata;
-using System.ServiceModel;
-using Microsoft.Crm.Sdk.Messages;
-using System.IO;
-using DG.Tools.XrmMockup.Database;
-using System.Xml.Linq;
-using System.Collections.Concurrent;
+﻿using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Serialization;
+using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.IO.Compression;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DG.Tools.XrmMockup
 {
@@ -320,7 +314,7 @@ namespace DG.Tools.XrmMockup
             if (prevValueOptionMeta == null) return;
 
             var transitions = prevValueOptionMeta.TransitionData;
-            if (transitions != null && transitions != "" && 
+            if (transitions != null && transitions != "" &&
                 IsValidStatusTransition(transitions, newValue.Value)) return;
 
             throw new FaultException($"Trying to switch {newEntity.LogicalName} from status {prevValue.Value} to {newValue.Value}");
@@ -571,12 +565,12 @@ namespace DG.Tools.XrmMockup
         public static bool MatchesCriteria(Entity row, FilterExpression criteria)
         {
             if (criteria.FilterOperator == LogicalOperator.And)
-                return criteria.Filters.All(f => 
-                    MatchesCriteria(row, f)) && 
+                return criteria.Filters.All(f =>
+                    MatchesCriteria(row, f)) &&
                     criteria.Conditions.All(c => EvaluateCondition(row, c));
             else
-                return criteria.Filters.Any(f => 
-                    MatchesCriteria(row, f)) || 
+                return criteria.Filters.Any(f =>
+                    MatchesCriteria(row, f)) ||
                     criteria.Conditions.Any(c => EvaluateCondition(row, c));
         }
 
@@ -648,7 +642,8 @@ namespace DG.Tools.XrmMockup
         public static object ConvertTo(object obj, Type targetType)
         {
             if (targetType == null) { return obj; }
-            if(obj is string && !typeof(IConvertible).IsAssignableFrom(targetType)) {
+            if (obj is string && !typeof(IConvertible).IsAssignableFrom(targetType))
+            {
                 var parse = targetType.GetMethod(
                     nameof(Guid.Parse),
                     BindingFlags.Static | BindingFlags.Public,
@@ -679,7 +674,7 @@ namespace DG.Tools.XrmMockup
 
                 case ConditionOperator.Equal:
                     if (attr == null) return false;
-                    
+
                     if (attr.GetType() == typeof(string))
                     {
                         return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
@@ -690,7 +685,7 @@ namespace DG.Tools.XrmMockup
                     }
 
                 case ConditionOperator.NotEqual:
-                    return !Matches(attr,ConditionOperator.Equal, values);
+                    return !Matches(attr, ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
                 case ConditionOperator.GreaterEqual:
@@ -736,13 +731,13 @@ namespace DG.Tools.XrmMockup
                     }
                     var x = int.Parse((string)values.First());
                     return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
-                
+
                 case ConditionOperator.In:
                     return values.Contains(attr);
-                
+
                 case ConditionOperator.NotIn:
                     return !values.Contains(attr);
-                
+
                 case ConditionOperator.BeginsWith:
                     if (attr == null) return false;
 
@@ -754,10 +749,10 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
                     }
-                
+
                 case ConditionOperator.DoesNotBeginWith:
                     return !Matches(attr, ConditionOperator.BeginsWith, values);
-                
+
                 case ConditionOperator.EndsWith:
                     if (attr == null) return false;
 
@@ -769,7 +764,7 @@ namespace DG.Tools.XrmMockup
                     {
                         throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
                     }
-                
+
                 case ConditionOperator.DoesNotEndWith:
                     return !Matches(attr, ConditionOperator.EndsWith, values);
                 default:
@@ -1023,6 +1018,7 @@ namespace DG.Tools.XrmMockup
             pointer["isregularactivity"] = entity.GetAttributeValue<bool>("isregularactivity");
             pointer["isworkflowcreated"] = entity.GetAttributeValue<bool>("isworkflowcreated");
             pointer["prioritycode"] = entity.GetAttributeValue<OptionSetValue>("prioritycode");
+            pointer["regardingobjectid"] = entity.GetAttributeValue<EntityReference>("regardingobjectid");
             pointer["scheduleddurationminutes"] = entity.GetAttributeValue<int>("scheduleddurationminutes");
             pointer["scheduledend"] = entity.GetAttributeValue<DateTime>("scheduledend");
             pointer["scheduledstart"] = entity.GetAttributeValue<DateTime>("scheduledstart");
@@ -1076,7 +1072,7 @@ namespace DG.Tools.XrmMockup
             {
                 var optionset = picklistAttributeMetadata.OptionSet.Options
                     .FirstOrDefault(opt => opt.Value == (value as OptionSetValue).Value);
-                
+
                 return optionset == null
                     ? throw new MockupException($"Value '{(value as OptionSetValue).Value}' for attribute '{attrName}' on entity '{entity.LogicalName}' not found in OptionSet '{picklistAttributeMetadata.OptionSet.Name}'")
                     : optionset.Label.UserLocalizedLabel.Label;
@@ -1130,7 +1126,7 @@ namespace DG.Tools.XrmMockup
 
             var formattedValues = new ConcurrentBag<KeyValuePair<string, string>>();
 
-            Parallel.ForEach(entity.Attributes.Where(x=>x.Value != null), a =>
+            Parallel.ForEach(entity.Attributes.Where(x => x.Value != null), a =>
              {
                  var metadataAtt = validMetadata.Where(m => m.LogicalName == a.Key).FirstOrDefault();
                  var formattedValuePair = new KeyValuePair<string, string>(a.Key, GetFormattedValueLabel(db, metadataAtt, a.Value, entity, a.Key));
