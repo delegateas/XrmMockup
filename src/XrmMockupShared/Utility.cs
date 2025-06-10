@@ -669,11 +669,6 @@ namespace DG.Tools.XrmMockup
 
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
         {
-            if (values.Any() && attr is DateTime && values.First() is string)
-            {
-                values = values.Select(_ => (object)DateTime.Parse($"{_}"));
-            }
-
             switch (op)
             {
                 case ConditionOperator.Null:
@@ -701,6 +696,10 @@ namespace DG.Tools.XrmMockup
                 case ConditionOperator.GreaterEqual:
                 case ConditionOperator.LessEqual:
                 case ConditionOperator.LessThan:
+                    if (values.Any() && attr is DateTime && values.First() is string)
+                    {
+                        values = values.Select(_ => (object)DateTime.Parse($"{_}"));
+                    }
                     return Compare((IComparable)attr, op, (IComparable)values.First());
 
                 case ConditionOperator.NotLike:
