@@ -1,9 +1,3 @@
-### 1.15.2 - 2 June 2025
-* Add: ConditionalOperator "ends-with", "begins-with" and "like" added (@AnyTick)
-* Fix: Initialize PrinciplePrivilages also (@AnyTick)
-* Fix: OrderType without attribute (@AnyTick)
-* Fix: Null or NotNull without attribute (@AnyTick)
-
 ### 1.15.1 - 14 May 2025
 * Update: Update to production release of Microsoft.PowerFx.Dataverse.Eval dependency (@mkholt)
 
