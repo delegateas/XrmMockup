@@ -82,6 +82,7 @@ namespace DG.XrmMockupTest
                         <attribute name='name' />
                         <filter>
                             <condition attribute='estimatedclosedate' operator='next-x-years' value='3' />
+                            <condition attribute='estimatedclosedate' operator='gt' value='2000-01-01 00:00:00' />
                         </filter>
                         <link-entity name='account' from='accountid' to='customerid'>
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
@@ -131,6 +132,7 @@ namespace DG.XrmMockupTest
                         <attribute name='name' />
                         <filter>
                             <condition attribute='estimatedclosedate' operator='next-x-years' value='3' />
+                            <condition attribute='estimatedclosedate' operator='gt' value='2000-01-01 00:00:00' />
                         </filter>
                         <link-entity name='account' from='accountid' to='customerid'>
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
