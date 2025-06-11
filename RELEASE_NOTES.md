@@ -1,3 +1,9 @@
+### 1.15.2 - 11 June 2025
+* Added regardingobjectid to ToActivityPointer (@nedergaardcloud)
+* Add: Implementation of "ends-width", "begins-with", and "like" filtering in FetchXML (@AnyTick)
+* Fix: Ordering defaults to Ascending (@AnyTick)
+* Fix: Filter comparisons for Null, NotNull, and DateTime gt, ge, lt, le (@AnyTick)
+
 ### 1.15.1 - 14 May 2025
 * Update: Update to production release of Microsoft.PowerFx.Dataverse.Eval dependency (@mkholt)
 
