@@ -696,7 +696,7 @@ namespace DG.Tools.XrmMockup
                 case ConditionOperator.GreaterEqual:
                 case ConditionOperator.LessEqual:
                 case ConditionOperator.LessThan:
-                    return Compare((IComparable)attr, op, (IComparable)values.First());
+                    return Compare((IComparable)attr, op, (IComparable)ConvertTo(values.First(), attr?.GetType()));
 
                 case ConditionOperator.NotLike:
                     return !Matches(attr, ConditionOperator.Like, values);
