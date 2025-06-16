@@ -976,9 +976,10 @@ namespace DG.Tools.XrmMockup
             return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
 
-        internal static Entity ToActivityPointer(this Entity entity)
+        internal static Entity ToActivityPointer(this Entity entity, EntityMetadata entityMetadata)
         {
-            if (!Activities.Contains(entity.LogicalName)) return null;
+
+            if (!entityMetadata.IsActivity.GetValueOrDefault()) return null;
 
             var pointer = new Entity("activitypointer")
             {

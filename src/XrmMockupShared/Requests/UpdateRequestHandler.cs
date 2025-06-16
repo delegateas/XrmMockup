@@ -228,7 +228,7 @@ namespace DG.Tools.XrmMockup
 
                 var req = new UpdateRequest
                 {
-                    Target = xrmEntity.ToActivityPointer()
+                    Target = xrmEntity.ToActivityPointer(entityMetadata)
                 };
                 core.Execute(req, userRef);
             }

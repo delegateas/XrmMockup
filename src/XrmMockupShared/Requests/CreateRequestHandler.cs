@@ -257,7 +257,7 @@ namespace DG.Tools.XrmMockup
 
                 var req = new CreateRequest
                 {
-                    Target = clonedEntity.ToActivityPointer()
+                    Target = clonedEntity.ToActivityPointer(entityMetadata)
                 };
                 core.Execute(req, userRef);
             }
