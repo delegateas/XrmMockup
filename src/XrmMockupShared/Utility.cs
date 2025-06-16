@@ -24,40 +24,17 @@ namespace DG.Tools.XrmMockup
 {
     internal static class Utility
     {
+        internal static OptionSetValue GetActivityTypeCode(MetadataSkeleton metadata, EntityMetadata entity)
+        {
+            // We are using DisplayNames to find the correct activity type code since we do not have any other metadata to match against.
+            var activityTypeCodes = metadata.OptionSets.FirstOrDefault(x => x.Name.Equals("activitypointer_activitytypecode")) as OptionSetMetadata;
+            if (activityTypeCodes == null) return null;
 
-        internal static HashSet<string> Activities = new HashSet<string>() {
-            "appointment",
-            "email",
-            "fax",
-            "incidentresolution",
-            "letter",
-            "opportunityclose",
-            "salesorderclose",
-            "phonecall",
-            "quoteclose",
-            "task",
-            "serviceappointment",
-            "campaignresponse",
-            "campaignactivity",
-            "bulkoperation"
-        };
+            var entityDisplayName = entity.DisplayName.LocalizedLabels.FirstOrDefault(x => x.LanguageCode == 1033)?.Label;
+            var option = activityTypeCodes.Options.FirstOrDefault(x => x.Label.LocalizedLabels.Any(l => l.Label == entityDisplayName));
 
-        internal static Dictionary<string, OptionSetValue> ActivityTypeCode = new Dictionary<string, OptionSetValue>() {
-            { "appointment", new OptionSetValue(4201) },
-            { "email", new OptionSetValue(4204) },
-            { "fax", new OptionSetValue(4206) },
-            { "incidentresolution", new OptionSetValue(4207) },
-            { "letter", new OptionSetValue(4208) },
-            { "opportunityclose", new OptionSetValue(4209) },
-            { "salesorderclose", new OptionSetValue(4210) },
-            { "phonecall", new OptionSetValue(4211) },
-            { "quoteclose", new OptionSetValue(4212) },
-            { "task", new OptionSetValue(4214) },
-            { "serviceappointment", new OptionSetValue(4251) },
-            { "campaignresponse", new OptionSetValue(4401) },
-            { "campaignactivity", new OptionSetValue(4402) },
-            { "bulkoperation", new OptionSetValue(4406) },
-        };
+            return new OptionSetValue(option.Value.GetValueOrDefault());
+        }
 
         public static Entity CloneEntity(this Entity entity)
         {
