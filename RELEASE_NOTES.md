@@ -1,3 +1,7 @@
+### 1.15.3 - 17 June 2025
+* Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
+* Fix: Make ToActivityPointer support custom activities by using the metadata provided objecttypecode for activitytypecode (@nedergaardcloud)
+
 ### 1.15.2 - 11 June 2025
 * Added regardingobjectid to ToActivityPointer (@nedergaardcloud)
 * Add: Implementation of "ends-width", "begins-with", and "like" filtering in FetchXML (@AnyTick)
