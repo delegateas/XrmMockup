@@ -119,6 +119,8 @@ namespace DG.XrmMockupTest
             var apModifiedOn = retrievedActivityPointer.GetAttributeValue<DateTime>("modifiedon");
             var apCreatedOn = retrievedActivityPointer.GetAttributeValue<DateTime>("createdon");
 
+            crm.AddHours(1); // Simulate some time passing
+
             // Update the entity
             entity = new Entity(entityName, entity.Id)
             {

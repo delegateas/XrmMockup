@@ -24,18 +24,6 @@ namespace DG.Tools.XrmMockup
 {
     internal static class Utility
     {
-        internal static OptionSetValue GetActivityTypeCode(MetadataSkeleton metadata, EntityMetadata entity)
-        {
-            // We are using DisplayNames to find the correct activity type code since we do not have any other metadata to match against.
-            var activityTypeCodes = metadata.OptionSets.FirstOrDefault(x => x.Name.Equals("activitypointer_activitytypecode")) as OptionSetMetadata;
-            if (activityTypeCodes == null) return null;
-
-            var entityDisplayName = entity.DisplayName.LocalizedLabels.FirstOrDefault(x => x.LanguageCode == 1033)?.Label;
-            var option = activityTypeCodes.Options.FirstOrDefault(x => x.Label.LocalizedLabels.Any(l => l.Label == entityDisplayName));
-
-            return new OptionSetValue(option.Value.GetValueOrDefault());
-        }
-
         public static Entity CloneEntity(this Entity entity)
         {
             if (entity == null) return null;

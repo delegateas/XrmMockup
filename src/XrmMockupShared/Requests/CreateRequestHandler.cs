@@ -253,7 +253,7 @@ namespace DG.Tools.XrmMockup
 
             if (entityMetadata.IsActivity.GetValueOrDefault())
             {
-                clonedEntity["activitytypecode"] = Utility.GetActivityTypeCode(metadata, entityMetadata);
+                clonedEntity["activitytypecode"] = new OptionSetValue(entityMetadata.ObjectTypeCode.GetValueOrDefault());
 
                 var req = new CreateRequest
                 {

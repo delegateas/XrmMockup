@@ -224,7 +224,7 @@ namespace DG.Tools.XrmMockup
 
             if (entityMetadata.IsActivity.GetValueOrDefault())
             {
-                xrmEntity["activitytypecode"] = Utility.GetActivityTypeCode(metadata, entityMetadata);
+                xrmEntity["activitytypecode"] = new OptionSetValue(entityMetadata.ObjectTypeCode.GetValueOrDefault());
 
                 var req = new UpdateRequest
                 {
