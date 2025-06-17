@@ -257,7 +257,8 @@ namespace DG.Tools.XrmMockup
 
                 var req = new CreateRequest
                 {
-                    Target = clonedEntity.ToActivityPointer(entityMetadata)
+                    Target = clonedEntity.ToActivityPointer(entityMetadata),
+                    Parameters = { [MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK) }
                 };
                 core.Execute(req, userRef);
             }
