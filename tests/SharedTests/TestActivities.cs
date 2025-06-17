@@ -77,7 +77,7 @@ namespace DG.XrmMockupTest
         [InlineData("serviceappointment", 4214)]
         [InlineData("campaignresponse", 4401)]
         [InlineData("campaignactivity", 4402)]
-        public void TestActivityPointer_SystemActivities(string entityName, int activityTypeCode)
+        public void TestActivityPointer_Create_SystemActivities(string entityName, int activityTypeCode)
         {
             var entity = new Entity(entityName)
             {
@@ -93,6 +93,51 @@ namespace DG.XrmMockupTest
             var ap = orgAdminService.Retrieve("activitypointer", entity.Id, new ColumnSet(true));
             Assert.Equal(activityTypeCode, ap.GetAttributeValue<OptionSetValue>("activitytypecode").Value);
             Assert.Equal("Test Activity", ap.GetAttributeValue<string>("subject"));
+        }
+
+        [Theory]
+        [InlineData("appointment", 4201)]
+        [InlineData("email", 4202)]
+        [InlineData("fax", 4204)]
+        [InlineData("incidentresolution", 4206)]
+        [InlineData("letter", 4207)]
+        [InlineData("opportunityclose", 4208)]
+        [InlineData("phonecall", 4210)]
+        [InlineData("task", 4212)]
+        [InlineData("serviceappointment", 4214)]
+        [InlineData("campaignresponse", 4401)]
+        [InlineData("campaignactivity", 4402)]
+        public void TestActivityPointer_Update_SystemActivities(string entityName, int activityTypeCode)
+        {
+            var entity = new Entity(entityName)
+            {
+                ["subject"] = "Test Activity"
+            };
+            entity.Id = orgAdminService.Create(entity);
+
+            var retrievedActivityPointer = orgAdminService.Retrieve("activitypointer", entity.Id, new ColumnSet(true));
+            var apModifiedOn = retrievedActivityPointer.GetAttributeValue<DateTime>("modifiedon");
+            var apCreatedOn = retrievedActivityPointer.GetAttributeValue<DateTime>("createdon");
+
+            // Update the entity
+            entity = new Entity(entityName, entity.Id)
+            {
+                ["subject"] = "Updated Activity"
+            };
+            orgAdminService.Update(entity);
+
+            // Retrieve the entity to ensure it was updated correctly
+            var retrievedEntity = orgAdminService.Retrieve(entity.LogicalName, entity.Id, new ColumnSet(true));
+            Assert.Equal(activityTypeCode, retrievedEntity.GetAttributeValue<OptionSetValue>("activitytypecode").Value);
+            Assert.Equal("Updated Activity", retrievedEntity.GetAttributeValue<string>("subject"));
+
+            retrievedActivityPointer = orgAdminService.Retrieve("activitypointer", entity.Id, new ColumnSet(true));
+            Assert.Equal(activityTypeCode, retrievedActivityPointer.GetAttributeValue<OptionSetValue>("activitytypecode").Value);
+            Assert.Equal("Updated Activity", retrievedActivityPointer.GetAttributeValue<string>("subject"));
+            var apModifiedOnNew = retrievedActivityPointer.GetAttributeValue<DateTime>("modifiedon");
+            var apCreatedOnNew = retrievedActivityPointer.GetAttributeValue<DateTime>("createdon");
+            Assert.Equal(apCreatedOn, apCreatedOnNew);
+            Assert.True(apModifiedOnNew > apModifiedOn, "ModifiedOn should be updated after the entity update");
         }
     }
 }
