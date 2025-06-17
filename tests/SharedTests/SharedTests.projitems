@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestDefaultBusinessUnitTeamsMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExecuteTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestExecutionOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestFetchConditionOperators.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestInstantiateTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCustomApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />

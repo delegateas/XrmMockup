@@ -71,7 +71,7 @@ namespace DG.Tools.XrmMockup {
                         .Select(v => v.Value)
                         .ToArray();
                 }
-                else if (op != ConditionOperator.Null && op != ConditionOperator.NotNull) {
+                else if (condition.Attribute("value") != null) { 
                     values = new[] { condition.Attribute("value").Value };
                 }
                 filterExp.AddCondition(entityName, attr, op, values);

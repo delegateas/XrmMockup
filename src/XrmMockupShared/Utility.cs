@@ -696,19 +696,65 @@ namespace DG.Tools.XrmMockup
                     }
 
                 case ConditionOperator.NextXYears:
-                    var now = DateTime.UtcNow;
-                    DateTime date;
-                    if (attr is DateTime)
                     {
-                        date = (DateTime)attr;
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return now.Date <= date.Date && date.Date <= now.AddYears(int.Parse((string)values.First())).Date;
                     }
-                    else
+                case ConditionOperator.OlderThanXYears:
                     {
-                        date = DateTime.Parse((string)attr);
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddYears(-int.Parse((string)values.First()));
                     }
-                    var x = int.Parse((string)values.First());
-                    return now.Date <= date.Date && date.Date <= now.AddYears(x).Date;
-
+                case ConditionOperator.OlderThanXWeeks:
+                    {
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddDays(-7 * int.Parse((string)values.First()));
+                    }
+                case ConditionOperator.OlderThanXMonths:
+                    {
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddMonths(-int.Parse((string)values.First()));
+                    }
+                case ConditionOperator.OlderThanXDays:
+                    {
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddDays(-int.Parse((string)values.First()));
+                    }
+                case ConditionOperator.OlderThanXHours:
+                    {
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddHours(-int.Parse((string)values.First()));
+                    }
+                case ConditionOperator.OlderThanXMinutes:
+                    {
+                        var now = DateTime.UtcNow;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date <= now.AddMinutes(-int.Parse((string)values.First()));
+                    }
+                case ConditionOperator.Yesterday:
+                    {
+                        var now = DateTime.UtcNow.Date;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date.Date == now.AddDays(-1).Date;
+                    }
+                case ConditionOperator.Today:
+                    {
+                        var now = DateTime.UtcNow.Date;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date.Date == now.Date;
+                    }
+                case ConditionOperator.Tomorrow:
+                    {
+                        var now = DateTime.UtcNow.Date;
+                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
+                        return date.Date == now.AddDays(1).Date;
+                    }
                 case ConditionOperator.In:
                     return values.Contains(attr);
 
