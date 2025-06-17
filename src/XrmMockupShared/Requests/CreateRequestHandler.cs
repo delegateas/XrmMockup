@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DG.Tools.XrmMockup.Database;
+using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
-using System.Linq;
-using Microsoft.Crm.Sdk.Messages;
-using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
-using DG.Tools.XrmMockup.Database;
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
@@ -113,7 +113,7 @@ namespace DG.Tools.XrmMockup
             var validAttributes = clonedEntity.Attributes.Where(x => x.Value != null);
             clonedEntity.Attributes = new AttributeCollection();
             clonedEntity.Attributes.AddRange(validAttributes);
-        
+
             if (Utility.HasCircularReference(metadata.EntityMetadata, clonedEntity))
             {
                 throw new FaultException(
@@ -247,17 +247,18 @@ namespace DG.Tools.XrmMockup
             }
 
             clonedEntity.Attributes
-                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string) x.Value))
+                .Where(x => x.Value is string && x.Value != null && string.IsNullOrEmpty((string)x.Value))
                 .ToList()
                 .ForEach(x => clonedEntity[x.Key] = null);
 
-            if (Utility.Activities.Contains(clonedEntity.LogicalName))
+            if (entityMetadata.IsActivity.GetValueOrDefault())
             {
-                clonedEntity["activitytypecode"] = Utility.ActivityTypeCode[clonedEntity.LogicalName];
+                clonedEntity["activitytypecode"] = new OptionSetValue(entityMetadata.ObjectTypeCode.GetValueOrDefault());
 
                 var req = new CreateRequest
                 {
-                    Target = clonedEntity.ToActivityPointer()
+                    Target = clonedEntity.ToActivityPointer(entityMetadata),
+                    Parameters = { [MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK) }
                 };
                 core.Execute(req, userRef);
             }
@@ -300,7 +301,7 @@ namespace DG.Tools.XrmMockup
                     core.Execute(associateReq, userRef);
                 }
             }
-            
+
             resp.Results.Add("id", clonedEntity.Id);
 
             return resp;

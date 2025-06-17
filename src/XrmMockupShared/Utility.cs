@@ -24,41 +24,6 @@ namespace DG.Tools.XrmMockup
 {
     internal static class Utility
     {
-
-        internal static HashSet<string> Activities = new HashSet<string>() {
-            "appointment",
-            "email",
-            "fax",
-            "incidentresolution",
-            "letter",
-            "opportunityclose",
-            "salesorderclose",
-            "phonecall",
-            "quoteclose",
-            "task",
-            "serviceappointment",
-            "campaignresponse",
-            "campaignactivity",
-            "bulkoperation"
-        };
-
-        internal static Dictionary<string, OptionSetValue> ActivityTypeCode = new Dictionary<string, OptionSetValue>() {
-            { "appointment", new OptionSetValue(4201) },
-            { "email", new OptionSetValue(4204) },
-            { "fax", new OptionSetValue(4206) },
-            { "incidentresolution", new OptionSetValue(4207) },
-            { "letter", new OptionSetValue(4208) },
-            { "opportunityclose", new OptionSetValue(4209) },
-            { "salesorderclose", new OptionSetValue(4210) },
-            { "phonecall", new OptionSetValue(4211) },
-            { "quoteclose", new OptionSetValue(4212) },
-            { "task", new OptionSetValue(4214) },
-            { "serviceappointment", new OptionSetValue(4251) },
-            { "campaignresponse", new OptionSetValue(4401) },
-            { "campaignactivity", new OptionSetValue(4402) },
-            { "bulkoperation", new OptionSetValue(4406) },
-        };
-
         public static Entity CloneEntity(this Entity entity)
         {
             if (entity == null) return null;
@@ -1045,9 +1010,10 @@ namespace DG.Tools.XrmMockup
             return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
 
-        internal static Entity ToActivityPointer(this Entity entity)
+        internal static Entity ToActivityPointer(this Entity entity, EntityMetadata entityMetadata)
         {
-            if (!Activities.Contains(entity.LogicalName)) return null;
+
+            if (!entityMetadata.IsActivity.GetValueOrDefault()) return null;
 
             var pointer = new Entity("activitypointer")
             {
