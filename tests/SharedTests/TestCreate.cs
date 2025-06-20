@@ -18,6 +18,19 @@ namespace DG.XrmMockupTest
         public TestCreate(XrmMockupFixture fixture) : base(fixture) { }
 
         [Fact]
+        public void TestCreateOverriddenCreatedOn()
+        {
+            var dateTime = DateTime.UtcNow.AddHours(-12);
+            var contact = new Contact()
+            {
+                OverriddenCreatedOn = dateTime,
+            };
+            contact.Id = orgAdminService.Create(contact);
+            var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
+            Assert.True(dbContact.CreatedOn < dateTime.AddMinutes(1) && dbContact.CreatedOn > dateTime.AddMinutes(-1));
+        }
+
+        [Fact]
         public void TestCreateSimple()
         {
             var contact = new Contact()
