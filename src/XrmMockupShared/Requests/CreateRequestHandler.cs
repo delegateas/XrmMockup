@@ -81,6 +81,11 @@ namespace DG.Tools.XrmMockup
 
             if (Utility.IsValidAttribute("createdon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
             {
+                if (Utility.IsValidAttribute("overriddencreatedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)) && entity.Attributes.ContainsKey("overriddencreatedon") && entity["overriddencreatedon"] is DateTime overriddencreatedon)
+                {
+                    createdOn = overriddencreatedon;
+                }
+
                 entity["createdon"] = createdOn;
             }
 
