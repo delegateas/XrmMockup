@@ -237,6 +237,5 @@ namespace DG.XrmMockupTest
                 Assert.False(result.Entities[1].Attributes.ContainsKey("contact.fullname"));
             }
         }
-
     }
 }
