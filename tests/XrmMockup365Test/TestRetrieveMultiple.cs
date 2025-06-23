@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TestPluginAssembly365.Plugins.LegacyDaxif;
 using Xunit;
 
 namespace DG.XrmMockupTest
@@ -104,23 +105,20 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-                var res = account1.Id;
+                var accountId = account1.Id;
 
                 var query =
                     from acc in context.AccountSet
-                    join lead in context.LeadSet
-                    on acc.AccountId equals lead.ParentAccountId.Id
-                    where acc.Id == res
+                    join lead in context.LeadSet on acc.AccountId equals lead.ParentAccountId.Id
+                    where acc.AccountId == accountId
                     select new { acc.Name, lead.Subject };
 
-                var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
+                var result = query.AsEnumerable();
                 Assert.Single(result);
 
-                foreach (var r in result)
-                {
-                    Assert.Equal(account1.Name, r.Name);
-                    Assert.StartsWith("Some", r.Subject);
-                }
+                var res = result.Single();
+                Assert.Equal(account1.Name, res.Name);
+                Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead", res.Subject);
             }
         }
 
@@ -188,7 +186,7 @@ namespace DG.XrmMockupTest
                     where acc.Name.StartsWith("account")
                     select new { acc.Name, acc.AccountId, lead.Subject };
 
-                var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
+                var result = query.AsEnumerable();
                 Assert.Equal(4, result.Count());
 
                 var ordered = result.OrderByDescending(x => x.Name).ThenBy(x => x.AccountId);

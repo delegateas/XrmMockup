@@ -1,7 +1,6 @@
 ﻿
 namespace DG.Some.Namespace {
     using System;
-    using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
     using DG.XrmPluginCore;
     using DG.XrmPluginCore.Enums;
@@ -26,7 +25,6 @@ namespace DG.Some.Namespace {
             if (localContext == null) {
                 throw new ArgumentNullException("localContext");
             }
-
 
             var service = localContext.OrganizationService;
 
