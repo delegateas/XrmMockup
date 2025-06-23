@@ -39,7 +39,7 @@ namespace DG.XrmMockupTest
                 contact.Id = orgAdminService.Create(contact);
                 var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
                 Assert.Equal(dateTime, dbContact.CreatedOn);
-                Assert.True(dbContact.OverriddenCreatedOn < dateTimeUtcNow.AddMinutes(1) && dbContact.OverriddenCreatedOn > dateTimeUtcNow.AddMinutes(-1));
+                Assert.Equal(dateTimeUtcNow, dbContact.OverriddenCreatedOn.GetValueOrDefault(), TimeSpan.FromSeconds(10));
             }
         }
 
