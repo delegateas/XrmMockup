@@ -40,7 +40,7 @@ namespace DG.Tools.XrmMockup {
             foreach (var order in entity.Elements("order")) {
                 var orderExp = new OrderExpression() {
                     AttributeName = order.Attribute("attribute").Value,
-                    OrderType = order.Attribute("descending").Value == "false" ? OrderType.Ascending : OrderType.Descending
+                    OrderType = order.Attribute("descending") == null || order.Attribute("descending").Value == "false" ? OrderType.Ascending : OrderType.Descending
                 };
             }
 
@@ -71,7 +71,7 @@ namespace DG.Tools.XrmMockup {
                         .Select(v => v.Value)
                         .ToArray();
                 }
-                else {
+                else if (condition.Attribute("value") != null) { 
                     values = new[] { condition.Attribute("value").Value };
                 }
                 filterExp.AddCondition(entityName, attr, op, values);

@@ -10,7 +10,8 @@ namespace DG.XrmMockupTest
 {
     public class TestFetchXmlToQueryExpression : UnitTestBase
     {
-        string accountName;
+        private const string accountName = "Litware, Inc.";
+        private const string accountAddress1Stateorprovince = "Colorado";
         Guid _contact1Id;
         Guid _contact2Id;
         Guid _opportunity1Id;
@@ -18,12 +19,11 @@ namespace DG.XrmMockupTest
 
         public TestFetchXmlToQueryExpression(XrmMockupFixture fixture) : base(fixture)
         {
-            accountName = "Litware, Inc.";
             // Create an account.
             var acc = new Account
             {
                 Name = accountName,
-                Address1_StateOrProvince = "Colorado"
+                Address1_StateOrProvince = accountAddress1Stateorprovince
             };
             acc.Id = orgAdminUIService.Create(acc);
 
@@ -82,6 +82,7 @@ namespace DG.XrmMockupTest
                         <attribute name='name' />
                         <filter>
                             <condition attribute='estimatedclosedate' operator='next-x-years' value='3' />
+                            <condition attribute='estimatedclosedate' operator='gt' value='2000-01-01 00:00:00' />
                         </filter>
                         <link-entity name='account' from='accountid' to='customerid'>
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
@@ -131,6 +132,7 @@ namespace DG.XrmMockupTest
                         <attribute name='name' />
                         <filter>
                             <condition attribute='estimatedclosedate' operator='next-x-years' value='3' />
+                            <condition attribute='estimatedclosedate' operator='gt' value='2000-01-01 00:00:00' />
                         </filter>
                         <link-entity name='account' from='accountid' to='customerid'>
                             <link-entity name='contact' from='parentcustomerid' to='accountid'>
@@ -160,6 +162,79 @@ namespace DG.XrmMockupTest
                 Assert.True(entity.Attributes.ContainsKey("contact.firstname"));
                 Assert.True(entity.Attributes["contact.firstname"] is AliasedValue);
                 Assert.Equal("Colin", entity.GetAttributeValue<AliasedValue>("contact.firstname").Value);
+            }
+        }
+
+        [Fact]
+        public void TestFetchXmlParallelLinkEntity()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var fetchXml =
+                    @"<fetch>
+                    <entity name='opportunity'>
+                        <link-entity name='account' from='accountid' to='customerid'>
+                        </link-entity>
+                    </entity>
+                </fetch>";
+                var result = orgAdminUIService.RetrieveMultiple(new FetchExpression(fetchXml));
+                Assert.Equal(2, result.Entities.Count);
+
+                fetchXml =
+                    @"<fetch>
+                    <entity name='opportunity'>
+                        <link-entity name='contact' from='contactid' to='customerid'>
+                        </link-entity>
+                    </entity>
+                </fetch>";
+                result = orgAdminUIService.RetrieveMultiple(new FetchExpression(fetchXml));
+                Assert.Empty(result.Entities);
+
+                fetchXml =
+                    @"<fetch>
+                    <entity name='opportunity'>
+                        <link-entity name='account' from='accountid' to='customerid'>
+                        </link-entity>
+                        <link-entity name='contact' from='contactid' to='customerid'>
+                        </link-entity>
+                    </entity>
+                </fetch>";
+                result = orgAdminUIService.RetrieveMultiple(new FetchExpression(fetchXml));
+                Assert.Empty(result.Entities);
+            }
+        }
+
+        [Fact]
+        public void TestFetchXmlAliasedValueLinkEntity()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var fetchXml =
+                    @"<fetch>
+                    <entity name='opportunity'>
+                        <link-entity name='account' from='accountid' to='customerid'>
+                            <attribute name='name' />
+                            <attribute name='address1_stateorprovince' />
+                        </link-entity>
+                        <link-entity name='account' from='accountid' to='customerid'>
+                            <attribute name='name' />
+                        </link-entity>
+                        <link-entity name='account' from='accountid' to='customerid'>
+                            <attribute name='address1_stateorprovince' />
+                        </link-entity>
+                        <link-entity name='contact' from='contactid' to='customerid' link-type='outer'>
+                            <attribute name='fullname' />
+                        </link-entity>
+                    </entity>
+                </fetch>";
+                var result = orgAdminUIService.RetrieveMultiple(new FetchExpression(fetchXml));
+                Assert.Equal(2, result.Entities.Count);
+                Assert.Equal(accountName, ((AliasedValue)result.Entities[0].Attributes["account.name"]).Value);
+                Assert.Equal(accountName, ((AliasedValue)result.Entities[1].Attributes["account.name"]).Value);
+                Assert.Equal(accountAddress1Stateorprovince, ((AliasedValue)result.Entities[0].Attributes["account.address1_stateorprovince"]).Value);
+                Assert.Equal(accountAddress1Stateorprovince, ((AliasedValue)result.Entities[1].Attributes["account.address1_stateorprovince"]).Value);
+                Assert.False(result.Entities[0].Attributes.ContainsKey("contact.fullname"));
+                Assert.False(result.Entities[1].Attributes.ContainsKey("contact.fullname"));
             }
         }
     }

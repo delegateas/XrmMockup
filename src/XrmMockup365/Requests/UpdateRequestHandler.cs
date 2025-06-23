@@ -1,12 +1,12 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
-using System.Linq;
+﻿using DG.Tools.XrmMockup.Database;
 using Microsoft.Crm.Sdk.Messages;
-using System.ServiceModel;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
-using DG.Tools.XrmMockup.Database;
+using Microsoft.Xrm.Sdk.Query;
 using System;
+using System.Linq;
+using System.ServiceModel;
 
 namespace DG.Tools.XrmMockup
 {
@@ -95,9 +95,11 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("This message can not be used to set the state of incident to Resolved. In order to set state of incident to Resolved, use the CloseIncidentRequest message instead.");
             }
-            
+
             var entRef = request.Target.ToEntityReferenceWithKeyAttributes();
             var row = db.GetDbRow(entRef);
+
+            var entityMetadata = metadata.EntityMetadata.GetMetadata(entRef.LogicalName);
 
             if (settings.ServiceRole == MockupServiceSettings.Role.UI &&
                 row.Table.TableName != LogicalNames.Opportunity &&
@@ -220,13 +222,13 @@ namespace DG.Tools.XrmMockup
                 security.CascadeOwnerUpdate(xrmEntity, userRef, ownerRef);
             }
 
-            if (Utility.Activities.Contains(xrmEntity.LogicalName))
+            if (entityMetadata.IsActivity.GetValueOrDefault())
             {
-                xrmEntity["activitytypecode"] = Utility.ActivityTypeCode[xrmEntity.LogicalName];
+                xrmEntity["activitytypecode"] = new OptionSetValue(entityMetadata.ObjectTypeCode.GetValueOrDefault());
 
                 var req = new UpdateRequest
                 {
-                    Target = xrmEntity.ToActivityPointer()
+                    Target = xrmEntity.ToActivityPointer(entityMetadata)
                 };
                 core.Execute(req, userRef);
             }

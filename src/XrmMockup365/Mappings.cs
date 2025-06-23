@@ -81,7 +81,9 @@ namespace DG.Tools.XrmMockup {
 
         public static readonly Dictionary<string, ConditionOperator> ConditionalOperator = new Dictionary<string, ConditionOperator>
         {
+            { "begins-with", ConditionOperator.BeginsWith },
             { "between", ConditionOperator.Between },
+            { "ends-with", ConditionOperator.EndsWith },
             { "eq", ConditionOperator.Equal },
             { "eq-businessid", ConditionOperator.EqualBusinessId },
             { "eq-userid", ConditionOperator.EqualUserId },
@@ -108,6 +110,7 @@ namespace DG.Tools.XrmMockup {
             { "last-x-years", ConditionOperator.LastXYears },
             { "last-year", ConditionOperator.LastYear },
             { "le", ConditionOperator.LessEqual },
+            { "like", ConditionOperator.Like },
             { "lt", ConditionOperator.LessThan },
             { "next-seven-days", ConditionOperator.Next7Days },
             { "next-fiscal-period", ConditionOperator.NextFiscalPeriod },
@@ -130,7 +133,12 @@ namespace DG.Tools.XrmMockup {
             { "not-null", ConditionOperator.NotNull },
             //{ "ne", ConditionOperator.NotOn },
             { "null", ConditionOperator.Null },
-            { "olderthan-x-months", ConditionOperator.OlderThanXMonths },
+            { "older-than-x-days", ConditionOperator.OlderThanXDays },
+            { "older-than-x-hours", ConditionOperator.OlderThanXHours },
+            { "older-than-x-minutes", ConditionOperator.OlderThanXMinutes },
+            { "older-than-x-months", ConditionOperator.OlderThanXMonths },
+            { "older-than-x-weeks", ConditionOperator.OlderThanXWeeks },
+            { "older-than-x-years", ConditionOperator.OlderThanXYears },
             { "on", ConditionOperator.On },
             { "on-or-after", ConditionOperator.OnOrAfter },
             { "on-or-before", ConditionOperator.OnOrBefore },

@@ -1,5 +1,18 @@
-### 1.15.1-rc1 - 13 May 2025
+### 1.15.4-rc1 - 23 June 2025
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+
+### 1.15.3 - 17 June 2025
+* Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
+* Fix: Make ToActivityPointer support custom activities by using the metadata provided objecttypecode for activitytypecode (@nedergaardcloud)
+
+### 1.15.2 - 11 June 2025
+* Added regardingobjectid to ToActivityPointer (@nedergaardcloud)
+* Add: Implementation of "ends-width", "begins-with", and "like" filtering in FetchXML (@AnyTick)
+* Fix: Ordering defaults to Ascending (@AnyTick)
+* Fix: Filter comparisons for Null, NotNull, and DateTime gt, ge, lt, le (@AnyTick)
+
+### 1.15.1 - 14 May 2025
+* Update: Update to production release of Microsoft.PowerFx.Dataverse.Eval dependency (@mkholt)
 
 ### 1.15.0 - 13 May 2025
 * Add: Support for ExecuteTransactionRequest (@magesoe)
