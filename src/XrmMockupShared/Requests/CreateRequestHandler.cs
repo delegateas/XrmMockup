@@ -90,6 +90,7 @@ namespace DG.Tools.XrmMockup
                             $"Trying to create entity '{entity.LogicalName}', but overriddencreatedon cannot be set to a date in the future");
                     }
 
+                    entity["overriddencreatedon"] = createdOn;
                     createdOn = overriddencreatedon;
                 }
 
