@@ -24,7 +24,8 @@ namespace DG.XrmMockupTest
         [InlineData(-1, false)]
         public void TestCreateOverriddenCreatedOn(int addMinutes, bool throwExceptionExpected)
         {
-            var dateTime = DateTime.UtcNow.AddMinutes(addMinutes);
+            var dateTimeUtcNow = DateTime.UtcNow;
+            var dateTime = dateTimeUtcNow.AddMinutes(addMinutes);
             var contact = new Contact()
             {
                 OverriddenCreatedOn = dateTime,
@@ -38,6 +39,7 @@ namespace DG.XrmMockupTest
                 contact.Id = orgAdminService.Create(contact);
                 var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
                 Assert.True(dbContact.CreatedOn < dateTime.AddMinutes(1) && dbContact.CreatedOn > dateTime.AddMinutes(-1));
+                Assert.True(dbContact.OverriddenCreatedOn < dateTimeUtcNow.AddMinutes(1) && dbContact.OverriddenCreatedOn > dateTimeUtcNow.AddMinutes(-1));
             }
         }
 
