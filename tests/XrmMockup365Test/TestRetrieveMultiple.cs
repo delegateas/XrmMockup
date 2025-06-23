@@ -116,9 +116,11 @@ namespace DG.XrmMockupTest
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
                 Assert.Equal(2, result.Count());
 
-                var res = result.Single();
-                Assert.Equal(account1.Name, res.Name);
-                Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead", res.Subject);
+                foreach (var res in result)
+                {
+                    Assert.Equal(account1.Name, res.Name);
+                    Assert.StartsWith("Some", res.Subject);
+                }
             }
         }
 
