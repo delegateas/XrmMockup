@@ -17,17 +17,28 @@ namespace DG.XrmMockupTest
     {
         public TestCreate(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact]
-        public void TestCreateOverriddenCreatedOn()
+        [Theory]
+        [InlineData(60, true)]
+        [InlineData(-60, false)]
+        [InlineData(1, true)]
+        [InlineData(-1, false)]
+        public void TestCreateOverriddenCreatedOn(int addMinutes, bool throwExceptionExpected)
         {
-            var dateTime = DateTime.UtcNow.AddHours(-12);
+            var dateTime = DateTime.UtcNow.AddMinutes(addMinutes);
             var contact = new Contact()
             {
                 OverriddenCreatedOn = dateTime,
             };
-            contact.Id = orgAdminService.Create(contact);
-            var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
-            Assert.True(dbContact.CreatedOn < dateTime.AddMinutes(1) && dbContact.CreatedOn > dateTime.AddMinutes(-1));
+            if (throwExceptionExpected)
+            {
+                Assert.Throws<FaultException>(() => orgAdminService.Create(contact));
+            }
+            else
+            {
+                contact.Id = orgAdminService.Create(contact);
+                var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
+                Assert.True(dbContact.CreatedOn < dateTime.AddMinutes(1) && dbContact.CreatedOn > dateTime.AddMinutes(-1));
+            }
         }
 
         [Fact]
