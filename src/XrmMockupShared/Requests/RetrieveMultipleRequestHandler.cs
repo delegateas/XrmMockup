@@ -69,10 +69,9 @@ namespace DG.Tools.XrmMockup
 
                 if (queryExpr.LinkEntities.Count > 0)
                 {
-                    var concurrentBag = new ConcurrentBag<ConcurrentBag<KeyValuePair<DbRow, Entity>>>();
+                    //foreach (var linkEntity in queryExpr.LinkEntities)
                     Parallel.ForEach(queryExpr.LinkEntities, linkEntity =>
                     {
-                        var concurrentBag2 = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
                         var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
                         var matchingValues = alliasedValues.Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria));
                         Parallel.ForEach(matchingValues, m =>
@@ -80,39 +79,10 @@ namespace DG.Tools.XrmMockup
                             if (security.HasPermission(m, AccessRights.ReadAccess, userRef))
                             {
                                 Utility.SetFormattedValues(db, m, entityMetadata);
-                                concurrentBag2.Add(new KeyValuePair<DbRow, Entity>(row, m));
+                                collection.Add(new KeyValuePair<DbRow, Entity>(row, m));
                             }
                         });
-
-                        if (!concurrentBag2.IsEmpty)
-                        {
-                            concurrentBag.Add(concurrentBag2);
-                        }
                     });
-
-                    if (queryExpr.LinkEntities.Count == concurrentBag.Count)
-                    {
-                        if (queryExpr.LinkEntities.Count == 1)
-                        {
-                            collection.Add(concurrentBag.First().First());
-                        }
-                        else
-                        {
-                            var entity1 = concurrentBag.First().First().Value;
-                            foreach (var cb in concurrentBag.Skip(1))
-                            {
-                                foreach (var attribute in cb.First().Value.Attributes)
-                                {
-                                    if (!entity1.Attributes.ContainsKey(attribute.Key))
-                                    {
-                                        entity1.Attributes.Add(attribute.Key, attribute.Value);
-                                    }
-                                }
-                            }
-
-                            collection.Add(new KeyValuePair<DbRow, Entity>(row, entity1));
-                        }
-                    }
                 }
                 else if (Utility.MatchesCriteria(toAdd, queryExpr.Criteria))
                 {

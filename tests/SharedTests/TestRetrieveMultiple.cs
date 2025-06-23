@@ -86,11 +86,11 @@ namespace DG.XrmMockupTest
             };
             lead3 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000),
+                Subject = "Some new lead " + rand.Next(0, 1000)
             };
             lead4 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000),
+                Subject = "Some new lead " + rand.Next(0, 1000)
             };
 
             lead1.Id = orgAdminUIService.Create(lead1);
@@ -114,7 +114,7 @@ namespace DG.XrmMockupTest
                     select new { acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Single(result);
+                Assert.Equal(2, result.Count());
 
                 foreach (var r in result)
                 {
@@ -189,7 +189,7 @@ namespace DG.XrmMockupTest
                     select new { acc.Name, acc.AccountId, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(4, result.Count());
+                Assert.Equal(8, result.Count());
 
                 var ordered = result.OrderByDescending(x => x.Name).ThenBy(x => x.AccountId);
                 Assert.Equal(ordered.Select(x => new { x.Name, x.AccountId }).ToList(), result.Select(x => new { x.Name, x.AccountId }).ToList());
@@ -388,7 +388,7 @@ namespace DG.XrmMockupTest
                     select new { con.LastName, acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(1, result.Count());
+                Assert.Equal(4, result.Count());
 
                 foreach (var r in result)
                 {
@@ -426,7 +426,7 @@ namespace DG.XrmMockupTest
                     select new { con.Id, con.LastName, acc.Name, lead.Subject };
 
                 var result = query.AsEnumerable().Where(x => x.Subject.StartsWith("Some"));
-                Assert.Equal(1, result.Count());
+                Assert.Equal(4, result.Count());
 
                 foreach (var r in result)
                 {
