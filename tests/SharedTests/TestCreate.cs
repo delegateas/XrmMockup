@@ -33,7 +33,6 @@ namespace DG.XrmMockupTest
             if (throwExceptionExpected)
             {
                 var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(contact));
-}
                 Assert.Equal("Trying to create entity 'contact', but overriddencreatedon cannot be set to a date in the future", ex.Message);
             }
             else
