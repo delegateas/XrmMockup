@@ -1,6 +1,7 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using Xunit;
@@ -10,6 +11,32 @@ namespace DG.XrmMockupTest
     {
         public TestFetchConditionOperators(XrmMockupFixture fixture) : base(fixture)
         {
+        }
+
+        [Theory]
+        [InlineData("0", false)]
+        [InlineData("1", true)]
+        public void TestFetchConditionValueStringBooleanTheory(string stringBool, bool value)
+        {
+            orgAdminUIService.Create(
+                new Opportunity()
+                {
+                    EvaluateFit = value,
+                });
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var fetchXml =
+                    $@"<fetch>
+                        <entity name='opportunity'>
+                            <filter>
+                                <condition attribute='evaluatefit' operator='eq' value='{stringBool}' />
+                            </filter>
+                        </entity>
+                    </fetch>";
+                EntityCollection result = Fetch(fetchXml);
+                Assert.Single(result.Entities);
+            }
         }
 
         [Theory]

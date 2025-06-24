@@ -607,6 +607,10 @@ namespace DG.Tools.XrmMockup
         public static object ConvertTo(object obj, Type targetType)
         {
             if (targetType == null) { return obj; }
+            if (targetType == typeof(bool) && obj is string txt)
+            {
+                obj = txt == "0" ? "false" : txt == "1" ? "true" : obj;
+            }
             if (obj is string && !typeof(IConvertible).IsAssignableFrom(targetType))
             {
                 var parse = targetType.GetMethod(
