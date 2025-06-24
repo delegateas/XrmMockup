@@ -42,6 +42,7 @@ namespace DG.Tools.XrmMockup {
                     AttributeName = order.Attribute("attribute").Value,
                     OrderType = order.Attribute("descending") == null || order.Attribute("descending").Value == "false" ? OrderType.Ascending : OrderType.Descending
                 };
+                query.Orders.Add(orderExp);
             }
 
             foreach (var linkEntity in entity.Elements("link-entity")) {
