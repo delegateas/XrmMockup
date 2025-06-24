@@ -77,24 +77,37 @@ namespace DG.Tools.XrmMockup
         internal override void InitializePreOperation(OrganizationRequest orgRequest, EntityReference userRef, Entity preImage)
         {
             var entity = orgRequest["Target"] as Entity;
+            var logicalName = metadata.EntityMetadata.GetMetadata(entity.LogicalName);
             var createdOn = DateTime.UtcNow.Add(core.TimeOffset);
 
-            if (Utility.IsValidAttribute("createdon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            if (Utility.IsValidAttribute("createdon", logicalName))
             {
+                if (Utility.IsValidAttribute("overriddencreatedon", logicalName) && entity.Attributes.ContainsKey("overriddencreatedon") && entity["overriddencreatedon"] is DateTime overriddencreatedon)
+                {
+                    if (overriddencreatedon > createdOn)
+                    {
+                        throw new FaultException(
+                            $"Trying to create entity '{entity.LogicalName}', but overriddencreatedon cannot be set to a date in the future");
+                    }
+
+                    entity["overriddencreatedon"] = createdOn;
+                    createdOn = overriddencreatedon;
+                }
+
                 entity["createdon"] = createdOn;
             }
 
-            if (Utility.IsValidAttribute("createdby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            if (Utility.IsValidAttribute("createdby", logicalName))
             {
                 entity["createdby"] = userRef;
             }
 
-            if (Utility.IsValidAttribute("modifiedon", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            if (Utility.IsValidAttribute("modifiedon", logicalName))
             {
                 entity["modifiedon"] = createdOn;
             }
 
-            if (Utility.IsValidAttribute("modifiedby", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
+            if (Utility.IsValidAttribute("modifiedby", logicalName))
             {
                 entity["modifiedby"] = userRef;
             }

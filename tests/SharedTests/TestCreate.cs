@@ -17,6 +17,33 @@ namespace DG.XrmMockupTest
     {
         public TestCreate(XrmMockupFixture fixture) : base(fixture) { }
 
+        [Theory]
+        [InlineData(60, true)]
+        [InlineData(-60, false)]
+        [InlineData(1, true)]
+        [InlineData(-1, false)]
+        public void TestCreateOverriddenCreatedOn(int addMinutes, bool throwExceptionExpected)
+        {
+            var dateTimeUtcNow = DateTime.UtcNow;
+            var dateTime = dateTimeUtcNow.AddMinutes(addMinutes);
+            var contact = new Contact()
+            {
+                OverriddenCreatedOn = dateTime,
+            };
+            if (throwExceptionExpected)
+            {
+                var ex = Assert.Throws<FaultException>(() => orgAdminService.Create(contact));
+                Assert.Equal("Trying to create entity 'contact', but overriddencreatedon cannot be set to a date in the future", ex.Message);
+            }
+            else
+            {
+                contact.Id = orgAdminService.Create(contact);
+                var dbContact = Contact.Retrieve(orgAdminService, contact.Id);
+                Assert.Equal(dateTime, dbContact.CreatedOn);
+                Assert.Equal(dateTimeUtcNow, dbContact.OverriddenCreatedOn.GetValueOrDefault(), TimeSpan.FromSeconds(10));
+            }
+        }
+
         [Fact]
         public void TestCreateSimple()
         {
