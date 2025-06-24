@@ -744,10 +744,10 @@ namespace DG.Tools.XrmMockup
                         return date.Date == now.AddDays(1).Date;
                     }
                 case ConditionOperator.In:
-                    return values.Contains(attr);
+                    return values.Contains(values.FirstOrDefault() is Guid ? attr : $"{attr}");
 
                 case ConditionOperator.NotIn:
-                    return !values.Contains(attr);
+                    return !values.Contains(values.FirstOrDefault() is Guid ? attr : $"{attr}");
 
                 case ConditionOperator.BeginsWith:
                     if (attr == null) return false;

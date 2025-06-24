@@ -650,11 +650,32 @@ namespace DG.XrmMockupTest
             };
 
             var filter = new FilterExpression(LogicalOperator.And);
-            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.In, new Guid[] { contact1.Id, contact2.Id }));
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.In, new Guid[] { contact1.Id, contact2.Id, Guid.NewGuid() }));
 
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.Equal(2, res.Count());
+            Assert.Contains(res, x => x.Id == lead1.Id);
+            Assert.Contains(res, x => x.Id == lead2.Id);
+            Assert.Contains(res, x => x.Description == "*** TEST VALUE ***");
+            Assert.Contains(res, x => x.Description == null);
+        }
+
+        [Fact]
+        public void TestFetchExpressionIn()
+        {
+            var fetchXml =
+                $@"<fetch>
+                    <entity name='lead'>
+                        <attribute name='parentcontactid' />
+                        <attribute name='description' />
+                        <filter>
+                            <condition attribute='parentcontactid' operator='in'><value>{contact1.Id}</value><value>{contact2.Id}</value></condition>
+                        </filter>
+                    </entity>
+                </fetch>";
+            var res = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml)).Entities.Cast<Lead>();
             Assert.Equal(2, res.Count());
             Assert.Contains(res, x => x.Id == lead1.Id);
             Assert.Contains(res, x => x.Id == lead2.Id);
@@ -688,11 +709,29 @@ namespace DG.XrmMockupTest
             };
 
             var filter = new FilterExpression(LogicalOperator.And);
-            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.NotIn, new Guid[] { contact1.Id, contact2.Id }));
+            filter.AddCondition(new ConditionExpression("parentcontactid", ConditionOperator.NotIn, new Guid[] { contact1.Id, contact2.Id, Guid.NewGuid() }));
 
             query.Criteria = filter;
 
             var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>();
+            Assert.True(!res.Any(x => x.Id == lead1.Id));
+            Assert.True(!res.Any(x => x.Id == lead2.Id));
+        }
+
+        [Fact]
+        public void TestFetchExpressionNotIn()
+        {
+            var fetchXml =
+                $@"<fetch>
+                    <entity name='lead'>
+                        <attribute name='parentcontactid' />
+                        <attribute name='description' />
+                        <filter>
+                            <condition attribute='parentcontactid' operator='not-in'><value>{contact1.Id}</value><value>{contact2.Id}</value></condition>
+                        </filter>
+                    </entity>
+                </fetch>";
+            var res = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml)).Entities.Cast<Lead>();
             Assert.True(!res.Any(x => x.Id == lead1.Id));
             Assert.True(!res.Any(x => x.Id == lead2.Id));
         }
