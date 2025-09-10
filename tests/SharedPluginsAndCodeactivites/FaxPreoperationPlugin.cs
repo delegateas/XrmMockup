@@ -1,4 +1,4 @@
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
