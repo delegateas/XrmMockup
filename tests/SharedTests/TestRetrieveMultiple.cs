@@ -362,6 +362,62 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestNotAnyJoin()
+        {
+            // Test NotAny join operator - should return contacts that do NOT have any associated leads
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("contactid", "lastname")
+            };
+
+            var linkEntity = new LinkEntity()
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid", 
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet(false),
+                EntityAlias = "lead",
+                JoinOperator = JoinOperator.NotAny,
+            };
+
+            query.LinkEntities.Add(linkEntity);
+
+            var result = orgAdminService.RetrieveMultiple(query).Entities.Cast<Contact>().ToList();
+
+            // Should return contact3 and contact4 since they have no associated leads
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, x => x.Id == contact3.Id);
+            Assert.Contains(result, x => x.Id == contact4.Id);
+            Assert.DoesNotContain(result, x => x.Id == contact1.Id);
+            Assert.DoesNotContain(result, x => x.Id == contact2.Id);
+        }
+
+        [Fact]
+        public void TestNotAnyJoinFetchXml()
+        {
+            // Test NotAny join operator via FetchXML - should return contacts that do NOT have any associated leads
+            var fetchXml = @"
+                <fetch>
+                    <entity name='contact'>
+                        <attribute name='contactid' />
+                        <attribute name='lastname' />
+                        <link-entity name='lead' from='parentcontactid' to='contactid' link-type='notany' />
+                    </entity>
+                </fetch>";
+
+            var fetchExpr = new FetchExpression(fetchXml);
+            var result = orgAdminService.RetrieveMultiple(fetchExpr).Entities.Cast<Contact>().ToList();
+
+            // Should return contact3 and contact4 since they have no associated leads
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, x => x.Id == contact3.Id);
+            Assert.Contains(result, x => x.Id == contact4.Id);
+            Assert.DoesNotContain(result, x => x.Id == contact1.Id);
+            Assert.DoesNotContain(result, x => x.Id == contact2.Id);
+        }
+
+        [Fact]
         public void TestNestedJoins()
         {
             using (var context = new Xrm(orgAdminUIService))
