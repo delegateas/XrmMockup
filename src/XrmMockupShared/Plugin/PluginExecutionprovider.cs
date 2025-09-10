@@ -1,4 +1,4 @@
-﻿using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup;
 using System;
 using System.Collections.Generic;
 using System.Text;
