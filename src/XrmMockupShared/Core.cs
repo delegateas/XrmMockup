@@ -9,17 +9,43 @@ using Microsoft.Xrm.Sdk.Organization;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using WorkflowExecuter;
 
 [assembly: InternalsVisibleTo("SharedTests")]
 
 namespace DG.Tools.XrmMockup
 {
+    public class StaticMetadataCache
+    {
+        public MetadataSkeleton Metadata { get; }
+        public List<Entity> Workflows { get; }
+        public List<SecurityRole> SecurityRoles { get; }
+        public Dictionary<string, Type> EntityTypeMap { get; }
+        public EntityReference BaseCurrency { get; }
+        public int BaseCurrencyPrecision { get; }
+        public OrganizationServiceProxy OnlineProxy { get; }
+
+        public StaticMetadataCache(MetadataSkeleton metadata, List<Entity> workflows, List<SecurityRole> securityRoles,
+            Dictionary<string, Type> entityTypeMap, EntityReference baseCurrency, int baseCurrencyPrecision, 
+            OrganizationServiceProxy onlineProxy)
+        {
+            Metadata = metadata;
+            Workflows = workflows;
+            SecurityRoles = securityRoles;
+            EntityTypeMap = entityTypeMap;
+            BaseCurrency = baseCurrency;
+            BaseCurrencyPrecision = baseCurrencyPrecision;
+            OnlineProxy = onlineProxy;
+        }
+    }
+
     internal class Snapshot
     {
         public XrmDb db;
@@ -129,24 +155,204 @@ namespace DG.Tools.XrmMockup
             this.FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
         }
 
+        /// <summary>
+        /// Creates a new instance of Core using cached static metadata
+        /// </summary>
+        /// <param name="Settings"></param>
+        /// <param name="staticCache"></param>
+        public Core(XrmMockupSettings Settings, StaticMetadataCache staticCache)
+        {
+            this.TimeOffset = new TimeSpan();
+            this.settings = Settings;
+            this.metadata = staticCache.Metadata;
+            this.baseCurrency = staticCache.BaseCurrency;
+            this.baseCurrencyPrecision = staticCache.BaseCurrencyPrecision;
+            this.OnlineProxy = staticCache.OnlineProxy;
+            this.entityTypeMap = staticCache.EntityTypeMap;
+
+            this.db = new XrmDb(staticCache.Metadata.EntityMetadata, staticCache.OnlineProxy);
+            this.snapshots = new Dictionary<string, Snapshot>();
+            this.security = new Security(this, staticCache.Metadata, staticCache.SecurityRoles, db);
+            this.TracingServiceFactory = Settings.TracingServiceFactory ?? new TracingServiceFactory();
+            this.ServiceFactory = new MockupServiceProviderAndFactory(this);
+
+            //add the additional plugin settings to the meta data
+            if (Settings.IPluginMetadata != null)
+            {
+                // Create a new list to avoid modifying the cached metadata
+                var allPlugins = new List<MetaPlugin>(staticCache.Metadata.Plugins);
+                allPlugins.AddRange(Settings.IPluginMetadata);
+                this.pluginManager = new PluginManager(Settings.BasePluginTypes, staticCache.Metadata.EntityMetadata, allPlugins);
+            }
+            else
+            {
+                this.pluginManager = new PluginManager(Settings.BasePluginTypes, staticCache.Metadata.EntityMetadata, staticCache.Metadata.Plugins);
+            }
+
+            this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
+                staticCache.Workflows, staticCache.Metadata.EntityMetadata);
+            this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
+
+            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
+
+            this.RequestHandlers = GetRequestHandlers(db);
+            InitializeDB();
+            this.security.InitializeSecurityRoles(db);
+            this.orgDetail = Settings.OrganizationDetail;
+
+            this.FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
+        }
+
+        /// <summary>
+        /// Builds a static metadata cache from settings
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        public static StaticMetadataCache BuildStaticMetadataCache(XrmMockupSettings settings)
+        {
+            var metadataDirectory = settings.MetadataDirectoryPath ?? "../../Metadata/";
+            var metadata = Utility.GetMetadata(metadataDirectory);
+            var workflows = Utility.GetWorkflows(metadataDirectory);
+            var securityRoles = Utility.GetSecurityRoles(metadataDirectory);
+
+            var baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
+            var baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
+
+            var onlineProxy = BuildOnlineProxy(settings);
+            var entityTypeMap = new Dictionary<string, Type>();
+
+            // Build entity type map for proxy types if enabled
+            if (settings.EnableProxyTypes == true)
+            {
+                BuildEntityTypeMap(settings, entityTypeMap);
+            }
+
+            // Note: IPluginMetadata is handled per-instance in the Core constructor 
+            // to avoid modifying the shared cache
+
+            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap, 
+                baseCurrency, baseCurrencyPrecision, onlineProxy);
+        }
+
+        private static OrganizationServiceProxy BuildOnlineProxy(XrmMockupSettings settings)
+        {
+            if (settings.OnlineEnvironment.HasValue)
+            {
+                var env = settings.OnlineEnvironment.Value;
+                var orgHelper = new OrganizationHelper(
+                    new Uri(env.uri),
+                    env.providerType,
+                    env.username,
+                    env.password,
+                    env.domain);
+                var proxy = orgHelper.GetServiceProxy();
+                if (settings.EnableProxyTypes == true)
+                    proxy.EnableProxyTypes();
+                return proxy;
+            }
+            return null;
+        }
+
+        private static void BuildEntityTypeMap(XrmMockupSettings settings, Dictionary<string, Type> entityTypeMap)
+        {
+            if (settings.Assemblies?.Any() ?? false)
+            {
+                foreach (var assembly in settings.Assemblies)
+                {
+                    EnableProxyTypes(assembly, entityTypeMap);
+                }
+            }
+            else
+            {
+                List<string> exclude = new List<string> {
+                    "Microsoft.Xrm.Sdk.dll",
+                    "Microsoft.Crm.Sdk.Proxy.dll"
+                };
+
+                var regex = new Regex("^XrmMockup.*\\.dll$");
+                var assemblies = new List<Assembly>();
+                var addedAssemblies = new HashSet<string>();
+
+                var exeAsm = AppDomain.CurrentDomain.GetAssemblies();
+                assemblies.AddRange(exeAsm);
+                foreach (var name in exeAsm.Select(x => x.FullName))
+                {
+                    addedAssemblies.Add(name);
+                }
+
+                string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                foreach (string dll in Directory.GetFiles(path, "*.dll"))
+                {
+                    var asm = Assembly.LoadFrom(dll);
+                    if (addedAssemblies.Contains(asm.FullName)) continue;
+
+                    assemblies.Add(asm);
+                    addedAssemblies.Add(asm.FullName);
+                }
+
+                var useableAssemblies =
+                    assemblies
+                    .Where(asm => asm.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("ProxyTypesAssemblyAttribute")))
+                    .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name))
+                    .ToList();
+
+                if (useableAssemblies?.Any() == true)
+                {
+                    foreach (var asm in useableAssemblies)
+                    {
+                        EnableProxyTypes(asm, entityTypeMap);
+                    }
+                }
+            }
+        }
+
+        private static void EnableProxyTypes(Assembly assembly, Dictionary<string, Type> entityTypeMap)
+        {
+            foreach (var type in assembly.GetLoadableTypes())
+            {
+                if (type.CustomAttributes
+                    .FirstOrDefault(a => a.AttributeType.Name == "EntityLogicalNameAttribute")
+                    ?.ConstructorArguments
+                    ?.FirstOrDefault()
+                    .Value is string logicalName)
+                {
+                    entityTypeMap.Add(logicalName, type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a deep copy of an Entity to avoid modifying shared cached entities
+        /// </summary>
+        private Entity CloneEntity(Entity original)
+        {
+            var clone = new Entity(original.LogicalName, original.Id);
+            foreach (var attr in original.Attributes)
+            {
+                clone[attr.Key] = attr.Value;
+            }
+            return clone;
+        }
+
         private void InitializeDB()
         {
             this.OrganizationId = Guid.NewGuid();
             this.OrganizationName = "MockupOrganization";
 
-            // Setup currencies
+            // Setup currencies - create copies to avoid modifying shared cached entities
             var currencies = new List<Entity>();
             foreach (var entity in metadata.Currencies)
             {
-                Utility.RemoveAttribute(entity, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby",
+                var currencyCopy = CloneEntity(entity);
+                Utility.RemoveAttribute(currencyCopy, "createdby", "modifiedby", "organizationid", "modifiedonbehalfby",
                     "createdonbehalfby");
-                currencies.Add(entity);
+                currencies.Add(currencyCopy);
             }
 
             this.db.AddRange(currencies);
 
-            // Setup root business unit
-            var rootBu = metadata.RootBusinessUnit;
+            // Setup root business unit - create a copy to avoid modifying the shared cached entity
+            var rootBu = CloneEntity(metadata.RootBusinessUnit);
             rootBu["name"] = "RootBusinessUnit";
             rootBu.Attributes.Remove("organizationid");
             this.db.Add(rootBu, false);
