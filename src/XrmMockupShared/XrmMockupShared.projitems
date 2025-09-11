@@ -61,6 +61,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\OrganizationHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\PluginTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UpsertRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CalculateRollupFieldRequestHandler.cs" />

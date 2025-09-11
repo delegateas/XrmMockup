@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -21,18 +23,44 @@ namespace DG.Tools.XrmMockup
 {
     internal class CustomApiManager
     {
+        // Static caches shared across all CustomApiManager instances
+        private static readonly ConcurrentDictionary<string, Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>> _cachedApis = new ConcurrentDictionary<string, Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>>();
+        private static readonly ConcurrentDictionary<Type, object> _apiInstanceCache = new ConcurrentDictionary<Type, object>();
+        private static readonly object _cacheLock = new object();
 
         private Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>> registeredApis;
 
         public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
         {
-            registeredApis = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>();
-            if (baseCustomApiTypes == null)
+            var cacheKey = GenerateApiCacheKey(baseCustomApiTypes);
+
+            // Check if we have cached results
+            if (_cachedApis.ContainsKey(cacheKey))
             {
+                // Use cached results - no reflection/instantiation needed
+                registeredApis = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>(_cachedApis[cacheKey]);
                 return;
             }
 
-            RegisterCustomApis(baseCustomApiTypes);
+            lock (_cacheLock)
+            {
+                // Double-check locking pattern
+                if (_cachedApis.ContainsKey(cacheKey))
+                {
+                    registeredApis = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>(_cachedApis[cacheKey]);
+                    return;
+                }
+
+                // First time - do the work and cache it
+                registeredApis = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>();
+                if (baseCustomApiTypes != null)
+                {
+                    RegisterCustomApis(baseCustomApiTypes);
+                }
+
+                // Cache for future instances
+                _cachedApis[cacheKey] = new Dictionary<string, Func<MockupServiceProviderAndFactory, OrganizationResponse>>(registeredApis);
+            }
         }
 
         private void RegisterCustomApis(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
@@ -56,14 +84,17 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterApi(string prefix, Type baseType)
         {
-            object plugin = null;
-            try
+            object plugin = _apiInstanceCache.GetOrAdd(baseType, type =>
             {
-                plugin = Activator.CreateInstance(baseType);
-            }
-            catch (Exception ex) when (ex.Source == "mscorlib" || ex.Source == "System.Private.CoreLib")
-            {
-            }
+                try
+                {
+                    return Activator.CreateInstance(type);
+                }
+                catch (Exception ex) when (ex.Source == "mscorlib" || ex.Source == "System.Private.CoreLib")
+                {
+                    return null;
+                }
+            });
 
             if (plugin == null)
             {
@@ -119,6 +150,24 @@ namespace DG.Tools.XrmMockup
             {
                 Results = pluginContext.OutputParameters
             };
+        }
+
+        private string GenerateApiCacheKey(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
+        {
+            if (baseCustomApiTypes == null) return "null_types";
+            
+            var typeKeys = baseCustomApiTypes.Where(t => t != null && t.Item2 != null)
+                                           .Select(t => $"{t.Item1}:{t.Item2.FullName}")
+                                           .OrderBy(k => k);
+            var combinedTypes = string.Join("|", typeKeys);
+            
+            if (string.IsNullOrEmpty(combinedTypes)) return "empty_types";
+            
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedTypes));
+                return Convert.ToBase64String(hash);
+            }
         }
     }
 }
