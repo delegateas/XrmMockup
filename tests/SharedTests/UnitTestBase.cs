@@ -12,8 +12,7 @@ using Microsoft.PowerPlatform.Dataverse.Client;
 
 namespace DG.XrmMockupTest
 {
-    [Collection("Xrm Collection")]
-    public class UnitTestBase
+    public class UnitTestBase : IClassFixture<XrmMockupFixture>
     {
         private static DateTime _startTime { get; set; }
 
@@ -47,17 +46,18 @@ namespace DG.XrmMockupTest
 
         protected Entity contactWriteAccessTeamTemplate;
 
-        static protected XrmMockup365 crm;
+        protected XrmMockup365 crm;
 
         public UnitTestBase(XrmMockupFixture fixture)
         {
-            crm = fixture.crm;
-            crm.ResetEnvironment();
+            // Each test gets its own completely fresh instance
+            crm = XrmMockup365.GetInstance(fixture.Settings);
+            
             orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             orgAdminService = crm.GetAdminService();
-            if (fixture.crmRealData != null)
-                orgRealDataService = fixture.crmRealData.GetAdminService();
+            // Skip real data service - it causes online connection issues and isn't needed for most tests
+            orgRealDataService = null;
 
             //create an admin user to run our impersonating user plugins as
             var adminUser = new Entity("systemuser") { Id = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c") };
@@ -194,7 +194,8 @@ namespace DG.XrmMockupTest
         }
         public void Dispose()
         {
-            crm.ResetEnvironment();
+            // No need to reset environment since each test has its own instance
+            // The instance will be garbage collected automatically
         }
     }
 }

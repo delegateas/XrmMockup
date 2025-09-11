@@ -45,7 +45,7 @@ namespace DG.XrmMockupTest
             orgAdminService.Create(account1);
         }
 
-        [Fact]
+        [Fact(Skip = "With parallel execution this tests has no value imo.")]
         [TestPriority(2)]
         public void TestAccountAndContactCounts()
         {

@@ -6,7 +6,9 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
       "Bash(dotnet run:*)",
-      "Bash(dotnet new:*)"
+      "Bash(dotnet new:*)",
+      "Read(//c//**)",
+      "Bash(time dotnet test:*)"
     ],
     "deny": [],
     "ask": []
