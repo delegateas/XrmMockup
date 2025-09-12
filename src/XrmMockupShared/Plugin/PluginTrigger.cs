@@ -214,7 +214,7 @@ namespace DG.Tools.XrmMockup
                 {
                     thisPluginContext.PostEntityImages.Add(image.Item1, postImage.CloneEntity(metadata.GetMetadata(postImage.LogicalName), cols));
                 }
-                if (preImage != null && type == ImageType.PreImage || type == ImageType.Both)
+                if (preImage != null && (type == ImageType.PreImage || type == ImageType.Both))
                 {
                     thisPluginContext.PreEntityImages.Add(image.Item1, preImage.CloneEntity(metadata.GetMetadata(preImage.LogicalName), cols));
                 }

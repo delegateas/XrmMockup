@@ -92,6 +92,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableColumnDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\TableRowDTO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StaticMetadataCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracingServiceFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />

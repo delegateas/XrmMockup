@@ -56,30 +56,30 @@ namespace DG.XrmMockupTest
 
             // Create a contact with instance-specific data
             var contact = new Entity("contact");
-            contact["firstname"] = $"Test{instanceNumber}";
-            contact["lastname"] = $"User{instanceNumber}";
+            contact["firstname"] = $"Test";
+            contact["lastname"] = $"User";
             
             var id = service.Create(contact);
             
             // Retrieve and verify the data is correct for this instance
             var retrieved = service.Retrieve("contact", id, new ColumnSet("firstname", "lastname"));
             
-            Assert.Equal($"Test{instanceNumber}", retrieved["firstname"].ToString());
-            Assert.Equal($"User{instanceNumber}", retrieved["lastname"].ToString());
+            Assert.Equal($"Test", retrieved["firstname"].ToString());
+            Assert.Equal($"User", retrieved["lastname"].ToString());
 
             // Create multiple records to test database isolation
             for (int j = 0; j < 3; j++)
             {
                 var additionalContact = new Entity("contact");
-                additionalContact["firstname"] = $"Test{instanceNumber}_Extra{j}";
-                additionalContact["lastname"] = $"User{instanceNumber}_Extra{j}";
+                additionalContact["firstname"] = $"Test_Extra{j}";
+                additionalContact["lastname"] = $"User_Extra{j}";
                 service.Create(additionalContact);
             }
 
             // Query all contacts in this instance - should only see our data
             var query = new QueryExpression("contact");
             query.ColumnSet = new ColumnSet("firstname", "lastname");
-            query.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, $"Test{instanceNumber}");
+            query.Criteria.AddCondition("firstname", ConditionOperator.BeginsWith, $"Test");
             
             var contacts = service.RetrieveMultiple(query);
             

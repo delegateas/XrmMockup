@@ -81,8 +81,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoReset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBaseNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnitTestBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollectionNoProxyTypes.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XrmmockupCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupFixtureNoProxyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XrmmockupFixture.cs" />
   </ItemGroup>
