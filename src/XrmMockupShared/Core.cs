@@ -272,7 +272,7 @@ namespace DG.Tools.XrmMockup
                     .Where(asm => !exclude.Contains(asm.ManifestModule.Name) && !regex.IsMatch(asm.ManifestModule.Name))
                     .ToList();
 
-                if (useableAssemblies?.Count == 0)
+                if (useableAssemblies?.Count > 0)
                 {
                     foreach (var asm in useableAssemblies)
                     {
