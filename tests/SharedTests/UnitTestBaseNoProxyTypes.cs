@@ -5,8 +5,7 @@ using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    [Collection("Xrm Collection No Proxy Types")]
-    public class UnitTestBaseNoProxyTypes
+    public class UnitTestBaseNoProxyTypes : IClassFixture<XrmMockupFixtureNoProxyTypes>
     {
         private static DateTime _startTime { get; set; }
 
@@ -15,22 +14,23 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
 
-        static protected XrmMockup365 crm;
+        protected XrmMockup365 crm;
 
         public UnitTestBaseNoProxyTypes(XrmMockupFixtureNoProxyTypes fixture)
         {
-            crm = fixture.crm;
-            crm.ResetEnvironment();
+            // Each test gets its own completely fresh instance
+            crm = XrmMockup365.GetInstance(fixture.Settings);
             orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             orgAdminService = crm.GetAdminService();
-            if (fixture.crmRealData != null)
-                orgRealDataService = fixture.crmRealData.GetAdminService();
+            // Skip real data service - it causes online connection issues and isn't needed for most tests
+            orgRealDataService = null;
         }
 
         public void Dispose()
         {
-            crm.ResetEnvironment();
+            // No need to reset environment since each test has its own instance
+            // The instance will be garbage collected automatically
         }
     }
 }

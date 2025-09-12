@@ -7,8 +7,7 @@ using System.Linq;
 
 namespace DG.XrmMockupTest
 {
-    [Collection("Xrm Collection")]
-    public class UnitTestBaseNoReset
+    public class UnitTestBaseNoReset : IClassFixture<XrmMockupFixture>
     {
         private static DateTime _startTime { get; set; }
 
@@ -17,16 +16,17 @@ namespace DG.XrmMockupTest
         protected IOrganizationService orgGodService;
         protected IOrganizationService orgRealDataService;
 
-        static protected XrmMockup365 crm;
+        protected XrmMockup365 crm;
 
         public UnitTestBaseNoReset(XrmMockupFixture fixture)
         {
-            crm = fixture.crm;
+            // Each test gets its own completely fresh instance
+            crm = XrmMockup365.GetInstance(fixture.Settings);
             orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             orgAdminService = crm.GetAdminService();
-            if (fixture.crmRealData != null)
-                orgRealDataService = fixture.crmRealData.GetAdminService();
+            // Skip real data service - it causes online connection issues and isn't needed for most tests
+            orgRealDataService = null;
 
             //create an admin user to run our impersonating user plugins as
 

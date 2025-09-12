@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -17,6 +19,11 @@ namespace DG.Tools.XrmMockup {
 
 
     internal class WorkflowManager {
+        // Static caches shared across all WorkflowManager instances
+        private static readonly ConcurrentDictionary<string, WorkflowTree> _staticParsedWorkflows = new ConcurrentDictionary<string, WorkflowTree>();
+        private static readonly ConcurrentDictionary<string, CodeActivity> _staticCodeActivityCache = new ConcurrentDictionary<string, CodeActivity>();
+        private static readonly object _cacheLock = new object();
+
         private List<Entity> actions;
         private List<Entity> synchronousWorkflows;
         private List<Entity> asynchronousWorkflows;
@@ -48,7 +55,12 @@ namespace DG.Tools.XrmMockup {
                 foreach (var codeActivityInstance in codeActivityInstances) {
                     foreach (var type in codeActivityInstance.Assembly.GetTypes()) {
                         if (type.BaseType != codeActivityInstance.BaseType || type.Module.Name.StartsWith("System") || type.IsAbstract) continue;
-                        var codeActivity = (CodeActivity)Activator.CreateInstance(type);
+                        
+                        // Use static cache to avoid recreating CodeActivity instances
+                        var codeActivity = _staticCodeActivityCache.GetOrAdd(type.Name, typeName =>
+                        {
+                            return (CodeActivity)Activator.CreateInstance(type);
+                        });
 
                         if (!codeActivityTriggers.ContainsKey(type.Name)) {
                             codeActivityTriggers.Add(type.Name, codeActivity);
@@ -384,13 +396,34 @@ namespace DG.Tools.XrmMockup {
         }
 
         internal WorkflowTree ParseWorkflow(Entity workflow) {
+            var cacheKey = GenerateWorkflowCacheKey(workflow);
+            
+            // Check static cache first
+            if (_staticParsedWorkflows.TryGetValue(cacheKey, out var cachedWorkflow))
+            {
+                cachedWorkflow.HardReset();
+                
+                // Also store in instance cache for legacy compatibility
+                if (!parsedWorkflows.ContainsKey(workflow.Id)) {
+                    parsedWorkflows[workflow.Id] = cachedWorkflow;
+                }
+                
+                return cachedWorkflow;
+            }
+            
+            // Check instance cache
             if (parsedWorkflows.ContainsKey(workflow.Id)) {
                 parsedWorkflows[workflow.Id].HardReset();
                 return parsedWorkflows[workflow.Id];
             }
+            
             try {
                 var parsed = WorkflowConstructor.Parse(workflow, codeActivityTriggers, WorkflowConstructor.ParseAs.Workflow);
                 parsedWorkflows.Add(workflow.Id, parsed);
+                
+                // Cache in static cache for future instances
+                _staticParsedWorkflows.TryAdd(cacheKey, parsed);
+                
                 return parsed;
             } catch (Exception) {
                 Console.WriteLine($"Tried to parse workflow with name '{workflow.Attributes["name"]}' but failed");
@@ -419,6 +452,22 @@ namespace DG.Tools.XrmMockup {
                 parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
             }
             waitingWorkflows = new List<WaitInfo>();
+        }
+
+        private string GenerateWorkflowCacheKey(Entity workflow)
+        {
+            if (workflow == null) return "null_workflow";
+            
+            // Use workflow XAML + ID for cache key since XAML defines the workflow structure
+            var xaml = workflow.GetAttributeValue<string>("xaml") ?? "";
+            var workflowId = workflow.Id.ToString();
+            var combinedKey = $"{workflowId}:{xaml}";
+            
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedKey));
+                return Convert.ToBase64String(hash);
+            }
         }
     }
 }
