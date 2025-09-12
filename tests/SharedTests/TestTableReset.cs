@@ -44,20 +44,5 @@ namespace DG.XrmMockupTest
             account1 = new Account() { Name = "ResetTest1" };
             orgAdminService.Create(account1);
         }
-
-        [Fact(Skip = "With parallel execution this tests has no value imo.")]
-        [TestPriority(2)]
-        public void TestAccountAndContactCounts()
-        {
-            var accountQuery = new QueryExpression("account");
-            accountQuery.ColumnSet = new ColumnSet(true);
-            var accounts = orgAdminService.RetrieveMultiple(accountQuery);
-            Assert.Single(accounts.Entities.Where(x => x.Contains("name") && x.GetAttributeValue<string>("name").StartsWith("ResetTest")));
-
-            var contactQuery = new QueryExpression("contact");
-            contactQuery.ColumnSet = new ColumnSet(true);
-            var contacts = orgAdminService.RetrieveMultiple(contactQuery);
-            Assert.Equal(4, contacts.Entities.Where(x => x.Contains("firstname") && x.GetAttributeValue<string>("firstname").StartsWith("ResetTest")).Count());
-        }
     }
 }
