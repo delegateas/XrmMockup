@@ -40,7 +40,8 @@ namespace DG.Tools.XrmMockup
             FillAliasIfEmpty(queryExpr);
 
             db.PrefillDBWithOnlineData(queryExpr);
-            var rows = db.GetDBEntityRows(queryExpr.EntityName);
+            // Create a snapshot for thread-safe enumeration during calculated field execution
+            var rows = db.GetDBEntityRows(queryExpr.EntityName).ToList();
 
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
@@ -56,8 +57,8 @@ namespace DG.Tools.XrmMockup
                 core.ExecuteCalculatedFields(row);
             }
 
-            //get the rows again to include the calulated values
-            rows = db.GetDBEntityRows(queryExpr.EntityName);
+            // Get fresh snapshot after calculated field execution to include updated values
+            rows = db.GetDBEntityRows(queryExpr.EntityName).ToList();
 
             var collection = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
 

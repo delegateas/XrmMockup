@@ -143,7 +143,8 @@ namespace DG.Tools.XrmMockup.Database {
 
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0) {
-                currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
+                // Use ToList to create a snapshot for thread-safe enumeration
+                currentDbRow = this[reference.LogicalName].ToList().FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
 
                 if (currentDbRow == null) {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with key attributes '{reference.KeyAttributes.ToPrettyString()}' " +
@@ -200,7 +201,8 @@ namespace DG.Tools.XrmMockup.Database {
             // Try fetching with key attributes if any
             else if (reference?.KeyAttributes?.Count > 0)
             {
-                currentDbRow = this[reference.LogicalName].FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
+                // Use ToList to create a snapshot for thread-safe enumeration
+                currentDbRow = this[reference.LogicalName].ToList().FirstOrDefault(row => reference.KeyAttributes.All(kv => row[kv.Key] == kv.Value));
 
                 if (currentDbRow == null)
                 {
