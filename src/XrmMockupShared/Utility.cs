@@ -158,6 +158,24 @@ namespace DG.Tools.XrmMockup
             core.Execute(create as OrganizationRequest, userRef);
         }
 
+        internal static void CloseQuote(Core core, QuoteState state, OptionSetValue status, Entity quoteClose, EntityReference userRef)
+        {
+            var setStateHandler = core.RequestHandlers.Find(x => x is SetStateRequestHandler);
+            var req = new SetStateRequest()
+            {
+                EntityMoniker = quoteClose.GetAttributeValue<EntityReference>("quoteid"),
+                State = new OptionSetValue((int)state),
+                Status = status
+            };
+            setStateHandler.Execute(req, userRef);
+
+            var create = new CreateRequest
+            {
+                Target = quoteClose
+            };
+            core.Execute(create as OrganizationRequest, userRef);
+        }
+
 
         public static EntityMetadata GetMetadata(this Dictionary<string, EntityMetadata> metadata, string logicalName)
         {
@@ -1516,6 +1534,49 @@ namespace DG.Tools.XrmMockup
 
         [EnumMember()]
         OutSold = 5,
+    }
+
+    [DataContract()]
+    internal enum QuoteState
+    {
+
+        [EnumMember()]
+        Draft = 0,
+
+        [EnumMember()]
+        Active = 1,
+
+        [EnumMember()]
+        Won = 2,
+
+        [EnumMember()]
+        Closed = 3,
+    }
+
+    [DataContract()]
+    public enum Quote_StatusCode
+    {
+
+        [EnumMember()]
+        InProgress_2 = 1,
+
+        [EnumMember()]
+        InProgress = 2,
+
+        [EnumMember()]
+        Open = 3,
+
+        [EnumMember()]
+        Won = 4,
+
+        [EnumMember()]
+        Lost = 5,
+
+        [EnumMember()]
+        Canceled = 6,
+
+        [EnumMember()]
+        Revised = 7,
     }
 
 }
