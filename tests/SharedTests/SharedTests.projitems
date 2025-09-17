@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestFetchConditionOperators.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestInstantiateTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCustomApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestQuote.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPriorityAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSendEmail.cs" />
     <Compile Include="..\SharedTests\TestZipSnapshot.cs" />
