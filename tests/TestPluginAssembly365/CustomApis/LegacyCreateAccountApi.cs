@@ -15,7 +15,7 @@
         {
             if (localContext == null)
             {
-                throw new ArgumentNullException("localContext");
+                throw new ArgumentNullException(nameof(localContext));
             }
 
             var service = localContext.OrganizationService;
