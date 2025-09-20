@@ -7,7 +7,6 @@ using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
