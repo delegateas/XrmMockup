@@ -1,16 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using Microsoft.Xrm.Sdk;
-using System.ServiceModel;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
-using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+using System.Security.Cryptography;
+using System.ServiceModel;
+using System.Text;
 
 namespace DG.Tools.XrmMockup
 {
     internal class CustomApiManager
     {
 
+        // Static caches shared across all CustomApiManager instances
+        private static readonly ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>> _cachedApis = new ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>>();
+        private static readonly ConcurrentDictionary<Type, IPlugin> _apiInstanceCache = new ConcurrentDictionary<Type, IPlugin>();
+        private static readonly object _cacheLock = new object();
+
         private Dictionary<string, Action<MockupServiceProviderAndFactory>> registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
+
         private readonly List<IRegistrationStrategy> registrationStrategies = new List<IRegistrationStrategy>
         {
             new XrmPluginCoreRegistrationStrategy(),
@@ -19,12 +28,35 @@ namespace DG.Tools.XrmMockup
 
         public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
         {
-            if (baseCustomApiTypes == null)
+            var cacheKey = GenerateApiCacheKey(baseCustomApiTypes);
+
+            // Check if we have cached results
+            if (_cachedApis.ContainsKey(cacheKey))
             {
+                // Use cached results - no reflection/instantiation needed
+                registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
                 return;
             }
 
-            RegisterCustomApis(baseCustomApiTypes);
+            lock (_cacheLock)
+            {
+                // Double-check locking pattern
+                if (_cachedApis.ContainsKey(cacheKey))
+                {
+                    registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
+                    return;
+                }
+
+                // First time - do the work and cache it
+                registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
+                if (baseCustomApiTypes != null)
+                {
+                    RegisterCustomApis(baseCustomApiTypes);
+                }
+
+                // Cache for future instances
+                _cachedApis[cacheKey] = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(registeredApis);
+            }
         }
 
         private void RegisterCustomApis(IEnumerable<Tuple<string, Type>> customApiBaseTypeMappings)
@@ -49,7 +81,8 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterApi(string prefix, Type pluginType)
         {
-            var plugin = Utility.CreatePluginInstance(pluginType);
+            var plugin = _apiInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
+
             if (plugin == null)
             {
                 return;
@@ -88,6 +121,24 @@ namespace DG.Tools.XrmMockup
             {
                 Results = pluginContext.OutputParameters
             };
+        }
+
+        private string GenerateApiCacheKey(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
+        {
+            if (baseCustomApiTypes == null) return "null_types";
+
+            var typeKeys = baseCustomApiTypes.Where(t => t != null && t.Item2 != null)
+                .Select(t => $"{t.Item1}:{t.Item2.FullName}")
+                .OrderBy(k => k);
+            var combinedTypes = string.Join("|", typeKeys);
+
+            if (string.IsNullOrEmpty(combinedTypes)) return "empty_types";
+
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedTypes));
+                return Convert.ToBase64String(hash);
+            }
         }
     }
 }

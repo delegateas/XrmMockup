@@ -1,21 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Metadata;
-using XrmMockupShared.Plugin;
+﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+using DG.Tools.XrmMockup.SystemPlugins;
 using DG.XrmPluginCore.Enums;
 using DG.XrmPluginCore.Interfaces.Plugin;
-using DG.Tools.XrmMockup.SystemPlugins;
-using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing.Text;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using XrmMockupShared.Plugin;
 
 namespace DG.Tools.XrmMockup
 {
     internal class PluginManager
     {
+        // Static caches shared across all PluginManager instances
+        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>> _cachedRegisteredPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>>();
+        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>> _cachedSystemPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>>();
+        private static readonly ConcurrentDictionary<Type, IPlugin> _pluginInstanceCache = new ConcurrentDictionary<Type, IPlugin>();
+        private static readonly object _cacheLock = new object();
+
         // TODO: We can probably optimize lookup by creating a key record and using that instead of a Dictionary of Dictionaries
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
@@ -45,13 +53,48 @@ namespace DG.Tools.XrmMockup
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
-            // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
-            // TODO: How do we filter CustomAPIs?
-            // TODO: Should basePluginTypes act as an optional filter?
+            temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
-            RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
-            RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
-            RegisterSystemPlugins(registeredSystemPlugins, metadata);
+            var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes);
+            var systemCacheKey = "system_plugins";
+
+            // Check if we have cached results
+            if (_cachedRegisteredPlugins.ContainsKey(pluginCacheKey) && _cachedSystemPlugins.ContainsKey(systemCacheKey))
+            {
+                // Use cached results - no reflection/instantiation needed
+                registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
+                registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+            }
+            else
+            {
+                lock (_cacheLock)
+                {
+                    // Double-check locking pattern
+                    if (_cachedRegisteredPlugins.ContainsKey(pluginCacheKey) && _cachedSystemPlugins.ContainsKey(systemCacheKey))
+                    {
+                        registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
+                        registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+                    }
+                    else
+                    {
+                        // First time - do the work and cache it
+                        registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+                        registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+
+                        // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
+                        // TODO: How do we filter CustomAPIs?
+                        // TODO: Should basePluginTypes act as an optional filter?
+
+                        RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
+                        RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
+                        RegisterSystemPlugins(registeredSystemPlugins, metadata);
+
+                        // Cache for future instances
+                        _cachedRegisteredPlugins[pluginCacheKey] = ClonePluginDictionary(registeredPlugins);
+                        _cachedSystemPlugins[systemCacheKey] = ClonePluginDictionary(registeredSystemPlugins);
+                    }
+                }
+            }
         }
 
         internal List<string> PluginRegistrations => FlattenPluginDictionary(registeredPlugins);
@@ -104,7 +147,7 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
-            var plugin = Utility.CreatePluginInstance(pluginType);
+            var plugin = _pluginInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
             if (plugin == null)
             {
                 return;
@@ -345,6 +388,35 @@ namespace DG.Tools.XrmMockup
             }
 
             plugins.ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, core));
+        }
+
+        private string GeneratePluginCacheKey(IEnumerable<Type> basePluginTypes)
+        {
+            if (basePluginTypes == null) return "null_types";
+
+            var typeNames = basePluginTypes.Where(t => t != null).Select(t => t.FullName).OrderBy(n => n);
+            var combinedTypes = string.Join("|", typeNames);
+
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedTypes));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
+        private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> ClonePluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> source)
+        {
+            var result = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+            foreach (var operationEntry in source)
+            {
+                var stageDict = new Dictionary<ExecutionStage, List<PluginTrigger>>();
+                foreach (var stageEntry in operationEntry.Value)
+                {
+                    stageDict[stageEntry.Key] = new List<PluginTrigger>(stageEntry.Value);
+                }
+                result[operationEntry.Key] = stageDict;
+            }
+            return result;
         }
     }
 }

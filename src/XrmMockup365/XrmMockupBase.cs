@@ -98,6 +98,34 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
+        /// Create a new XrmMockup instance using cached static metadata
+        /// </summary>
+        protected XrmMockupBase(XrmMockupSettings settings, StaticMetadataCache staticCache) {
+            timers = new Dictionary<string, long>();
+            Settings = settings;
+            Metadata = staticCache.Metadata;
+            Workflows = staticCache.Workflows;
+            SecurityRoles = staticCache.SecurityRoles;
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Core = new Core(settings, staticCache);
+            timers[nameof(Core)] = stopwatch.ElapsedMilliseconds;
+
+            stopwatch.Restart();
+            ServiceFactory = new MockupServiceProviderAndFactory(Core);
+            timers[nameof(ServiceFactory)] = stopwatch.ElapsedMilliseconds;
+
+            if (settings.EnableProxyTypes == true) {
+                stopwatch.Restart();
+                // Proxy types are already set up in the static cache, just mark as enabled
+                HasProxyTypes = true;
+                timers[nameof(EnableProxyTypes)] = stopwatch.ElapsedMilliseconds;
+            }
+
+            stopwatch.Stop();
+        }
+
+        /// <summary>
         /// Enable early-bound types from the given context
         /// </summary>
         private void EnableProxyTypes() {

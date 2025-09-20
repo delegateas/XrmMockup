@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Linq;
 using DG.Tools.XrmMockup.Serialization;
 
 namespace DG.Tools.XrmMockup.Database {
     internal class DbTable : IEnumerable<DbRow> {
-        private Dictionary<Guid, DbRow> MainDict = new Dictionary<Guid, DbRow>();
+        private ConcurrentDictionary<Guid, DbRow> MainDict = new ConcurrentDictionary<Guid, DbRow>();
 
         public string TableName { get; set; }
         public EntityMetadata Metadata { get; set; }
@@ -36,8 +37,7 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public void Remove(Guid guid) {
-            if (MainDict.TryGetValue(guid, out DbRow row)) {
-                MainDict.Remove(guid);
+            if (MainDict.TryRemove(guid, out DbRow row)) {
                 row.MarkAsDeleted();
             } else {
                 throw new InvalidOperationException($"No record of type '{TableName}' exists with GUID={guid}");
@@ -45,11 +45,13 @@ namespace DG.Tools.XrmMockup.Database {
         }
 
         public IEnumerator<DbRow> GetEnumerator() {
-            return MainDict.Values.GetEnumerator();
+            // Return a snapshot to avoid collection modification exceptions during enumeration
+            return MainDict.Values.ToList().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
-            return MainDict.Values.GetEnumerator();
+            // Return a snapshot to avoid collection modification exceptions during enumeration
+            return MainDict.Values.ToList().GetEnumerator();
         }
 
         public DbTable Clone()
@@ -60,7 +62,7 @@ namespace DG.Tools.XrmMockup.Database {
                 TableName = this.TableName,
                 //_attributeMetadata = attributeMetadata,                
             };
-            var clonedMainDict = this.MainDict.ToDictionary(x => x.Key, x => x.Value.Clone(clonedTable));
+            var clonedMainDict = new ConcurrentDictionary<Guid, DbRow>(this.MainDict.ToDictionary(x => x.Key, x => x.Value.Clone(clonedTable)));
             clonedTable.MainDict = clonedMainDict;
             return clonedTable;
         }
@@ -78,7 +80,7 @@ namespace DG.Tools.XrmMockup.Database {
             var clonedTable = new DbTable(current.Metadata)
             {
                 TableName = current.TableName,
-                MainDict = model.Rows.ToDictionary(x => x.Key, x => DbRow.RestoreSerializableDTO(current, x.Value))
+                MainDict = new ConcurrentDictionary<Guid, DbRow>(model.Rows.ToDictionary(x => x.Key, x => DbRow.RestoreSerializableDTO(current, x.Value)))
             };
             return clonedTable;
         }
