@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFrameworks>net462;net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net462;net8.0</TargetFrameworks>
         <DebugType>portable</DebugType>
         <Title>XrmMockup365</Title>
     </PropertyGroup>
@@ -54,11 +54,6 @@
 		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net462\Metadata" />
 		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net462\Metadata" />
 		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net462\Metadata" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net6.0\Metadata" />
-		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe.config" Pack="true" PackagePath="content\net6.0\Metadata" />
-		<Content Include="..\..\files\TypeDeclarations.cs" Pack="true" PackagePath="content\net6.0\Metadata" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="..\MetadataGen\MetadataGenerator365\bin\$(Configuration)\net462\MetadataGenerator365.exe" Pack="true" PackagePath="content\net8.0\Metadata" />
