@@ -1,44 +1,35 @@
 ﻿using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.CustomApi;
 using DG.XrmPluginCore.Interfaces.Plugin;
-using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
 {
-    internal class MetadataRegistrationStrategy : IRegistrationStrategy
+    internal class MetadataRegistrationStrategy
     {
-        public IEnumerable<IPluginStepConfig> GetPluginRegistrations(Type basePluginType, IPlugin plugin, List<MetaPlugin> metaPlugins)
+        public IEnumerable<IPluginStepConfig> AnalyzeType(Type pluginType, List<MetaPlugin> metaPlugins)
         {
             // Retrieve registration from CRM metadata
             var metaSteps =
                 metaPlugins
                 .Where(x =>
-                    x.AssemblyName == basePluginType.FullName &&
-                    x.PluginTypeAssemblyName == basePluginType.Assembly.GetName().Name)
-                .ToList();
+                    x.AssemblyName == pluginType.FullName &&
+                    x.PluginTypeAssemblyName == pluginType.Assembly.GetName().Name);
 
-            // fallback for backwards compatability for old Metadata files
-            if (metaSteps == null || metaSteps.Count == 0)
+            // Fallback for backwards compatability for old Metadata files
+            if (!metaSteps.Any())
             {
                 metaSteps =
                     metaPlugins
-                    .Where(x => x.AssemblyName == basePluginType.FullName)
-                    .ToList();
-            }
-
-            if (metaSteps == null || metaSteps.Count == 0)
-            {
-                throw new MockupException($"Unknown plugin '{basePluginType.FullName}', please use DAXIF registration or make sure the plugin is uploaded to CRM.");
+                    .Where(x => x.AssemblyName == pluginType.FullName);
             }
 
             foreach (var metaStep in metaSteps)
             {
                 if (!Enum.TryParse<EventOperation>(metaStep.MessageName, true, out var eventOperation))
                 {
-                    throw new MockupException($"Unknown message '{metaStep.MessageName}' for plugin '{basePluginType.FullName}'");
+                    throw new MockupException($"Unknown message '{metaStep.MessageName}' for plugin '{pluginType.FullName}'");
                 }
 
                 yield return new PluginStepConfig
@@ -63,10 +54,5 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
                 };
             }
         }
-
-        public bool IsValidForPlugin(Type pluginType) => true;
-
-        public bool IsValidForCustomApi(Type pluginType) => false;
-        public ICustomApiConfig GetCustomApiRegistration(Type pluginType, IPlugin plugin) => throw new NotImplementedException();
     }
 }

@@ -7,7 +7,6 @@ using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -44,11 +43,10 @@ namespace DG.Tools.XrmMockup
             new SetAnnotationIsDocument()
         };
 
-        private readonly List<IRegistrationStrategy> registrationStrategies = new List<IRegistrationStrategy>
+        private readonly List<IRegistrationStrategy<IPluginStepConfig>> registrationStrategies = new List<IRegistrationStrategy<IPluginStepConfig>>
         {
-            new XrmPluginCoreRegistrationStrategy(),
-            new LegacyRegistrationStrategy(),
-            new MetadataRegistrationStrategy()
+            new Plugin.RegistrationStrategy.XrmPluginCore.PluginRegistrationStrategy(),
+            new Plugin.RegistrationStrategy.DAXIF.PluginRegistrationStrategy()
         };
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
@@ -145,7 +143,7 @@ namespace DG.Tools.XrmMockup
             SortAllLists(register);
         }
 
-        private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> metaPlugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {
             var plugin = _pluginInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
             if (plugin == null)
@@ -153,16 +151,17 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            // Filter the known strategies, with fallback to the metadata strategy
-            // TODO: Add ability to warn on no relevant strategy
-            var relevantStrategy = registrationStrategies.FirstOrDefault(r => r.IsValidForPlugin(pluginType))
-                ?? throw new MockupException($"No relevant registration strategy found for plugin '{pluginType.FullName}'.");
-
             // Get the plugin step registrations from the plugin type
             // and add discovered plugin triggers
-            var triggers = relevantStrategy
-                .GetPluginRegistrations(pluginType, plugin, plugins)
-                .Select(registration => new PluginTrigger(registration.EventOperation, registration.ExecutionStage, plugin.Execute, registration, metadata));
+            var triggers = registrationStrategies
+                .SelectMany(s => s.AnalyzeType(plugin))
+                .Concat(new MetadataRegistrationStrategy().AnalyzeType(pluginType, metaPlugins))
+                .Select(t => new PluginTrigger(t.EventOperation, t.ExecutionStage, plugin.Execute, t, metadata));
+
+            if (!triggers.Any())
+            {
+                throw new MockupException($"No plugin step registrations found for plugin '{pluginType.FullName}', please use XrmPluginCore, DAXIF registration, or make sure the plugin is uploaded to CRM and metadata has been updated.");
+            }
 
             foreach (var trigger in triggers)
             {

@@ -1,4 +1,5 @@
 ﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+using DG.XrmPluginCore.Interfaces.CustomApi;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Concurrent;
@@ -20,10 +21,10 @@ namespace DG.Tools.XrmMockup
 
         private Dictionary<string, Action<MockupServiceProviderAndFactory>> registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
 
-        private readonly List<IRegistrationStrategy> registrationStrategies = new List<IRegistrationStrategy>
+        private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
         {
-            new XrmPluginCoreRegistrationStrategy(),
-            new LegacyRegistrationStrategy()
+            new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(),
+            new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy()
         };
 
         public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
@@ -88,10 +89,10 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            var registrationStrategy = registrationStrategies.FirstOrDefault(s => s.IsValidForCustomApi(pluginType)) ??
-                throw new MockupException($"No registration strategy found for CustomApi '{plugin.GetType().FullName}'");
+            var registration = registrationStrategies
+                .SelectMany(s => s.AnalyzeType(plugin))
+                .SingleOrDefault() ?? throw new MockupException($"No, or multiple, CustomApi configurations found for '{plugin.GetType().FullName}'. Ensure each type has exactly one registration");
 
-            var registration = registrationStrategy.GetCustomApiRegistration(pluginType, plugin);
             registeredApis.Add($"{prefix}_{registration.UniqueName}", plugin.Execute);
         }
 

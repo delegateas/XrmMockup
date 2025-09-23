@@ -19,6 +19,7 @@
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<RootNamespace>DG.Tools.XrmMockup</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <Optimize>false</Optimize>
