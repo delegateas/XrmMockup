@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net462;net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net462;net8.0</TargetFrameworks>
 		<DebugType>portable</DebugType>
 		<Title>XrmMockup365Test</Title>
 	</PropertyGroup>
@@ -44,6 +44,9 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.7" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -56,5 +59,4 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-	<Import Project="..\SharedTests\SharedTests.projitems" Label="Shared" />
 </Project>
