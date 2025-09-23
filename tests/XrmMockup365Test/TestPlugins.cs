@@ -209,7 +209,11 @@ namespace DG.XrmMockupTest
             // Check if the plugin executed
             using (var xrm = new Xrm(orgAdminService))
             {
-                var createdLead = xrm.LeadSet.Where(l => l.ParentAccountId != null && l.ParentAccountId.Id == id && l.Subject.StartsWith(nameof(LegacyAccountPlugin))).ToList();
+                var createdLead = xrm.LeadSet
+                    .Where(l => l.ParentAccountId != null
+                        && l.ParentAccountId.Id == id
+                        && l.Subject.StartsWith(nameof(LegacyAccountPlugin)))
+                    .ToList();
 
                 Assert.Collection(createdLead,
                     lead => Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead ", lead.Subject),
