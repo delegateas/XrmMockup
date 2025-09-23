@@ -20,18 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MetadataGen", "MetadataGen", "{E75407BE-AEA4-480C-8307-1C41851DB58B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "versions", "versions", "{DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "XrmMockupShared", "src\XrmMockupShared\XrmMockupShared.shproj", "{D4F99F23-A452-4F6F-ABF4-54FC5C792D5A}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "XrmMockupWorkflow", "src\XrmMockupWorkflow\XrmMockupWorkflow.shproj", "{60CDD422-5F52-4D1F-B61C-B2BCEF09302B}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedTests", "tests\SharedTests\SharedTests.shproj", "{0D9BFA02-4E2D-4229-9256-7D4BF438B917}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedPluginsAndCodeactivites", "tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.shproj", "{90C1C72B-C544-485A-B718-ACFAEE516106}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataShared", "src\MetadataShared\MetadataShared.shproj", "{3C2BBE8A-2ACE-44CA-9994-49C768B2CA1D}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataSkeleton", "src\MetadataSkeleton\MetadataSkeleton.shproj", "{FDDB9BF5-4D33-495D-91A4-DFE919CF96CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataGenerator365", "src\MetadataGen\MetadataGenerator365\MetadataGenerator365.csproj", "{798DDA68-50B2-4596-800C-6BE2BFC2A6CC}"
@@ -85,29 +73,18 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0D9BFA02-4E2D-4229-9256-7D4BF438B917} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{90C1C72B-C544-485A-B718-ACFAEE516106} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{798DDA68-50B2-4596-800C-6BE2BFC2A6CC} = {E75407BE-AEA4-480C-8307-1C41851DB58B}
 		{5AA8D4E7-03AF-476B-B61F-5F9A6C5DADEA} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{54E48688-CE01-4310-90D9-0902E0A51814} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{8D6B46F6-D7BD-480D-9D63-3B00285079DD} = {DBD51D6F-392E-497E-B4F7-73D6CE6CBC34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7565DA42-40CA-442E-B85C-DB64B497DFAB}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		tests\SharedTests\SharedTests.projitems*{0d9bfa02-4e2d-4229-9256-7d4bf438b917}*SharedItemsImports = 13
-		src\MetadataShared\MetadataShared.projitems*{3c2bbe8a-2ace-44ca-9994-49c768b2ca1d}*SharedItemsImports = 13
 		tests\SharedTests\SharedTests.projitems*{54e48688-ce01-4310-90d9-0902e0a51814}*SharedItemsImports = 5
 		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{5aa8d4e7-03af-476b-b61f-5f9a6c5dadea}*SharedItemsImports = 5
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{60cdd422-5f52-4d1f-b61c-b2bcef09302b}*SharedItemsImports = 13
-		src\MetadataShared\MetadataShared.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{798dda68-50b2-4596-800c-6be2bfc2a6cc}*SharedItemsImports = 5
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
-		src\XrmMockupShared\XrmMockupShared.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
-		src\XrmMockupWorkflow\XrmMockupWorkflow.projitems*{8d6b46f6-d7bd-480d-9d63-3b00285079dd}*SharedItemsImports = 5
-		tests\SharedPluginsAndCodeactivites\SharedPluginsAndCodeactivites.projitems*{90c1c72b-c544-485a-b718-acfaee516106}*SharedItemsImports = 13
-		src\XrmMockupShared\XrmMockupShared.projitems*{d4f99f23-a452-4f6f-abf4-54fc5c792d5a}*SharedItemsImports = 13
 		src\MetadataSkeleton\MetadataSkeleton.projitems*{fddb9bf5-4d33-495d-91a4-dfe919cf96ce}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
