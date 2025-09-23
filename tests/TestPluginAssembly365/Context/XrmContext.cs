@@ -58272,7 +58272,1556 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             return service.Retrieve(id, attrs);
         }
     }
-    
+
+
+    /// <summary>
+    /// <para>Activity generated when a quote is closed.</para>
+    /// <para>Display Name: Quote Close</para>
+    /// </summary>
+    [EntityLogicalName("quoteclose")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class QuoteClose : ExtendedEntity<QuoteCloseState, QuoteClose_StatusCode>
+    {
+
+        public const string EntityLogicalName = "quoteclose";
+
+        public const int EntityTypeCode = 4211;
+
+        public QuoteClose() :
+                base(EntityLogicalName)
+        {
+        }
+
+        public QuoteClose(Guid Id) :
+                base(EntityLogicalName, Id)
+        {
+        }
+
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return GetDebuggerDisplay("subject");
+            }
+        }
+
+        [AttributeLogicalName("activityid")]
+        public override Guid Id
+        {
+            get
+            {
+                return base.Id;
+            }
+            set
+            {
+                SetId("activityid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the quote close activity.</para>
+        /// <para>Display Name: Quote Close</para>
+        /// </summary>
+        [AttributeLogicalName("activityid")]
+        public Guid? ActivityId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("activityid");
+            }
+            set
+            {
+                SetId("activityid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Additional information provided by the external application as JSON. For internal use only.</para>
+        /// <para>Display Name: Activity Additional Parameters</para>
+        /// </summary>
+        [AttributeLogicalName("activityadditionalparams")]
+        public string ActivityAdditionalParams
+        {
+            get
+            {
+                return GetAttributeValue<string>("activityadditionalparams");
+            }
+            set
+            {
+                SetAttributeValue("activityadditionalparams", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type of activity.</para>
+        /// <para>Display Name: Activity Type</para>
+        /// </summary>
+        [AttributeLogicalName("activitytypecode")]
+        public string ActivityTypeCode
+        {
+            get
+            {
+                return GetAttributeValue<string>("activitytypecode");
+            }
+        }
+
+        /// <summary>
+        /// <para>Actual duration of the quote close activity in minutes.</para>
+        /// <para>Display Name: Actual Duration </para>
+        /// </summary>
+        [AttributeLogicalName("actualdurationminutes")]
+        public int? ActualDurationMinutes
+        {
+            get
+            {
+                return GetAttributeValue<int?>("actualdurationminutes");
+            }
+            set
+            {
+                SetAttributeValue("actualdurationminutes", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Actual end time of the quote close activity.</para>
+        /// <para>Display Name: Closed Date</para>
+        /// </summary>
+        [AttributeLogicalName("actualend")]
+        public DateTime? ActualEnd
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("actualend");
+            }
+            set
+            {
+                SetAttributeValue("actualend", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Actual start time of the quote close activity.</para>
+        /// <para>Display Name: Actual Start</para>
+        /// </summary>
+        [AttributeLogicalName("actualstart")]
+        public DateTime? ActualStart
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("actualstart");
+            }
+            set
+            {
+                SetAttributeValue("actualstart", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Blind Carbon-copy (bcc) recipients of the activity.</para>
+        /// <para>Display Name: BCC</para>
+        /// </summary>
+        [AttributeLogicalName("bcc")]
+        public IEnumerable<ActivityParty> Bcc
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("bcc");
+            }
+            set
+            {
+                SetEntityCollection("bcc", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Category of the quote close activity.</para>
+        /// <para>Display Name: Category</para>
+        /// </summary>
+        [AttributeLogicalName("category")]
+        public string Category
+        {
+            get
+            {
+                return GetAttributeValue<string>("category");
+            }
+            set
+            {
+                SetAttributeValue("category", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Carbon-copy (cc) recipients of the activity.</para>
+        /// <para>Display Name: CC</para>
+        /// </summary>
+        [AttributeLogicalName("cc")]
+        public IEnumerable<ActivityParty> Cc
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("cc");
+            }
+            set
+            {
+                SetEntityCollection("cc", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows how contact about the social activity originated, such as from Twitter or Facebook. This field is read-only.</para>
+        /// <para>Display Name: Social Channel</para>
+        /// </summary>
+        [AttributeLogicalName("community")]
+        public socialprofile_community? Community
+        {
+            get
+            {
+                return GetOptionSetValue<socialprofile_community>("community");
+            }
+            set
+            {
+                SetOptionSetValue("community", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user who created the quote close activity.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the external party who created the record.</para>
+        /// <para>Display Name: Created By (External Party)</para>
+        /// </summary>
+        [AttributeLogicalName("createdbyexternalparty")]
+        public EntityReference CreatedByExternalParty
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdbyexternalparty");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the quote close activity was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who created the quoteclose.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Customer with which the activity is associated.</para>
+        /// <para>Display Name: Customers</para>
+        /// </summary>
+        [AttributeLogicalName("customers")]
+        public IEnumerable<ActivityParty> Customers
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("customers");
+            }
+            set
+            {
+                SetEntityCollection("customers", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the delivery of the activity was last attempted.</para>
+        /// <para>Display Name: Date Delivery Last Attempted</para>
+        /// </summary>
+        [AttributeLogicalName("deliverylastattemptedon")]
+        public DateTime? DeliveryLastAttemptedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("deliverylastattemptedon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Priority of delivery of the activity to the email server.</para>
+        /// <para>Display Name: Delivery Priority</para>
+        /// </summary>
+        [AttributeLogicalName("deliveryprioritycode")]
+        public activitypointer_deliveryprioritycode? DeliveryPriorityCode
+        {
+            get
+            {
+                return GetOptionSetValue<activitypointer_deliveryprioritycode>("deliveryprioritycode");
+            }
+            set
+            {
+                SetOptionSetValue("deliveryprioritycode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Activity generated when a quote is closed.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description
+        {
+            get
+            {
+                return GetAttributeValue<string>("description");
+            }
+            set
+            {
+                SetAttributeValue("description", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The message id of activity which is returned from Exchange Server.</para>
+        /// <para>Display Name: Exchange Item ID</para>
+        /// </summary>
+        [AttributeLogicalName("exchangeitemid")]
+        public string ExchangeItemId
+        {
+            get
+            {
+                return GetAttributeValue<string>("exchangeitemid");
+            }
+            set
+            {
+                SetAttributeValue("exchangeitemid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Exchange rate for the currency associated with the activitypointer with respect to the base currency.</para>
+        /// <para>Display Name: Exchange Rate</para>
+        /// </summary>
+        [AttributeLogicalName("exchangerate")]
+        public decimal? ExchangeRate
+        {
+            get
+            {
+                return GetAttributeValue<decimal?>("exchangerate");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the web link of Activity of type email.</para>
+        /// <para>Display Name: Exchange WebLink</para>
+        /// </summary>
+        [AttributeLogicalName("exchangeweblink")]
+        public string ExchangeWebLink
+        {
+            get
+            {
+                return GetAttributeValue<string>("exchangeweblink");
+            }
+            set
+            {
+                SetAttributeValue("exchangeweblink", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Person who the activity is from.</para>
+        /// <para>Display Name: From</para>
+        /// </summary>
+        [AttributeLogicalName("from")]
+        public IEnumerable<ActivityParty> From
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("from");
+            }
+            set
+            {
+                SetEntityCollection("from", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Sequence number of the import that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set
+            {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type of instance of a recurring series.</para>
+        /// <para>Display Name: Recurring Instance Type</para>
+        /// </summary>
+        [AttributeLogicalName("instancetypecode")]
+        public QuoteClose_InstanceTypeCode? InstanceTypeCode
+        {
+            get
+            {
+                return GetOptionSetValue<QuoteClose_InstanceTypeCode>("instancetypecode");
+            }
+        }
+
+        /// <summary>
+        /// <para>Information about whether the quote close activity was billed as part of resolving a case.</para>
+        /// <para>Display Name: Is Billed</para>
+        /// </summary>
+        [AttributeLogicalName("isbilled")]
+        public bool? IsBilled
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isbilled");
+            }
+            set
+            {
+                SetAttributeValue("isbilled", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Is Private</para>
+        /// </summary>
+        [AttributeLogicalName("ismapiprivate")]
+        public bool? IsMapiPrivate
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("ismapiprivate");
+            }
+            set
+            {
+                SetAttributeValue("ismapiprivate", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Information regarding whether the activity is a regular activity type or event type.</para>
+        /// <para>Display Name: Is Regular Activity</para>
+        /// </summary>
+        [AttributeLogicalName("isregularactivity")]
+        public bool? IsRegularActivity
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isregularactivity");
+            }
+        }
+
+        /// <summary>
+        /// <para>Information that specifies if the quote close activity was created from a workflow rule.</para>
+        /// <para>Display Name: Is Workflow Created</para>
+        /// </summary>
+        [AttributeLogicalName("isworkflowcreated")]
+        public bool? IsWorkflowCreated
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isworkflowcreated");
+            }
+            set
+            {
+                SetAttributeValue("isworkflowcreated", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Contains the date and time stamp of the last on hold time.</para>
+        /// <para>Display Name: Last On Hold Time</para>
+        /// </summary>
+        [AttributeLogicalName("lastonholdtime")]
+        public DateTime? LastOnHoldTime
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("lastonholdtime");
+            }
+            set
+            {
+                SetAttributeValue("lastonholdtime", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Left the voice mail</para>
+        /// <para>Display Name: Left Voice Mail</para>
+        /// </summary>
+        [AttributeLogicalName("leftvoicemail")]
+        public bool? LeftVoiceMail
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("leftvoicemail");
+            }
+            set
+            {
+                SetAttributeValue("leftvoicemail", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user who last modified the quote close activity.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the external party who modified the record.</para>
+        /// <para>Display Name: Modified By (External Party)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedbyexternalparty")]
+        public EntityReference ModifiedByExternalParty
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedbyexternalparty");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the quote close activity was last modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the delegate user who last modified the quoteclose.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows how long, in minutes, that the record was on hold.</para>
+        /// <para>Display Name: On Hold Time (Minutes)</para>
+        /// </summary>
+        [AttributeLogicalName("onholdtime")]
+        public int? OnHoldTime
+        {
+            get
+            {
+                return GetAttributeValue<int?>("onholdtime");
+            }
+        }
+
+        /// <summary>
+        /// <para>List of optional attendees for the activity.</para>
+        /// <para>Display Name: Optional Attendees</para>
+        /// </summary>
+        [AttributeLogicalName("optionalattendees")]
+        public IEnumerable<ActivityParty> OptionalAttendees
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("optionalattendees");
+            }
+            set
+            {
+                SetEntityCollection("optionalattendees", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Person who organized the activity.</para>
+        /// <para>Display Name: Organizer</para>
+        /// </summary>
+        [AttributeLogicalName("organizer")]
+        public IEnumerable<ActivityParty> Organizer
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("organizer");
+            }
+            set
+            {
+                SetEntityCollection("organizer", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time that the record was migrated.</para>
+        /// <para>Display Name: Record Created On</para>
+        /// </summary>
+        [AttributeLogicalName("overriddencreatedon")]
+        public DateTime? OverriddenCreatedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("overriddencreatedon");
+            }
+            set
+            {
+                SetAttributeValue("overriddencreatedon", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user or team who owns the activity.</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+            set
+            {
+                SetAttributeValue("ownerid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the business unit that owns the activity.</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the team that owns the activity.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the user that owns the activity.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+
+        /// <summary>
+        /// <para>Outsource vendor with which activity is associated.</para>
+        /// <para>Display Name: Outsource Vendors</para>
+        /// </summary>
+        [AttributeLogicalName("partners")]
+        public IEnumerable<ActivityParty> Partners
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("partners");
+            }
+            set
+            {
+                SetEntityCollection("partners", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Delay activity processing until</para>
+        /// </summary>
+        [AttributeLogicalName("postponeactivityprocessinguntil")]
+        public DateTime? PostponeActivityProcessingUntil
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("postponeactivityprocessinguntil");
+            }
+        }
+
+        /// <summary>
+        /// <para>Subject associated with the quote close activity.</para>
+        /// <para>Display Name: Subject</para>
+        /// </summary>
+        [AttributeLogicalName("subject")]
+        public string PrimaryNameField
+        {
+            get
+            {
+                return GetAttributeValue<string>("subject");
+            }
+            set
+            {
+                SetAttributeValue("subject", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Priority of the activity.</para>
+        /// <para>Display Name: Priority</para>
+        /// </summary>
+        [AttributeLogicalName("prioritycode")]
+        public QuoteClose_PriorityCode? PriorityCode
+        {
+            get
+            {
+                return GetOptionSetValue<QuoteClose_PriorityCode>("prioritycode");
+            }
+            set
+            {
+                SetOptionSetValue("prioritycode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the Process.</para>
+        /// <para>Display Name: Process</para>
+        /// </summary>
+        [AttributeLogicalName("processid")]
+        public Guid? ProcessId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("processid");
+            }
+            set
+            {
+                SetAttributeValue("processid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the quote with which the quote close activity is associated.</para>
+        /// <para>Display Name: Quote</para>
+        /// </summary>
+        [AttributeLogicalName("quoteid")]
+        public EntityReference QuoteId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("quoteid");
+            }
+            set
+            {
+                SetAttributeValue("quoteid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Quote number.</para>
+        /// <para>Display Name: Quote Number</para>
+        /// </summary>
+        [AttributeLogicalName("quotenumber")]
+        public string QuoteNumber
+        {
+            get
+            {
+                return GetAttributeValue<string>("quotenumber");
+            }
+            set
+            {
+                SetAttributeValue("quotenumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the object with which the activity is associated.</para>
+        /// <para>Display Name: Regarding</para>
+        /// </summary>
+        [AttributeLogicalName("regardingobjectid")]
+        public EntityReference RegardingObjectId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("regardingobjectid");
+            }
+            set
+            {
+                SetAttributeValue("regardingobjectid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>List of required attendees for the activity.</para>
+        /// <para>Display Name: Required Attendees</para>
+        /// </summary>
+        [AttributeLogicalName("requiredattendees")]
+        public IEnumerable<ActivityParty> RequiredAttendees
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("requiredattendees");
+            }
+            set
+            {
+                SetEntityCollection("requiredattendees", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Users or facility/equipment that are required for the activity.</para>
+        /// <para>Display Name: Resources</para>
+        /// </summary>
+        [AttributeLogicalName("resources")]
+        public IEnumerable<ActivityParty> Resources
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("resources");
+            }
+            set
+            {
+                SetEntityCollection("resources", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Quote revision number.</para>
+        /// <para>Display Name: Revision</para>
+        /// </summary>
+        [AttributeLogicalName("revision")]
+        public int? Revision
+        {
+            get
+            {
+                return GetAttributeValue<int?>("revision");
+            }
+            set
+            {
+                SetAttributeValue("revision", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the service level agreement (SLA) that you want to apply to the case record.</para>
+        /// <para>Display Name: SLA</para>
+        /// </summary>
+        [AttributeLogicalName("slaid")]
+        public EntityReference SLAId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("slaid");
+            }
+            set
+            {
+                SetAttributeValue("slaid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Last SLA that was applied to this case. This field is for internal use only.</para>
+        /// <para>Display Name: Last SLA applied</para>
+        /// </summary>
+        [AttributeLogicalName("slainvokedid")]
+        public EntityReference SLAInvokedId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("slainvokedid");
+            }
+        }
+
+        /// <summary>
+        /// <para>Scheduled duration of the quote close activity, specified in minutes.</para>
+        /// <para>Display Name: Scheduled Duration</para>
+        /// </summary>
+        [AttributeLogicalName("scheduleddurationminutes")]
+        public int? ScheduledDurationMinutes
+        {
+            get
+            {
+                return GetAttributeValue<int?>("scheduleddurationminutes");
+            }
+        }
+
+        /// <summary>
+        /// <para>Scheduled end time of the quote close activity.</para>
+        /// <para>Display Name: Scheduled End</para>
+        /// </summary>
+        [AttributeLogicalName("scheduledend")]
+        public DateTime? ScheduledEnd
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("scheduledend");
+            }
+            set
+            {
+                SetAttributeValue("scheduledend", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Scheduled start time of the quote close activity.</para>
+        /// <para>Display Name: Scheduled Start</para>
+        /// </summary>
+        [AttributeLogicalName("scheduledstart")]
+        public DateTime? ScheduledStart
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("scheduledstart");
+            }
+            set
+            {
+                SetAttributeValue("scheduledstart", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the mailbox associated with the sender of the email message.</para>
+        /// <para>Display Name: Sender's Mailbox</para>
+        /// </summary>
+        [AttributeLogicalName("sendermailboxid")]
+        public EntityReference SenderMailboxId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("sendermailboxid");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the activity was sent.</para>
+        /// <para>Display Name: Date Sent</para>
+        /// </summary>
+        [AttributeLogicalName("senton")]
+        public DateTime? SentOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("senton");
+            }
+        }
+
+        /// <summary>
+        /// <para>Uniqueidentifier specifying the id of recurring series of an instance.</para>
+        /// <para>Display Name: Series Id</para>
+        /// </summary>
+        [AttributeLogicalName("seriesid")]
+        public Guid? SeriesId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("seriesid");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the service with which the quote close activity is associated.</para>
+        /// <para>Display Name: Service</para>
+        /// </summary>
+        [AttributeLogicalName("serviceid")]
+        public EntityReference ServiceId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("serviceid");
+            }
+            set
+            {
+                SetAttributeValue("serviceid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the date and time by which the activities are sorted.</para>
+        /// <para>Display Name: Sort Date</para>
+        /// </summary>
+        [AttributeLogicalName("sortdate")]
+        public DateTime? SortDate
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("sortdate");
+            }
+            set
+            {
+                SetAttributeValue("sortdate", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the Stage.</para>
+        /// <para>Display Name: (Deprecated) Process Stage</para>
+        /// </summary>
+        [AttributeLogicalName("stageid")]
+        public Guid? StageId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("stageid");
+            }
+            set
+            {
+                SetAttributeValue("stageid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows whether the quote close activity is open, completed, or canceled.  By default, quote close activities are completed.</para>
+        /// <para>Display Name: Status</para>
+        /// </summary>
+        [AttributeLogicalName("statecode")]
+        public QuoteCloseState? StateCode
+        {
+            get
+            {
+                return GetOptionSetValue<QuoteCloseState>("statecode");
+            }
+            set
+            {
+                SetOptionSetValue("statecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Reason for the status of the quote close activity.</para>
+        /// <para>Display Name: Status Reason</para>
+        /// </summary>
+        [AttributeLogicalName("statuscode")]
+        public QuoteClose_StatusCode? StatusCode
+        {
+            get
+            {
+                return GetOptionSetValue<QuoteClose_StatusCode>("statuscode");
+            }
+            set
+            {
+                SetOptionSetValue("statuscode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Subcategory of the quote close activity.</para>
+        /// <para>Display Name: Sub-Category</para>
+        /// </summary>
+        [AttributeLogicalName("subcategory")]
+        public string Subcategory
+        {
+            get
+            {
+                return GetAttributeValue<string>("subcategory");
+            }
+            set
+            {
+                SetAttributeValue("subcategory", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Subject associated with the quote close activity.</para>
+        /// <para>Display Name: Subject</para>
+        /// </summary>
+        [AttributeLogicalName("subject")]
+        public string Subject
+        {
+            get
+            {
+                return GetAttributeValue<string>("subject");
+            }
+            set
+            {
+                SetAttributeValue("subject", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Time Zone Rule Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("timezoneruleversionnumber")]
+        public int? TimeZoneRuleVersionNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("timezoneruleversionnumber");
+            }
+            set
+            {
+                SetAttributeValue("timezoneruleversionnumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Person who is the receiver of the activity.</para>
+        /// <para>Display Name: To</para>
+        /// </summary>
+        [AttributeLogicalName("to")]
+        public IEnumerable<ActivityParty> To
+        {
+            get
+            {
+                return GetEntityCollection<ActivityParty>("to");
+            }
+            set
+            {
+                SetEntityCollection("to", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the currency associated with the activitypointer.</para>
+        /// <para>Display Name: Currency</para>
+        /// </summary>
+        [AttributeLogicalName("transactioncurrencyid")]
+        public EntityReference TransactionCurrencyId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("transactioncurrencyid");
+            }
+            set
+            {
+                SetAttributeValue("transactioncurrencyid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: (Deprecated) Traversed Path</para>
+        /// </summary>
+        [AttributeLogicalName("traversedpath")]
+        public string TraversedPath
+        {
+            get
+            {
+                return GetAttributeValue<string>("traversedpath");
+            }
+            set
+            {
+                SetAttributeValue("traversedpath", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Time zone code that was in use when the record was created.</para>
+        /// <para>Display Name: UTC Conversion Time Zone Code</para>
+        /// </summary>
+        [AttributeLogicalName("utcconversiontimezonecode")]
+        public int? UTCConversionTimeZoneCode
+        {
+            get
+            {
+                return GetAttributeValue<int?>("utcconversiontimezonecode");
+            }
+            set
+            {
+                SetAttributeValue("utcconversiontimezonecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Version number of the activity.</para>
+        /// <para>Display Name: Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber
+        {
+            get
+            {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+
+
+        [RelationshipSchemaName("CampaignResponse_QuoteCloses")]
+        public IEnumerable<CampaignResponse> CampaignResponse_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntities<CampaignResponse>("CampaignResponse_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntities("CampaignResponse_QuoteCloses", null, value);
+            }
+        }
+
+
+        [RelationshipSchemaName("QuoteClose_SyncErrors")]
+        public IEnumerable<SyncError> QuoteClose_SyncErrors
+        {
+            get
+            {
+                return GetRelatedEntities<SyncError>("QuoteClose_SyncErrors", null);
+            }
+            set
+            {
+                SetRelatedEntities("QuoteClose_SyncErrors", null, value);
+            }
+        }
+
+        [AttributeLogicalName("quoteid")]
+        [RelationshipSchemaName("Quote_QuoteClose")]
+        public Quote Quote_QuoteClose
+        {
+            get
+            {
+                return GetRelatedEntity<Quote>("Quote_QuoteClose", null);
+            }
+            set
+            {
+                SetRelatedEntity("Quote_QuoteClose", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("account_QuoteCloses")]
+        public Account account_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Account>("account_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("account_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("activityid")]
+        [RelationshipSchemaName("activity_pointer_quote_close")]
+        public ActivityPointer activity_pointer_quote_close
+        {
+            get
+            {
+                return GetRelatedEntity<ActivityPointer>("activity_pointer_quote_close", null);
+            }
+            set
+            {
+                SetRelatedEntity("activity_pointer_quote_close", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("bookableresourcebooking_QuoteCloses")]
+        public BookableResourceBooking bookableresourcebooking_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<BookableResourceBooking>("bookableresourcebooking_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("bookableresourcebooking_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owningbusinessunit")]
+        [RelationshipSchemaName("business_unit_quote_close_activities")]
+        public BusinessUnit business_unit_quote_close_activities
+        {
+            get
+            {
+                return GetRelatedEntity<BusinessUnit>("business_unit_quote_close_activities", null);
+            }
+            set
+            {
+                SetRelatedEntity("business_unit_quote_close_activities", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("entitlement_QuoteCloses")]
+        public Entitlement entitlement_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Entitlement>("entitlement_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("entitlement_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("incident_QuoteCloses")]
+        public Incident incident_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Incident>("incident_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("incident_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("knowledgearticle_QuoteCloses")]
+        public KnowledgeArticle knowledgearticle_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<KnowledgeArticle>("knowledgearticle_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("knowledgearticle_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("lead_QuoteCloses")]
+        public Lead lead_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Lead>("lead_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("lead_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_quoteclose_createdby")]
+        public SystemUser lk_quoteclose_createdby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quoteclose_createdby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quoteclose_createdby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_quoteclose_createdonbehalfby")]
+        public SystemUser lk_quoteclose_createdonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quoteclose_createdonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quoteclose_createdonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_quoteclose_modifiedby")]
+        public SystemUser lk_quoteclose_modifiedby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quoteclose_modifiedby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quoteclose_modifiedby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_quoteclose_modifiedonbehalfby")]
+        public SystemUser lk_quoteclose_modifiedonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quoteclose_modifiedonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quoteclose_modifiedonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("opportunity_QuoteCloses")]
+        public Opportunity opportunity_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Opportunity>("opportunity_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("opportunity_QuoteCloses", null, value);
+            }
+        }
+
+        [AttributeLogicalName("regardingobjectid")]
+        [RelationshipSchemaName("quote_QuoteCloses")]
+        public Quote quote_QuoteCloses
+        {
+            get
+            {
+                return GetRelatedEntity<Quote>("quote_QuoteCloses", null);
+            }
+            set
+            {
+                SetRelatedEntity("quote_QuoteCloses", null, value);
+            }
+        }
+
+        [RelationshipSchemaName("quoteclose_activity_parties")]
+        public IEnumerable<ActivityParty> quoteclose_activity_parties
+        {
+            get
+            {
+                return GetRelatedEntities<ActivityParty>("quoteclose_activity_parties", null);
+            }
+            set
+            {
+                SetRelatedEntities("quoteclose_activity_parties", null, value);
+            }
+        }
+
+        [AttributeLogicalName("sendermailboxid")]
+        [RelationshipSchemaName("quoteclose_mailbox_sendermailboxid")]
+        public Mailbox quoteclose_mailbox_sendermailboxid
+        {
+            get
+            {
+                return GetRelatedEntity<Mailbox>("quoteclose_mailbox_sendermailboxid", null);
+            }
+            set
+            {
+                SetRelatedEntity("quoteclose_mailbox_sendermailboxid", null, value);
+            }
+        }
+
+        [AttributeLogicalName("slaid")]
+        [RelationshipSchemaName("quoteclose_sla_slaid")]
+        public SLA quoteclose_sla_slaid
+        {
+            get
+            {
+                return GetRelatedEntity<SLA>("quoteclose_sla_slaid", null);
+            }
+            set
+            {
+                SetRelatedEntity("quoteclose_sla_slaid", null, value);
+            }
+        }
+
+        [AttributeLogicalName("slainvokedid")]
+        [RelationshipSchemaName("quoteclose_sla_slainvokedid")]
+        public SLA quoteclose_sla_slainvokedid
+        {
+            get
+            {
+                return GetRelatedEntity<SLA>("quoteclose_sla_slainvokedid", null);
+            }
+            set
+            {
+                SetRelatedEntity("quoteclose_sla_slainvokedid", null, value);
+            }
+        }
+
+        [AttributeLogicalName("transactioncurrencyid")]
+        [RelationshipSchemaName("quoteclose_transactioncurrency_transactioncurrencyid")]
+        public TransactionCurrency quoteclose_transactioncurrency_transactioncurrencyid
+        {
+            get
+            {
+                return GetRelatedEntity<TransactionCurrency>("quoteclose_transactioncurrency_transactioncurrencyid", null);
+            }
+            set
+            {
+                SetRelatedEntity("quoteclose_transactioncurrency_transactioncurrencyid", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owningteam")]
+        [RelationshipSchemaName("team_quoteclose")]
+        public Team team_quoteclose
+        {
+            get
+            {
+                return GetRelatedEntity<Team>("team_quoteclose", null);
+            }
+            set
+            {
+                SetRelatedEntity("team_quoteclose", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owninguser")]
+        [RelationshipSchemaName("user_quoteclose")]
+        public SystemUser user_quoteclose
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("user_quoteclose", null);
+            }
+            set
+            {
+                SetRelatedEntity("user_quoteclose", null, value);
+            }
+        }
+
+        public static QuoteClose Retrieve(IOrganizationService service, Guid id, params Expression<Func<QuoteClose, object>>[] attrs)
+        {
+            return service.Retrieve(id, attrs);
+        }
+    }
+
     /// <summary>
     /// <para>Represents a model to evaluate skills or other related entities.</para>
     /// <para>Display Name: Rating Model</para>
@@ -98665,5 +100214,63 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
         
         [EnumMember()]
         Canceled = 690970003,
+    }
+
+    [DataContract()]
+    public enum QuoteCloseState
+    {
+        [EnumMember()]
+        Open = 0,
+
+        [EnumMember()]
+        Completed = 1,
+
+        [EnumMember()]
+        Canceled = 2,
+    }
+
+    [DataContract()]
+    public enum QuoteClose_InstanceTypeCode
+    {
+        [EnumMember()]
+        NotRecurring = 0,
+
+        [EnumMember()]
+        RecurringMaster = 1,
+
+        [EnumMember()]
+        RecurringInstance = 2,
+
+        [EnumMember()]
+        RecurringException = 3,
+
+        [EnumMember()]
+        RecurringFutureException = 4,
+    }
+
+    [DataContract()]
+    public enum QuoteClose_PriorityCode
+    {
+        [EnumMember()]
+        Low = 0,
+
+        [EnumMember()]
+        Normal = 1,
+
+        [EnumMember()]
+        High = 2,
+    }
+
+    [DataContract()]
+    public enum QuoteClose_StatusCode
+    {
+        [EnumMember()]
+        Open = 1,
+
+        [EnumMember()]
+        Completed = 2,
+
+        [EnumMember()]
+        Canceled = 3,
     }
 }

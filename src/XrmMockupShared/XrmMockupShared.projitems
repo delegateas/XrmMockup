@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MockupServiceAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CustomApiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormulaFieldEvaluator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)requests\CloseQuoteRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\CommitFileBlocksUploadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\ExecuteTransactionRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)requests\RetrieveAllEntitiesRequestHandler.cs" />
@@ -25,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requests\UploadBlockRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\InitializeFileBlocksUploadRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requests\SendEmailRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)requests\WinQuoteRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\DbDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\OptionSetCollectionDTO.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\EntityReferenceDTO.cs" />
