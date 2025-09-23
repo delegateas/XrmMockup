@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\Plugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Daxif\bin\Delegate.Daxif.dll" />
