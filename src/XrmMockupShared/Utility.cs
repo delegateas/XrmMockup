@@ -75,7 +75,6 @@ namespace DG.Tools.XrmMockup
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata,
             ColumnSet colsToKeep) where T : Entity
         {
-
             if (colsToKeep != null && !colsToKeep.AllColumns)
             {
                 foreach (var col in colsToKeep.Columns)
@@ -1030,7 +1029,6 @@ namespace DG.Tools.XrmMockup
 
         internal static Entity ToActivityPointer(this Entity entity, EntityMetadata entityMetadata)
         {
-
             if (!entityMetadata.IsActivity.GetValueOrDefault()) return null;
 
             var pointer = new Entity("activitypointer")
