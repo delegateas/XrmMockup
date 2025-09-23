@@ -406,6 +406,8 @@ namespace DG.Tools.XrmMockup
             new UpdateMultipleRequestHandler(this, db, metadata, security),
             new UpsertMultipleRequestHandler(this, db, metadata, security),
             new ExecuteTransactionRequestHandler(this, db, metadata, security),
+            new WinQuoteRequestHandler(this, db, metadata, security),
+            new CloseQuoteRequestHandler(this, db, metadata, security),
         };
 
         internal void EnableProxyTypes(Assembly assembly)
