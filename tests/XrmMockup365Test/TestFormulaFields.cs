@@ -1,10 +1,11 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using DG.XrmMockupTest;
 using Microsoft.Xrm.Sdk;
 using System;
 using Xunit;
 
-namespace DG.XrmMockupTest
+namespace XrmMockup365Test
 {
     public class TestFormulaFields : UnitTestBase, IOrganizationServiceFactory
     {

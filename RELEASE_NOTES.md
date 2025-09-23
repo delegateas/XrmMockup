@@ -1,7 +1,3 @@
-### 1.15.4-rc1 - 23 June 2025
-* Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
-* Add: Caching of the static parts of XrmMockup, such that each test can get its own instance with their own db. (@magesoe)
-
 ### 1.15.3 - 17 June 2025
 * Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
 * Fix: Make ToActivityPointer support custom activities by using the metadata provided objecttypecode for activitytypecode (@nedergaardcloud)
