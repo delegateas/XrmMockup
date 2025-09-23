@@ -1,3 +1,7 @@
+### 1.15.4 - 23 September 2025
+* Add: Caching of the static parts of XrmMockup, such that each test can get its own instance with their own db. (@magesoe)
+* Add: Support for Win- & CloseQuoteRequestHandlers (@Lucki2g)
+
 ### 1.15.3 - 17 June 2025
 * Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
 * Fix: Make ToActivityPointer support custom activities by using the metadata provided objecttypecode for activitytypecode (@nedergaardcloud)
