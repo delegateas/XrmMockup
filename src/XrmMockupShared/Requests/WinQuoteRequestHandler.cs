@@ -11,7 +11,9 @@ namespace DG.Tools.XrmMockup
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<WinQuoteRequest>(orgRequest);
-            Utility.CloseQuote(core, QuoteState.Won, request.Status, request.QuoteClose, userRef);
+            // default status to Won if set to -1 as standard by Dynamics
+            var status = request.Status.Value == -1 ? new OptionSetValue((int)Quote_StatusCode.Won) : request.Status;
+            Utility.CloseQuote(core, QuoteState.Won, status, request.QuoteClose, userRef);
             return new WinQuoteResponse();
         }
     }
