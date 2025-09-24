@@ -1,6 +1,13 @@
-### 1.15.4-rc1 - 23 June 2025
+### 1.16.2-rc1 - 24 September 2025
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+
+### 1.16.1 - 23 September 2025
+* Add: Support for Win- & CloseQuoteRequestHandlers (@Lucki2g)
+
+### 1.16.0 - 12 September 2025
 * Add: Caching of the static parts of XrmMockup, such that each test can get its own instance with their own db. (@magesoe)
+* Add: Support for OverrideCreatedOn (@AnyTick)
+* Fix: In/NotIn operators in FetchXML parsing (@AnyTick)
 
 ### 1.15.3 - 17 June 2025
 * Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
