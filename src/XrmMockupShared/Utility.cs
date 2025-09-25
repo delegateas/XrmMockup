@@ -141,14 +141,13 @@ namespace DG.Tools.XrmMockup
 
         internal static void CloseOpportunity(Core core, OpportunityState state, OptionSetValue status, Entity opportunityClose, EntityReference userRef)
         {
-            var setStateHandler = core.RequestHandlers.Find(x => x is SetStateRequestHandler);
             var req = new SetStateRequest()
             {
                 EntityMoniker = opportunityClose.GetAttributeValue<EntityReference>("opportunityid"),
                 State = new OptionSetValue((int)state),
                 Status = status
             };
-            setStateHandler.Execute(req, userRef);
+            core.Execute(req, userRef);
 
             var create = new CreateRequest
             {
@@ -159,14 +158,13 @@ namespace DG.Tools.XrmMockup
 
         internal static void CloseQuote(Core core, QuoteState state, OptionSetValue status, Entity quoteClose, EntityReference userRef)
         {
-            var setStateHandler = core.RequestHandlers.Find(x => x is SetStateRequestHandler);
             var req = new SetStateRequest()
             {
                 EntityMoniker = quoteClose.GetAttributeValue<EntityReference>("quoteid"),
                 State = new OptionSetValue((int)state),
                 Status = status
             };
-            setStateHandler.Execute(req, userRef);
+            core.Execute(req, userRef);
 
             var create = new CreateRequest
             {
