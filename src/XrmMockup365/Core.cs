@@ -1062,6 +1062,8 @@ namespace DG.Tools.XrmMockup
             {
                 case "LoseOpportunity": return "Lose";
                 case "WinOpportunity": return "Win";
+                case "CloseQuote": return "Lose";
+                case "WinQuote": return "Win";
                 default: return requestName;
             }
         }
@@ -1174,6 +1176,13 @@ namespace DG.Tools.XrmMockup
                     ? (request as WinOpportunityRequest).OpportunityClose
                     : (request as LoseOpportunityRequest).OpportunityClose;
                 obj = close.GetAttributeValue<EntityReference>("opportunityid");
+            }
+            else if (request is WinQuoteRequest || request is CloseQuoteRequest)
+            {
+                var close = request is WinQuoteRequest
+                    ? (request as WinQuoteRequest).QuoteClose
+                    : (request as CloseQuoteRequest).QuoteClose;
+                obj = close.GetAttributeValue<EntityReference>("quoteid");
             }
             else if (request is CloseIncidentRequest closeIncidentRequest)
             {

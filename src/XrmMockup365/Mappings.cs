@@ -54,6 +54,8 @@ namespace DG.Tools.XrmMockup {
             { typeof(UpsertRequest), EventOperation.Upsert },
             { typeof(WinOpportunityRequest), EventOperation.Win },
             { typeof(LoseOpportunityRequest), EventOperation.Lose },
+            { typeof(WinQuoteRequest), EventOperation.Win },
+            { typeof(CloseQuoteRequest), EventOperation.Lose },
             { typeof(CloseIncidentRequest), EventOperation.Close },
             { typeof(CreateMultipleRequest), EventOperation.CreateMultiple },
             { typeof(UpdateMultipleRequest), EventOperation.UpdateMultiple },
@@ -181,6 +183,10 @@ namespace DG.Tools.XrmMockup {
                     return winOpportunityRequest.OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
                 case LoseOpportunityRequest loseOpportunityRequest:
                     return loseOpportunityRequest.OpportunityClose.GetAttributeValue<EntityReference>("opportunityid");
+                case WinQuoteRequest winQuoteRequest:
+                    return winQuoteRequest.QuoteClose.GetAttributeValue<EntityReference>("quoteid");
+                case CloseQuoteRequest closeQuoteRequest:
+                    return closeQuoteRequest.QuoteClose.GetAttributeValue<EntityReference>("quoteid");
                 case RetrieveMultipleRequest retrieveMultipleRequest:
                     return GetPrimaryEntityReferenceFromQuery(retrieveMultipleRequest.Query);
                 case CloseIncidentRequest closeIncidentRequest:
