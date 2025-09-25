@@ -1,4 +1,5 @@
 ### 1.16.2-rc1 - 24 September 2025
+* Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
 * Fix: Improve implementation of Win- and CloseQuoteRequestHandlers (@Lucki2g)
 
