@@ -1,5 +1,6 @@
 ### 1.16.2-rc1 - 24 September 2025
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+* Fix: Improve implementation of Win- and CloseQuoteRequestHandlers (@Lucki2g)
 
 ### 1.16.1 - 23 September 2025
 * Add: Support for Win- & CloseQuoteRequestHandlers (@Lucki2g)
