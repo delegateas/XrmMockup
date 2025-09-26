@@ -632,27 +632,42 @@ namespace DG.Tools.XrmMockup
                 return obj;
         }
 
-        public static object ConvertTo(object obj, Type targetType)
+        public static object ConvertTo(object value, Type targetType)
         {
-            if (targetType == null) { return obj; }
-            if (obj is string && !typeof(IConvertible).IsAssignableFrom(targetType))
-            {
-                var parse = targetType.GetMethod(
-                    nameof(Guid.Parse),
-                    BindingFlags.Static | BindingFlags.Public,
-                    null,
-                    new[] { typeof(string) },
-                    null);
-
-                if (parse != null)
-                {
-                    return parse.Invoke(null, new[] { obj });
-                }
-
-                return obj;
+            // If the value, or target type, are null, nothing to convert, return the value
+            if (targetType is null || value is null) {
+                return value;
             }
 
-            return Convert.ChangeType(obj, targetType);
+            var valueType = value.GetType();
+            if (valueType == targetType || (Nullable.GetUnderlyingType(targetType) != null && valueType == Nullable.GetUnderlyingType(targetType)))
+            {
+                // If the types match, just return the object
+                return value;
+            }
+
+            // We might be trying to convert a string 0, or 1 to a bool
+            if ((targetType == typeof(bool) || targetType == typeof(bool?)) && (value is string str && decimal.TryParse(str, out var numericValue)))
+            {
+                return numericValue != 0;
+            }
+
+            // Can we convert from the value's type converter to the target type?
+            var valueConverter = System.ComponentModel.TypeDescriptor.GetConverter(valueType);
+            if (valueConverter.CanConvertTo(targetType))
+            {
+                return valueConverter.ConvertTo(value, targetType);
+            }
+
+            // Can we convert to the target's type using the target type converter?
+            var targetConverter = System.ComponentModel.TypeDescriptor.GetConverter(targetType);
+            if (targetConverter.CanConvertFrom(valueType))
+            {
+                return targetConverter.ConvertFrom(value);
+            }
+
+            // Fallback to Convert.ChangeType which handles most IConvertible types
+            return Convert.ChangeType(value, targetType);
         }
 
         public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
@@ -668,9 +683,9 @@ namespace DG.Tools.XrmMockup
                 case ConditionOperator.Equal:
                     if (attr == null) return false;
 
-                    if (attr.GetType() == typeof(string))
+                    if (attr is string attrStr)
                     {
-                        return (attr as string).Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
+                        return attrStr.Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
@@ -772,10 +787,10 @@ namespace DG.Tools.XrmMockup
                         return date.Date == now.AddDays(1).Date;
                     }
                 case ConditionOperator.In:
-                    return values.Contains(values.FirstOrDefault() is Guid ? attr : $"{attr}");
+                    return values.Contains(ConvertTo(attr, values.FirstOrDefault()?.GetType()));
 
                 case ConditionOperator.NotIn:
-                    return !values.Contains(values.FirstOrDefault() is Guid ? attr : $"{attr}");
+                    return !values.Contains(ConvertTo(attr, values.FirstOrDefault()?.GetType()));
 
                 case ConditionOperator.BeginsWith:
                     if (attr == null) return false;
