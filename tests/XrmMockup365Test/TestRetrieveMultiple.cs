@@ -78,20 +78,24 @@ namespace DG.XrmMockupTest
             lead1 = new Lead()
             {
                 Subject = "Some contact lead " + rand.Next(0, 1000),
-                ParentContactId = contact1.ToEntityReference()
+                ParentContactId = contact1.ToEntityReference(),
+                DoNotFax = true
             };
             lead2 = new Lead()
             {
                 Subject = "Some contact lead " + rand.Next(0, 1000),
-                ParentContactId = contact2.ToEntityReference()
+                ParentContactId = contact2.ToEntityReference(),
+                DoNotFax = true
             };
             lead3 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000)
+                Subject = "Some new lead " + rand.Next(0, 1000),
+                DoNotFax = true
             };
             lead4 = new Lead()
             {
-                Subject = "Some new lead " + rand.Next(0, 1000)
+                Subject = "Some new lead " + rand.Next(0, 1000),
+                DoNotFax = true
             };
 
             lead1.Id = orgAdminUIService.Create(lead1);
@@ -663,6 +667,35 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestQueryExpressionInGuidAndState()
+        {
+            var query = new QueryExpression("lead")
+            {
+                Distinct = true,
+                ColumnSet = new ColumnSet("subject", "parentcontactid", "statecode"),
+            };
+
+            var filter = new FilterExpression();
+            filter.Conditions.Add(new ConditionExpression("parentcontactid", ConditionOperator.In, new Guid[] { contact1.Id, contact2.Id, Guid.NewGuid() }));
+            filter.Conditions.Add(new ConditionExpression("donotfax", ConditionOperator.Equal, true));
+
+            var statecodes = new object[] { (int)LeadState.Open, (int)LeadState.Qualified, (int)LeadState.Disqualified };
+            filter.Conditions.Add(new ConditionExpression("statecode", ConditionOperator.In, statecodes));
+
+            query.Criteria.Filters.Add(filter);
+
+            var res = orgAdminService
+                .RetrieveMultiple(query)
+                .Entities
+                .Cast<Lead>()
+                .ToList();
+
+            Assert.Equal(2, res.Count);
+            Assert.Contains(res, x => x.Id == lead1.Id);
+            Assert.Contains(res, x => x.Id == lead2.Id);
+        }
+
+        [Fact]
         public void TestFetchExpressionIn()
         {
             var fetchXml =
@@ -671,7 +704,10 @@ namespace DG.XrmMockupTest
                         <attribute name='parentcontactid' />
                         <attribute name='description' />
                         <filter>
-                            <condition attribute='parentcontactid' operator='in'><value>{contact1.Id}</value><value>{contact2.Id}</value></condition>
+                            <condition attribute='parentcontactid' operator='in'>
+                                <value>{contact1.Id}</value>
+                                <value>{contact2.Id}</value>
+                            </condition>
                         </filter>
                     </entity>
                 </fetch>";
@@ -681,6 +717,41 @@ namespace DG.XrmMockupTest
             Assert.Contains(res, x => x.Id == lead2.Id);
             Assert.Contains(res, x => x.Description == "*** TEST VALUE ***");
             Assert.Contains(res, x => x.Description == null);
+        }
+
+        [Fact]
+        public void TestFetchExpressionInGuidAndState()
+        {
+            var fetchXml =
+                $@"<fetch distinct='true'>
+                    <entity name='lead'>
+                        <attribute name='subject' />
+                        <attribute name='parentcontactid' />
+                        <attribute name='statecode' />
+                        <filter>
+                            <condition attribute='parentcontactid' operator='in'>
+                                <value>{contact1.Id}</value>
+                                <value>{contact2.Id}</value>
+                            </condition>
+                            <condition attribute='donotfax' operator='eq' value='1' />
+                            <condition attribute='statecode' operator='in'>
+                                <value>{(int)LeadState.Open}</value>
+                                <value>{(int)LeadState.Qualified}</value>
+                                <value>{(int)LeadState.Disqualified}</value>
+                            </condition>
+                        </filter>
+                    </entity>
+                </fetch>";
+
+            var res = orgAdminService
+                .RetrieveMultiple(new FetchExpression(fetchXml))
+                .Entities
+                .Cast<Lead>()
+                .ToList();
+
+            Assert.Equal(2, res.Count);
+            Assert.Contains(res, x => x.Id == lead1.Id);
+            Assert.Contains(res, x => x.Id == lead2.Id);
         }
 
         [Fact]
@@ -727,7 +798,10 @@ namespace DG.XrmMockupTest
                         <attribute name='parentcontactid' />
                         <attribute name='description' />
                         <filter>
-                            <condition attribute='parentcontactid' operator='not-in'><value>{contact1.Id}</value><value>{contact2.Id}</value></condition>
+                            <condition attribute='parentcontactid' operator='not-in'>
+                                <value>{contact1.Id}</value>
+                                <value>{contact2.Id}</value>
+                            </condition>
                         </filter>
                     </entity>
                 </fetch>";
