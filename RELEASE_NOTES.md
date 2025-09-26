@@ -1,3 +1,7 @@
+### 1.16.2-rc2 - 26 September 2025
+* Fix: Type conversion in RetrieveMultiple logic (@mkholt)
+* Fix: Order was ignored in FetchXML parsing (@AnyTick)
+
 ### 1.16.2-rc1 - 24 September 2025
 * Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
