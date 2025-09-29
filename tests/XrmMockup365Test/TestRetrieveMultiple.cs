@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using TestPluginAssembly365.Plugins.LegacyDaxif;
 using Xunit;
 
 namespace DG.XrmMockupTest
@@ -80,7 +79,9 @@ namespace DG.XrmMockupTest
             {
                 Subject = "Some contact lead " + rand.Next(0, 1000),
                 ParentContactId = contact1.ToEntityReference(),
-                DoNotFax = true
+                DoNotFax = true,
+                IndustryCode = Lead_IndustryCode.Accounting,
+                Address1_PostalCode = account1.Address1_PostalCode
             };
             lead2 = new Lead()
             {
@@ -91,12 +92,14 @@ namespace DG.XrmMockupTest
             lead3 = new Lead()
             {
                 Subject = "Some new lead " + rand.Next(0, 1000),
-                DoNotFax = true
+                DoNotFax = true,
+                EstimatedCloseDate = new DateTime(2025, 9, 29, 7, 28, 0)
             };
             lead4 = new Lead()
             {
                 Subject = "Some new lead " + rand.Next(0, 1000),
-                DoNotFax = true
+                DoNotFax = true,
+                msdyn_LeadScore = 100,
             };
 
             lead1.Id = orgAdminUIService.Create(lead1);
@@ -1118,6 +1121,7 @@ namespace DG.XrmMockupTest
             res = orgAdminService.RetrieveMultiple(query);
             Assert.Equal(3, res.Entities.Count);
         }
+
         [Fact]
         public void TestCaseSensitivity()
         {
@@ -1241,6 +1245,75 @@ namespace DG.XrmMockupTest
 
                 Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
             }
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualString()
+        {
+            // Test string equality
+            var queryString = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("subject", "address1_postalcode")
+            };
+            queryString.Criteria.AddCondition("address1_postalcode", ConditionOperator.Equal, "MK111DW");
+            var stringResult = orgAdminService.RetrieveMultiple(queryString);
+            Assert.Single(stringResult.Entities);
+            Assert.Equal(lead1.Id, stringResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualInt() {
+
+            // Test int equality
+            var queryInt = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "msdyn_leadscore")
+            };
+            queryInt.Criteria.AddCondition("msdyn_leadscore", ConditionOperator.Equal, 100);
+            var intResult = orgAdminService.RetrieveMultiple(queryInt);
+            Assert.Single(intResult.Entities);
+            Assert.Equal(lead4.Id, intResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualGuid() {
+
+            // Test Guid equality (using leadid)
+            var queryGuid = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "subject")
+            };
+            queryGuid.Criteria.AddCondition("leadid", ConditionOperator.Equal, lead1.Id);
+            var guidResult = orgAdminService.RetrieveMultiple(queryGuid);
+            Assert.Single(guidResult.Entities);
+            Assert.Equal(lead1.Id, guidResult.Entities[0].Id);
+        }
+
+        [Fact] public void TestQueryExpressionDateTimeEqual()
+        {
+            // Test DateTime equality (using estimatedclosedate)
+            var queryDateTime = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "subject")
+            };
+            queryDateTime.Criteria.AddCondition("estimatedclosedate", ConditionOperator.Equal, new DateTime(2025, 9, 29, 7, 28, 0));
+            var dateTimeResult = orgAdminService.RetrieveMultiple(queryDateTime);
+            Assert.Single(dateTimeResult.Entities);
+            Assert.Equal(lead3.Id, dateTimeResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualOptionSet() {
+
+            // Test industry code (enum)
+            var queryIndustry = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "industrycode")
+            };
+            queryIndustry.Criteria.AddCondition("industrycode", ConditionOperator.Equal, (int)Lead_IndustryCode.Accounting);
+            var industryResult = orgAdminService.RetrieveMultiple(queryIndustry);
+            Assert.Single(industryResult.Entities);
+            Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
         }
     }
 }
