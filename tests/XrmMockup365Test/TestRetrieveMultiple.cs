@@ -14,7 +14,6 @@ namespace DG.XrmMockupTest
 {
     public class TestRetrieveMultiple : UnitTestBase
     {
-
         Account account1;
         Account account2;
         Account account3;
@@ -354,7 +353,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from con in context.ContactSet
                     join lead in context.LeadSet
@@ -453,7 +451,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
@@ -474,7 +471,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
@@ -493,7 +489,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
@@ -530,7 +525,7 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestFetchOrderByOtherAttributesDescending()
         {
-            var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(new FetchXmlToQueryExpressionRequest 
+            var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(new FetchXmlToQueryExpressionRequest
             {
                 FetchXml = $@"<fetch>
                     <entity name='account'>
@@ -593,7 +588,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var acc = new Account() { };
                 acc.Id = orgAdminService.Create(acc);
 
@@ -1301,8 +1295,8 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void TestQueryExpressionEqualInt() {
-
+        public void TestQueryExpressionEqualInt()
+        {
             // Test int equality
             var queryInt = new QueryExpression("lead")
             {
@@ -1315,8 +1309,8 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void TestQueryExpressionEqualGuid() {
-
+        public void TestQueryExpressionEqualGuid()
+        {
             // Test Guid equality (using leadid)
             var queryGuid = new QueryExpression("lead")
             {
@@ -1328,7 +1322,8 @@ namespace DG.XrmMockupTest
             Assert.Equal(lead1.Id, guidResult.Entities[0].Id);
         }
 
-        [Fact] public void TestQueryExpressionDateTimeEqual()
+        [Fact]
+        public void TestQueryExpressionDateTimeEqual()
         {
             // Test DateTime equality (using estimatedclosedate)
             var queryDateTime = new QueryExpression("lead")
@@ -1342,8 +1337,8 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
-        public void TestQueryExpressionEqualOptionSet() {
-
+        public void TestQueryExpressionEqualOptionSet()
+        {
             // Test industry code (enum)
             var queryIndustry = new QueryExpression("lead")
             {
