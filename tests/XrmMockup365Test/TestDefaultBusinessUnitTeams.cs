@@ -1,11 +1,11 @@
-﻿using DG.Tools.XrmMockup;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using System.Linq;
 using Microsoft.Xrm.Sdk;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Query;
 using Xunit;
 using Xunit.Sdk;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.XrmMockupTest
 {

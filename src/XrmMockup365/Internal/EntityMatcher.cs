@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DG.Tools.XrmMockup
+namespace DG.Tools.XrmMockup.Internal
 {
     internal class EntityMatcher
     {
@@ -96,7 +96,7 @@ namespace DG.Tools.XrmMockup
                         return false;
                     var sAttr = (string)attr;
                     var pattern = (string)values.First();
-                    if (pattern.First() == '%' && (pattern.Last() == '%'))
+                    if (pattern.First() == '%' && pattern.Last() == '%')
                     {
                         return sAttr.Contains(pattern.Substring(1, pattern.Length - 2));
                     }

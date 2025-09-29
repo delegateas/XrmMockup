@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xrm.Sdk;
 using System;
 
-namespace DG.Tools.XrmMockup
+namespace DG.Tools.XrmMockup.Internal
 {
     internal static class ValueConverter
     {
@@ -36,14 +36,14 @@ namespace DG.Tools.XrmMockup
             }
 
             var valueType = value.GetType();
-            if (valueType == targetType || (Nullable.GetUnderlyingType(targetType) != null && valueType == Nullable.GetUnderlyingType(targetType)))
+            if (valueType == targetType || Nullable.GetUnderlyingType(targetType) != null && valueType == Nullable.GetUnderlyingType(targetType))
             {
                 // If the types match, just return the object
                 return value;
             }
 
             // We might be trying to convert a string 0, or 1 to a bool
-            if ((targetType == typeof(bool) || targetType == typeof(bool?)) && (value is string str && decimal.TryParse(str, out var numericValue)))
+            if ((targetType == typeof(bool) || targetType == typeof(bool?)) && value is string str && decimal.TryParse(str, out var numericValue))
             {
                 return numericValue != 0;
             }

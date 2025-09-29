@@ -1,4 +1,5 @@
-﻿using DG.Tools.XrmMockup.Serialization;
+﻿using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Serialization;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;

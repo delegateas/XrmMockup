@@ -9,7 +9,7 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using DG.XrmContext;
 using Xunit;
 using Xunit.Sdk;
-using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.XrmMockupTest
 {

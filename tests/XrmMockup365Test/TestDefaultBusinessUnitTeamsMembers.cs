@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Xunit;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.XrmMockupTest
 {

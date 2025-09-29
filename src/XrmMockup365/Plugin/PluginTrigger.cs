@@ -12,6 +12,7 @@ using XrmMockupShared.Plugin;
 using DG.XrmPluginCore.Enums;
 using DG.XrmPluginCore.Interfaces.Plugin;
 using System.Diagnostics;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup
 {

@@ -1,4 +1,4 @@
-﻿using DG.Tools.XrmMockup;
+﻿using DG.Tools.XrmMockup.Internal;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Activities;

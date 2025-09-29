@@ -14,6 +14,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using System.Activities;
 using DG.XrmPluginCore.Enums;
+using DG.Tools.XrmMockup.Internal;
 
 
 namespace DG.Tools.XrmMockup {

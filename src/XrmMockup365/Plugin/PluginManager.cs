@@ -1,4 +1,5 @@
-﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+﻿using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using DG.Tools.XrmMockup.SystemPlugins;
 using DG.XrmPluginCore.Enums;
 using DG.XrmPluginCore.Interfaces.Plugin;

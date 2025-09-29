@@ -8,6 +8,7 @@ using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
 using System.Threading;
 using DG.Tools.XrmMockup.Serialization;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup.Database {
 

@@ -4,6 +4,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.ServiceModel;
 using DG.Tools.XrmMockup.Database;
 using WorkflowExecuter;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup {
     internal class CalculateRollupFieldRequestHandler : RequestHandler {

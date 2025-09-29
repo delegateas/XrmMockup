@@ -20,7 +20,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace DG.Tools.XrmMockup
+namespace DG.Tools.XrmMockup.Internal
 {
     internal static class Utility
     {
@@ -40,7 +40,7 @@ namespace DG.Tools.XrmMockup
         public static Entity CloneEntity(this Entity entity)
         {
             if (entity == null) return null;
-            return CloneEntity(entity, null, null);
+            return entity.CloneEntity(null, null);
         }
 
         public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
@@ -82,7 +82,7 @@ namespace DG.Tools.XrmMockup
 
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata) where T : Entity
         {
-            return SetAttributes(entity, attributes, metadata, null);
+            return entity.SetAttributes(attributes, metadata, null);
         }
 
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata,
@@ -756,7 +756,7 @@ namespace DG.Tools.XrmMockup
 
         internal static string ToPrettyString(this KeyAttributeCollection keys)
         {
-            return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
+            return "(" + string.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
 
         internal static Entity ToActivityPointer(this Entity entity, EntityMetadata entityMetadata)
@@ -812,7 +812,7 @@ namespace DG.Tools.XrmMockup
             return pointer;
         }
 
-        private static Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata)
+        private static bool IsValidForFormattedValues(AttributeMetadata attributeMetadata)
         {
             return
                 attributeMetadata is PicklistAttributeMetadata ||
@@ -1004,21 +1004,21 @@ namespace DG.Tools.XrmMockup
             if (type == typeof(DbRow))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = (EntityReferenceDTO)JsonSerializer.Deserialize(node, typeof(EntityReferenceDTO));
+                var typed = (EntityReferenceDTO)node.Deserialize(typeof(EntityReferenceDTO));
                 var tmpTable = new DbTable(new EntityMetadata { LogicalName = typed.LogicalName });
                 return new DbRow(tmpTable, typed.Id, null);
             }
             else if (type == typeof(OptionSetValueCollection))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = (OptionSetCollectionDTO)JsonSerializer.Deserialize(node, typeof(OptionSetCollectionDTO));
+                var typed = (OptionSetCollectionDTO)node.Deserialize(typeof(OptionSetCollectionDTO));
                 var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
                 return newCollection;
             }
             else
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = JsonSerializer.Deserialize(node, type);
+                var typed = node.Deserialize(type);
                 return typed;
             }
         }

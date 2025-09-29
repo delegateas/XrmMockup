@@ -10,6 +10,7 @@ using Microsoft.Crm.Sdk.Messages;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup
 {

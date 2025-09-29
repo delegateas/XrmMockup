@@ -10,6 +10,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 using WorkflowExecuter;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup {
     internal class RetrieveRequestHandler : RequestHandler {
