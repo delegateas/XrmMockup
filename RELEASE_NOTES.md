@@ -1,11 +1,9 @@
-### 1.16.2-rc2 - 26 September 2025
+### 1.17.0 - 29 September 2025
+* Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+* Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
+* Fix: Improve implementation of Win- and CloseQuoteRequestHandlers (@Lucki2g)
 * Fix: Type conversion in RetrieveMultiple logic (@mkholt)
 * Fix: Order was ignored in FetchXML parsing (@AnyTick)
-
-### 1.16.2-rc1 - 24 September 2025
-* Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
-* Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
-* Fix: Improve implementation of Win- and CloseQuoteRequestHandlers (@Lucki2g)
 
 ### 1.16.1 - 23 September 2025
 * Add: Support for Win- & CloseQuoteRequestHandlers (@Lucki2g)
