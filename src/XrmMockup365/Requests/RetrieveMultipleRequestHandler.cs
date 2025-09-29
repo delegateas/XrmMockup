@@ -1,4 +1,5 @@
 ﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Internal;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
@@ -74,7 +75,7 @@ namespace DG.Tools.XrmMockup
                     Parallel.ForEach(queryExpr.LinkEntities, linkEntity =>
                     {
                         var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
-                        var matchingValues = alliasedValues.Where(e => Utility.MatchesCriteria(e, queryExpr.Criteria));
+                        var matchingValues = alliasedValues.Where(e => EntityMatcher.MatchesCriteria(e, queryExpr.Criteria));
                         Parallel.ForEach(matchingValues, m =>
                         {
                             if (security.HasPermission(m, AccessRights.ReadAccess, userRef))
@@ -85,7 +86,7 @@ namespace DG.Tools.XrmMockup
                         });
                     });
                 }
-                else if (Utility.MatchesCriteria(toAdd, queryExpr.Criteria))
+                else if (EntityMatcher.MatchesCriteria(toAdd, queryExpr.Criteria))
                 {
                     if (security.HasPermission(toAdd, AccessRights.ReadAccess, userRef))
                     {
@@ -174,9 +175,9 @@ namespace DG.Tools.XrmMockup
                 if (linkedEntity.Attributes.ContainsKey(linkEntity.LinkToAttributeName) &&
                     parent.Attributes.ContainsKey(linkEntity.LinkFromAttributeName))
                 {
-                    var linkedAttr = Utility.ConvertToComparableObject(
+                    var linkedAttr = ValueConverter.ConvertToComparableObject(
                         linkedEntity.Attributes[linkEntity.LinkToAttributeName]);
-                    var entAttr = Utility.ConvertToComparableObject(
+                    var entAttr = ValueConverter.ConvertToComparableObject(
                             parent.Attributes[linkEntity.LinkFromAttributeName]);
 
                     if (linkedAttr.Equals(entAttr))
@@ -193,11 +194,11 @@ namespace DG.Tools.XrmMockup
                                 var alliasedLinkValues = GetAliasedValuesFromLinkentity(
                                         nestedLinkEntity, linkedEntity, aliasedEntity, db);
                                 subEntities.AddRange(alliasedLinkValues
-                                        .Where(e => Utility.MatchesCriteria(e, linkEntity.LinkCriteria)));
+                                        .Where(e => EntityMatcher.MatchesCriteria(e, linkEntity.LinkCriteria)));
                             }
                             collection.AddRange(subEntities);
                         }
-                        else if (Utility.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria))
+                        else if (EntityMatcher.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria))
                         {
                             collection.Add(aliasedEntity);
                         }

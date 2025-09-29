@@ -7,6 +7,7 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Messages;
 using System.ServiceModel;
+using DG.Tools.XrmMockup.Internal;
 
 namespace DG.Tools.XrmMockup {
 

@@ -1,4 +1,5 @@
-﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
+﻿using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using DG.XrmPluginCore.Interfaces.CustomApi;
 using Microsoft.Xrm.Sdk;
 using System;

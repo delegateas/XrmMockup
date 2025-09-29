@@ -1,4 +1,5 @@
 using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Internal;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 

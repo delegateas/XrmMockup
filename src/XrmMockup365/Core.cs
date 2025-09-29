@@ -1,4 +1,5 @@
 ﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Serialization;
 using DG.XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
@@ -18,6 +19,7 @@ using System.ServiceModel;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using WorkflowExecuter;
+using Utility = DG.Tools.XrmMockup.Internal.Utility;
 
 [assembly: InternalsVisibleTo("SharedTests")]
 

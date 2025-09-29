@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Activities;
-using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Internal;
 
 namespace WorkflowExecuter
 {

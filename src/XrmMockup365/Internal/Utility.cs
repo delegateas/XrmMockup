@@ -20,7 +20,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace DG.Tools.XrmMockup
+namespace DG.Tools.XrmMockup.Internal
 {
     internal static class Utility
     {
@@ -40,7 +40,7 @@ namespace DG.Tools.XrmMockup
         public static Entity CloneEntity(this Entity entity)
         {
             if (entity == null) return null;
-            return CloneEntity(entity, null, null);
+            return entity.CloneEntity(null, null);
         }
 
         public static KeyAttributeCollection CloneKeyAttributes(this Entity entity)
@@ -82,7 +82,7 @@ namespace DG.Tools.XrmMockup
 
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata) where T : Entity
         {
-            return SetAttributes(entity, attributes, metadata, null);
+            return entity.SetAttributes(attributes, metadata, null);
         }
 
         public static T SetAttributes<T>(this T entity, AttributeCollection attributes, EntityMetadata metadata,
@@ -555,300 +555,6 @@ namespace DG.Tools.XrmMockup
             return (Entity)method.Invoke(entity, null);
         }
 
-        public static bool MatchesCriteria(Entity row, FilterExpression criteria)
-        {
-            if (criteria.FilterOperator == LogicalOperator.And)
-                return criteria.Filters.All(f =>
-                    MatchesCriteria(row, f)) &&
-                    criteria.Conditions.All(c => EvaluateCondition(row, c));
-            else
-                return criteria.Filters.Any(f =>
-                    MatchesCriteria(row, f)) ||
-                    criteria.Conditions.Any(c => EvaluateCondition(row, c));
-        }
-
-        private static bool EvaluateCondition(Entity row, ConditionExpression condition)
-        {
-            object attr = null;
-            switch (condition)
-            {
-                case var c when condition.CompareColumns == true:
-                    if (!row.Contains(condition.AttributeName))
-                        return false;
-                    var columnAttr = condition.Values.FirstOrDefault() as string;
-                    if (columnAttr == null)
-                        throw new NotImplementedException("CompareColumns only supports string values");
-                    if (!row.Contains(columnAttr))
-                        return false;
-
-                    return Matches(row[condition.AttributeName], c.Operator, new[] { row[columnAttr] });
-
-                case var c when condition.AttributeName == null:
-                    return Matches(row.Id, condition.Operator, condition.Values);
-
-                case var c when condition.EntityName != null:
-                    var key = $"{condition.EntityName}.{condition.AttributeName}";
-                    if (row != null && row.Contains(key))
-                    {
-                        attr = row[key];
-                    }
-                    else if (row != null && row.Contains(condition.AttributeName))
-                    {
-                        attr = row[condition.AttributeName];
-                    }
-                    break;
-
-                default:
-                    if (row.Contains(condition.AttributeName))
-                    {
-                        attr = row[condition.AttributeName];
-                    }
-                    break;
-            }
-
-            attr = ConvertToComparableObject(attr);
-            var values = condition.Values.Select(ConvertToComparableObject);
-            return Matches(attr, condition.Operator, values);
-        }
-
-        public static object ConvertToComparableObject(object obj)
-        {
-            if (obj is EntityReference entityReference)
-                return entityReference.Id;
-
-            else if (obj is Money money)
-                return money.Value;
-
-            else if (obj is AliasedValue aliasedValue)
-                return ConvertToComparableObject(aliasedValue.Value);
-
-            else if (obj is OptionSetValue optionSetValue)
-                return optionSetValue.Value;
-
-            else if (obj != null && obj.GetType().IsEnum)
-                return (int)obj;
-
-            else
-                return obj;
-        }
-
-        public static object ConvertTo(object value, Type targetType)
-        {
-            // If the value, or target type, are null, nothing to convert, return the value
-            if (targetType is null || value is null) {
-                return value;
-            }
-
-            var valueType = value.GetType();
-            if (valueType == targetType || (Nullable.GetUnderlyingType(targetType) != null && valueType == Nullable.GetUnderlyingType(targetType)))
-            {
-                // If the types match, just return the object
-                return value;
-            }
-
-            // We might be trying to convert a string 0, or 1 to a bool
-            if ((targetType == typeof(bool) || targetType == typeof(bool?)) && (value is string str && decimal.TryParse(str, out var numericValue)))
-            {
-                return numericValue != 0;
-            }
-
-            // Can we convert from the value's type converter to the target type?
-            var valueConverter = System.ComponentModel.TypeDescriptor.GetConverter(valueType);
-            if (valueConverter.CanConvertTo(targetType))
-            {
-                return valueConverter.ConvertTo(value, targetType);
-            }
-
-            // Can we convert to the target's type using the target type converter?
-            var targetConverter = System.ComponentModel.TypeDescriptor.GetConverter(targetType);
-            if (targetConverter.CanConvertFrom(valueType))
-            {
-                return targetConverter.ConvertFrom(value);
-            }
-
-            // Fallback to Convert.ChangeType which handles most IConvertible types
-            return Convert.ChangeType(value, targetType);
-        }
-
-        public static bool Matches(object attr, ConditionOperator op, IEnumerable<object> values)
-        {
-            switch (op)
-            {
-                case ConditionOperator.Null:
-                    return attr == null;
-
-                case ConditionOperator.NotNull:
-                    return attr != null;
-
-                case ConditionOperator.Equal:
-                    if (attr == null) return false;
-
-                    if (attr is string attrStr)
-                    {
-                        return attrStr.Equals((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
-                    }
-                    else
-                    {
-                        return Equals(ConvertTo(values.First(), attr?.GetType()), attr);
-                    }
-
-                case ConditionOperator.NotEqual:
-                    return !Matches(attr, ConditionOperator.Equal, values);
-
-                case ConditionOperator.GreaterThan:
-                case ConditionOperator.GreaterEqual:
-                case ConditionOperator.LessEqual:
-                case ConditionOperator.LessThan:
-                    return Compare((IComparable)attr, op, (IComparable)ConvertTo(values.First(), attr?.GetType()));
-
-                case ConditionOperator.NotLike:
-                    return !Matches(attr, ConditionOperator.Like, values);
-
-                case ConditionOperator.Like:
-                    if (attr == null)
-                        return false;
-                    var sAttr = (string)attr;
-                    var pattern = (string)values.First();
-                    if (pattern.First() == '%' && (pattern.Last() == '%'))
-                    {
-                        return sAttr.Contains(pattern.Substring(1, pattern.Length - 2));
-                    }
-                    else if (pattern.First() == '%')
-                    {
-                        return sAttr.EndsWith(pattern.Substring(1));
-                    }
-                    else if (pattern.Last() == '%')
-                    {
-                        return sAttr.StartsWith(pattern.Substring(0, pattern.Length - 1));
-                    }
-                    else
-                    {
-                        throw new NotImplementedException($"The like matching for '{pattern}' has not been implemented yet");
-                    }
-
-                case ConditionOperator.NextXYears:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return now.Date <= date.Date && date.Date <= now.AddYears(int.Parse((string)values.First())).Date;
-                    }
-                case ConditionOperator.OlderThanXYears:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddYears(-int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.OlderThanXWeeks:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddDays(-7 * int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.OlderThanXMonths:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddMonths(-int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.OlderThanXDays:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddDays(-int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.OlderThanXHours:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddHours(-int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.OlderThanXMinutes:
-                    {
-                        var now = DateTime.UtcNow;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date <= now.AddMinutes(-int.Parse((string)values.First()));
-                    }
-                case ConditionOperator.Yesterday:
-                    {
-                        var now = DateTime.UtcNow.Date;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date.Date == now.AddDays(-1).Date;
-                    }
-                case ConditionOperator.Today:
-                    {
-                        var now = DateTime.UtcNow.Date;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date.Date == now.Date;
-                    }
-                case ConditionOperator.Tomorrow:
-                    {
-                        var now = DateTime.UtcNow.Date;
-                        var date = attr is DateTime dateTime ? dateTime : DateTime.Parse((string)attr);
-                        return date.Date == now.AddDays(1).Date;
-                    }
-                case ConditionOperator.In:
-                    return values.Contains(ConvertTo(attr, values.FirstOrDefault()?.GetType()));
-
-                case ConditionOperator.NotIn:
-                    return !values.Contains(ConvertTo(attr, values.FirstOrDefault()?.GetType()));
-
-                case ConditionOperator.BeginsWith:
-                    if (attr == null) return false;
-
-                    if (attr.GetType() == typeof(string))
-                    {
-                        return (attr as string).StartsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
-                    }
-
-                case ConditionOperator.DoesNotBeginWith:
-                    return !Matches(attr, ConditionOperator.BeginsWith, values);
-
-                case ConditionOperator.EndsWith:
-                    if (attr == null) return false;
-
-                    if (attr.GetType() == typeof(string))
-                    {
-                        return (attr as string).EndsWith((string)ConvertTo(values.First(), attr?.GetType()), StringComparison.OrdinalIgnoreCase);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException($"The ConditionOperator '{op}' is not valid for anything other than string yet.");
-                    }
-
-                case ConditionOperator.DoesNotEndWith:
-                    return !Matches(attr, ConditionOperator.EndsWith, values);
-                default:
-                    throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
-            }
-
-        }
-
-        public static bool Compare(IComparable attr, ConditionOperator op, IComparable value)
-        {
-            // if at least one of the two compare values are null. Then compare returns null
-            if (attr == null || value == null)
-                return false;
-            switch (op)
-            {
-                case ConditionOperator.GreaterEqual:
-                    return attr.CompareTo(value) >= 0;
-                case ConditionOperator.GreaterThan:
-                    return attr.CompareTo(value) > 0;
-                case ConditionOperator.LessEqual:
-                    return attr.CompareTo(value) <= 0;
-                case ConditionOperator.LessThan:
-                    return attr.CompareTo(value) < 0;
-
-                default:
-                    throw new MockupException("Invalid state.");
-            }
-
-        }
-
         public static IEnumerable<KeyValuePair<string, object>> GetProperties(object obj)
         {
             var ty = obj.GetType();
@@ -1050,7 +756,7 @@ namespace DG.Tools.XrmMockup
 
         internal static string ToPrettyString(this KeyAttributeCollection keys)
         {
-            return "(" + String.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
+            return "(" + string.Join(", ", keys.Select(x => $"{x.Key}:{x.Value}")) + ")";
         }
 
         internal static Entity ToActivityPointer(this Entity entity, EntityMetadata entityMetadata)
@@ -1106,7 +812,7 @@ namespace DG.Tools.XrmMockup
             return pointer;
         }
 
-        private static Boolean IsValidForFormattedValues(AttributeMetadata attributeMetadata)
+        private static bool IsValidForFormattedValues(AttributeMetadata attributeMetadata)
         {
             return
                 attributeMetadata is PicklistAttributeMetadata ||
@@ -1298,21 +1004,21 @@ namespace DG.Tools.XrmMockup
             if (type == typeof(DbRow))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = (EntityReferenceDTO)JsonSerializer.Deserialize(node, typeof(EntityReferenceDTO));
+                var typed = (EntityReferenceDTO)node.Deserialize(typeof(EntityReferenceDTO));
                 var tmpTable = new DbTable(new EntityMetadata { LogicalName = typed.LogicalName });
                 return new DbRow(tmpTable, typed.Id, null);
             }
             else if (type == typeof(OptionSetValueCollection))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = (OptionSetCollectionDTO)JsonSerializer.Deserialize(node, typeof(OptionSetCollectionDTO));
+                var typed = (OptionSetCollectionDTO)node.Deserialize(typeof(OptionSetCollectionDTO));
                 var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
                 return newCollection;
             }
             else
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
-                var typed = JsonSerializer.Deserialize(node, type);
+                var typed = node.Deserialize(type);
                 return typed;
             }
         }

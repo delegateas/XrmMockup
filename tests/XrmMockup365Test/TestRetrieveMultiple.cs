@@ -8,14 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using TestPluginAssembly365.Plugins.LegacyDaxif;
 using Xunit;
 
 namespace DG.XrmMockupTest
 {
     public class TestRetrieveMultiple : UnitTestBase
     {
-
         Account account1;
         Account account2;
         Account account3;
@@ -55,6 +53,9 @@ namespace DG.XrmMockupTest
 
             account1.DoNotEMail = true;
 
+            account1.AccountRatingCode = Account_AccountRatingCode.High;
+            account2.AccountRatingCode = Account_AccountRatingCode.Low;
+
             account1.Id = orgAdminUIService.Create(account1);
             account2.Id = orgAdminUIService.Create(account2);
             account3.Id = orgAdminUIService.Create(account3);
@@ -80,7 +81,9 @@ namespace DG.XrmMockupTest
             {
                 Subject = "Some contact lead " + rand.Next(0, 1000),
                 ParentContactId = contact1.ToEntityReference(),
-                DoNotFax = true
+                DoNotFax = true,
+                IndustryCode = Lead_IndustryCode.Accounting,
+                Address1_PostalCode = account1.Address1_PostalCode
             };
             lead2 = new Lead()
             {
@@ -91,12 +94,14 @@ namespace DG.XrmMockupTest
             lead3 = new Lead()
             {
                 Subject = "Some new lead " + rand.Next(0, 1000),
-                DoNotFax = true
+                DoNotFax = true,
+                EstimatedCloseDate = new DateTime(2025, 9, 29, 7, 28, 0, DateTimeKind.Local)
             };
             lead4 = new Lead()
             {
                 Subject = "Some new lead " + rand.Next(0, 1000),
-                DoNotFax = true
+                DoNotFax = true,
+                msdyn_LeadScore = 100,
             };
 
             lead1.Id = orgAdminUIService.Create(lead1);
@@ -348,7 +353,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from con in context.ContactSet
                     join lead in context.LeadSet
@@ -447,7 +451,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
@@ -468,11 +471,28 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
-                    orderby acc.CreatedOn
+                    orderby acc.AccountRatingCode
+                    select new { acc.AccountId };
+
+                var result = query.ToArray();
+                Assert.Equal(2, result.Length);
+                Assert.Equal(account2.Id, result[0].AccountId);
+                Assert.Equal(account1.Id, result[1].AccountId);
+            }
+        }
+
+        [Fact]
+        public void TestOrderByOtherAttributesDescending()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var query =
+                    from acc in context.AccountSet
+                    where acc.Address1_City == "Virum"
+                    orderby acc.AccountRatingCode descending
                     select new { acc.AccountId };
 
                 var result = query.ToArray();
@@ -485,24 +505,41 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestFetchOrderByOtherAttributes()
         {
-            using (var context = new Xrm(orgAdminUIService))
+            var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(new FetchXmlToQueryExpressionRequest
             {
-                var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(new FetchXmlToQueryExpressionRequest 
-                {
-                    FetchXml = $@"<fetch>
-                        <entity name='account'>
-                            <filter>
-                                <condition attribute='address1_city' operator='eq' value='Virum'/>
-                            </filter>
-                            <order attribute='createdon' descending='true'/>
-                        </entity>
-                    </fetch>"
-                });
-                EntityCollection result = orgAdminUIService.RetrieveMultiple(conversionResponse.Query);
-                Assert.Equal(2, result.Entities.Count);
-                Assert.Equal(account1.Id, result.Entities[1].GetAttributeValue<Guid>("accountid"));
-                Assert.Equal(account2.Id, result.Entities[0].GetAttributeValue<Guid>("accountid"));
-            }
+                FetchXml = $@"<fetch>
+                    <entity name='account'>
+                        <filter>
+                            <condition attribute='address1_city' operator='eq' value='Virum'/>
+                        </filter>
+                        <order attribute='accountratingcode' />
+                    </entity>
+                </fetch>"
+            });
+            EntityCollection result = orgAdminUIService.RetrieveMultiple(conversionResponse.Query);
+            Assert.Equal(2, result.Entities.Count);
+            Assert.Equal(account2.Id, result.Entities[0].GetAttributeValue<Guid>("accountid"));
+            Assert.Equal(account1.Id, result.Entities[1].GetAttributeValue<Guid>("accountid"));
+        }
+
+        [Fact]
+        public void TestFetchOrderByOtherAttributesDescending()
+        {
+            var conversionResponse = (FetchXmlToQueryExpressionResponse)orgAdminUIService.Execute(new FetchXmlToQueryExpressionRequest
+            {
+                FetchXml = $@"<fetch>
+                    <entity name='account'>
+                        <filter>
+                            <condition attribute='address1_city' operator='eq' value='Virum'/>
+                        </filter>
+                        <order attribute='accountratingcode' descending='true'/>
+                    </entity>
+                </fetch>"
+            });
+            EntityCollection result = orgAdminUIService.RetrieveMultiple(conversionResponse.Query);
+            Assert.Equal(2, result.Entities.Count);
+            Assert.Equal(account1.Id, result.Entities[0].GetAttributeValue<Guid>("accountid"));
+            Assert.Equal(account2.Id, result.Entities[1].GetAttributeValue<Guid>("accountid"));
         }
 
         [Fact]
@@ -551,7 +588,6 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
-
                 var acc = new Account() { };
                 acc.Id = orgAdminService.Create(acc);
 
@@ -1118,6 +1154,7 @@ namespace DG.XrmMockupTest
             res = orgAdminService.RetrieveMultiple(query);
             Assert.Equal(3, res.Entities.Count);
         }
+
         [Fact]
         public void TestCaseSensitivity()
         {
@@ -1241,6 +1278,167 @@ namespace DG.XrmMockupTest
 
                 Assert.Equal($"Fluffy is a very good animal, and {userName} loves them very much", animal.dg_AnimalOwner);
             }
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualString()
+        {
+            // Test string equality
+            var queryString = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("subject", "address1_postalcode")
+            };
+            queryString.Criteria.AddCondition("address1_postalcode", ConditionOperator.Equal, "MK111DW");
+            var stringResult = orgAdminService.RetrieveMultiple(queryString);
+            Assert.Single(stringResult.Entities);
+            Assert.Equal(lead1.Id, stringResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualInt()
+        {
+            // Test int equality
+            var queryInt = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "msdyn_leadscore")
+            };
+            queryInt.Criteria.AddCondition("msdyn_leadscore", ConditionOperator.Equal, 100);
+            var intResult = orgAdminService.RetrieveMultiple(queryInt);
+            Assert.Single(intResult.Entities);
+            Assert.Equal(lead4.Id, intResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualGuid()
+        {
+            // Test Guid equality (using leadid)
+            var queryGuid = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "subject")
+            };
+            queryGuid.Criteria.AddCondition("leadid", ConditionOperator.Equal, lead1.Id);
+            var guidResult = orgAdminService.RetrieveMultiple(queryGuid);
+            Assert.Single(guidResult.Entities);
+            Assert.Equal(lead1.Id, guidResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionDateTimeEqual()
+        {
+            // Test DateTime equality (using estimatedclosedate)
+            var queryDateTime = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "subject")
+            };
+            queryDateTime.Criteria.AddCondition("estimatedclosedate", ConditionOperator.Equal, new DateTime(2025, 9, 29, 7, 28, 0));
+            var dateTimeResult = orgAdminService.RetrieveMultiple(queryDateTime);
+            Assert.Single(dateTimeResult.Entities);
+            Assert.Equal(lead3.Id, dateTimeResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionEqualOptionSet()
+        {
+            // Test industry code (enum)
+            var queryIndustry = new QueryExpression("lead")
+            {
+                ColumnSet = new ColumnSet("leadid", "industrycode")
+            };
+            queryIndustry.Criteria.AddCondition("industrycode", ConditionOperator.Equal, (int)Lead_IndustryCode.Accounting);
+            var industryResult = orgAdminService.RetrieveMultiple(queryIndustry);
+            Assert.Single(industryResult.Entities);
+            Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualString()
+        {
+            // Test string equality using FetchXML
+            var fetchXml = @"<fetch>
+                <entity name='lead'>
+                    <attribute name='subject' />
+                    <attribute name='address1_postalcode' />
+                    <filter>
+                        <condition attribute='address1_postalcode' operator='eq' value='MK111DW' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var stringResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(stringResult.Entities);
+            Assert.Equal(lead1.Id, stringResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualInt()
+        {
+            // Test int equality using FetchXML
+            var fetchXml = @"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='msdyn_leadscore' />
+                    <filter>
+                        <condition attribute='msdyn_leadscore' operator='eq' value='100' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var intResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(intResult.Entities);
+            Assert.Equal(lead4.Id, intResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualGuid()
+        {
+            // Test Guid equality using FetchXML (using leadid)
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='subject' />
+                    <filter>
+                        <condition attribute='leadid' operator='eq' value='{lead1.Id}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var guidResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(guidResult.Entities);
+            Assert.Equal(lead1.Id, guidResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlDateTimeEqual()
+        {
+            // Test DateTime equality using FetchXML (using estimatedclosedate)
+            var dt = new DateTime(2025, 9, 29, 7, 28, 0, DateTimeKind.Local);
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='subject' />
+                    <filter>
+                        <condition attribute='estimatedclosedate' operator='eq' value='{dt:O}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var dateTimeResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(dateTimeResult.Entities);
+            Assert.Equal(lead3.Id, dateTimeResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualOptionSet()
+        {
+            // Test industry code (enum) using FetchXML
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='industrycode' />
+                    <filter>
+                        <condition attribute='industrycode' operator='eq' value='{(int)Lead_IndustryCode.Accounting}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var industryResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(industryResult.Entities);
+            Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
         }
     }
 }
