@@ -15,7 +15,7 @@ using System.Diagnostics;
 
 namespace DG.Tools.XrmMockup
 {
-    [DebuggerDisplay("{Stage} {Operation} {EntityName}")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class PluginTrigger : IComparable<PluginTrigger>
     {
         public Action<MockupServiceProviderAndFactory> PluginExecute { get; }
@@ -30,6 +30,8 @@ namespace DG.Tools.XrmMockup
         readonly Dictionary<string, EntityMetadata> Metadata;
         readonly HashSet<string> Attributes;
         readonly IEnumerable<IImageSpecification> Images;
+
+        private string DebuggerDisplay => $"{Stage} {Operation} {EntityName} [{string.Join(", ", Attributes)}]";
 
         public PluginTrigger(EventOperation operation, ExecutionStage stage,
                 Action<MockupServiceProviderAndFactory> pluginExecute, IPluginStepConfig pluginRegistration, Dictionary<string, EntityMetadata> metadata)

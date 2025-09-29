@@ -111,7 +111,12 @@ namespace DG.Tools.XrmMockup
 
                 // Look for any currently loaded types in the AppDomain that implement the base type
                 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(a => a.GetLoadableTypes().Where(t => !t.IsAbstract && t.IsPublic && t.BaseType != null && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))));
+                    .SelectMany(a =>
+                        a.GetLoadableTypes().Where(t =>
+                            !t.IsAbstract
+                            && t.IsPublic
+                            && t.BaseType != null
+                            && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))));
 
                 foreach (var type in pluginTypes)
                 {
@@ -152,11 +157,15 @@ namespace DG.Tools.XrmMockup
             }
 
             // Get the plugin step registrations from the plugin type
-            // and add discovered plugin triggers
-            var triggers = registrationStrategies
-                .SelectMany(s => s.AnalyzeType(plugin))
-                .Concat(new MetadataRegistrationStrategy().AnalyzeType(pluginType, metaPlugins))
-                .Select(t => new PluginTrigger(t.EventOperation, t.ExecutionStage, plugin.Execute, t, metadata));
+            var steps = registrationStrategies
+                .SelectMany(s => s.AnalyzeType(plugin));
+
+            // If we didn't find any steps, try the MetadataRegistrationStrategy as a last resort
+            if (!steps.Any()) {
+                steps = new MetadataRegistrationStrategy().AnalyzeType(pluginType, metaPlugins);
+            }
+
+            var triggers = steps.Select(t => new PluginTrigger(t.EventOperation, t.ExecutionStage, plugin.Execute, t, metadata));
 
             if (!triggers.Any())
             {
