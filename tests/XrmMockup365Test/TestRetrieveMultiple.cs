@@ -93,7 +93,7 @@ namespace DG.XrmMockupTest
             {
                 Subject = "Some new lead " + rand.Next(0, 1000),
                 DoNotFax = true,
-                EstimatedCloseDate = new DateTime(2025, 9, 29, 7, 28, 0)
+                EstimatedCloseDate = new DateTime(2025, 9, 29, 7, 28, 0, DateTimeKind.Local)
             };
             lead4 = new Lead()
             {
@@ -1312,6 +1312,97 @@ namespace DG.XrmMockupTest
             };
             queryIndustry.Criteria.AddCondition("industrycode", ConditionOperator.Equal, (int)Lead_IndustryCode.Accounting);
             var industryResult = orgAdminService.RetrieveMultiple(queryIndustry);
+            Assert.Single(industryResult.Entities);
+            Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualString()
+        {
+            // Test string equality using FetchXML
+            var fetchXml = @"<fetch>
+                <entity name='lead'>
+                    <attribute name='subject' />
+                    <attribute name='address1_postalcode' />
+                    <filter>
+                        <condition attribute='address1_postalcode' operator='eq' value='MK111DW' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var stringResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(stringResult.Entities);
+            Assert.Equal(lead1.Id, stringResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualInt()
+        {
+            // Test int equality using FetchXML
+            var fetchXml = @"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='msdyn_leadscore' />
+                    <filter>
+                        <condition attribute='msdyn_leadscore' operator='eq' value='100' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var intResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(intResult.Entities);
+            Assert.Equal(lead4.Id, intResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualGuid()
+        {
+            // Test Guid equality using FetchXML (using leadid)
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='subject' />
+                    <filter>
+                        <condition attribute='leadid' operator='eq' value='{lead1.Id}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var guidResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(guidResult.Entities);
+            Assert.Equal(lead1.Id, guidResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlDateTimeEqual()
+        {
+            // Test DateTime equality using FetchXML (using estimatedclosedate)
+            var dt = new DateTime(2025, 9, 29, 7, 28, 0, DateTimeKind.Local);
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='subject' />
+                    <filter>
+                        <condition attribute='estimatedclosedate' operator='eq' value='{dt:O}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var dateTimeResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+            Assert.Single(dateTimeResult.Entities);
+            Assert.Equal(lead3.Id, dateTimeResult.Entities[0].Id);
+        }
+
+        [Fact]
+        public void TestFetchXmlEqualOptionSet()
+        {
+            // Test industry code (enum) using FetchXML
+            var fetchXml = $@"<fetch>
+                <entity name='lead'>
+                    <attribute name='leadid' />
+                    <attribute name='industrycode' />
+                    <filter>
+                        <condition attribute='industrycode' operator='eq' value='{(int)Lead_IndustryCode.Accounting}' />
+                    </filter>
+                </entity>
+            </fetch>";
+            var industryResult = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
             Assert.Single(industryResult.Entities);
             Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
         }
