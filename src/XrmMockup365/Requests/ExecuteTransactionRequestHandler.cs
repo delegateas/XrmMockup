@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Query;
-using System.Linq;
-using Microsoft.Crm.Sdk.Messages;
-using System.ServiceModel;
-using Microsoft.Xrm.Sdk.Metadata;
 using DG.Tools.XrmMockup.Database;
 
 namespace DG.Tools.XrmMockup
@@ -33,7 +26,7 @@ namespace DG.Tools.XrmMockup
 
                 return toReturn;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 core.RestoreJsonSnapshot(snapshot);
                 throw;

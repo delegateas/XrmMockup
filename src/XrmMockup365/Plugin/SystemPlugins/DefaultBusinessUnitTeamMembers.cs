@@ -3,7 +3,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using System.ServiceModel;
 using Microsoft.Crm.Sdk.Messages;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore.Enums;
 using System.Collections.Generic;
 using DG.Tools.XrmMockup.Internal;
 

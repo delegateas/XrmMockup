@@ -354,13 +354,14 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var query =
-                    from con in context.ContactSet
-                    join lead in context.LeadSet
-                    on con.ContactId equals lead.ParentContactId.Id into ls
-                    from lead in ls.DefaultIfEmpty()
-                    select new { con.ContactId, lead.Subject };
+                    (from con in context.ContactSet
+                     join lead in context.LeadSet
+                     on con.ContactId equals lead.ParentContactId.Id into ls
+                     from lead in ls.DefaultIfEmpty()
+                     select new { con.ContactId, lead.Subject })
+                    .ToList();
 
-                Assert.Equal(4, query.AsEnumerable().Count());
+                Assert.Equal(4, query.Count);
 
                 foreach (var r in query)
                 {

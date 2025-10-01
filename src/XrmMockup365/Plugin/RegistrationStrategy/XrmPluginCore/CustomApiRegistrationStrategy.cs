@@ -1,6 +1,6 @@
 ﻿using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
-using DG.XrmPluginCore;
-using DG.XrmPluginCore.Interfaces.CustomApi;
+using XrmPluginCore;
+using XrmPluginCore.Interfaces.CustomApi;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;

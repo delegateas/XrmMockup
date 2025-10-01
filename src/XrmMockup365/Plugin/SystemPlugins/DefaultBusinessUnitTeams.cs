@@ -1,6 +1,6 @@
 ﻿using DG.Tools.XrmMockup.Internal;
-using DG.XrmPluginCore;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore;
+using XrmPluginCore.Enums;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;

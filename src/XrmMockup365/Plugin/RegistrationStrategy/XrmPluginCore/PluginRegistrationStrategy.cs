@@ -1,5 +1,5 @@
-﻿using DG.XrmPluginCore;
-using DG.XrmPluginCore.Interfaces.Plugin;
+﻿using XrmPluginCore;
+using XrmPluginCore.Interfaces.Plugin;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;

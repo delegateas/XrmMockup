@@ -1,7 +1,7 @@
 ﻿using DG.Tools.XrmMockup;
 using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
-using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.CustomApi;
+using XrmPluginCore.Enums;
+using XrmPluginCore.Interfaces.CustomApi;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
@@ -34,6 +34,14 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy.DAXIF
                 .Invoke(plugin, new object[] { })
                 as Tuple<MainCustomAPIConfig, ExtendedCustomAPIConfig, IEnumerable<RequestParameterConfig>, IEnumerable<ResponsePropertyConfig>>;
 
+            var ownerId = Guid.TryParse(configs.Item2.Item2, out var ownerIdGuid)
+                ? ownerIdGuid
+                : (Guid?)null;
+
+            var ownerType = Enum.TryParse<OwnerType>(configs.Item2.Item3, true, out var ownerTypeEnum)
+                ? ownerTypeEnum
+                : (OwnerType?)null;
+
             yield return new CustomApiConfig
             {
                 UniqueName = configs.Item1.Item1,
@@ -43,8 +51,8 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy.DAXIF
                 BindingType = (BindingType)configs.Item1.Item5,
                 BoundEntityLogicalName = configs.Item1.Item6,
                 PluginType = configs.Item2.Item1,
-                OwnerId = configs.Item2.Item2,
-                OwnerType = configs.Item2.Item3,
+                OwnerId = ownerId,
+                OwnerType = ownerType,
                 IsCustomizable = configs.Item2.Item4,
                 IsPrivate = configs.Item2.Item5,
                 ExecutePrivilegeName = configs.Item2.Item6,

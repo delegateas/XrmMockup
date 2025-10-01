@@ -1,6 +1,6 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore;
+using XrmPluginCore.Enums;
+using XrmPluginCore;
 using System;
 using TestPluginAssembly365.Plugins.SyncAsyncTest;
 

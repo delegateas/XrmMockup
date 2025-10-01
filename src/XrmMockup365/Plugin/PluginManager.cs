@@ -1,8 +1,8 @@
 ﻿using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using DG.Tools.XrmMockup.SystemPlugins;
-using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.Plugin;
+using XrmPluginCore.Enums;
+using XrmPluginCore.Interfaces.Plugin;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
@@ -100,9 +100,16 @@ namespace DG.Tools.XrmMockup
         internal List<string> TemporaryPluginRegistrations => FlattenPluginDictionary(temporaryPlugins);
         internal List<string> SystemPluginRegistrations => FlattenPluginDictionary(registeredSystemPlugins);
 
-        private static List<string> FlattenPluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> plugins) => plugins
-            .SelectMany(kvpOperation => kvpOperation.Value.SelectMany(kvpStage => kvpStage.Value.Select(z => $"{kvpOperation.Key} {kvpStage.Key} {z.EntityName ?? "AnyEntity"}: {z.PluginExecute.Target.GetType().Name}")))
-            .ToList();
+        private static List<string> FlattenPluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> plugins)
+        {
+            return plugins
+                .SelectMany(kvpOperation =>
+                    kvpOperation.Value.SelectMany(kvpStage =>
+                        kvpStage.Value.Select(z =>
+                            $"{kvpOperation.Key} {kvpStage.Key} {z.EntityName ?? "AnyEntity"}: {z.PluginExecute.Target.GetType().Name}")))
+                .OrderBy(s => s)
+                .ToList();
+        }
 
         private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
         {

@@ -1,8 +1,8 @@
 ﻿namespace DG.Some.Namespace {
     using System;
     using Microsoft.Xrm.Sdk;
-    using DG.XrmPluginCore;
-    using DG.XrmPluginCore.Enums;
+    using XrmPluginCore;
+    using XrmPluginCore.Enums;
 
     public class CreateAccountApi : CustomAPI
     {
