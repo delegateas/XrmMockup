@@ -203,7 +203,7 @@ namespace DG.Tools.XrmMockup
                     }
                     else
                     {
-                        xrmEntity[transactioncurrencyId] = core.baseCurrency;
+                        xrmEntity[transactioncurrencyId] = core.BaseCurrency;
                     }
                 }
 

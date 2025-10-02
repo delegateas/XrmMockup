@@ -44,7 +44,7 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public EntityReference BaseCurrency {
             get {
-                return Core.baseCurrency;
+                return Core.BaseCurrency;
             }
         }
 
