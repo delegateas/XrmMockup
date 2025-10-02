@@ -26,7 +26,7 @@ public class XrmMockupFixture : IDisposable
                 _sharedSettings = new XrmMockupSettings
                 {
                     BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(LegacyPlugin), typeof(DIPlugin) },
-                    BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(CustomAPI)), new Tuple<string, Type>("dg", typeof(LegacyCustomApi)) },
+                    BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(Plugin)), new Tuple<string, Type>("dg", typeof(LegacyCustomApi)) },
                     CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                     EnableProxyTypes = true,
                     IncludeAllWorkflows = false,

@@ -20,6 +20,7 @@ namespace DG.Tools.XrmMockup
         private static readonly ConcurrentDictionary<Type, IPlugin> _apiInstanceCache = new ConcurrentDictionary<Type, IPlugin>();
         private static readonly object _cacheLock = new object();
 
+        internal List<Type> missingRegistration = new List<Type>();
         private Dictionary<string, Action<MockupServiceProviderAndFactory>> registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
 
         private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
@@ -92,9 +93,16 @@ namespace DG.Tools.XrmMockup
 
             var registration = registrationStrategies
                 .SelectMany(s => s.AnalyzeType(plugin))
-                .SingleOrDefault() ?? throw new MockupException($"No, or multiple, CustomApi configurations found for '{plugin.GetType().FullName}'. Ensure each type has exactly one registration");
+                .SingleOrDefault();
 
-            registeredApis.Add($"{prefix}_{registration.UniqueName}", plugin.Execute);
+            if (registration is null)
+            {
+                missingRegistration.Add(pluginType);
+            }
+            else
+            {
+                registeredApis.Add($"{prefix}_{registration.UniqueName}", plugin.Execute);
+            }
         }
 
         public bool HandlesRequest(string requestName)

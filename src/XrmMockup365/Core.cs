@@ -124,6 +124,15 @@ namespace DG.Tools.XrmMockup
                 Workflows, metadata.EntityMetadata);
             this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
 
+            var typesMissingRegistration = this.pluginManager.missingRegistrations
+                .Intersect(this.customApiManager.missingRegistration)
+                .ToList();
+            if (typesMissingRegistration.Count > 0)
+            {
+                var typeNames = string.Join(", ", typesMissingRegistration.Select(t => t.FullName));
+                throw new Exception($"The following plugin types are missing plugin or custom api registrations: {typeNames}");
+            }
+
             this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
             this.RequestHandlers = GetRequestHandlers(db);
@@ -171,6 +180,15 @@ namespace DG.Tools.XrmMockup
             this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
                 staticCache.Workflows, staticCache.Metadata.EntityMetadata);
             this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
+
+            var typesMissingRegistration = this.pluginManager.missingRegistrations
+                .Intersect(this.customApiManager.missingRegistration)
+                .ToList();
+            if (typesMissingRegistration.Count > 0)
+            {
+                var typeNames = string.Join(", ", typesMissingRegistration.Select(t => t.FullName));
+                throw new Exception($"The following plugin types are missing plugin or custom api registrations: {typeNames}");
+            }
 
             this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 

@@ -1,11 +1,12 @@
 ﻿namespace DG.Some.Namespace.Test
 {
-    using System;
-    using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    using XrmPluginCore.Enums;
-    using XrmPluginCore;
+    using Microsoft.Xrm.Sdk;
+    using System;
     using TestPluginAssembly365.Plugins.SyncAsyncTest;
+    using XrmPluginCore;
+    using XrmPluginCore.Enums;
+    using XrmPluginCore.Extensions;
 
     public class Test8Plugin2 : TestPlugin
     {
@@ -29,7 +30,7 @@
 
             var service = localContext.OrganizationService;
 
-            var account = GetPostImage<Account>(localContext, "PostImage");
+            var account = localContext.GetPostImage<Account>();
 
             var accountUpd = new Account(account.Id)
             {

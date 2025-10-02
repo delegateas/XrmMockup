@@ -4,7 +4,7 @@
     using XrmPluginCore;
     using XrmPluginCore.Enums;
 
-    public class CreateAccountApi : CustomAPI
+    public class CreateAccountApi : Plugin
     {
         public CreateAccountApi()
         {

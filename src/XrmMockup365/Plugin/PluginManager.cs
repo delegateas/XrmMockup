@@ -29,6 +29,8 @@ namespace DG.Tools.XrmMockup
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
         private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
 
+        internal readonly List<Type> missingRegistrations = new List<Type>();
+
         // Queue for AsyncPlugins
         private readonly Queue<PluginExecutionProvider> pendingAsyncPlugins = new Queue<PluginExecutionProvider>();
 
@@ -177,9 +179,10 @@ namespace DG.Tools.XrmMockup
 
             if (!triggers.Any())
             {
-                throw new MockupException($"No plugin step registrations found for plugin '{pluginType.FullName}', please use XrmPluginCore, DAXIF registration, or make sure the plugin is uploaded to CRM and metadata has been updated.");
+                missingRegistrations.Add(pluginType);
+                return;
             }
-
+            
             foreach (var trigger in triggers)
             {
                 AddTrigger(trigger, register);

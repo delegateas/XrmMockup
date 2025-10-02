@@ -49,6 +49,6 @@
 		<Reference Include="System.Xml" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="XrmPluginCore" Version="1.0.0" />
+	  <PackageReference Include="XrmPluginCore" Version="1.0.1-preview.2" />
 	</ItemGroup>
 </Project>

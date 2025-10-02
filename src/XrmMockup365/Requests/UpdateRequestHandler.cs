@@ -142,6 +142,7 @@ namespace DG.Tools.XrmMockup
 
             var updEntity = request.Target.CloneEntity(row.Metadata, new ColumnSet(true));
 
+            // TODO: The following code seems to allow illegal status transitions if statecode is not included in the update
             if (updEntity.Contains("statecode") || updEntity.Contains("statuscode"))
             {
                 var defaultStateStatus = metadata.DefaultStateStatus[updEntity.LogicalName];
