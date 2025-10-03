@@ -6,8 +6,8 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
-using DG.XrmPluginCore;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore;
+using XrmPluginCore.Enums;
 
 namespace DG.Some.Namespace 
 {

@@ -1,5 +1,5 @@
-﻿using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.Plugin;
+﻿using XrmPluginCore.Enums;
+using XrmPluginCore.Interfaces.Plugin;
 using System;
 using System.Collections.Generic;
 

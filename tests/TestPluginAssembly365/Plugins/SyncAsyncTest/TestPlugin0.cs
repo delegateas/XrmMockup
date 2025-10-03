@@ -1,8 +1,9 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
-using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore;
 using System;
 using TestPluginAssembly365.Plugins.SyncAsyncTest;
+using XrmPluginCore;
+using XrmPluginCore.Enums;
+using XrmPluginCore.Extensions;
 
 namespace DG.Some.Namespace.Test
 {
@@ -28,7 +29,7 @@ namespace DG.Some.Namespace.Test
 
             var service = localContext.OrganizationService;
 
-            var account = GetPostImage<Account>(localContext, "PostImage");
+            var account = localContext.GetPostImage<Account>();
 
             var accountUpd = new Account(account.Id)
             {

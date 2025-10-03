@@ -1,10 +1,11 @@
 ﻿using DG.Some.Namespace;
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
-using DG.XrmPluginCore;
+using XrmPluginCore;
 using Microsoft.Xrm.Sdk.Client;
 using System;
 using TestPluginAssembly365.Plugins.LegacyDaxif;
+using TestPluginAssembly365.Plugins.ServiceBased;
 
 public class XrmMockupFixture : IDisposable
 {
@@ -24,8 +25,8 @@ public class XrmMockupFixture : IDisposable
             {
                 _sharedSettings = new XrmMockupSettings
                 {
-                    BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(LegacyPlugin) },
-                    BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(CustomAPI)), new Tuple<string, Type>("dg", typeof(LegacyCustomApi)) },
+                    BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(LegacyPlugin), typeof(DIPlugin) },
+                    BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(Plugin)), new Tuple<string, Type>("dg", typeof(LegacyCustomApi)) },
                     CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
                     EnableProxyTypes = true,
                     IncludeAllWorkflows = false,

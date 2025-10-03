@@ -1,6 +1,7 @@
-﻿using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.CustomApi;
+﻿using XrmPluginCore.Enums;
+using XrmPluginCore.Interfaces.CustomApi;
 using Microsoft.Xrm.Sdk.Metadata;
+using System;
 using System.Collections.Generic;
 
 namespace DG.Tools.XrmMockup
@@ -29,9 +30,9 @@ namespace DG.Tools.XrmMockup
 
         public string Name { get; set; }
 
-        public string OwnerId { get; set; }
+        public Guid? OwnerId { get; set; }
 
-        public string OwnerType { get; set; }
+        public OwnerType? OwnerType { get; set; }
 
         public string PluginType { get; set; }
 

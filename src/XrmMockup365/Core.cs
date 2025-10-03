@@ -1,7 +1,7 @@
 ﻿using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Serialization;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
@@ -25,60 +25,17 @@ using Utility = DG.Tools.XrmMockup.Internal.Utility;
 
 namespace DG.Tools.XrmMockup
 {
-    internal class Snapshot
-    {
-        public XrmDb db;
-        public Security security;
-        public EntityReference AdminUserRef;
-        public EntityReference RootBusinessUnitRef;
-        public Guid OrganizationId;
-        public TimeSpan TimeOffset;
-    }
-
-
-    internal class CascadeSelection
-    {
-        public bool assign = false;
-        public bool delete = false;
-        public bool merge = false;
-        public bool reparent = false;
-        public bool share = false;
-        public bool unshare = false;
-        public bool rollup = false;
-    }
-
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
     internal class Core : IXrmMockupExtension
     {
-        #region MyRegion
-
-        private PluginManager pluginManager;
-        private CustomApiManager customApiManager;
-        internal OrganizationDetail orgDetail;
-        private WorkflowManager workflowManager;
-        private Security security;
-        private XrmMockupSettings settings;
-        private MetadataSkeleton metadata;
-        private XrmDb db;
-        private Dictionary<string, Snapshot> snapshots;
-        private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
-        private OrganizationServiceProxy OnlineProxy;
-        internal EntityReference baseCurrency;
-        private int baseCurrencyPrecision;
         public TimeSpan TimeOffset { get; private set; }
-        public MockupServiceProviderAndFactory ServiceFactory { get; }
-        public ITracingServiceFactory TracingServiceFactory { get; }
-
-        private FormulaFieldEvaluator FormulaFieldEvaluator { get; }
-
-        private List<string> systemAttributeNames;
-
-        public EntityReference AdminUserRef;
-        public EntityReference RootBusinessUnitRef;
-
-        public List<RequestHandler> RequestHandlers;
+        public MockupServiceProviderAndFactory ServiceFactory { get; private set; }
+        public ITracingServiceFactory TracingServiceFactory { get; private set; }
+        public EntityReference AdminUserRef { get; private set; }
+        public EntityReference RootBusinessUnitRef { get; private set; }
+        public List<RequestHandler> RequestHandlers { get; private set; }
 
         /// <summary>
         /// Organization id for the Mockup instance
@@ -90,96 +47,112 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public string OrganizationName { get; private set; }
 
+        internal OrganizationDetail OrganizationDetail { get; private set; }
+        internal EntityReference BaseCurrency { get; private set; }
+
+        private PluginManager pluginManager;
+        private CustomApiManager customApiManager;
+        private WorkflowManager workflowManager;
+        private Security security;
+        private XrmMockupSettings settings;
+        private MetadataSkeleton metadata;
+        private XrmDb db;
+        private Dictionary<string, Snapshot> snapshots;
+        private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
+        private OrganizationServiceProxy OnlineProxy;
+        private int baseCurrencyPrecision;
+        private FormulaFieldEvaluator FormulaFieldEvaluator { get; set; }
+        private List<string> systemAttributeNames;
 
         /// <summary>
         /// Creates a new instance of Core
         /// </summary>
-        /// <param name="Settings"></param>
-        /// <param name="metadata"></param>
-        /// <param name="SecurityRoles"></param>
-        /// <param name="Workflows"></param>
         public Core(XrmMockupSettings Settings, MetadataSkeleton metadata, List<Entity> Workflows,
             List<SecurityRole> SecurityRoles)
         {
-            this.TimeOffset = new TimeSpan();
-            this.settings = Settings;
-            this.metadata = metadata;
-            baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
-            baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
-
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
-            this.snapshots = new Dictionary<string, Snapshot>();
-            this.security = new Security(this, metadata, SecurityRoles, db);
-            this.TracingServiceFactory = settings.TracingServiceFactory ?? new TracingServiceFactory();
-            this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-
-            //add the additional plugin settings to the meta data
-            if (settings.IPluginMetadata != null)
+            var initData = new CoreInitializationData
             {
-                metadata.Plugins.AddRange(Settings.IPluginMetadata);
-            }
+                Settings = Settings,
+                Metadata = metadata,
+                Workflows = Workflows,
+                SecurityRoles = SecurityRoles,
+                BaseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid"),
+                BaseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision"),
+                OnlineProxy = null,
+                EntityTypeMap = new Dictionary<string, Type>()
+            };
 
-            this.pluginManager = new PluginManager(Settings.BasePluginTypes, metadata.EntityMetadata, metadata.Plugins);
-            this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
-                Workflows, metadata.EntityMetadata);
-            this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
-
-            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
-
-            this.RequestHandlers = GetRequestHandlers(db);
-            InitializeDB();
-            this.security.InitializeSecurityRoles(db);
-            this.orgDetail = settings.OrganizationDetail;
-
-            this.FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
+            InitializeCore(initData);
         }
 
         /// <summary>
         /// Creates a new instance of Core using cached static metadata
         /// </summary>
-        /// <param name="Settings"></param>
-        /// <param name="staticCache"></param>
         public Core(XrmMockupSettings Settings, StaticMetadataCache staticCache)
         {
-            this.TimeOffset = new TimeSpan();
-            this.settings = Settings;
-            this.metadata = staticCache.Metadata;
-            this.baseCurrency = staticCache.BaseCurrency;
-            this.baseCurrencyPrecision = staticCache.BaseCurrencyPrecision;
-            this.OnlineProxy = staticCache.OnlineProxy;
-            this.entityTypeMap = staticCache.EntityTypeMap;
-
-            this.db = new XrmDb(staticCache.Metadata.EntityMetadata, staticCache.OnlineProxy);
-            this.snapshots = new Dictionary<string, Snapshot>();
-            this.security = new Security(this, staticCache.Metadata, staticCache.SecurityRoles, db);
-            this.TracingServiceFactory = Settings.TracingServiceFactory ?? new TracingServiceFactory();
-            this.ServiceFactory = new MockupServiceProviderAndFactory(this);
-
-            //add the additional plugin settings to the meta data
-            if (Settings.IPluginMetadata != null)
+            var initData = new CoreInitializationData
             {
-                // Create a new list to avoid modifying the cached metadata
-                var allPlugins = new List<MetaPlugin>(staticCache.Metadata.Plugins);
-                allPlugins.AddRange(Settings.IPluginMetadata);
-                this.pluginManager = new PluginManager(Settings.BasePluginTypes, staticCache.Metadata.EntityMetadata, allPlugins);
-            }
-            else
+                Settings = Settings,
+                Metadata = staticCache.Metadata,
+                Workflows = staticCache.Workflows,
+                SecurityRoles = staticCache.SecurityRoles,
+                BaseCurrency = staticCache.BaseCurrency,
+                BaseCurrencyPrecision = staticCache.BaseCurrencyPrecision,
+                OnlineProxy = staticCache.OnlineProxy,
+                EntityTypeMap = staticCache.EntityTypeMap
+            };
+
+            InitializeCore(initData);
+        }
+
+        /// <summary>
+        /// Common initialization logic for both constructors
+        /// </summary>
+        private void InitializeCore(CoreInitializationData initData)
+        {
+            TimeOffset = new TimeSpan();
+            settings = initData.Settings;
+            metadata = initData.Metadata;
+            BaseCurrency = initData.BaseCurrency;
+            baseCurrencyPrecision = initData.BaseCurrencyPrecision;
+            OnlineProxy = initData.OnlineProxy;
+            entityTypeMap = initData.EntityTypeMap;
+
+            db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineProxy);
+            snapshots = new Dictionary<string, Snapshot>();
+            security = new Security(this, initData.Metadata, initData.SecurityRoles, db);
+            TracingServiceFactory = initData.Settings.TracingServiceFactory ?? new TracingServiceFactory();
+            ServiceFactory = new MockupServiceProviderAndFactory(this);
+
+            // Handle plugin metadata - create new list for non-cached scenarios or merge with cached
+            var allPlugins = new List<MetaPlugin>(initData.Metadata.Plugins);
+            if (initData.Settings.IPluginMetadata != null)
             {
-                this.pluginManager = new PluginManager(Settings.BasePluginTypes, staticCache.Metadata.EntityMetadata, staticCache.Metadata.Plugins);
+                allPlugins.AddRange(initData.Settings.IPluginMetadata);
             }
 
-            this.workflowManager = new WorkflowManager(Settings.CodeActivityInstanceTypes, Settings.IncludeAllWorkflows,
-                staticCache.Workflows, staticCache.Metadata.EntityMetadata);
-            this.customApiManager = new CustomApiManager(Settings.BaseCustomApiTypes);
+            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins);
+            workflowManager = new WorkflowManager(initData.Settings.CodeActivityInstanceTypes, initData.Settings.IncludeAllWorkflows,
+                initData.Workflows, initData.Metadata.EntityMetadata);
+            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes);
 
-            this.systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
+            var typesMissingRegistration = pluginManager.missingRegistrations
+                .Intersect(customApiManager.missingRegistration)
+                .ToList();
+            if (typesMissingRegistration.Count > 0)
+            {
+                var typeNames = string.Join(", ", typesMissingRegistration.Select(t => t.FullName));
+                throw new Exception($"The following plugin types are missing plugin or custom api registrations: {typeNames}");
+            }
 
-            this.RequestHandlers = GetRequestHandlers(db);
+            systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
+
+            RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
-            this.security.InitializeSecurityRoles(db);
-            this.orgDetail = Settings.OrganizationDetail;
+            security.InitializeSecurityRoles(db);
+            OrganizationDetail = initData.Settings.OrganizationDetail;
 
-            this.FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
+            FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
         }
 
         /// <summary>
@@ -730,8 +703,6 @@ namespace DG.Tools.XrmMockup
                 createHandler.Execute(new CreateRequest { Target = entity }, null);
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Execute the request and trigger plugins if needed

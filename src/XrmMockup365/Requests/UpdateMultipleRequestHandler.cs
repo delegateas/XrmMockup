@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using DG.Tools.XrmMockup.Database;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore.Enums;
 
 namespace DG.Tools.XrmMockup
 {

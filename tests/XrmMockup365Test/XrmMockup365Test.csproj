@@ -3,6 +3,7 @@
 		<TargetFrameworks>net462;net8.0</TargetFrameworks>
 		<DebugType>portable</DebugType>
 		<Title>XrmMockup365Test</Title>
+		<RootNamespace>DG.XrmMockupTest</RootNamespace>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<Optimize>false</Optimize>
@@ -44,10 +45,8 @@
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Delegate.XrmPluginCore" Version="0.0.7" />
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+		<PackageReference Include="XrmPluginCore" Version="1.0.1" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
 			<PrivateAssets>all</PrivateAssets>

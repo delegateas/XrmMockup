@@ -13,7 +13,7 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using WorkflowExecuter;
 using System.Activities;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore.Enums;
 using DG.Tools.XrmMockup.Internal;
 
 

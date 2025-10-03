@@ -3,8 +3,8 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    using DG.XrmPluginCore.Enums;
-    using DG.XrmPluginCore;
+    using XrmPluginCore.Enums;
+    using XrmPluginCore;
     using TestPluginAssembly365.Plugins.SyncAsyncTest;
 
     public class Test6Plugin3Sync : TestPlugin

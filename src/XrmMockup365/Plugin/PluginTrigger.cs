@@ -9,8 +9,8 @@ using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
 using System.Runtime.ExceptionServices;
 using XrmMockupShared.Plugin;
-using DG.XrmPluginCore.Enums;
-using DG.XrmPluginCore.Interfaces.Plugin;
+using XrmPluginCore.Enums;
+using XrmPluginCore.Interfaces.Plugin;
 using System.Diagnostics;
 using DG.Tools.XrmMockup.Internal;
 

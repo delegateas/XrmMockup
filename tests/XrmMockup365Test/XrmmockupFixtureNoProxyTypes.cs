@@ -1,6 +1,6 @@
 ﻿using DG.Some.Namespace;
 using DG.Tools.XrmMockup;
-using DG.XrmPluginCore;
+using XrmPluginCore;
 using Microsoft.Xrm.Sdk.Client;
 using System;
 

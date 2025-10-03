@@ -5,7 +5,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using System.Linq;
 using DG.Tools.XrmMockup.Database;
 using System.ServiceModel;
-using DG.XrmPluginCore.Enums;
+using XrmPluginCore.Enums;
 
 namespace DG.Tools.XrmMockup
 {

@@ -3,8 +3,8 @@
     using System;
     using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    using DG.XrmPluginCore;
-    using DG.XrmPluginCore.Enums;
+    using XrmPluginCore;
+    using XrmPluginCore.Enums;
 
     public class UpdateIdInCreatePlugin : Plugin
     {

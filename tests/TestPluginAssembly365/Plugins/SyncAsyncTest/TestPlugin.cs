@@ -3,7 +3,7 @@
     /// <summary>
     /// Base class for all Plugins.
     /// </summary>    
-    public class TestPlugin : DG.XrmPluginCore.Plugin
+    public class TestPlugin : XrmPluginCore.Plugin
     {
         protected TestPlugin() { }
     }
