@@ -1,3 +1,6 @@
+### 1.17.1 - 03 October 2025
+* Update: Move to new version of XrmPluginCore to support combined Plugin / CustomAPI base classes (@mkholt)
+
 ### 1.17.0 - 29 September 2025
 * Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
 * Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
