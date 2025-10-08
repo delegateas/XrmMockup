@@ -78,7 +78,7 @@
 	<ItemGroup>
 		<PackageReference Include="System.Text.Json" Version="8.0.5" />
         <PackageReference Include="Microsoft.PowerFx.Dataverse.Eval" Version="1.3.2" />
-        <PackageReference Include="XrmPluginCore.Abstractions" Version="1.0.0" />
+        <PackageReference Include="XrmPluginCore.Abstractions" Version="1.1.0" />
 	</ItemGroup>
     <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />
 </Project>

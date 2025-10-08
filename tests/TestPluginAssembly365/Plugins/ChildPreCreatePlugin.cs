@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ServiceModel;
-using Microsoft.Xrm.Sdk;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using Microsoft.Xrm.Sdk;
 using XrmPluginCore;
 using XrmPluginCore.Enums;
 
-namespace DG.Some.Namespace 
+namespace DG.Some.Namespace
 {
-    public class ChildPreCreatePlugin : Plugin 
+    public class ChildPreCreatePlugin : Plugin
     {
         public ChildPreCreatePlugin() 
         {
-            RegisterPluginStep("mock_child",
+            RegisterPluginStep<ChildEntity>(
                 EventOperation.Create,
                 ExecutionStage.PreOperation,
                 Execute).SetExecutionMode(ExecutionMode.Synchronous);

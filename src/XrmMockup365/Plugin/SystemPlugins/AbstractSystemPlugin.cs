@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
             var stepConfig = new PluginStepConfig
             {
                 ExecutionStage = executionStage,
-                EventOperation = eventOperation,
+                EventOperation = eventOperation.ToString(),
                 EntityLogicalName = entityName,
                 Deployment = Deployment.ServerOnly,
                 ExecutionMode = ExecutionMode.Synchronous,
@@ -72,7 +72,7 @@ namespace DG.Tools.XrmMockup.SystemPlugins
                     (from a in PluginRegistrations
                     where
                         (int)a.PluginConfig.ExecutionStage == localcontext.PluginExecutionContext.Stage &&
-                        a.PluginConfig.EventOperation.ToString() == localcontext.PluginExecutionContext.MessageName &&
+                        a.PluginConfig.EventOperation == localcontext.PluginExecutionContext.MessageName &&
                         (string.IsNullOrWhiteSpace(a.PluginConfig.EntityLogicalName) || a.PluginConfig.EntityLogicalName == localcontext.PluginExecutionContext.PrimaryEntityName)
                     select a.Action).FirstOrDefault();
 

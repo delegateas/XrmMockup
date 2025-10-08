@@ -19,14 +19,20 @@ using XrmPluginCore;
 using XrmPluginCore.Enums;
 
 namespace DG.Some.Namespace {
-
+    public class Annotation : Entity
+    {
+        public Annotation() : base("annotation")
+        {
+            
+        }
+    }
     
     public class NotePostOperationPlugin : Plugin {
         /// <summary>
         /// Initializes a new instance of the <see cref="NotePreImagePlugin"/> class.
         /// </summary>
         public NotePostOperationPlugin() {
-            RegisterPluginStep("annotation",
+            RegisterPluginStep<Annotation>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Execute)

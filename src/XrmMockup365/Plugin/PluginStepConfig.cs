@@ -11,7 +11,7 @@ namespace DG.Tools.XrmMockup
 
         public string Name { get; internal set; }
 
-        public EventOperation EventOperation { get; internal set; }
+        public string EventOperation { get; internal set; }
 
         public ExecutionStage ExecutionStage { get; internal set; }
 

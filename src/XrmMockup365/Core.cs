@@ -731,8 +731,8 @@ namespace DG.Tools.XrmMockup
                 MessageName = RequestNameToMessageName(request.RequestName),
                 Depth = 1,
                 ExtensionDepth = 1,
-                OrganizationName = this.OrganizationName,
-                OrganizationId = this.OrganizationId,
+                OrganizationName = OrganizationName,
+                OrganizationId = OrganizationId,
                 PrimaryEntityName = primaryRef?.LogicalName,
             };
             if (primaryRef != null)
@@ -757,7 +757,10 @@ namespace DG.Tools.XrmMockup
             var buRef = GetBusinessUnit(userRef);
             pluginContext.BusinessUnitId = buRef.Id;
 
-            Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out var eventOp);
+            // Get the request message from the mapping, if present, otherwise use the RequestName
+            var requestMessage = Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out var eventOperation)
+                ? eventOperation.ToString()
+                : request.RequestName;
 
             var entityInfo = GetEntityInfo(request);
 
@@ -778,12 +781,12 @@ namespace DG.Tools.XrmMockup
             if (preImage != null)
                 primaryRef.Id = preImage.Id;
 
-            if (shouldTrigger && eventOp is EventOperation preValidationOperation)
+            if (shouldTrigger)
             {
                 // System Pre-validation
-                pluginManager.TriggerSystem(preValidationOperation, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this);
+                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this);
                 // Pre-validation
-                pluginManager.TriggerSync(preValidationOperation, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this, (_) => true);
+                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this, (_) => true);
             }
 
             //perform security checks for the request
@@ -792,19 +795,19 @@ namespace DG.Tools.XrmMockup
             //perform initialization of preoperation 
             InitializePreOperation(request, userRef, preImage);
 
-            if (shouldTrigger && eventOp is EventOperation preOperationOperation)
+            if (shouldTrigger)
             {
                 // Shared variables should be moved to parent context when transitioning from 10 to 20.
                 pluginContext.ParentContext = pluginContext.Clone();
                 pluginContext.SharedVariables.Clear();
 
                 // Pre-operation
-                pluginManager.TriggerSync(preOperationOperation, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                workflowManager.TriggerSync(preOperationOperation, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
-                pluginManager.TriggerSync(preOperationOperation, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
+                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
+                workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
 
                 // System Pre-operation
-                pluginManager.TriggerSystem(preOperationOperation, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
             }
 
             // Core operation
@@ -824,26 +827,23 @@ namespace DG.Tools.XrmMockup
                     pluginContext.OutputParameters["BusinessEntity"] = TryRetrieve((request as RetrieveRequest).Target);
                 }
 
-                if (eventOp is EventOperation postOperationOperation)
+                var syncPostImage = TryRetrieve(primaryRef);
+
+                //copy the createon etc system attributes onto the target so they are available for postoperation processing
+                if (syncPostImage != null)
                 {
-                    var syncPostImage = TryRetrieve(primaryRef);
-
-                    //copy the createon etc system attributes onto the target so they are available for postoperation processing
-                    if (syncPostImage != null)
-                    {
-                        CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
-                    }
-
-                    pluginManager.TriggerSystem(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
-
-                    pluginManager.TriggerSync(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                    workflowManager.TriggerSync(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
-                    pluginManager.TriggerSync(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
-                    
-                    var asyncPostImage = TryRetrieve(primaryRef);
-                    pluginManager.StageAsync(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
-                    workflowManager.StageAsync(postOperationOperation, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+                    CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
                 }
+
+                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+
+                pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
+                workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+                pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
+                    
+                var asyncPostImage = TryRetrieve(primaryRef);
+                pluginManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+                workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
 
                 //When last Sync has been executed we trigger the Async jobs.
                 if (parentPluginContext == null)

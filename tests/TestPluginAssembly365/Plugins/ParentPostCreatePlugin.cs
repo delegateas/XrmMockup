@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ServiceModel;
-using Microsoft.Xrm.Sdk;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
@@ -11,11 +7,11 @@ using XrmPluginCore.Enums;
 
 namespace DG.Some.Namespace 
 {
-    public class ParentPostCreatePlugin : Plugin 
+    public class ParentPostCreatePlugin : Plugin
     {
         public ParentPostCreatePlugin() 
         {
-            RegisterPluginStep("mock_parent",
+            RegisterPluginStep<MockParent>(
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute)

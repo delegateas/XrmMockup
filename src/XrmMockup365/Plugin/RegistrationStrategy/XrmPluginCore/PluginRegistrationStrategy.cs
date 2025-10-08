@@ -1,7 +1,6 @@
 ﻿using XrmPluginCore;
 using XrmPluginCore.Interfaces.Plugin;
 using Microsoft.Xrm.Sdk;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 

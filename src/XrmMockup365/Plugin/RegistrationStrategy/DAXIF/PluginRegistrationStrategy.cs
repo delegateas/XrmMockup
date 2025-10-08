@@ -31,17 +31,12 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy.DAXIF
 
             return configs.Select(c =>
             {
-                if (!Enum.TryParse<EventOperation>(c.Item1.Item3, true, out var eventOperation))
-                {
-                    throw new MockupException($"Unknown message '{c.Item1.Item3}' for plugin '{plugin.GetType().FullName}'");
-                }
-
                 var hasImpersonatingUser = Guid.TryParse(c.Item2.Item6, out var impersonatingUserId);
 
                 return new PluginStepConfig
                 {
                     ExecutionStage = (ExecutionStage)c.Item1.Item2,
-                    EventOperation = eventOperation,
+                    EventOperation = c.Item1.Item3,
                     EntityLogicalName = c.Item1.Item4,
                     Deployment = (Deployment)c.Item2.Item1,
                     ExecutionMode = (ExecutionMode)c.Item2.Item2,
