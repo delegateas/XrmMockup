@@ -3,6 +3,7 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
+using DG.Tools.XrmMockup;
 
 namespace DG.XrmMockupTest
 {
@@ -115,6 +116,133 @@ namespace DG.XrmMockupTest
 
                 Assert.Equal(QuoteState.Closed, retrieved.StateCode);
                 Assert.Equal(Quote_StatusCode.Lost, retrieved.StatusCode);
+            }
+        }
+
+        [Fact]
+        public void ReviseDraftQuote_Fails()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                quote.Id = orgAdminUIService.Create(quote);
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act & Assert
+                var ex = Assert.Throws<MockupException>(() => orgAdminUIService.Execute(reviseReq));
+                Assert.Equal("Only quotes in the closed state can be revised.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ReviseActiveQuote_Fails()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                orgAdminUIService.Execute(quote.MakeCreateRequest());
+                orgAdminUIService.Execute(quote.MakeSetStateRequest(QuoteState.Active, Quote_StatusCode.InProgress_2));
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act & Assert
+                var ex = Assert.Throws<MockupException>(() => orgAdminUIService.Execute(reviseReq));
+                Assert.Equal("Only quotes in the closed state can be revised.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ReviseWonQuote_Fails()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                orgAdminUIService.Execute(quote.MakeCreateRequest());
+                orgAdminUIService.Execute(quote.MakeSetStateRequest(QuoteState.Won, Quote_StatusCode.Won));
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act & Assert
+                var ex = Assert.Throws<MockupException>(() => orgAdminUIService.Execute(reviseReq));
+                Assert.Equal("Only quotes in the closed state can be revised.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ReviseClosedQuote()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                orgAdminUIService.Execute(quote.MakeCreateRequest());
+                orgAdminUIService.Execute(quote.MakeSetStateRequest(QuoteState.Closed, Quote_StatusCode.Revised));
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act
+                var resp = (ReviseQuoteResponse)orgAdminUIService.Execute(reviseReq);
+
+                // Assert
+                Assert.NotNull(resp.Entity);
+                var revisedQuote = orgAdminUIService.Retrieve(Quote.EntityLogicalName, resp.Entity.Id, new ColumnSet(true)) as Quote;
+                Assert.Equal(1, revisedQuote.RevisionNumber);
+                Assert.Equal(QuoteState.Draft, revisedQuote.StateCode);
+                Assert.Equal(Quote_StatusCode.InProgress_2, revisedQuote.StatusCode);
+            }
+        }
+
+        [Fact]
+        public void ReviseClosedWithQuoteDetailsQuote()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                quote.Id = orgAdminUIService.Create(quote);
+                orgAdminUIService.Execute(quote.MakeSetStateRequest(QuoteState.Closed, Quote_StatusCode.Revised));
+                var quoteLine = new QuoteDetail() { QuoteId = quote.ToEntityReference() };
+                orgAdminUIService.Execute(quoteLine.MakeCreateRequest());
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act
+                var resp = (ReviseQuoteResponse)orgAdminUIService.Execute(reviseReq);
+
+                // Assert
+                Assert.NotNull(resp.Entity);
+                var revisedQuote = orgAdminUIService.Retrieve(Quote.EntityLogicalName, resp.Entity.Id, new ColumnSet(true)) as Quote;
+                Assert.Equal(1, revisedQuote.RevisionNumber);
+                Assert.Equal(QuoteState.Draft, revisedQuote.StateCode);
+                Assert.Equal(Quote_StatusCode.InProgress_2, revisedQuote.StatusCode);
+                var query = new QueryExpression(QuoteDetail.EntityLogicalName);
+                query.Criteria.AddCondition("quoteid", ConditionOperator.Equal, revisedQuote.Id);
+                var relatedQuoteLines = orgAdminUIService.RetrieveMultiple(query).Entities;
+                Assert.Single(relatedQuoteLines);
             }
         }
     }

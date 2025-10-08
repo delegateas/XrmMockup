@@ -383,6 +383,7 @@ namespace DG.Tools.XrmMockup
             new ExecuteTransactionRequestHandler(this, db, metadata, security),
             new WinQuoteRequestHandler(this, db, metadata, security),
             new CloseQuoteRequestHandler(this, db, metadata, security),
+            new ReviseQuoteRequestHandler(this, db, metadata, security)
         };
 
         internal void EnableProxyTypes(Assembly assembly)

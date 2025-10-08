@@ -1098,6 +1098,9 @@ namespace DG.Tools.XrmMockup.Internal
         public const string TeamMembership = "teammembership";
         public const string Incident = "incident";
         public const string Annotation = "annotation";
+        public const string Quote = "quote";
+        public const string QuoteDetail = "quotedetail";
+        public const string QuoteClose = "quoteclose";
     }
 
     [DataContract()]
