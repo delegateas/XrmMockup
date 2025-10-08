@@ -6,13 +6,19 @@ using DG.XrmFramework.BusinessDomain.ServiceContext;
 using XrmPluginCore;
 using XrmPluginCore.Enums;
 
-namespace DG.Some.Namespace 
+namespace DG.Some.Namespace
 {
+    public class ChildEntity : Entity {
+        public ChildEntity() : base("mock_child")
+        {
+        }
+    }
+
     public class ChildPreCreatePlugin : Plugin 
     {
         public ChildPreCreatePlugin() 
         {
-            RegisterPluginStep("mock_child",
+            RegisterPluginStep<ChildEntity>(
                 EventOperation.Create,
                 ExecutionStage.PreOperation,
                 Execute).SetExecutionMode(ExecutionMode.Synchronous);

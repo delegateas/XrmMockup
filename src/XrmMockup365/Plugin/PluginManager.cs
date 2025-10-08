@@ -16,18 +16,22 @@ using XrmMockupShared.Plugin;
 
 namespace DG.Tools.XrmMockup
 {
+    using StageToTriggerMap = Dictionary<ExecutionStage, List<PluginTrigger>>;
+    using EventOperation = String;
+    using EventOperationEnum = EventOperation;
+
     internal class PluginManager
     {
         // Static caches shared across all PluginManager instances
-        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>> _cachedRegisteredPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>>();
-        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>> _cachedSystemPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>>();
+        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedRegisteredPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
+        private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedSystemPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
         private static readonly ConcurrentDictionary<Type, IPlugin> _pluginInstanceCache = new ConcurrentDictionary<Type, IPlugin>();
         private static readonly object _cacheLock = new object();
 
         // TODO: We can probably optimize lookup by creating a key record and using that instead of a Dictionary of Dictionaries
-        private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
-        private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
-        private readonly Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+        private readonly Dictionary<EventOperation, StageToTriggerMap> registeredPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
+        private readonly Dictionary<EventOperation, StageToTriggerMap> temporaryPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
+        private readonly Dictionary<EventOperation, StageToTriggerMap> registeredSystemPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
         internal readonly List<Type> missingRegistrations = new List<Type>();
 
@@ -54,7 +58,7 @@ namespace DG.Tools.XrmMockup
 
         public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
         {
-            temporaryPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+            temporaryPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
             var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes);
             var systemCacheKey = "system_plugins";
@@ -79,8 +83,8 @@ namespace DG.Tools.XrmMockup
                     else
                     {
                         // First time - do the work and cache it
-                        registeredPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
-                        registeredSystemPlugins = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+                        registeredPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
+                        registeredSystemPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
                         // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
                         // TODO: How do we filter CustomAPIs?
@@ -102,7 +106,7 @@ namespace DG.Tools.XrmMockup
         internal List<string> TemporaryPluginRegistrations => FlattenPluginDictionary(temporaryPlugins);
         internal List<string> SystemPluginRegistrations => FlattenPluginDictionary(registeredSystemPlugins);
 
-        private static List<string> FlattenPluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> plugins)
+        private static List<string> FlattenPluginDictionary(Dictionary<EventOperation, StageToTriggerMap> plugins)
         {
             return plugins
                 .SelectMany(kvpOperation =>
@@ -113,7 +117,7 @@ namespace DG.Tools.XrmMockup
                 .ToList();
         }
 
-        private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, StageToTriggerMap> register)
         {
             foreach (var basePluginType in basePluginTypes)
             {
@@ -136,7 +140,7 @@ namespace DG.Tools.XrmMockup
             SortAllLists(register);
         }
 
-        private void RegisterDirectPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterDirectPlugins(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, Dictionary<EventOperation, StageToTriggerMap> register)
         {
             if (basePluginTypes == null) return;
 
@@ -158,7 +162,7 @@ namespace DG.Tools.XrmMockup
             SortAllLists(register);
         }
 
-        private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> metaPlugins, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> metaPlugins, Dictionary<EventOperation, StageToTriggerMap> register)
         {
             var plugin = _pluginInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
             if (plugin == null)
@@ -212,7 +216,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        private void RegisterSystemPlugins(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register, Dictionary<string, EntityMetadata> metadata)
+        private void RegisterSystemPlugins(Dictionary<EventOperation, StageToTriggerMap> register, Dictionary<string, EntityMetadata> metadata)
         {
             var registrations = new List<IPluginStepConfig>();
 
@@ -232,14 +236,14 @@ namespace DG.Tools.XrmMockup
             SortAllLists(register);
         }
 
-        private static void AddTrigger(PluginTrigger trigger, Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> register)
+        private static void AddTrigger(PluginTrigger trigger, Dictionary<EventOperation, StageToTriggerMap> register)
         {
             var operation = trigger.Operation;
             var stage = trigger.Stage;
 
             if (!register.TryGetValue(operation, out var operationRegister))
             {
-                register[operation] = operationRegister = new Dictionary<ExecutionStage, List<PluginTrigger>>();
+                register[operation] = operationRegister = new StageToTriggerMap();
             }
 
             if (!operationRegister.TryGetValue(stage, out var stageRegister))
@@ -253,7 +257,7 @@ namespace DG.Tools.XrmMockup
         /// <summary>
         /// Sorts all the registered which shares the same entry point based on their given order
         /// </summary>
-        private void SortAllLists(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> plugins)
+        private void SortAllLists(Dictionary<EventOperation, StageToTriggerMap> plugins)
         {
             foreach (var dictEntry in plugins)
             {
@@ -264,13 +268,14 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        public void TriggerSync(EventOperation operation, ExecutionStage stage,
+        public void TriggerSync(string operation, ExecutionStage stage,
                 object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
         {
             TriggerSyncInternal(operation, stage, entity, preImage, postImage, pluginContext, core, executionOrderFilter);
 
             // Check if this is a Single -> Multiple request
-            if (Mappings.RequestToMultipleRequest.TryGetValue(operation, out var multipleOperation))
+            var isKnownOp = Enum.TryParse<EventOperationEnum>(operation, out var knownOp);
+            if (isKnownOp && Mappings.RequestToMultipleRequest.TryGetValue(knownOp, out var multipleOperation))
             {
                 var multiplePluginContext = pluginContext.Clone();
                 var entityCollection = new EntityCollection()
@@ -295,14 +300,14 @@ namespace DG.Tools.XrmMockup
                     : throw new MockupException($"Could not create request for operation {operation}");
 
                 // TODO: Images for multiple are handled in IPluginExecutionContext4
-                TriggerSyncInternal(multipleOperation, stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
+                TriggerSyncInternal(multipleOperation.ToString(), stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
             }
 
             // Check if this is a Multiple -> Single request
-            if (Mappings.SingleOperationFromMultiple(operation) is EventOperation singleOperation)
+            if (isKnownOp && Mappings.SingleOperationFromMultiple(knownOp) is EventOperationEnum singleOperation)
             {
                 // Try to get the request type for the multiple
-                var multipleRequestType = Mappings.EventOperationToRequest(operation)
+                var multipleRequestType = Mappings.EventOperationToRequest(knownOp)
                     ?? throw new MockupException($"Could not find request type for operation {operation}");
 
                 // Now try to get the image property for the multiple request
@@ -335,7 +340,7 @@ namespace DG.Tools.XrmMockup
                     singlePluginContext.MessageName = singleMessageName;
                     
                     // TODO: Recalculate preImage and postImage here
-                    TriggerSyncInternal(singleOperation, stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
+                    TriggerSyncInternal(singleOperation.ToString(), stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
                 }
             }
         }
@@ -423,12 +428,12 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        private Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> ClonePluginDictionary(Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>> source)
+        private Dictionary<EventOperation, StageToTriggerMap> ClonePluginDictionary(Dictionary<EventOperation, StageToTriggerMap> source)
         {
-            var result = new Dictionary<EventOperation, Dictionary<ExecutionStage, List<PluginTrigger>>>();
+            var result = new Dictionary<EventOperation, StageToTriggerMap>();
             foreach (var operationEntry in source)
             {
-                var stageDict = new Dictionary<ExecutionStage, List<PluginTrigger>>();
+                var stageDict = new StageToTriggerMap();
                 foreach (var stageEntry in operationEntry.Value)
                 {
                     stageDict[stageEntry.Key] = new List<PluginTrigger>(stageEntry.Value);

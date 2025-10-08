@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DG.Tools.XrmMockup {
 
-    internal static partial class Mappings {
+    internal static class Mappings {
 
         public static Dictionary<Type, string> EntityImageProperty = new Dictionary<Type, string>()
         {

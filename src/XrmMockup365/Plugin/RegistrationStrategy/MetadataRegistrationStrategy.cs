@@ -27,15 +27,10 @@ namespace DG.Tools.XrmMockup.Plugin.RegistrationStrategy
 
             foreach (var metaStep in metaSteps)
             {
-                if (!Enum.TryParse<EventOperation>(metaStep.MessageName, true, out var eventOperation))
-                {
-                    throw new MockupException($"Unknown message '{metaStep.MessageName}' for plugin '{pluginType.FullName}'");
-                }
-
                 yield return new PluginStepConfig
                 {
                     ExecutionStage = (ExecutionStage)metaStep.Stage,
-                    EventOperation = eventOperation,
+                    EventOperation = metaStep.MessageName,
                     EntityLogicalName = metaStep.PrimaryEntity,
                     Deployment = 0,
                     ExecutionMode = (ExecutionMode)metaStep.Mode,

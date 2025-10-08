@@ -13,6 +13,7 @@ using XrmPluginCore.Enums;
 using XrmPluginCore.Interfaces.Plugin;
 using System.Diagnostics;
 using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Extensions;
 
 namespace DG.Tools.XrmMockup
 {
@@ -22,7 +23,7 @@ namespace DG.Tools.XrmMockup
         public Action<MockupServiceProviderAndFactory> PluginExecute { get; }
 
         internal string EntityName { get; }
-        internal EventOperation Operation { get; }
+        internal string Operation { get; }
         internal ExecutionStage Stage { get; }
         internal ExecutionMode Mode { get; }
         internal int Order { get; }
@@ -34,7 +35,7 @@ namespace DG.Tools.XrmMockup
 
         private string DebuggerDisplay => $"{Stage} {Operation} {EntityName} [{string.Join(", ", Attributes)}]";
 
-        public PluginTrigger(EventOperation operation, ExecutionStage stage,
+        public PluginTrigger(string operation, ExecutionStage stage,
                 Action<MockupServiceProviderAndFactory> pluginExecute, IPluginStepConfig pluginRegistration, Dictionary<string, EntityMetadata> metadata)
         {
             PluginExecute = pluginExecute;
@@ -134,7 +135,7 @@ namespace DG.Tools.XrmMockup
 
         private void CheckSpecialRequest()
         {
-            if (EntityName != "" && (Operation == EventOperation.Associate || Operation == EventOperation.Disassociate))
+            if (EntityName != "" && (Operation.Matches(EventOperation.Associate) || Operation.Matches(EventOperation.Disassociate)))
             {
                 throw new MockupException(
                     $"An {Operation} plugin step was registered for a specific entity, which can only be registered on AnyEntity");
@@ -143,7 +144,7 @@ namespace DG.Tools.XrmMockup
 
         private Entity AddPostImageAttributesToEntity(Entity entity, Entity preImage, Entity postImage)
         {
-            if (Operation == EventOperation.Update && Stage == ExecutionStage.PostOperation)
+            if (Operation.Matches(EventOperation.Update) && Stage == ExecutionStage.PostOperation)
             {
                 var shadowAddedAttributes = postImage.Attributes.Where(a => !preImage.Attributes.ContainsKey(a.Key) && !entity.Attributes.ContainsKey(a.Key));
                 entity = entity.CloneEntity();
@@ -154,7 +155,7 @@ namespace DG.Tools.XrmMockup
 
         private bool FilteredAttributesMatches(Entity entity)
         {
-            if (Operation != EventOperation.Update || Attributes.Count == 0)
+            if (!Operation.Matches(EventOperation.Update) || Attributes.Count == 0)
             {
                 return true;
             }
