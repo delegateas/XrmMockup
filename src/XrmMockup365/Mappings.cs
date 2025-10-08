@@ -7,12 +7,11 @@ using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace DG.Tools.XrmMockup {
 
-    internal static class Mappings {
-
+    internal static class Mappings
+    {
         public static Dictionary<Type, string> EntityImageProperty = new Dictionary<Type, string>()
         {
             { typeof(AssignRequest), nameof(AssignRequest.Target) },

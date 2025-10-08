@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ServiceModel;
-using Microsoft.Xrm.Sdk;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
+﻿using Microsoft.Xrm.Sdk;
 using XrmPluginCore;
 using XrmPluginCore.Enums;
 
 namespace DG.Some.Namespace
 {
-    public class ChildEntity : Entity {
-        public ChildEntity() : base("mock_child")
-        {
-        }
-    }
-
-    public class ChildPreCreatePlugin : Plugin 
+    public class ChildPreCreatePlugin : Plugin
     {
         public ChildPreCreatePlugin() 
         {

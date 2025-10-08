@@ -1,4 +1,5 @@
-﻿using Microsoft.Xrm.Sdk;using Microsoft.Xrm.Sdk.Query;
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using Microsoft.Crm.Sdk.Messages;
 using XrmPluginCore;
@@ -6,14 +7,6 @@ using XrmPluginCore.Enums;
 
 namespace DG.Some.Namespace 
 {
-    public class MockParent : Entity
-    {
-        public MockParent() : base("mock_parent")
-        {
-            
-        }
-    }
-
     public class ParentPostCreatePlugin : Plugin
     {
         public ParentPostCreatePlugin() 
