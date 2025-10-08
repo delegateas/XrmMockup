@@ -22,27 +22,33 @@ namespace DG.Tools.XrmMockup
             // create quote revision
             var revisedQuote = Utility.CloneEntity(quote);
             revisedQuote.Id = Guid.Empty;
-            revisedQuote.Attributes["revisionnumber"] = quote.GetAttributeValue<int>("revisionnumber") + 1;
-            revisedQuote.Attributes["statecode"] = new OptionSetValue((int)QuoteState.Draft);
-            revisedQuote.Attributes["statuscode"] = new OptionSetValue((int)Quote_StatusCode.InProgress_2);
             var req = new CreateRequest() { Target = revisedQuote };
-            core.Execute(req, userRef);
+            revisedQuote.Id = (core.Execute(req, userRef) as CreateResponse).id;
+
+            // override readonly revisionnumber field
+            var revisionNumber = (quote.GetAttributeValue<int?>("revisionnumber") ?? 0) + 1;
+            var dbRow = db.GetDbRow(revisedQuote);
+            var record = dbRow.ToEntity();
+            record["revisionnumber"] = revisionNumber;
+            record["statecode"] = new OptionSetValue((int)QuoteState.Draft);
+            record["statuscode"] = new OptionSetValue((int)Quote_StatusCode.InProgress_2);
+            db.Update(record);
 
             // clone alle quotedetails to new quote revision
             var relatedQuoteLines = db.GetDBEntityRows(LogicalNames.QuoteDetail)
                 .Select(e => e.ToEntity())
-                .Where(e => e.GetAttributeValue<Guid>("quoteid") == quote.Id);
+                .Where(e => e.GetAttributeValue<EntityReference>("quoteid").Id == quote.Id);
             foreach (var relatedQuoteLine in relatedQuoteLines)
             {
                 var relatedQuoteLineClone = Utility.CloneEntity(relatedQuoteLine);
                 relatedQuoteLineClone.Id = Guid.Empty;
-                revisedQuote.Attributes["quoteid"] = revisedQuote;
+                relatedQuoteLineClone.Attributes["quoteid"] = revisedQuote.ToEntityReference();
                 req = new CreateRequest() { Target = relatedQuoteLineClone };
                 core.Execute(req, userRef);
             }
 
             var resp = new ReviseQuoteResponse();
-            resp.Results["Entity"] = revisedQuote.ToEntityReference();
+            resp.Results["Entity"] = revisedQuote;
             return resp;
         }
     }

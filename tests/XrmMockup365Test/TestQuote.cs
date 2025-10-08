@@ -205,6 +205,44 @@ namespace DG.XrmMockupTest
 
                 // Assert
                 Assert.NotNull(resp.Entity);
+                var revisedQuote = orgAdminUIService.Retrieve(Quote.EntityLogicalName, resp.Entity.Id, new ColumnSet(true)) as Quote;
+                Assert.Equal(1, revisedQuote.RevisionNumber);
+                Assert.Equal(QuoteState.Draft, revisedQuote.StateCode);
+                Assert.Equal(Quote_StatusCode.InProgress_2, revisedQuote.StatusCode);
+            }
+        }
+
+        [Fact]
+        public void ReviseClosedWithQuoteDetailsQuote()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Arrange
+                var quote = new Quote();
+                quote.Id = orgAdminUIService.Create(quote);
+                orgAdminUIService.Execute(quote.MakeSetStateRequest(QuoteState.Closed, Quote_StatusCode.Revised));
+                var quoteLine = new QuoteDetail() { QuoteId = quote.ToEntityReference() };
+                orgAdminUIService.Execute(quoteLine.MakeCreateRequest());
+
+                var reviseReq = new ReviseQuoteRequest()
+                {
+                    QuoteId = quote.Id,
+                    ColumnSet = new ColumnSet(true)
+                };
+
+                // Act
+                var resp = (ReviseQuoteResponse)orgAdminUIService.Execute(reviseReq);
+
+                // Assert
+                Assert.NotNull(resp.Entity);
+                var revisedQuote = orgAdminUIService.Retrieve(Quote.EntityLogicalName, resp.Entity.Id, new ColumnSet(true)) as Quote;
+                Assert.Equal(1, revisedQuote.RevisionNumber);
+                Assert.Equal(QuoteState.Draft, revisedQuote.StateCode);
+                Assert.Equal(Quote_StatusCode.InProgress_2, revisedQuote.StatusCode);
+                var query = new QueryExpression(QuoteDetail.EntityLogicalName);
+                query.Criteria.AddCondition("quoteid", ConditionOperator.Equal, revisedQuote.Id);
+                var relatedQuoteLines = orgAdminUIService.RetrieveMultiple(query).Entities;
+                Assert.Single(relatedQuoteLines);
             }
         }
     }

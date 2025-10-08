@@ -60722,7 +60722,1543 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext {
             return service.Retrieve(id, attrs);
         }
     }
-    
+
+    /// <summary>
+    /// <para>Product line item in a quote. The details include such information as product ID, description, quantity, and cost.</para>
+    /// <para>Display Name: Quote Line</para>
+    /// </summary>
+    [EntityLogicalName("quotedetail")]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DataContract()]
+    public partial class QuoteDetail : ExtendedEntity<EmptyEnum, EmptyEnum>
+    {
+
+        public const string EntityLogicalName = "quotedetail";
+
+        public const int EntityTypeCode = 1085;
+
+        public QuoteDetail() :
+                base(EntityLogicalName)
+        {
+        }
+
+        public QuoteDetail(Guid Id) :
+                base(EntityLogicalName, Id)
+        {
+        }
+
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return GetDebuggerDisplay("quotedetailname");
+            }
+        }
+
+        [AttributeLogicalName("quotedetailid")]
+        public override Guid Id
+        {
+            get
+            {
+                return base.Id;
+            }
+            set
+            {
+                SetId("quotedetailid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the product line item in the quote.</para>
+        /// <para>Display Name: Quote Product</para>
+        /// </summary>
+        [AttributeLogicalName("quotedetailid")]
+        public Guid? QuoteDetailId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("quotedetailid");
+            }
+            set
+            {
+                SetId("quotedetailid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the total price of the quote product, based on the price per unit, volume discount, and quantity.</para>
+        /// <para>Display Name: Amount</para>
+        /// </summary>
+        [AttributeLogicalName("baseamount")]
+        public decimal? BaseAmount
+        {
+            get
+            {
+                return GetMoneyValue("baseamount");
+            }
+            set
+            {
+                SetMoneyValue("baseamount", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Amount in base currency.</para>
+        /// <para>Display Name: Amount (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("baseamount_base")]
+        public decimal? BaseAmount_Base
+        {
+            get
+            {
+                return GetMoneyValue("baseamount_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows who created the record.</para>
+        /// <para>Display Name: Created By</para>
+        /// </summary>
+        [AttributeLogicalName("createdby")]
+        public EntityReference CreatedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the record was created.</para>
+        /// <para>Display Name: Created On</para>
+        /// </summary>
+        [AttributeLogicalName("createdon")]
+        public DateTime? CreatedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("createdon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows who created the record on behalf of another user.</para>
+        /// <para>Display Name: Created By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("createdonbehalfby")]
+        public EntityReference CreatedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("createdonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Type additional information to describe the quote product, such as manufacturing details or acceptable substitutions.</para>
+        /// <para>Display Name: Description</para>
+        /// </summary>
+        [AttributeLogicalName("description")]
+        public string Description
+        {
+            get
+            {
+                return GetAttributeValue<string>("description");
+            }
+            set
+            {
+                SetAttributeValue("description", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the conversion rate of the record's currency. The exchange rate is used to convert all money fields in the record from the local currency to the system's default currency.</para>
+        /// <para>Display Name: Exchange Rate</para>
+        /// </summary>
+        [AttributeLogicalName("exchangerate")]
+        public decimal? ExchangeRate
+        {
+            get
+            {
+                return GetAttributeValue<decimal?>("exchangerate");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the total amount due for the quote product, based on the sum of the unit price, quantity, discounts ,and tax.</para>
+        /// <para>Display Name: Extended Amount</para>
+        /// </summary>
+        [AttributeLogicalName("extendedamount")]
+        public decimal? ExtendedAmount
+        {
+            get
+            {
+                return GetMoneyValue("extendedamount");
+            }
+            set
+            {
+                SetMoneyValue("extendedamount", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Extended Amount in base currency.</para>
+        /// <para>Display Name: Extended Amount (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("extendedamount_base")]
+        public decimal? ExtendedAmount_Base
+        {
+            get
+            {
+                return GetMoneyValue("extendedamount_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Sequence number of the import that created this record.</para>
+        /// <para>Display Name: Import Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("importsequencenumber")]
+        public int? ImportSequenceNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("importsequencenumber");
+            }
+            set
+            {
+                SetAttributeValue("importsequencenumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Select whether the price per unit is fixed at the value in the specified price list or can be overridden by users who have edit rights to the quote product.</para>
+        /// <para>Display Name: Price Overridden</para>
+        /// </summary>
+        [AttributeLogicalName("ispriceoverridden")]
+        public bool? IsPriceOverridden
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("ispriceoverridden");
+            }
+            set
+            {
+                SetAttributeValue("ispriceoverridden", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Select whether the product exists in the Microsoft Dynamics 365 product catalog or is a write-in product specific to the quote.</para>
+        /// <para>Display Name: Select Product</para>
+        /// </summary>
+        [AttributeLogicalName("isproductoverridden")]
+        public bool? IsProductOverridden
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("isproductoverridden");
+            }
+            set
+            {
+                SetAttributeValue("isproductoverridden", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the line item number for the quote product to easily identify the product in the quote and make sure it's listed in the correct order.</para>
+        /// <para>Display Name: Line Item Number</para>
+        /// </summary>
+        [AttributeLogicalName("lineitemnumber")]
+        public int? LineItemNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("lineitemnumber");
+            }
+            set
+            {
+                SetAttributeValue("lineitemnumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the manual discount amount for the quote product to deduct any negotiated or other savings from the product total on the quote.</para>
+        /// <para>Display Name: Manual Discount</para>
+        /// </summary>
+        [AttributeLogicalName("manualdiscountamount")]
+        public decimal? ManualDiscountAmount
+        {
+            get
+            {
+                return GetMoneyValue("manualdiscountamount");
+            }
+            set
+            {
+                SetMoneyValue("manualdiscountamount", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Manual Discount in base currency.</para>
+        /// <para>Display Name: Manual Discount (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("manualdiscountamount_base")]
+        public decimal? ManualDiscountAmount_Base
+        {
+            get
+            {
+                return GetMoneyValue("manualdiscountamount_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows who last updated the record.</para>
+        /// <para>Display Name: Modified By</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedby")]
+        public EntityReference ModifiedBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time when the record was modified.</para>
+        /// <para>Display Name: Modified On</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedon")]
+        public DateTime? ModifiedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("modifiedon");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows who last updated the record on behalf of another user.</para>
+        /// <para>Display Name: Modified By (Delegate)</para>
+        /// </summary>
+        [AttributeLogicalName("modifiedonbehalfby")]
+        public EntityReference ModifiedOnBehalfBy
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("modifiedonbehalfby");
+            }
+        }
+
+        /// <summary>
+        /// <para>Date and time that the record was migrated.</para>
+        /// <para>Display Name: Record Created On</para>
+        /// </summary>
+        [AttributeLogicalName("overriddencreatedon")]
+        public DateTime? OverriddenCreatedOn
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("overriddencreatedon");
+            }
+            set
+            {
+                SetAttributeValue("overriddencreatedon", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Owner Id</para>
+        /// <para>Display Name: Owner</para>
+        /// </summary>
+        [AttributeLogicalName("ownerid")]
+        public EntityReference OwnerId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("ownerid");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier for the business unit that owns the record</para>
+        /// <para>Display Name: Owning Business Unit</para>
+        /// </summary>
+        [AttributeLogicalName("owningbusinessunit")]
+        public EntityReference OwningBusinessUnit
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningbusinessunit");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier for the team that owns the record.</para>
+        /// <para>Display Name: Owning Team</para>
+        /// </summary>
+        [AttributeLogicalName("owningteam")]
+        public EntityReference OwningTeam
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owningteam");
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier for the user that owns the record.</para>
+        /// <para>Display Name: Owning User</para>
+        /// </summary>
+        [AttributeLogicalName("owninguser")]
+        public EntityReference OwningUser
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("owninguser");
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the parent bundle associated with this product</para>
+        /// <para>Display Name: Parent Bundle</para>
+        /// </summary>
+        [AttributeLogicalName("parentbundleid")]
+        public Guid? ParentBundleId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("parentbundleid");
+            }
+            set
+            {
+                SetAttributeValue("parentbundleid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the parent bundle associated with this product</para>
+        /// <para>Display Name: Parent bundle product</para>
+        /// </summary>
+        [AttributeLogicalName("parentbundleidref")]
+        public EntityReference ParentBundleIdRef
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("parentbundleidref");
+            }
+            set
+            {
+                SetAttributeValue("parentbundleidref", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the price per unit of the quote product. The default is to the value in the price list specified on the quote for existing products.</para>
+        /// <para>Display Name: Price Per Unit</para>
+        /// </summary>
+        [AttributeLogicalName("priceperunit")]
+        public decimal? PricePerUnit
+        {
+            get
+            {
+                return GetMoneyValue("priceperunit");
+            }
+            set
+            {
+                SetMoneyValue("priceperunit", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Price Per Unit in base currency.</para>
+        /// <para>Display Name: Price Per Unit (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("priceperunit_base")]
+        public decimal? PricePerUnit_Base
+        {
+            get
+            {
+                return GetMoneyValue("priceperunit_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Select the type of pricing error, such as a missing or invalid product, or missing quantity.</para>
+        /// <para>Display Name: Pricing Error </para>
+        /// </summary>
+        [AttributeLogicalName("pricingerrorcode")]
+        public qooi_pricingerrorcode? PricingErrorCode
+        {
+            get
+            {
+                return GetOptionSetValue<qooi_pricingerrorcode>("pricingerrorcode");
+            }
+            set
+            {
+                SetOptionSetValue("pricingerrorcode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Quote Detail Name. Added for 1:n referential relationship (internal purposes only)</para>
+        /// <para>Display Name: Name</para>
+        /// </summary>
+        [AttributeLogicalName("quotedetailname")]
+        public string PrimaryNameField
+        {
+            get
+            {
+                return GetAttributeValue<string>("quotedetailname");
+            }
+            set
+            {
+                SetAttributeValue("quotedetailname", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the product line item association with bundle in the quote</para>
+        /// <para>Display Name: Bundle Item Association</para>
+        /// </summary>
+        [AttributeLogicalName("productassociationid")]
+        public Guid? ProductAssociationId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("productassociationid");
+            }
+            set
+            {
+                SetAttributeValue("productassociationid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type a name or description to identify the type of write-in product included in the quote.</para>
+        /// <para>Display Name: Write-In Product</para>
+        /// </summary>
+        [AttributeLogicalName("productdescription")]
+        public string ProductDescription
+        {
+            get
+            {
+                return GetAttributeValue<string>("productdescription");
+            }
+            set
+            {
+                SetAttributeValue("productdescription", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the product to include on the quote to link the product's pricing and other information to the quote.</para>
+        /// <para>Display Name: Existing Product</para>
+        /// </summary>
+        [AttributeLogicalName("productid")]
+        public EntityReference ProductId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("productid");
+            }
+            set
+            {
+                SetAttributeValue("productid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Calculated field that will be populated by name and description of the product.</para>
+        /// <para>Display Name: Product Name</para>
+        /// </summary>
+        [AttributeLogicalName("productname")]
+        public string ProductName
+        {
+            get
+            {
+                return GetAttributeValue<string>("productname");
+            }
+            set
+            {
+                SetAttributeValue("productname", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>User-defined product ID.</para>
+        /// <para>Display Name: Product Number</para>
+        /// </summary>
+        [AttributeLogicalName("productnumber")]
+        public string ProductNumber
+        {
+            get
+            {
+                return GetAttributeValue<string>("productnumber");
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the amount or quantity of the product requested by the customer.</para>
+        /// <para>Display Name: Quantity</para>
+        /// </summary>
+        [AttributeLogicalName("quantity")]
+        public decimal? Quantity
+        {
+            get
+            {
+                return GetAttributeValue<decimal?>("quantity");
+            }
+            set
+            {
+                SetAttributeValue("quantity", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Quote Detail Name. Added for 1:n referential relationship (internal purposes only)</para>
+        /// <para>Display Name: Name</para>
+        /// </summary>
+        [AttributeLogicalName("quotedetailname")]
+        public string QuoteDetailName
+        {
+            get
+            {
+                return GetAttributeValue<string>("quotedetailname");
+            }
+            set
+            {
+                SetAttributeValue("quotedetailname", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the quote for the quote product.</para>
+        /// <para>Display Name: Quote</para>
+        /// </summary>
+        [AttributeLogicalName("quoteid")]
+        public EntityReference QuoteId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("quoteid");
+            }
+            set
+            {
+                SetAttributeValue("quoteid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Status of the quote product.</para>
+        /// <para>Display Name: Quote Status</para>
+        /// </summary>
+        [AttributeLogicalName("quotestatecode")]
+        public Object QuoteStateCode
+        {
+            get
+            {
+                return GetAttributeValue<Object>("quotestatecode");
+            }
+        }
+
+        /// <summary>
+        /// <para>Enter the delivery date requested by the customer for the quote product.</para>
+        /// <para>Display Name: Requested Delivery Date</para>
+        /// </summary>
+        [AttributeLogicalName("requestdeliveryby")]
+        public DateTime? RequestDeliveryBy
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("requestdeliveryby");
+            }
+            set
+            {
+                SetAttributeValue("requestdeliveryby", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the user responsible for the sale of the quote product.</para>
+        /// <para>Display Name: Salesperson</para>
+        /// </summary>
+        [AttributeLogicalName("salesrepid")]
+        public EntityReference SalesRepId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("salesrepid");
+            }
+            set
+            {
+                SetAttributeValue("salesrepid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the data that maintains the sequence.</para>
+        /// <para>Display Name: Sequence Number</para>
+        /// </summary>
+        [AttributeLogicalName("sequencenumber")]
+        public int? SequenceNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("sequencenumber");
+            }
+            set
+            {
+                SetAttributeValue("sequencenumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Unique identifier of the shipping address.</para>
+        /// <para>Display Name: Ship To Address ID</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_addressid")]
+        public Guid? ShipTo_AddressId
+        {
+            get
+            {
+                return GetAttributeValue<Guid?>("shipto_addressid");
+            }
+            set
+            {
+                SetAttributeValue("shipto_addressid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the city for the customer's shipping address.</para>
+        /// <para>Display Name: Ship To City</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_city")]
+        public string ShipTo_City
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_city");
+            }
+            set
+            {
+                SetAttributeValue("shipto_city", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the primary contact name at the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Contact Name</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_contactname")]
+        public string ShipTo_ContactName
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_contactname");
+            }
+            set
+            {
+                SetAttributeValue("shipto_contactname", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the country or region for the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Country/Region</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_country")]
+        public string ShipTo_Country
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_country");
+            }
+            set
+            {
+                SetAttributeValue("shipto_country", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the fax number for the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Fax</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_fax")]
+        public string ShipTo_Fax
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_fax");
+            }
+            set
+            {
+                SetAttributeValue("shipto_fax", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the first line of the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Street 1</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_line1")]
+        public string ShipTo_Line1
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_line1");
+            }
+            set
+            {
+                SetAttributeValue("shipto_line1", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the second line of the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Street 2</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_line2")]
+        public string ShipTo_Line2
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_line2");
+            }
+            set
+            {
+                SetAttributeValue("shipto_line2", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the third line of the shipping address.</para>
+        /// <para>Display Name: Ship To Street 3</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_line3")]
+        public string ShipTo_Line3
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_line3");
+            }
+            set
+            {
+                SetAttributeValue("shipto_line3", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type a name for the customer's shipping address, such as "Headquarters" or "Field office",  to identify the address.</para>
+        /// <para>Display Name: Ship To Name</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_name")]
+        public string ShipTo_Name
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_name");
+            }
+            set
+            {
+                SetAttributeValue("shipto_name", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the ZIP Code or postal code for the shipping address.</para>
+        /// <para>Display Name: Ship To ZIP/Postal Code</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_postalcode")]
+        public string ShipTo_PostalCode
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_postalcode");
+            }
+            set
+            {
+                SetAttributeValue("shipto_postalcode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the state or province for the shipping address.</para>
+        /// <para>Display Name: Ship To State/Province</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_stateorprovince")]
+        public string ShipTo_StateOrProvince
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_stateorprovince");
+            }
+            set
+            {
+                SetAttributeValue("shipto_stateorprovince", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the phone number for the customer's shipping address.</para>
+        /// <para>Display Name: Ship To Phone</para>
+        /// </summary>
+        [AttributeLogicalName("shipto_telephone")]
+        public string ShipTo_Telephone
+        {
+            get
+            {
+                return GetAttributeValue<string>("shipto_telephone");
+            }
+            set
+            {
+                SetAttributeValue("shipto_telephone", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Type the tax amount for the quote product.</para>
+        /// <para>Display Name: Tax</para>
+        /// </summary>
+        [AttributeLogicalName("tax")]
+        public decimal? Tax
+        {
+            get
+            {
+                return GetMoneyValue("tax");
+            }
+            set
+            {
+                SetMoneyValue("tax", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Tax in base currency.</para>
+        /// <para>Display Name: Tax (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("tax_base")]
+        public decimal? Tax_Base
+        {
+            get
+            {
+                return GetMoneyValue("tax_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>For internal use only.</para>
+        /// <para>Display Name: Time Zone Rule Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("timezoneruleversionnumber")]
+        public int? TimeZoneRuleVersionNumber
+        {
+            get
+            {
+                return GetAttributeValue<int?>("timezoneruleversionnumber");
+            }
+            set
+            {
+                SetAttributeValue("timezoneruleversionnumber", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the local currency for the record to make sure budgets are reported in the correct currency.</para>
+        /// <para>Display Name: Currency</para>
+        /// </summary>
+        [AttributeLogicalName("transactioncurrencyid")]
+        public EntityReference TransactionCurrencyId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("transactioncurrencyid");
+            }
+            set
+            {
+                SetAttributeValue("transactioncurrencyid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Time zone code that was in use when the record was created.</para>
+        /// <para>Display Name: UTC Conversion Time Zone Code</para>
+        /// </summary>
+        [AttributeLogicalName("utcconversiontimezonecode")]
+        public int? UTCConversionTimeZoneCode
+        {
+            get
+            {
+                return GetAttributeValue<int?>("utcconversiontimezonecode");
+            }
+            set
+            {
+                SetAttributeValue("utcconversiontimezonecode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Choose the unit of measurement for the base unit quantity for this purchase, such as each or dozen.</para>
+        /// <para>Display Name: Unit</para>
+        /// </summary>
+        [AttributeLogicalName("uomid")]
+        public EntityReference UoMId
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("uomid");
+            }
+            set
+            {
+                SetAttributeValue("uomid", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Version Number</para>
+        /// <para>Display Name: Version Number</para>
+        /// </summary>
+        [AttributeLogicalName("versionnumber")]
+        public long? VersionNumber
+        {
+            get
+            {
+                return GetAttributeValue<long?>("versionnumber");
+            }
+        }
+
+        /// <summary>
+        /// <para>Shows the discount amount per unit if a specified volume is purchased. Configure volume discounts in the Product Catalog in the Settings area.</para>
+        /// <para>Display Name: Volume Discount</para>
+        /// </summary>
+        [AttributeLogicalName("volumediscountamount")]
+        public decimal? VolumeDiscountAmount
+        {
+            get
+            {
+                return GetMoneyValue("volumediscountamount");
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the Volume Discount in base currency.</para>
+        /// <para>Display Name: Volume Discount (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("volumediscountamount_base")]
+        public decimal? VolumeDiscountAmount_Base
+        {
+            get
+            {
+                return GetMoneyValue("volumediscountamount_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Select whether the quote product should be shipped to the specified address or held until the customer calls with further pick up or delivery instructions.</para>
+        /// <para>Display Name: Ship To</para>
+        /// </summary>
+        [AttributeLogicalName("willcall")]
+        public bool? WillCall
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("willcall");
+            }
+            set
+            {
+                SetAttributeValue("willcall", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The agreement that will be connected to this quote</para>
+        /// <para>Display Name: Agreement</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_agreement")]
+        public EntityReference msdyn_Agreement
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("msdyn_agreement");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_agreement", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Duration of the service associated with the quote line</para>
+        /// <para>Display Name: Duration</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_duration")]
+        public int? msdyn_Duration
+        {
+            get
+            {
+                return GetAttributeValue<int?>("msdyn_duration");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_duration", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>End date of the service associated with the quote line</para>
+        /// <para>Display Name: End Date</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_enddate")]
+        public DateTime? msdyn_EndDate
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("msdyn_enddate");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_enddate", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The estimated cost of this quote line</para>
+        /// <para>Display Name: EstimatedCost</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_estimatedcost")]
+        public decimal? msdyn_EstimatedCost
+        {
+            get
+            {
+                return GetMoneyValue("msdyn_estimatedcost");
+            }
+            set
+            {
+                SetMoneyValue("msdyn_estimatedcost", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The estimated margin of this quote line</para>
+        /// <para>Display Name: Estimated Margin</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_estimatedmargin")]
+        public decimal? msdyn_EstimatedMargin
+        {
+            get
+            {
+                return GetAttributeValue<decimal?>("msdyn_estimatedmargin");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_estimatedmargin", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The estimated revenue of this quote line</para>
+        /// <para>Display Name: EstimatedRevenue</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_estimatedrevenue")]
+        public decimal? msdyn_EstimatedRevenue
+        {
+            get
+            {
+                return GetMoneyValue("msdyn_estimatedrevenue");
+            }
+            set
+            {
+                SetMoneyValue("msdyn_estimatedrevenue", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Display Name: ImportDetailsFromAgreement</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_importdetailsfromagreement")]
+        public bool? msdyn_ImportDetailsFromAgreement
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("msdyn_importdetailsfromagreement");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_importdetailsfromagreement", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The price list associated for the service account on this quote line</para>
+        /// <para>Display Name: Services Price List</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_pricelist")]
+        public EntityReference msdyn_PriceList
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("msdyn_pricelist");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_pricelist", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The sales tax code</para>
+        /// <para>Display Name: Sales Tax Code</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_salestaxcode")]
+        public EntityReference msdyn_SalesTaxCode
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("msdyn_salestaxcode");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_salestaxcode", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>The service account for this quote line</para>
+        /// <para>Display Name: Service Account</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_serviceaccount")]
+        public EntityReference msdyn_ServiceAccount
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("msdyn_serviceaccount");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_serviceaccount", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Service territory of this service</para>
+        /// <para>Display Name: Service Territory</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_serviceterritory")]
+        public EntityReference msdyn_ServiceTerritory
+        {
+            get
+            {
+                return GetAttributeValue<EntityReference>("msdyn_serviceterritory");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_serviceterritory", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Start Date of the service associated with the quote Line</para>
+        /// <para>Display Name: Start Date</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_startdate")]
+        public DateTime? msdyn_StartDate
+        {
+            get
+            {
+                return GetAttributeValue<DateTime?>("msdyn_startdate");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_startdate", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>States whether this is taxable</para>
+        /// <para>Display Name: Taxable</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_taxable")]
+        public bool? msdyn_Taxable
+        {
+            get
+            {
+                return GetAttributeValue<bool?>("msdyn_taxable");
+            }
+            set
+            {
+                SetAttributeValue("msdyn_taxable", value);
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the EstimatedCost in base currency.</para>
+        /// <para>Display Name: EstimatedCost (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_estimatedcost_base")]
+        public decimal? msdyn_estimatedcost_Base
+        {
+            get
+            {
+                return GetMoneyValue("msdyn_estimatedcost_base");
+            }
+        }
+
+        /// <summary>
+        /// <para>Value of the EstimatedRevenue in base currency.</para>
+        /// <para>Display Name: EstimatedRevenue (Base)</para>
+        /// </summary>
+        [AttributeLogicalName("msdyn_estimatedrevenue_base")]
+        public decimal? msdyn_estimatedrevenue_Base
+        {
+            get
+            {
+                return GetMoneyValue("msdyn_estimatedrevenue_base");
+            }
+        }
+
+        [RelationshipSchemaName("QuoteDetail_SyncErrors")]
+        public IEnumerable<SyncError> QuoteDetail_SyncErrors
+        {
+            get
+            {
+                return GetRelatedEntities<SyncError>("QuoteDetail_SyncErrors", null);
+            }
+            set
+            {
+                SetRelatedEntities("QuoteDetail_SyncErrors", null, value);
+            }
+        }
+
+        [RelationshipSchemaName("quotedetail_parent_quotedetail", EntityRole.Referenced)]
+        public IEnumerable<QuoteDetail> Referencedquotedetail_parent_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntities<QuoteDetail>("quotedetail_parent_quotedetail", EntityRole.Referenced);
+            }
+            set
+            {
+                SetRelatedEntities("quotedetail_parent_quotedetail", EntityRole.Referenced, value);
+            }
+        }
+
+        [RelationshipSchemaName("quotedetail_parentref_quotedetail", EntityRole.Referenced)]
+        public IEnumerable<QuoteDetail> Referencedquotedetail_parentref_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntities<QuoteDetail>("quotedetail_parentref_quotedetail", EntityRole.Referenced);
+            }
+            set
+            {
+                SetRelatedEntities("quotedetail_parentref_quotedetail", EntityRole.Referenced, value);
+            }
+        }
+
+        [AttributeLogicalName("parentbundleid")]
+        [RelationshipSchemaName("quotedetail_parent_quotedetail", EntityRole.Referencing)]
+        public QuoteDetail Referencingquotedetail_parent_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<QuoteDetail>("quotedetail_parent_quotedetail", EntityRole.Referencing);
+            }
+            set
+            {
+                SetRelatedEntity("quotedetail_parent_quotedetail", EntityRole.Referencing, value);
+            }
+        }
+
+        [AttributeLogicalName("parentbundleidref")]
+        [RelationshipSchemaName("quotedetail_parentref_quotedetail", EntityRole.Referencing)]
+        public QuoteDetail Referencingquotedetail_parentref_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<QuoteDetail>("quotedetail_parentref_quotedetail", EntityRole.Referencing);
+            }
+            set
+            {
+                SetRelatedEntity("quotedetail_parentref_quotedetail", EntityRole.Referencing, value);
+            }
+        }
+
+        [AttributeLogicalName("dg_parentaccount")]
+        [RelationshipSchemaName("dg_quotedetail_parentaccount_account")]
+        public Account dg_quotedetail_parentaccount_account
+        {
+            get
+            {
+                return GetRelatedEntity<Account>("dg_quotedetail_parentaccount_account", null);
+            }
+            set
+            {
+                SetRelatedEntity("dg_quotedetail_parentaccount_account", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdonbehalfby")]
+        [RelationshipSchemaName("lk_quotedetail_createdonbehalfby")]
+        public SystemUser lk_quotedetail_createdonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quotedetail_createdonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quotedetail_createdonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedonbehalfby")]
+        [RelationshipSchemaName("lk_quotedetail_modifiedonbehalfby")]
+        public SystemUser lk_quotedetail_modifiedonbehalfby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quotedetail_modifiedonbehalfby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quotedetail_modifiedonbehalfby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("createdby")]
+        [RelationshipSchemaName("lk_quotedetailbase_createdby")]
+        public SystemUser lk_quotedetailbase_createdby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quotedetailbase_createdby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quotedetailbase_createdby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("modifiedby")]
+        [RelationshipSchemaName("lk_quotedetailbase_modifiedby")]
+        public SystemUser lk_quotedetailbase_modifiedby
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("lk_quotedetailbase_modifiedby", null);
+            }
+            set
+            {
+                SetRelatedEntity("lk_quotedetailbase_modifiedby", null, value);
+            }
+        }
+
+        [AttributeLogicalName("msdyn_serviceaccount")]
+        [RelationshipSchemaName("msdyn_account_quotedetail_ServiceAccount")]
+        public Account msdyn_account_quotedetail_ServiceAccount
+        {
+            get
+            {
+                return GetRelatedEntity<Account>("msdyn_account_quotedetail_ServiceAccount", null);
+            }
+            set
+            {
+                SetRelatedEntity("msdyn_account_quotedetail_ServiceAccount", null, value);
+            }
+        }
+
+        [AttributeLogicalName("msdyn_agreement")]
+        [RelationshipSchemaName("msdyn_msdyn_agreement_quotedetail_Agreement")]
+        public msdyn_agreement msdyn_msdyn_agreement_quotedetail_Agreement
+        {
+            get
+            {
+                return GetRelatedEntity<msdyn_agreement>("msdyn_msdyn_agreement_quotedetail_Agreement", null);
+            }
+            set
+            {
+                SetRelatedEntity("msdyn_msdyn_agreement_quotedetail_Agreement", null, value);
+            }
+        }
+
+        [AttributeLogicalName("quoteid")]
+        [RelationshipSchemaName("quote_details")]
+        public Quote quote_details
+        {
+            get
+            {
+                return GetRelatedEntity<Quote>("quote_details", null);
+            }
+            set
+            {
+                SetRelatedEntity("quote_details", null, value);
+            }
+        }
+
+        [AttributeLogicalName("salesrepid")]
+        [RelationshipSchemaName("system_user_quotedetail")]
+        public SystemUser system_user_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("system_user_quotedetail", null);
+            }
+            set
+            {
+                SetRelatedEntity("system_user_quotedetail", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owningteam")]
+        [RelationshipSchemaName("team_quotedetail")]
+        public Team team_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<Team>("team_quotedetail", null);
+            }
+            set
+            {
+                SetRelatedEntity("team_quotedetail", null, value);
+            }
+        }
+
+        [AttributeLogicalName("transactioncurrencyid")]
+        [RelationshipSchemaName("transactioncurrency_quotedetail")]
+        public TransactionCurrency transactioncurrency_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<TransactionCurrency>("transactioncurrency_quotedetail", null);
+            }
+            set
+            {
+                SetRelatedEntity("transactioncurrency_quotedetail", null, value);
+            }
+        }
+
+        [AttributeLogicalName("owninguser")]
+        [RelationshipSchemaName("user_quotedetail")]
+        public SystemUser user_quotedetail
+        {
+            get
+            {
+                return GetRelatedEntity<SystemUser>("user_quotedetail", null);
+            }
+            set
+            {
+                SetRelatedEntity("user_quotedetail", null, value);
+            }
+        }
+
+        public static QuoteDetail Retrieve(IOrganizationService service, Guid id, params Expression<Func<QuoteDetail, object>>[] attrs)
+        {
+            return service.Retrieve(id, attrs);
+        }
+    }
+
     /// <summary>
     /// <para>The Master appointment of a recurring appointment series.</para>
     /// <para>Display Name: Recurring Appointment</para>
