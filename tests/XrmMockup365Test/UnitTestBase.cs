@@ -12,37 +12,78 @@ using Microsoft.PowerPlatform.Dataverse.Client;
 
 namespace DG.XrmMockupTest
 {
-    public class UnitTestBase : IClassFixture<XrmMockupFixture>
+    public abstract class ServiceWrapper
     {
-        private static DateTime _startTime { get; set; }
-
 #if DATAVERSE_SERVICE_CLIENT
-        protected IOrganizationServiceAsync2 orgAdminUIService;
-        protected IOrganizationServiceAsync2 orgAdminService;
-        protected IOrganizationServiceAsync2 orgGodService;
-        protected IOrganizationServiceAsync2 orgRealDataService;
+        public IOrganizationServiceAsync2 orgAdminUIService { get; protected set; }
+        public IOrganizationServiceAsync2 orgAdminService { get; protected set; }
+        public IOrganizationServiceAsync2 orgGodService { get; protected set; }
+        public IOrganizationServiceAsync2 orgRealDataService { get; protected set; }
 
-        protected IOrganizationServiceAsync2 testUser1Service;
-        protected IOrganizationServiceAsync2 testUser2Service;
-        protected IOrganizationServiceAsync2 testUser3Service;
-        protected IOrganizationServiceAsync2 testUser4Service;
+        public IOrganizationServiceAsync2 testUser1Service { get; protected set; }
+        public IOrganizationServiceAsync2 testUser2Service { get; protected set; }
+        public IOrganizationServiceAsync2 testUser3Service { get; protected set; }
+        public IOrganizationServiceAsync2 testUser4Service { get; protected set; }
 #else
-        protected IOrganizationService orgAdminUIService;
-        protected IOrganizationService orgAdminService;
-        protected IOrganizationService orgGodService;
-        protected IOrganizationService orgRealDataService;
+        public IOrganizationService orgAdminUIService { get; protected set; }
+        public IOrganizationService orgAdminService { get; protected set; }
+        public IOrganizationService orgGodService { get; protected set; }
+        public IOrganizationService orgRealDataService { get; protected set; }
 
-        protected IOrganizationService testUser1Service;
-        protected IOrganizationService testUser2Service;
-        protected IOrganizationService testUser3Service;
-        protected IOrganizationService testUser4Service;
+        public IOrganizationService testUser1Service { get; protected set; }
+        public IOrganizationService testUser2Service { get; protected set; }
+        public IOrganizationService testUser3Service { get; protected set; }
+        public IOrganizationService testUser4Service { get; protected set; }
 #endif
 
-        protected Entity testUser1;
-        protected Entity testUser2;
-        protected Entity testUser3;
-        protected Entity testUser4;
-        protected Entity testUser5;
+        public Entity testUser1 { get; protected set; }
+        public Entity testUser2 { get; protected set; }
+        public Entity testUser3 { get; protected set; }
+        public Entity testUser4 { get; protected set; }
+        public Entity testUser5 { get; protected set; }
+    }
+
+    public class UnitTestOrganizationServiceFactory : IOrganizationServiceFactory
+    {
+        public UnitTestOrganizationServiceFactory(ServiceWrapper services)
+        {
+            Services = services;
+        }
+
+        private ServiceWrapper Services { get; }
+
+        public IOrganizationService CreateOrganizationService(Guid? userId)
+        {
+            if (userId == null || userId == Guid.Empty)
+            {
+                return Services.orgAdminService;
+            }
+            else if (userId == Services.testUser1.Id)
+            {
+                return Services.testUser1Service;
+            }
+            else if (userId == Services.testUser2.Id)
+            {
+                return Services.testUser2Service;
+            }
+            else if (userId == Services.testUser3.Id)
+            {
+                return Services.testUser3Service;
+            }
+            else if (userId == Services.testUser4.Id)
+            {
+                return Services.testUser4Service;
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown userId: {userId}");
+            }
+        }
+    }
+
+    public class UnitTestBase : ServiceWrapper, IClassFixture<XrmMockupFixture>
+    {
+        private static DateTime _startTime { get; set; }
 
         protected Entity contactWriteAccessTeamTemplate;
 
@@ -192,7 +233,19 @@ namespace DG.XrmMockupTest
             contactWriteAccessTeamTemplate["defaultaccessrightsmask"] = mask;
             contactWriteAccessTeamTemplate.Id = orgAdminService.Create(contactWriteAccessTeamTemplate);
         }
-        public void Dispose()
+
+        protected TEntity Create<TEntity>(TEntity entity) where TEntity : Entity
+        {
+            return Create(orgAdminService, entity);
+        }
+
+        protected static TEntity Create<TEntity>(IOrganizationService service, TEntity entity) where TEntity : Entity
+        {
+            var id = service.Create(entity);
+            return service.Retrieve(entity.LogicalName, id, new Microsoft.Xrm.Sdk.Query.ColumnSet(true)).ToEntity<TEntity>();
+        }
+
+        public virtual void Dispose()
         {
             // No need to reset environment since each test has its own instance
             // The instance will be garbage collected automatically
