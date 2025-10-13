@@ -1,9 +1,11 @@
-using Microsoft.PowerFx.Dataverse;
+using DG.Tools.XrmMockup.CustomFunction;
 using Microsoft.PowerFx;
+using Microsoft.PowerFx.Dataverse;
 using Microsoft.Xrm.Sdk;
-using System.Threading.Tasks;
-using System.Threading;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DG.Tools.XrmMockup
 {
@@ -11,6 +13,14 @@ namespace DG.Tools.XrmMockup
     {
         private readonly IOrganizationService _organizationService;
         private readonly DataverseConnection _dataverseConnection;
+
+        private readonly List<ReflectionFunction> _customFunctions = new List<ReflectionFunction>
+        {
+            new UTCTodayFunction(),
+            new UTCNowFunction(),
+            new IsUTCTodayFunction(),
+            new ISOWeekNumFunction()
+        };
 
         public FormulaFieldEvaluator(IOrganizationServiceFactory serviceFactory)
         {
@@ -22,7 +32,14 @@ namespace DG.Tools.XrmMockup
         {
             var rowScopeSymbols = _dataverseConnection.GetRowScopeSymbols(thisEntity.LogicalName, true);
 
-            var engine = new RecalcEngine();
+            var config = new PowerFxConfig();
+            foreach (var func in _customFunctions)
+            {
+                config.AddFunction(func);
+            }
+
+            var engine = new RecalcEngine(config);
+
             var combinedSymbols = ReadOnlySymbolTable.Compose(rowScopeSymbols, _dataverseConnection.Symbols);
             var checkResult = engine.Check(formula, new ParserOptions(CultureInfo.InvariantCulture), combinedSymbols);
             checkResult.ThrowOnErrors();
