@@ -1,4 +1,5 @@
 using Microsoft.PowerFx;
+using Microsoft.PowerFx.Interpreter;
 using Microsoft.PowerFx.Types;
 using System;
 
@@ -6,16 +7,20 @@ namespace DG.Tools.XrmMockup.CustomFunction
 {
     internal class IsUTCTodayFunction : ReflectionFunction
     {
-        public IsUTCTodayFunction()
+        private readonly TimeSpan timeOffset;
+
+        public IsUTCTodayFunction(TimeSpan timeOffset)
             : base("IsUTCToday", FormulaType.Boolean, FormulaType.DateTime)
         {
+            this.timeOffset = timeOffset;
         }
-        public static BooleanValue Execute(DateTimeValue date)
+        public BooleanValue Execute(DateTimeValue date)
         {
-            if (date == null)
-                return FormulaValue.New(false);
+            var utcDate = date?.GetConvertedValue(TimeZoneInfo.Utc);
+            if (utcDate == null || utcDate <= DateTime.MinValue)
+                throw new CustomFunctionErrorException("Invalid date or time value", ErrorKind.InvalidArgument);
 
-            var utcToday = DateTime.UtcNow.Date;
+            var utcToday = DateTime.UtcNow.Add(timeOffset).Date;
             var inputValue = date.GetConvertedValue(TimeZoneInfo.Utc);
             return FormulaValue.New(inputValue.Date == utcToday);
         }

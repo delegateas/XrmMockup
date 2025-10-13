@@ -8,15 +8,20 @@ namespace DG.Tools.XrmMockup.CustomFunction
 {
     internal class ISOWeekNumFunction : ReflectionFunction
     {
-        public ISOWeekNumFunction()
+        private readonly TimeSpan timeOffset;
+
+        public ISOWeekNumFunction(TimeSpan timeOffset)
             : base("ISOWeekNum", FormulaType.Decimal, FormulaType.DateTime)
         {
+            this.timeOffset = timeOffset;
         }
-        public static DecimalValue Execute(DateTimeValue date)
+        public DecimalValue Execute(DateTimeValue date)
         {
             var utcDate = date?.GetConvertedValue(TimeZoneInfo.Utc);
             if (utcDate == null || utcDate.Value <= DateTime.MinValue)
                 throw new CustomFunctionErrorException("Invalid date or time value", ErrorKind.InvalidArgument);
+
+            utcDate = utcDate.Value.Add(timeOffset);
 
 #if DATAVERSE_SERVICE_CLIENT
             var weekNumber = ISOWeek.GetWeekOfYear(utcDate.Value);

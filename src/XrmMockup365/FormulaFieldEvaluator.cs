@@ -2,6 +2,7 @@ using DG.Tools.XrmMockup.CustomFunction;
 using Microsoft.PowerFx;
 using Microsoft.PowerFx.Dataverse;
 using Microsoft.Xrm.Sdk;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -14,29 +15,21 @@ namespace DG.Tools.XrmMockup
         private readonly IOrganizationService _organizationService;
         private readonly DataverseConnection _dataverseConnection;
 
-        private readonly List<ReflectionFunction> _customFunctions = new List<ReflectionFunction>
-        {
-            new UTCTodayFunction(),
-            new UTCNowFunction(),
-            new IsUTCTodayFunction(),
-            new ISOWeekNumFunction()
-        };
-
         public FormulaFieldEvaluator(IOrganizationServiceFactory serviceFactory)
         {
             _organizationService = serviceFactory.CreateOrganizationService(null);
             _dataverseConnection = SingleOrgPolicy.New(_organizationService);
         }
 
-        public async Task<object> Evaluate(string formula, Entity thisEntity)
+        public async Task<object> Evaluate(string formula, Entity thisEntity, TimeSpan timeOffset)
         {
             var rowScopeSymbols = _dataverseConnection.GetRowScopeSymbols(thisEntity.LogicalName, true);
 
             var config = new PowerFxConfig();
-            foreach (var func in _customFunctions)
-            {
-                config.AddFunction(func);
-            }
+            config.AddFunction(new UTCTodayFunction(timeOffset));
+            config.AddFunction(new UTCNowFunction(timeOffset));
+            config.AddFunction(new IsUTCTodayFunction(timeOffset));
+            config.AddFunction(new ISOWeekNumFunction(timeOffset));
 
             var engine = new RecalcEngine(config);
 

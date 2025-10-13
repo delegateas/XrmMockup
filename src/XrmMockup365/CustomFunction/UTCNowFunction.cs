@@ -6,13 +6,17 @@ namespace DG.Tools.XrmMockup.CustomFunction
 {
     internal class UTCNowFunction : ReflectionFunction
     {
-        public UTCNowFunction()
+        private readonly TimeSpan timeOffset;
+
+        public UTCNowFunction(TimeSpan timeOffset)
             : base("UTCNow", FormulaType.DateTime)
         {
+            this.timeOffset = timeOffset;
         }
-        public static DateTimeValue Execute()
+        public DateTimeValue Execute()
         {
-            return FormulaValue.New(DateTime.UtcNow);
+            var utcNow = DateTime.UtcNow.Add(timeOffset);
+            return FormulaValue.New(utcNow);
         }
     }
 }

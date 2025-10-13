@@ -30,7 +30,7 @@ namespace DG.XrmMockupTest
             var evaluator = new FormulaFieldEvaluator(serviceFactory);
 
             var account = Create(new Account { Name = "Test", AccountNumber = accountNumber });
-            var result = await evaluator.Evaluate(formula, account);
+            var result = await evaluator.Evaluate(formula, account, TimeSpan.Zero);
             Assert.Equal(expected, result.ToString());
         }
 
@@ -43,10 +43,10 @@ namespace DG.XrmMockupTest
             var animal = Create(new dg_animal { dg_name = "Fluffy", OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId) });
             var animalFood = Create(new dg_animalfood { dg_AnimalId = new EntityReference(dg_animal.EntityLogicalName, animal.Id), dg_name = "Meatballs" });
 
-            var result = await evaluator.Evaluate("\"Test: \" & dg_animalowner", animal);
+            var result = await evaluator.Evaluate("\"Test: \" & dg_animalowner", animal, TimeSpan.Zero);
             Assert.Equal("Test: Fluffy is a very good animal, and Admin loves them very much", result);
 
-            result = await evaluator.Evaluate("If(dg_AnimalId.dg_name = \"Fluffy\", \"Test: \" & dg_AnimalId.dg_name & \" eats \" & dg_name, \"New telegraph, who dis?\")", animalFood);
+            result = await evaluator.Evaluate("If(dg_AnimalId.dg_name = \"Fluffy\", \"Test: \" & dg_AnimalId.dg_name & \" eats \" & dg_name, \"New telegraph, who dis?\")", animalFood, TimeSpan.Zero);
             Assert.Equal("Test: Fluffy eats Meatballs", result);
         }
 
@@ -55,7 +55,7 @@ namespace DG.XrmMockupTest
         public async TTask CanEvaluateFunction(string formula, object expected)
         {
             var evaluator = new FormulaFieldEvaluator(serviceFactory);
-            var result = await evaluator.Evaluate(formula, new dg_animal());
+            var result = await evaluator.Evaluate(formula, new Account(), TimeSpan.Zero);
 
             if (result is ErrorValue error && expected is string errorString)
             {
@@ -82,7 +82,7 @@ namespace DG.XrmMockupTest
         public async TTask CanEvaluateTextFunction(string formula, string expected)
         {
             var evaluator = new FormulaFieldEvaluator(serviceFactory);
-            var result = await evaluator.Evaluate(formula, new dg_animal());
+            var result = await evaluator.Evaluate(formula, new Account(), TimeSpan.Zero);
 
             Assert.Equal(expected, result);
         }
@@ -99,7 +99,7 @@ namespace DG.XrmMockupTest
             // https://learn.microsoft.com/en-us/power-platform/power-fx/formula-reference-formula-columns
 
             var evaluator = new FormulaFieldEvaluator(serviceFactory);
-            var result = await evaluator.Evaluate(formula, new dg_animal());
+            var result = await evaluator.Evaluate(formula, new Account(), TimeSpan.Zero);
 
             if (result is DateTime resultDateTime)
             {
@@ -131,6 +131,32 @@ namespace DG.XrmMockupTest
             {
                 Assert.Equal(expected, result);
             }
+        }
+
+        [Fact]
+        public async TTask UTCNowRespectsOffset()
+        {
+            var evaluator = new FormulaFieldEvaluator(serviceFactory);
+            var result = await evaluator.Evaluate("UTCNow()", new Account(), TimeSpan.FromDays(1));
+            var resultDateTime = (DateTime)result;
+            Assert.Equal(DateTime.UtcNow.AddDays(1), resultDateTime, TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public async TTask UTCTodayRespectsOffset()
+        {
+            var evaluator = new FormulaFieldEvaluator(serviceFactory);
+            var result = await evaluator.Evaluate("UTCToday()", new Account(), TimeSpan.FromDays(1));
+            var resultDateTime = (DateTime)result;
+            Assert.Equal(DateTime.UtcNow.Date.AddDays(1), resultDateTime, TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public async TTask IsUTCTodayRespectsOffset()
+        {
+            var evaluator = new FormulaFieldEvaluator(serviceFactory);
+            var result = await evaluator.Evaluate("IsUTCToday(UTCNow())", new Account(), TimeSpan.FromDays(1));
+            Assert.Equal(true, result);
         }
     }
 
