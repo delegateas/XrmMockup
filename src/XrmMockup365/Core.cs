@@ -1361,7 +1361,7 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity);
+                entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset);
             }
         }
 
