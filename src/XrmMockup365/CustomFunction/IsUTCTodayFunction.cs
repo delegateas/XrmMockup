@@ -21,8 +21,7 @@ namespace DG.Tools.XrmMockup.CustomFunction
                 throw new CustomFunctionErrorException("Invalid date or time value", ErrorKind.InvalidArgument);
 
             var utcToday = DateTime.UtcNow.Add(timeOffset).Date;
-            var inputValue = date.GetConvertedValue(TimeZoneInfo.Utc);
-            return FormulaValue.New(inputValue.Date == utcToday);
+            return FormulaValue.New(utcDate.Value.Date == utcToday);
         }
     }
 }
