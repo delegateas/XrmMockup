@@ -13,18 +13,18 @@ namespace DG.XrmMockupTest
         }
 
         [Theory]
-        [InlineData("older-than-x-years", 365 * 1440, 1, true)]
-        [InlineData("older-than-x-years", 365 * 1440, 3, false)]
-        [InlineData("older-than-x-months", 30 * 1440, 1, true)]
-        [InlineData("older-than-x-months", 30 * 1440, 3, false)]
-        [InlineData("older-than-x-weeks", 7 * 1440, 1, true)]
-        [InlineData("older-than-x-weeks", 7 * 1440, 3, false)]
-        [InlineData("older-than-x-days", 1440, 1, true)]
-        [InlineData("older-than-x-days", 1440, 3, false)]
-        [InlineData("older-than-x-hours", 60, 1, true)]
-        [InlineData("older-than-x-hours", 60, 3, false)]
-        [InlineData("older-than-x-minutes", 1, 1, true)]
-        [InlineData("older-than-x-minutes", 1, 3, false)]
+        [InlineData("olderthan-x-years", 365 * 1440, 1, true)]
+        [InlineData("olderthan-x-years", 365 * 1440, 3, false)]
+        [InlineData("olderthan-x-months", 30 * 1440, 1, true)]
+        [InlineData("olderthan-x-months", 30 * 1440, 3, false)]
+        [InlineData("olderthan-x-weeks", 7 * 1440, 1, true)]
+        [InlineData("olderthan-x-weeks", 7 * 1440, 3, false)]
+        [InlineData("olderthan-x-days", 1440, 1, true)]
+        [InlineData("olderthan-x-days", 1440, 3, false)]
+        [InlineData("olderthan-x-hours", 60, 1, true)]
+        [InlineData("olderthan-x-hours", 60, 3, false)]
+        [InlineData("olderthan-x-minutes", 1, 1, true)]
+        [InlineData("olderthan-x-minutes", 1, 3, false)]
         public void TestFetchConditionOperatorsTheoryOlderThanX(string conditionOperator, int minutes, int x, bool hasHit)
         {
             orgAdminUIService.Create(
