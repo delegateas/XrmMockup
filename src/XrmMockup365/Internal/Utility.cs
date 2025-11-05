@@ -619,7 +619,10 @@ namespace DG.Tools.XrmMockup.Internal
                     if (row != null)
                     {
                         var nameAttr = row.Metadata.PrimaryNameAttribute;
-                        eRef.Name = row.GetColumn<string>(nameAttr);
+                        if (!string.IsNullOrEmpty(nameAttr))
+                        {
+                            eRef.Name = row.GetColumn<string>(nameAttr);
+                        }
                     }
                 }
             }
@@ -841,6 +844,10 @@ namespace DG.Tools.XrmMockup.Internal
             if (metadataAtt is BooleanAttributeMetadata booleanAttributeMetadata)
             {
                 var booleanOptions = booleanAttributeMetadata.OptionSet;
+                if (booleanOptions.TrueOption == null && booleanOptions.FalseOption == null)
+                {
+                    return $"{value}";
+                }
                 var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
                 return label.UserLocalizedLabel.Label;
             }
