@@ -846,6 +846,23 @@ namespace DG.Tools.XrmMockup.Internal
                 var booleanOptions = booleanAttributeMetadata.OptionSet;
                 if (booleanOptions.TrueOption == null && booleanOptions.FalseOption == null)
                 {
+                    // Todo
+                    // Add the table entity to the namespace DG.XrmFramework.BusinessDomain.ServiceContext (File XrmContext.cs)
+                    // And than activate the Test 
+                    /*
+                        [Fact]
+                        public void TestRetrieveBoleanWithoutTrueOptionFalseOptionName()
+                        {
+                            using (var context = new Xrm(orgAdminUIService))
+                            {
+                                var entity = new Entity_Ent();
+                                entity.Attributes.Add("name", "Name123");
+                                entity.Id = orgAdminUIService.Create(entity);
+                                var retrieved = orgAdminUIService.Retrieve(Entity_Ent.EntityLogicalName, entity.Id, new ColumnSet("name")) as Entity_Ent;
+                            }
+                        }
+                    */
+                    // Than you can see the issue ...
                     return $"{value}";
                 }
                 var label = (bool)value ? booleanOptions.TrueOption.Label : booleanOptions.FalseOption.Label;
