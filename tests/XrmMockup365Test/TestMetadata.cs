@@ -262,7 +262,7 @@ namespace DG.XrmMockupTest
                 var teamMembership = new TeamMembership();
                 teamMembership.Attributes.Add("versionnumber", 1);
                 teamMembership.Id = orgAdminUIService.Create(teamMembership);
-                var testEntity = new TestTestRetrieveReferenceWithoutPrimaryNameAttribute.TestEntity();
+                var testEntity = new TestEntity();
                 testEntity.Attributes.Add("teammembership", new EntityReference("teammembership", teamMembership.Id));
                 var fieldInfo = typeof(XrmMockupBase).GetField("Core", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly) ?? throw new FieldAccessException("Access to 'Core' is not possible.");
                 var core = fieldInfo.GetValue(crm);
@@ -270,70 +270,6 @@ namespace DG.XrmMockupTest
                 var xrmDb = fieldInfo.GetValue(core);
                 Utility.PopulateEntityReferenceNames(testEntity, (XrmDb)xrmDb);
             }
-        }
-    }
-}
-
-namespace TestTestRetrieveReferenceWithoutPrimaryNameAttribute
-{
-    public enum TestEntityState
-    {
-
-        [EnumMember()]
-        Active = 0,
-    }
-
-    public enum TestEntityStatusCode
-    {
-
-        [EnumMember()]
-        Active = 1,
-    }
-
-    [EntityLogicalName("testentity")]
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    [DataContract()]
-    public partial class TestEntity : ExtendedEntity<TestEntityState, TestEntityStatusCode>
-    {
-        public const string EntityLogicalName = "testentity";
-
-        public const int EntityTypeCode = 10404;
-
-        public TestEntity() :
-                base(EntityLogicalName)
-        {
-        }
-
-        public TestEntity(Guid Id) :
-                base(EntityLogicalName, Id)
-        {
-        }
-
-        private string DebuggerDisplay
-        {
-            get
-            {
-                return GetDebuggerDisplay("testentity");
-            }
-        }
-
-        [AttributeLogicalName("teammembership")]
-        [RelationshipSchemaName("lk_testentity_teammembership")]
-        public TeamMembership NewEntity_TeamMembership
-        {
-            get
-            {
-                return GetRelatedEntity<TeamMembership>("lk_testentity_teammembership", null);
-            }
-            set
-            {
-                SetRelatedEntity("lk_testentity_teammembership", null, value);
-            }
-        }
-
-        public static dg_animal Retrieve(IOrganizationService service, Guid id, params Expression<Func<dg_animal, object>>[] attrs)
-        {
-            return service.Retrieve(id, attrs);
         }
     }
 }
