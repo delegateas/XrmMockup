@@ -262,7 +262,7 @@ namespace DG.XrmMockupTest
                 var teamMembership = new TeamMembership();
                 teamMembership.Attributes.Add("versionnumber", 1);
                 teamMembership.Id = orgAdminUIService.Create(teamMembership);
-                var testEntity = new TestEntity();
+                var testEntity = new TestTestRetrieveReferenceWithoutPrimaryNameAttribute.TestEntity();
                 testEntity.Attributes.Add("teammembership", new EntityReference("teammembership", teamMembership.Id));
                 var fieldInfo = typeof(XrmMockupBase).GetField("Core", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly) ?? throw new FieldAccessException("Access to 'Core' is not possible.");
                 var core = fieldInfo.GetValue(crm);
@@ -274,21 +274,21 @@ namespace DG.XrmMockupTest
     }
 }
 
-namespace DG.XrmFramework.BusinessDomain.ServiceContext
+namespace TestTestRetrieveReferenceWithoutPrimaryNameAttribute
 {
     public enum TestEntityState
     {
 
         [EnumMember()]
         Active = 0,
-    };
+    }
 
     public enum TestEntityStatusCode
     {
 
         [EnumMember()]
         Active = 1,
-    };
+    }
 
     [EntityLogicalName("testentity")]
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
