@@ -41,6 +41,7 @@ namespace DG.Tools.XrmMockup {
             if (serviceType == typeof(IPluginExecutionContext)) return this.pluginContext;
             if (serviceType == typeof(ITracingService)) return this.tracingService;
             if (serviceType == typeof(IOrganizationServiceFactory)) return this;
+            if (serviceType == typeof(IManagedIdentityService)) return new DummyManagedIdentityService();
             return null;
         }
 
