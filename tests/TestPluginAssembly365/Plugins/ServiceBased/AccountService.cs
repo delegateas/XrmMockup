@@ -16,11 +16,14 @@ namespace TestPluginAssembly365.Plugins.ServiceBased
 
     public class AccountService : IAccountService
     {
-        public AccountService(IPluginExecutionContext context, ITracingService tracingService, IOrganizationServiceFactory organizationServiceFactory)
+        public AccountService(IPluginExecutionContext context, ITracingService tracingService, IOrganizationServiceFactory organizationServiceFactory, IManagedIdentityService managedIdentityService)
         {
             Service = organizationServiceFactory.CreateOrganizationService(context.UserId);
             Context = context;
             TracingService = tracingService;
+
+            // Just to show that DI can inject this service as well
+            _ = managedIdentityService;
         }
 
         private IOrganizationService Service { get; }
