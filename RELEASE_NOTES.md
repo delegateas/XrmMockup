@@ -1,3 +1,6 @@
+### 1.17.3 - 14 November 2025
+* Add: Added IManagedIdentityService (@magesoe) (#300)
+
 ### 1.17.2 - 08 October 2025
 * Refactor: Change plugin and workflow handling to use string instead of EventOperation (@mkholt) (#292)
 * Add: Support Revise Quote Request (@Lucki2g) (#294)
