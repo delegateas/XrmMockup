@@ -1,14 +1,22 @@
-﻿using System;
-using Microsoft.Xrm.Sdk.Query;
-using System.ServiceModel;
-using Microsoft.Xrm.Sdk.Messages;
+﻿using DG.Tools.XrmMockup;
+using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Internal;
+using DG.XrmContext;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
-using Xunit;
-using System.Linq;
-using Xunit.Sdk;
 using Microsoft.Xrm.Sdk.Metadata.Query;
-
+using Microsoft.Xrm.Sdk.Query;
+using System;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using Xunit;
+using Xunit.Sdk;
 namespace DG.XrmMockupTest
 {
     public class TestMetadata : UnitTestBase
@@ -231,6 +239,37 @@ namespace DG.XrmMockupTest
 
             Assert.Equal("account", response.EntityMetadata[0].LogicalName);
         }
-    }
 
+        /*
+        [Fact]
+        public void TestRetrieveBoleanWithoutTrueOptionFalseOptionName()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var entity = new Entity_Ent();
+                entity.Attributes.Add("name", "Name123");
+                entity.Id = orgAdminUIService.Create(entity);
+                var retrieved = orgAdminUIService.Retrieve(Entity_Ent.EntityLogicalName, entity.Id, new ColumnSet("name")) as Entity_Ent;
+            }
+        }
+        */
+
+        [Fact]
+        public void TestRetrieveReferenceWithoutPrimaryNameAttribute()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var teamMembership = new TeamMembership();
+                teamMembership.Attributes.Add("versionnumber", 1);
+                teamMembership.Id = orgAdminUIService.Create(teamMembership);
+                var testEntity = new TestEntity();
+                testEntity.Attributes.Add("teammembership", new EntityReference("teammembership", teamMembership.Id));
+                var fieldInfo = typeof(XrmMockupBase).GetField("Core", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly) ?? throw new FieldAccessException("Access to 'Core' is not possible.");
+                var core = fieldInfo.GetValue(crm);
+                fieldInfo = core.GetType().GetField("db", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly) ?? throw new FieldAccessException("Access to 'db' is not possible.");
+                var xrmDb = fieldInfo.GetValue(core);
+                Utility.PopulateEntityReferenceNames(testEntity, (XrmDb)xrmDb);
+            }
+        }
+    }
 }
