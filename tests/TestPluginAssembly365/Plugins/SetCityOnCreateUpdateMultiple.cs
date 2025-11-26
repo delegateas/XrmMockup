@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
 using XrmPluginCore;
 using XrmPluginCore.Enums;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Messages;
 
 namespace DG.Some.Namespace
 {
@@ -13,6 +10,7 @@ namespace DG.Some.Namespace
     {
         public SetCityOnCreateUpdateMultiple()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Contact>(
                 EventOperation.CreateMultiple,
                 ExecutionStage.PreOperation,
@@ -22,6 +20,7 @@ namespace DG.Some.Namespace
                 EventOperation.UpdateMultiple,
                 ExecutionStage.PreOperation,
                 Execute);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Execute(LocalPluginContext localContext)

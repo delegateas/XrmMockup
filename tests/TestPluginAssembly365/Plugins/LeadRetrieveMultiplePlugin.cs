@@ -13,7 +13,9 @@ namespace DG.Some.Namespace
     {
         public LeadRetrieveMultiplePlugin()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Lead>(EventOperation.RetrieveMultiple, ExecutionStage.PostOperation, OnRetrieveMultiple);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void OnRetrieveMultiple(LocalPluginContext ctx)

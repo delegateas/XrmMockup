@@ -11,11 +11,13 @@ namespace DG.Some.Namespace
     {
         public ParentPostCreatePlugin() 
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<MockParent>(
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute)
                   .SetExecutionMode(ExecutionMode.Synchronous);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Execute(LocalPluginContext localContext)

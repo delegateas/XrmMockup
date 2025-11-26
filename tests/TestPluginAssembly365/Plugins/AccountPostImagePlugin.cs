@@ -30,6 +30,7 @@ namespace DG.Some.Namespace {
         /// Initializes a new instance of the <see cref="AccountPostImagePlugin"/> class.
         /// </summary>
         public AccountPostImagePlugin() {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Delete,
                 ExecutionStage.PostOperation,
@@ -37,6 +38,7 @@ namespace DG.Some.Namespace {
                   .SetExecutionMode(ExecutionMode.Synchronous)
                   .AddImage(ImageType.PostImage,
                     a => a.ParentAccountId);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

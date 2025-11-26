@@ -13,7 +13,7 @@ namespace DG.Some.Namespace {
 
         // Register when/how to execute
         public OpportunityWinLose() {
-
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Opportunity>(
                 EventOperation.Lose,
                 ExecutionStage.PostOperation,
@@ -22,6 +22,7 @@ namespace DG.Some.Namespace {
                 EventOperation.Win,
                 ExecutionStage.PostOperation,
                 Execute);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         }
 

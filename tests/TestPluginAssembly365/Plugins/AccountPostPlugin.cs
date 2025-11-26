@@ -9,6 +9,7 @@ namespace DG.Some.Namespace {
 
         public AccountPostPlugin() {
 
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -18,6 +19,7 @@ namespace DG.Some.Namespace {
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         }
 

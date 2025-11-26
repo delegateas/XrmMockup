@@ -31,10 +31,12 @@ namespace DG.Some.Namespace {
         /// </summary>
         public Closeincidentplugin()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Incident>(
                 EventOperation.Close,
                 ExecutionStage.PostOperation,
                 ExecuteAccountUpdateErpFigures);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
         /// <summary>
         /// Executes the plug-in.
@@ -52,7 +54,7 @@ namespace DG.Some.Namespace {
         /// is stored in the context. This means that you should not use global variables in plug-ins.
         /// </remarks>
         protected void ExecuteAccountUpdateErpFigures(LocalPluginContext localContext) {
-            var bla = "";
+            // Do nothing, but executes successfully
         }
     }
 }

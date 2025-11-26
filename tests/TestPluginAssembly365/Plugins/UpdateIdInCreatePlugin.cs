@@ -10,10 +10,12 @@
     {
         public UpdateIdInCreatePlugin()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<dg_child>(
                 EventOperation.Create,
                 ExecutionStage.PostOperation,
                 Execute);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Execute(LocalPluginContext localContext)

@@ -13,8 +13,10 @@ namespace DG.Some.Namespace
     {
         public FaxPreOperationPlugin()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Fax>(EventOperation.Create, ExecutionStage.PreOperation, OnCreate);
             RegisterPluginStep<Fax>(EventOperation.Update, ExecutionStage.PreOperation, OnUpdate);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void OnCreate(LocalPluginContext ctx)

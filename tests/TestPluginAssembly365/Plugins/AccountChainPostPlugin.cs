@@ -8,11 +8,13 @@ namespace DG.Some.Namespace {
     public class AccountChainPostPlugin : Plugin {
 
         public AccountChainPostPlugin() {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Execute)
                 .AddFilteredAttributes(x => x.Fax);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         }
 

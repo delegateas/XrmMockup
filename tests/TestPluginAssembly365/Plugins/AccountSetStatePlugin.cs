@@ -29,6 +29,7 @@ namespace DG.Some.Namespace {
         /// Initializes a new instance of the <see cref="AccountSetStatePlugin"/> class.
         /// </summary>
         public AccountSetStatePlugin() {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.SetState,
                 ExecutionStage.PostOperation,
@@ -40,6 +41,7 @@ namespace DG.Some.Namespace {
                 ExecutionStage.PostOperation,
                 ExecuteAccountUpdateErpFigures)
                   .SetExecutionMode(ExecutionMode.Synchronous);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         }
 

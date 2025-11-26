@@ -12,6 +12,7 @@
     {
         public Test8Plugin1()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -20,6 +21,7 @@
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionMode(ExecutionMode.Synchronous)
                 .SetExecutionOrder(1);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Sync1NameAndEmailAddress2Update(LocalPluginContext localContext)

@@ -1,7 +1,6 @@
 ﻿namespace DG.Some.Namespace.Test
 {
     using System;
-    using Microsoft.Xrm.Sdk;
     using DG.XrmFramework.BusinessDomain.ServiceContext;
     using XrmPluginCore.Enums;
     using XrmPluginCore;
@@ -12,6 +11,7 @@
     {
         public Test1Plugin1()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -20,6 +20,7 @@
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionMode(ExecutionMode.Synchronous)
                 .SetExecutionOrder(1);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Sync1NameUpdate(LocalPluginContext localContext)

@@ -11,12 +11,14 @@
     {
         public Test6Plugin2Async()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Contact>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Async2NameUpdate)
                 .SetExecutionMode(ExecutionMode.Asynchronous)
                 .AddFilteredAttributes(x => x.EMailAddress1);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Async2NameUpdate(LocalPluginContext localContext)

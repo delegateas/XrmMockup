@@ -11,6 +11,7 @@ namespace DG.Some.Namespace.Test
     {
         public TestPlugin0()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -18,6 +19,7 @@ namespace DG.Some.Namespace.Test
                 .AddImage(ImageType.PostImage, x => x.Name)
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionOrder(0);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void Sync0NameUpdate(LocalPluginContext localContext)

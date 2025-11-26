@@ -11,6 +11,7 @@
     {
         public ASyncWithExecutionOrder()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Contact>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -18,6 +19,7 @@
                 .SetExecutionMode(ExecutionMode.Asynchronous)
                 .SetExecutionOrder(1)
                 .AddFilteredAttributes(x => x.EMailAddress1);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void ExecuteASyncWithExecutionOrder(LocalPluginContext localContext)

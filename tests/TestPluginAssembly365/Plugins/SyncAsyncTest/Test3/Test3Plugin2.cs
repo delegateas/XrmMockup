@@ -1,7 +1,6 @@
 ﻿namespace DG.Some.Namespace.Test
 {
     using DG.XrmFramework.BusinessDomain.ServiceContext;
-    using Microsoft.Xrm.Sdk;
     using System;
     using TestPluginAssembly365.Plugins.SyncAsyncTest;
     using XrmPluginCore;
@@ -12,6 +11,7 @@
     {
         public Test3Plugin2()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -19,6 +19,7 @@
                 .AddImage(ImageType.PostImage, x => x.Name)
                 .AddFilteredAttributes(x => x.EMailAddress1)
                 .SetExecutionMode(ExecutionMode.Asynchronous);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void ASync2NameUpdate(LocalPluginContext localContext)

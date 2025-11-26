@@ -9,6 +9,7 @@ namespace DG.Some.Namespace
     {
         public IncidentDeleteAllRelatedResolutionsOnClose()
         {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Incident>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
@@ -17,6 +18,7 @@ namespace DG.Some.Namespace
                 .AddImage(ImageType.PreImage, x => x.StateCode, x => x.Title)
                 .AddImage(ImageType.PostImage, x => x.StateCode)
                 .SetExecutionOrder(10);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected void ExecuteDeleteAllRelatedResolutionsOnClose(LocalPluginContext localContext)

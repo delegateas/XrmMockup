@@ -32,15 +32,17 @@ namespace DG.Some.Namespace {
         /// Initializes a new instance of the <see cref="NotePreImagePlugin"/> class.
         /// </summary>
         public NotePostOperationPlugin() {
+#pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Annotation>(
                 EventOperation.Update,
                 ExecutionStage.PostOperation,
                 Execute)
                   .SetExecutionMode(ExecutionMode.Synchronous)
                   .SetUserContext(Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c")); //hard coded admin user id
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        
+
         protected void Execute(LocalPluginContext localContext)
         {
             var service = localContext.OrganizationService; //this should be running as the admin user
