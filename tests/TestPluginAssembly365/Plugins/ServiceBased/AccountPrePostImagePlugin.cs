@@ -1,6 +1,4 @@
-﻿using Microsoft.Xrm.Sdk;
-using DG.XrmFramework.BusinessDomain.ServiceContext;
-using XrmPluginCore;
+﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using XrmPluginCore.Enums;
 
 namespace TestPluginAssembly365.Plugins.ServiceBased
@@ -10,7 +8,7 @@ namespace TestPluginAssembly365.Plugins.ServiceBased
     /// AccountUpdateErpFigures Plugin.
     /// Fires when the following attributes are updated:
     /// All Attributes
-    /// </summary>    
+    /// </summary>
     public class AccountPrePostImagePlugin : DIPlugin
     {
         /// <summary>
