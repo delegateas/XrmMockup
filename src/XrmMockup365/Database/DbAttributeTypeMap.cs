@@ -14,15 +14,14 @@ namespace DG.Tools.XrmMockup.Database
             { AttributeTypeCode.Decimal, typeof(decimal) },
             { AttributeTypeCode.Double, typeof(double) },
             
-            { AttributeTypeCode.EntityName, typeof(int) },
+            { AttributeTypeCode.EntityName, typeof(string) },
             { AttributeTypeCode.Picklist, typeof(int) },
             { AttributeTypeCode.State, typeof(int) },
             { AttributeTypeCode.Status, typeof(int) },
 
             { AttributeTypeCode.Integer, typeof(int) },
             { AttributeTypeCode.Lookup,  typeof(DbRow) },
-            // TODO: Figure out type
-            //{ AttributeTypeCode.ManagedProperty, typeof(object) },
+            { AttributeTypeCode.ManagedProperty, typeof(BooleanManagedProperty) },
             { AttributeTypeCode.Memo, typeof(string) },
             { AttributeTypeCode.Money, typeof(decimal) },
             { AttributeTypeCode.Owner, typeof(DbRow) },
@@ -41,6 +40,18 @@ namespace DG.Tools.XrmMockup.Database
             }
             if (expectedType.Name == "DbRow[]" && attrMetadata.AttributeType.Value == AttributeTypeCode.Virtual)
                 return true;
+
+            // EntityName attributes with an OptionSet (like activitytypecode) store int values
+            // EntityName attributes without an OptionSet store string values (entity logical names)
+            if (attrMetadata.AttributeType.Value == AttributeTypeCode.EntityName)
+            {
+                if (attrMetadata is EnumAttributeMetadata enumAttr && enumAttr.OptionSet != null)
+                {
+                    return value is int;
+                }
+                return value is string;
+            }
+
             return expectedType == value.GetType();
         }
     }

@@ -990,6 +990,19 @@ namespace DG.Tools.XrmMockup.Internal
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(dto);
             }
+            else if (colToSerialize is BooleanManagedProperty)
+            {
+                // BooleanManagedProperty has ExtensionDataObject that can't be serialized
+                // Serialize just the essential properties
+                var mp = (BooleanManagedProperty)colToSerialize;
+                var dto = new BooleanManagedPropertyDTO
+                {
+                    Value = mp.Value,
+                    CanBeChanged = mp.CanBeChanged,
+                    ManagedPropertyLogicalName = mp.ManagedPropertyLogicalName
+                };
+                jsonColObj.Value = JsonSerializer.Serialize(dto);
+            }
             else
             {
                 jsonColObj.Value = JsonSerializer.Serialize(colToSerialize);
@@ -1014,6 +1027,16 @@ namespace DG.Tools.XrmMockup.Internal
                 var typed = (OptionSetCollectionDTO)node.Deserialize(typeof(OptionSetCollectionDTO));
                 var newCollection = new OptionSetValueCollection(typed.Values.Select(x => new OptionSetValue(x)).ToList());
                 return newCollection;
+            }
+            else if (type == typeof(BooleanManagedProperty))
+            {
+                var node = JsonNode.Parse(colToSerialize.Value);
+                var typed = (BooleanManagedPropertyDTO)node.Deserialize(typeof(BooleanManagedPropertyDTO));
+                // ManagedPropertyLogicalName is read-only and not settable, but Value and CanBeChanged are what matters
+                return new BooleanManagedProperty(typed.Value)
+                {
+                    CanBeChanged = typed.CanBeChanged
+                };
             }
             else
             {

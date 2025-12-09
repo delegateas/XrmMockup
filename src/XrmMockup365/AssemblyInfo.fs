@@ -5,8 +5,8 @@ using System.Reflection;
 [assembly: AssemblyTitle("XrmMockup")]
 [assembly: AssemblyProduct("XrmMockup")]
 [assembly: AssemblyDescription("A simulation engine that can mock a specific MS CRM instance. Useful for testing and debugging business logic.")]
-[assembly: AssemblyCompany("Delegate A/S")]
-[assembly: AssemblyCopyright("Copyright (c) Delegate A/S 2017")]
+[assembly: AssemblyCompany("Context& A/S")]
+[assembly: AssemblyCopyright("Copyright (c) Context& A/S 2017 - 2025")]
 [assembly: AssemblyVersion("1.17.3")]
 [assembly: AssemblyFileVersion("1.17.3")]
 namespace System {
@@ -14,8 +14,8 @@ namespace System {
         internal const System.String AssemblyTitle = "XrmMockup";
         internal const System.String AssemblyProduct = "XrmMockup";
         internal const System.String AssemblyDescription = "A simulation engine that can mock a specific MS CRM instance. Useful for testing and debugging business logic.";
-        internal const System.String AssemblyCompany = "Delegate A/S";
-        internal const System.String AssemblyCopyright = "Copyright (c) Delegate A/S 2017";
+        internal const System.String AssemblyCompany = "Context& A/S";
+        internal const System.String AssemblyCopyright = "Copyright (c) Context& A/S 2017 - 2025";
         internal const System.String AssemblyVersion = "1.17.3";
         internal const System.String AssemblyFileVersion = "1.17.3";
     }

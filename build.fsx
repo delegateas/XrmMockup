@@ -39,16 +39,18 @@ let projectPaths =
 let metaDataGeneratorProjectPaths =
   [|
     "src" ++ "MetadataGen" ++ "MetadataGenerator365"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator.Tool"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator.Core"
+    "src" ++ "MetadataGen" ++ "MetadataGenerator.Context"
   |]
 let solutionFile = "XrmMockup.sln"
-let testAssemblies = "tests/**/bin/Release/*Test.dll"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
 let summary = "A simulation engine that can mock a specific MS CRM instance. Useful for testing and debugging business logic."
 
-let company = "Delegate A/S"
-let copyright = @"Copyright (c) Delegate A/S 2017"
+let company = "Context& A/S"
+let copyright = @"Copyright (c) Context& A/S 2017 - 2025"
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
@@ -57,13 +59,18 @@ let copyright = @"Copyright (c) Delegate A/S 2017"
 let release = ReleaseNotes.parse (File.ReadAllLines "RELEASE_NOTES.md")
 
 // Generate assembly info files with the right version & up-to-date information
+// Excludes MetadataGenerator projects which have their own versioning via CHANGELOG.md
 Target.create "AssemblyInfo" (fun _ ->
     !! "src/**/*.csproj"
+    -- "src/MetadataGen/MetadataGenerator.Tool/*.csproj"
+    -- "src/MetadataGen/MetadataGenerator.Context/*.csproj"
+    -- "src/MetadataGen/MetadataGenerator.Core/*.csproj"
+    -- "src/MetadataGen/MetadataGenerator.Tool.Tests/*.csproj"
     |> Seq.map Path.GetDirectoryName
     |> Seq.iter (fun projectPath ->
       let fileName = projectPath + "/AssemblyInfo.fs"
       AssemblyInfoFile.createCSharp fileName
-        [ 
+        [
           AssemblyInfo.Title project
           AssemblyInfo.Product project
           AssemblyInfo.Description summary
@@ -72,6 +79,15 @@ Target.create "AssemblyInfo" (fun _ ->
           AssemblyInfo.Version release.AssemblyVersion
           AssemblyInfo.FileVersion release.AssemblyVersion
         ])
+)
+
+// Set version for MetadataGenerator projects from their CHANGELOG.md
+Target.create "MetadataGeneratorVersion" (fun _ ->
+    let result =
+      Command.RawCommand("powershell", Arguments.OfArgs [| "-ExecutionPolicy"; "Bypass"; "-File"; "src/MetadataGen/scripts/Set-MetadataGeneratorVersion.ps1" |])
+      |> CreateProcess.fromCommand
+      |> Proc.run
+    if result.ExitCode <> 0 then failwith "Failed to set MetadataGenerator version"
 )
 
 // --------------------------------------------------------------------------------------
@@ -125,29 +141,37 @@ Target.create "Test" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 Target.create "NuGet" (fun _ ->
-  let packArgs (defaults:MSBuild.CliArguments) = 
+  let packArgs (defaults:MSBuild.CliArguments) =
     { defaults with
         NoWarn = Some(["NU5100"])
-        Properties = 
+        Properties =
         [
           "Version", release.NugetVersion
           "ReleaseNotes", String.Join(Environment.NewLine, release.Notes)
-        ] 
+        ]
     }
 
   projectPaths
   |> Array.iter (fun projectPath ->
-    DotNet.pack (fun def -> 
+    DotNet.pack (fun def ->
       { def with
           NoBuild = true
           MSBuildParams = packArgs def.MSBuildParams
           OutputPath = Some("bin")
-        
-      }) projectPath)
-  )
-              
 
-Target.create "PublishNuGet" (fun _ -> 
+      }) projectPath)
+
+  // Pack MetadataGenerator.Tool (version comes from csproj, set by MetadataGeneratorVersion target)
+  DotNet.pack (fun def ->
+    { def with
+        Configuration = DotNet.BuildConfiguration.Release
+        NoBuild = true
+        OutputPath = Some("bin")
+    }) ("src" ++ "MetadataGen" ++ "MetadataGenerator.Tool")
+  )
+
+
+Target.create "PublishNuGet" (fun _ ->
   let setNugetPushParams (defaults:NuGetPushParams) =
     { defaults with
         ApiKey = Fake.Core.Environment.environVarOrDefault "delegateas-nugetkey" "" |> Some
@@ -157,10 +181,38 @@ Target.create "PublishNuGet" (fun _ ->
       { defaults with
           PushParams = setNugetPushParams defaults.PushParams
        }
-  !!("bin/*.nupkg")
-  |> Seq.iter (fun nugetPath ->
-    DotNet.nugetPush setParams nugetPath
-    )
+
+  let tryPushPackage nugetPath =
+    try
+      DotNet.nugetPush setParams nugetPath
+      printfn "Successfully published %s" nugetPath
+      Choice1Of3 nugetPath // Published
+    with
+    | ex when ex.Message.Contains("409") || ex.Message.Contains("already exists") ->
+      printfn "Skipping %s - version already exists on NuGet" nugetPath
+      Choice2Of3 nugetPath // Skipped
+    | ex ->
+      Choice3Of3 (nugetPath, ex) // Error
+
+  let results =
+    !!("bin/*.nupkg")
+    |> Seq.map tryPushPackage
+    |> Seq.toList
+
+  let errors =
+    results
+    |> List.choose (function Choice3Of3 err -> Some err | _ -> None)
+
+  let published =
+    results
+    |> List.choose (function Choice1Of3 path -> Some path | _ -> None)
+
+  if not (List.isEmpty errors) then
+    errors |> List.iter (fun (path, ex) -> printfn "Failed to publish %s: %s" path ex.Message)
+    failwith "Some packages failed to publish"
+
+  if List.isEmpty published then
+    printfn "No new packages were published - all versions already exist"
   )
 
 
@@ -181,6 +233,7 @@ Target.create "All" ignore
 
 "Clean"
   ==> "AssemblyInfo"
+  ==> "MetadataGeneratorVersion"
   ==> "Build"
   ==> "Test"
   ==> "NuGet"
