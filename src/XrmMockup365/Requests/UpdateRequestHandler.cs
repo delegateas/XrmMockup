@@ -178,6 +178,11 @@ namespace DG.Tools.XrmMockup
             if (updEntity.LogicalName == LogicalNames.Contact || updEntity.LogicalName == LogicalNames.Lead ||
                 updEntity.LogicalName == LogicalNames.SystemUser)
             {
+                foreach (var nameField in new[] { "firstname", "middlename", "lastname" })
+                {
+                    if (!updEntity.Contains(nameField) && xrmEntity.Contains(nameField))
+                        updEntity[nameField] = xrmEntity[nameField];
+                }
                 Utility.SetFullName(metadata, updEntity);
             }
 

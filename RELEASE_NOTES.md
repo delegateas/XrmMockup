@@ -1,3 +1,6 @@
+### 1.17.4 - 15 December 2025
+* Fix: Issues with fullname and name on EntityReference
+
 ### 1.17.3 - 14 November 2025
 * Add: Added IManagedIdentityService (@magesoe) (#300)
 
