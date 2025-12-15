@@ -622,6 +622,15 @@ namespace DG.Tools.XrmMockup.Internal
                         eRef.Name = row.GetColumn<string>(nameAttr);
                     }
                 }
+                else if (attr.Value is AliasedValue aliasedValue && aliasedValue.Value is EntityReference aliasedRef)
+                {
+                    var row = db.GetDbRowOrNull(aliasedRef);
+                    if (row != null)
+                    {
+                        var nameAttr = row.Metadata.PrimaryNameAttribute;
+                        aliasedRef.Name = row.GetColumn<string>(nameAttr);
+                    }
+                }
             }
         }
 

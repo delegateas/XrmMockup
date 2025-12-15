@@ -133,6 +133,12 @@ namespace DG.Tools.XrmMockup
             // Refine and filter the columns
             var entitiesToReturn = RefineEntityAttributes(orderedEntities, queryExpr.ColumnSet);
 
+            // Populate EntityReference names after column filtering
+            foreach (var entity in entitiesToReturn)
+            {
+                Utility.PopulateEntityReferenceNames(entity, db);
+            }
+
             if (queryExpr.Distinct)
             {
                 var uniqueIds = new HashSet<Guid>();
