@@ -1441,5 +1441,101 @@ namespace DG.XrmMockupTest
             Assert.Single(industryResult.Entities);
             Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
         }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterCreate()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Use RetrieveMultiple with QueryExpression to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Doe"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateFirstName()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY firstname (create a new Entity with just the Id and firstname, no lastname)
+            var updateContact = new Contact(contact.Id)
+            {
+                FirstName = "Jane"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "Jane Doe" (not just "Jane")
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("Jane", retrievedContact.FirstName);
+            Assert.Equal("Doe", retrievedContact.LastName);
+            Assert.Equal("Jane Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateLastName()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY lastname (create a new Entity with just the Id and lastname, no firstname)
+            var updateContact = new Contact(contact.Id)
+            {
+                LastName = "Smith"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Smith"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John", retrievedContact.FirstName);
+            Assert.Equal("Smith", retrievedContact.LastName);
+            Assert.Equal("John Smith", retrievedContact.FullName);
+        }
     }
 }
