@@ -1539,6 +1539,39 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateOtherField()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY lastname (create a new Entity with just the Id and lastname, no firstname)
+            var updateContact = new Contact(contact.Id)
+            {
+                Description = "Updated description"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Smith"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
         public void TestRetrieveMultipleEntityReferenceNamePopulated()
         {
             // Arrange: Create entities with a lookup relationship
