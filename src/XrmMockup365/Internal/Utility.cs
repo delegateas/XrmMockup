@@ -716,13 +716,13 @@ namespace DG.Tools.XrmMockup.Internal
         internal static List<Entity> GetWorkflows(string folderLocation)
         {
             var pathToWorkflows = Path.Combine(folderLocation, "Workflows");
-            var files = Directory.GetFiles(pathToWorkflows, "*.xml");
-            var workflows = new List<Entity>();
-            foreach (var file in files)
+            if (!Directory.Exists(pathToWorkflows))
             {
-                workflows.Add(GetWorkflow(file));
+                return new List<Entity>();
             }
-            return workflows;
+
+            var files = Directory.GetFiles(pathToWorkflows, "*.xml");
+            return files.Select(GetWorkflow).ToList();
         }
 
         internal static Entity GetWorkflow(string path)
@@ -737,18 +737,22 @@ namespace DG.Tools.XrmMockup.Internal
         internal static List<SecurityRole> GetSecurityRoles(string folderLocation)
         {
             var pathToSecurity = Path.Combine(folderLocation, "SecurityRoles");
+
+            if (!Directory.Exists(pathToSecurity))
+            {
+                return new List<SecurityRole>();
+            }
+
             var files = Directory.GetFiles(pathToSecurity, "*.xml");
-            var securityRoles = new List<SecurityRole>();
 
             var serializer = new DataContractSerializer(typeof(SecurityRole));
-            foreach (var file in files)
+            return files.Select(file =>
             {
                 using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    securityRoles.Add((SecurityRole)serializer.ReadObject(stream));
+                    return (SecurityRole)serializer.ReadObject(stream);
                 }
-            }
-            return securityRoles;
+            }).ToList();
         }
 
         internal static Guid GetGuidFromReference(object reference)
