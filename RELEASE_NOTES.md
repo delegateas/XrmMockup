@@ -1,3 +1,8 @@
+### 1.17.5 - 16 December 2025
+* Add: Full filtering support for RetrieveMetadataChangesRequest
+* Add: Preliminary support for BooleanManagedProperty
+* Add: Deprecation warning to metadata generator - replaced by dotnet tool
+
 ### 1.17.4 - 15 December 2025
 * Fix: Issues with fullname and name on EntityReference
 

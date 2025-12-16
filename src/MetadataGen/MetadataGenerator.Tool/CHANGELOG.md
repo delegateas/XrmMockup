@@ -5,9 +5,9 @@ All notable changes to XrmMockup.MetadataGenerator will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### v1.0.0-preview.1 - 9 December 2025
+### v1.0.0 - 16 December 2025
 
-* Initial preview release
+* Initial release
 * Add: CLI tool for generating XrmMockup metadata from Dataverse
 * Add: Support for solution-based entity filtering
 * Add: Support for explicit entity list filtering
