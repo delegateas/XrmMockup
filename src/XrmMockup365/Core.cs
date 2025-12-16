@@ -149,6 +149,18 @@ namespace DG.Tools.XrmMockup
 
             RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
+
+            // Add workflow entities to database so they can be queried
+            // Only add if workflow entity metadata exists (for backwards compatibility with older metadata)
+            if (initData.Workflows != null && metadata.EntityMetadata.ContainsKey("workflow"))
+            {
+                foreach (var workflow in initData.Workflows)
+                {
+                    var workflowCopy = CloneEntity(workflow);
+                    this.db.Add(workflowCopy, false);
+                }
+            }
+
             security.InitializeSecurityRoles(db);
             OrganizationDetail = initData.Settings.OrganizationDetail;
 
@@ -290,6 +302,15 @@ namespace DG.Tools.XrmMockup
         {
             this.OrganizationId = Guid.NewGuid();
             this.OrganizationName = "MockupOrganization";
+
+            // Add organization entity to database so it can be queried
+            if (metadata.BaseOrganization != null)
+            {
+                var orgEntity = CloneEntity(metadata.BaseOrganization);
+                orgEntity.Id = this.OrganizationId;
+                orgEntity["organizationid"] = this.OrganizationId;
+                this.db.Add(orgEntity, false);
+            }
 
             // Setup currencies - create copies to avoid modifying shared cached entities
             var currencies = new List<Entity>();

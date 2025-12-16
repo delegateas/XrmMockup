@@ -51,6 +51,9 @@ namespace DG.Tools.XrmMockup.Metadata {
                 ParsedArgs[Arguments.ConnectionString]
             );
 
+            Console.WriteLine("*** WARNING: MetadataGenerator365 is DEPRECATED and will no longer be maintained or updated. Please use XrmMockup.MetadataGenerator tool instead. ***");
+            Console.WriteLine("*** Follow the installation instructions at https://www.nuget.org/packages/XrmMockup.MetadataGenerator/ ***");
+
             Console.WriteLine("Generation of metadata files started");
             var generator = new DataHelper(auth.Authenticate(), ParsedArgs[Arguments.Entities], ParsedArgs[Arguments.Solutions], ParsedArgs.GetAsType<bool>(Arguments.fetchFromAssemblies));
             var outputLocation = ParsedArgs[Arguments.OutDir] ?? Directory.GetCurrentDirectory();
