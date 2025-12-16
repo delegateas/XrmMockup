@@ -16,7 +16,7 @@
     <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
     <PackageProjectUrl>https://github.com/delegateas/XrmMockup</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>See CHANGELOG.md for release notes</PackageReleaseNotes>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/CHANGELOG.md'))</PackageReleaseNotes>
     <Description>CLI tool for generating XrmMockup metadata from Dataverse</Description>
     <Copyright>Context&amp; A/S</Copyright>
     <Company>Context&amp; A/S</Company>
