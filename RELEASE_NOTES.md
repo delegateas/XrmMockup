@@ -1,3 +1,6 @@
+### 1.17.6 - 07 January 2026
+* Fix: If metadata didn't contain the organization entity it would fail on initialization
+
 ### 1.17.5 - 16 December 2025
 * Add: Full filtering support for RetrieveMetadataChangesRequest
 * Add: Preliminary support for BooleanManagedProperty

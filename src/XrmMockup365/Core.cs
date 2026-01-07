@@ -304,7 +304,7 @@ namespace DG.Tools.XrmMockup
             this.OrganizationName = "MockupOrganization";
 
             // Add organization entity to database so it can be queried
-            if (metadata.BaseOrganization != null)
+            if (metadata.BaseOrganization != null && metadata.EntityMetadata.ContainsKey(metadata.BaseOrganization.LogicalName))
             {
                 var orgEntity = CloneEntity(metadata.BaseOrganization);
                 orgEntity.Id = this.OrganizationId;
