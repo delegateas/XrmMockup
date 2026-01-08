@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -13,7 +14,8 @@ using DG.Tools.XrmMockup.Internal;
 namespace DG.Tools.XrmMockup.Database {
 
     internal class XrmDb {
-        private Dictionary<string, DbTable> TableDict = new Dictionary<string, DbTable>();
+        // Using ConcurrentDictionary for thread-safe table access in parallel test scenarios
+        private ConcurrentDictionary<string, DbTable> TableDict = new ConcurrentDictionary<string, DbTable>();
         private Dictionary<string, EntityMetadata> EntityMetadata;
         private OrganizationServiceProxy OnlineProxy;
         private int sequence;
@@ -26,13 +28,12 @@ namespace DG.Tools.XrmMockup.Database {
 
         public DbTable this[string tableName] {
             get {
-                if (!TableDict.ContainsKey(tableName)) {
-                    if (!EntityMetadata.TryGetValue(tableName, out EntityMetadata entityMetadata)) {
-                        throw new MockupException($"No EntityMetadata found for entity with logical name '{tableName}'.");
+                return TableDict.GetOrAdd(tableName, name => {
+                    if (!EntityMetadata.TryGetValue(name, out EntityMetadata entityMetadata)) {
+                        throw new MockupException($"No EntityMetadata found for entity with logical name '{name}'.");
                     }
-                    TableDict[tableName] = new DbTable(entityMetadata);
-                }
-                return TableDict[tableName];
+                    return new DbTable(entityMetadata);
+                });
             }
         }
 
@@ -256,7 +257,7 @@ namespace DG.Tools.XrmMockup.Database {
             var clonedTables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.Clone());
             var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineProxy)
             {
-                TableDict = clonedTables
+                TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };
 
             return clonedDB;
@@ -274,7 +275,7 @@ namespace DG.Tools.XrmMockup.Database {
             var clonedTables = model.Tables.ToDictionary(x => x.Key, x => DbTable.RestoreSerializableDTO(new DbTable(current.EntityMetadata[x.Key]), x.Value));
             var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineProxy)
             {
-                TableDict = clonedTables
+                TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };
 
             foreach (var table in clonedTables)

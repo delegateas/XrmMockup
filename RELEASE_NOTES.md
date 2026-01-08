@@ -1,3 +1,7 @@
+### 1.17.7 - 08 January 2026
+* Fix: Use ConcurrentQueue for plugin execution to avoid issues with parallel tests
+* Fix: Use ConcurrentDictionary for database tables to avoid issues with parallel tests
+
 ### 1.17.6 - 07 January 2026
 * Fix: If metadata didn't contain the organization entity it would fail on initialization
 

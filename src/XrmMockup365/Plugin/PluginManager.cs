@@ -35,8 +35,8 @@ namespace DG.Tools.XrmMockup
 
         internal readonly List<Type> missingRegistrations = new List<Type>();
 
-        // Queue for AsyncPlugins
-        private readonly Queue<PluginExecutionProvider> pendingAsyncPlugins = new Queue<PluginExecutionProvider>();
+        // Queue for AsyncPlugins - using ConcurrentQueue for thread safety in parallel test scenarios
+        private readonly ConcurrentQueue<PluginExecutionProvider> pendingAsyncPlugins = new ConcurrentQueue<PluginExecutionProvider>();
 
         // If true, registered plugins will not be executed
         private bool disableRegisteredPlugins = false;
@@ -387,14 +387,9 @@ namespace DG.Tools.XrmMockup
 
         public void TriggerAsyncWaitingJobs()
         {
-            while (pendingAsyncPlugins.Count > 0)
+            while (pendingAsyncPlugins.TryDequeue(out var pendingPlugin))
             {
-                var pendingPlugin = pendingAsyncPlugins.Dequeue();
-
-                if (pendingPlugin != null)
-                {
-                    pendingPlugin.ExecuteAction();
-                }
+                pendingPlugin?.ExecuteAction();
             }
         }
 
