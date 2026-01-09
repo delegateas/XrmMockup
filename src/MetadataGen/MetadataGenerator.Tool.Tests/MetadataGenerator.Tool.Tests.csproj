@@ -12,6 +12,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\MetadataGenerator.Context\MetadataGenerator.Context.csproj" />
 		<ProjectReference Include="..\MetadataGenerator.Core\MetadataGenerator.Core.csproj" />
+		<ProjectReference Include="..\MetadataGenerator.Tool\MetadataGenerator.Tool.csproj" Aliases="MetadataGenTool" />
 		<ProjectReference Include="..\..\XrmMockup365\XrmMockup365.csproj" Aliases="XrmMockupLib" />
 	</ItemGroup>
 

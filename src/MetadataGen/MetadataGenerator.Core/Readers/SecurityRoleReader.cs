@@ -23,12 +23,17 @@ internal sealed class SecurityRoleReader(
 
     public async Task<Dictionary<Guid, SecurityRole>> GetSecurityRolesAsync(
         Guid rootBusinessUnitId,
+        string[] solutions,
+        string[] additionalSecurityRoles,
         CancellationToken ct = default)
     {
         logger.LogInformation("Getting security roles");
 
         return await Task.Run(() =>
         {
+            // Get role IDs to filter by (if solutions specified)
+            var roleIdsToInclude = GetRoleIdsToInclude(solutions, additionalSecurityRoles, rootBusinessUnitId);
+
             // Query all required data
             var privileges = QueryPaging(new QueryExpression(Privilege)
             {
@@ -45,10 +50,7 @@ internal sealed class SecurityRoleReader(
                 ColumnSet = new ColumnSet("privilegeid", "roleid", "privilegedepthmask")
             });
 
-            var roleList = QueryPaging(new QueryExpression(Role)
-            {
-                ColumnSet = new ColumnSet("parentrootroleid", "name", "roleid", "roletemplateid", "businessunitid")
-            });
+            var roleList = QueryPaging(GetRoleQuery(roleIdsToInclude));
 
             // Join: roleprivileges inner join roles
             // Use GetAttributeValue for defensive access in case parentrootroleid is missing
@@ -199,5 +201,118 @@ internal sealed class SecurityRoleReader(
 
         // Fallback: use the role's own ID (for root roles or when parentrootroleid is not populated)
         return role.Id;
+    }
+
+    /// <summary>
+    /// Gets the set of role IDs to include based on solutions and additional role names.
+    /// Returns null if no filtering is needed (no solutions specified).
+    /// </summary>
+    private HashSet<Guid>? GetRoleIdsToInclude(string[] solutions, string[] additionalSecurityRoles, Guid rootBusinessUnitId)
+    {
+        if (solutions.Length == 0)
+            return null;
+
+        var roleIds = new HashSet<Guid>();
+
+        // Get role IDs from solutions
+        var solutionRoleIds = GetRoleIdsFromSolutions(solutions);
+        foreach (var id in solutionRoleIds)
+        {
+            roleIds.Add(id);
+        }
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Found {Count} roles in specified solutions", solutionRoleIds.Count);
+        }
+
+        // Get role IDs by name for additional roles
+        if (additionalSecurityRoles.Length > 0)
+        {
+            var additionalRoleIds = GetRoleIdsByName(additionalSecurityRoles, rootBusinessUnitId);
+            foreach (var id in additionalRoleIds)
+            {
+                roleIds.Add(id);
+            }
+
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Found {Count} additional roles by name", additionalRoleIds.Count);
+            }
+        }
+
+        return roleIds;
+    }
+
+    /// <summary>
+    /// Gets role IDs that are part of the specified solutions.
+    /// </summary>
+    private HashSet<Guid> GetRoleIdsFromSolutions(string[] solutions)
+    {
+        var query = new QueryExpression(Role)
+        {
+            ColumnSet = new ColumnSet("roleid"),
+            Distinct = true
+        };
+
+        var solutionComponentQuery = new LinkEntity(
+            Role, "solutioncomponent",
+            "roleid", "objectid", JoinOperator.Inner)
+        {
+            Columns = new ColumnSet(),
+            LinkCriteria = new FilterExpression()
+        };
+        solutionComponentQuery.LinkCriteria.AddCondition("componenttype", ConditionOperator.Equal, 20);
+        query.LinkEntities.Add(solutionComponentQuery);
+
+        var solutionQuery = new LinkEntity(
+            "solutioncomponent", "solution",
+            "solutionid", "solutionid", JoinOperator.Inner)
+        {
+            Columns = new ColumnSet(),
+            LinkCriteria = new FilterExpression()
+        };
+        solutionQuery.LinkCriteria.AddCondition("uniquename", ConditionOperator.In, solutions.Cast<object>().ToArray());
+        solutionComponentQuery.LinkEntities.Add(solutionQuery);
+
+        var results = _service.RetrieveMultiple(query);
+        return results.Entities.Select(e => e.Id).ToHashSet();
+    }
+
+    /// <summary>
+    /// Gets role IDs by their names in the root business unit.
+    /// </summary>
+    private HashSet<Guid> GetRoleIdsByName(string[] roleNames, Guid rootBusinessUnitId)
+    {
+        if (roleNames.Length == 0)
+            return [];
+
+        var query = new QueryExpression(Role)
+        {
+            ColumnSet = new ColumnSet("roleid")
+        };
+        query.Criteria.AddCondition("name", ConditionOperator.In, roleNames.Cast<object>().ToArray());
+        query.Criteria.AddCondition("businessunitid", ConditionOperator.Equal, rootBusinessUnitId);
+
+        var results = _service.RetrieveMultiple(query);
+        return results.Entities.Select(e => e.Id).ToHashSet();
+    }
+
+    /// <summary>
+    /// Builds the role query, optionally filtering by role IDs.
+    /// </summary>
+    private static QueryExpression GetRoleQuery(HashSet<Guid>? roleIdsToInclude)
+    {
+        var query = new QueryExpression(Role)
+        {
+            ColumnSet = new ColumnSet("parentrootroleid", "name", "roleid", "roletemplateid", "businessunitid")
+        };
+
+        if (roleIdsToInclude is not null && roleIdsToInclude.Count > 0)
+        {
+            query.Criteria.AddCondition("roleid", ConditionOperator.In, roleIdsToInclude.Cast<object>().ToArray());
+        }
+
+        return query;
     }
 }
