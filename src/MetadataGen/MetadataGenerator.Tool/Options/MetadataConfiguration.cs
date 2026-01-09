@@ -26,6 +26,11 @@ public record MetadataConfiguration
     public string[] Entities { get; init; } = [];
 
     /// <summary>
+    /// Additional security role names to include.
+    /// </summary>
+    public string[] SecurityRoles { get; init; } = [];
+
+    /// <summary>
     /// Whether to format XML output for readability.
     /// </summary>
     public bool PrettyPrint { get; init; }
