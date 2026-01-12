@@ -63,6 +63,7 @@ namespace DG.Tools.XrmMockup
         private int baseCurrencyPrecision;
         private FormulaFieldEvaluator FormulaFieldEvaluator { get; set; }
         private List<string> systemAttributeNames;
+        internal FileBlockStore FileBlockStore { get; private set; }
 
         /// <summary>
         /// Creates a new instance of Core
@@ -119,6 +120,7 @@ namespace DG.Tools.XrmMockup
             entityTypeMap = initData.EntityTypeMap;
 
             db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineProxy);
+            FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
             security = new Security(this, initData.Metadata, initData.SecurityRoles, db);
             TracingServiceFactory = initData.Settings.TracingServiceFactory ?? new TracingServiceFactory();
@@ -397,6 +399,8 @@ namespace DG.Tools.XrmMockup
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
+            new InitializeFileBlocksDownloadRequestHandler(this, db, metadata, security),
+            new DownloadBlockRequestHandler(this, db, metadata, security),
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
             new CreateMultipleRequestHandler(this, db, metadata, security),
             new UpdateMultipleRequestHandler(this, db, metadata, security),
