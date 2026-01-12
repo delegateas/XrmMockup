@@ -74,6 +74,10 @@ internal sealed class OnlineMetadataSource(
         Guid rootBusinessUnitId,
         CancellationToken ct = default)
     {
-        return await securityRoleReader.GetSecurityRolesAsync(rootBusinessUnitId, ct);
+        return await securityRoleReader.GetSecurityRolesAsync(
+            rootBusinessUnitId,
+            _options.Solutions,
+            _options.SecurityRoles,
+            ct);
     }
 }

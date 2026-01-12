@@ -21,6 +21,11 @@ public record GeneratorOptions
     public string[] Entities { get; init; } = [];
 
     /// <summary>
+    /// Additional security role names to include beyond those in solutions.
+    /// </summary>
+    public string[] SecurityRoles { get; init; } = [];
+
+    /// <summary>
     /// Whether to format XML output for readability.
     /// Default is false to minimize file size.
     /// </summary>

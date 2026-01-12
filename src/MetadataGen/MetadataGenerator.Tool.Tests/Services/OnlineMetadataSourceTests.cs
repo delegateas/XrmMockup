@@ -45,7 +45,7 @@ public class OnlineMetadataSourceTests
             .Returns([]);
         _workflowReader.GetWorkflowsAsync(Arg.Any<CancellationToken>())
             .Returns([]);
-        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]>(), Arg.Any<CancellationToken>())
             .Returns([]);
         _optionSetReader.GetOptionSetsAsync(Arg.Any<CancellationToken>())
             .Returns([]);
@@ -264,7 +264,7 @@ public class OnlineMetadataSourceTests
     {
         var rootBuId = Guid.NewGuid();
         var roles = new Dictionary<Guid, SecurityRole>();
-        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]>(), Arg.Any<CancellationToken>())
             .Returns(roles);
 
         var options = new GeneratorOptions { OutputDirectory = "/test", Solutions = [], Entities = [] };
@@ -275,6 +275,99 @@ public class OnlineMetadataSourceTests
         Assert.Same(roles, result);
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Is<Guid>(id => id == rootBuId),
+            Arg.Any<string[]>(),
+            Arg.Any<string[]>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSecurityRolesAsync_PassesSolutionsToReader()
+    {
+        var rootBuId = Guid.NewGuid();
+        var solutions = new[] { "MySolution", "OtherSolution" };
+        var options = new GeneratorOptions
+        {
+            OutputDirectory = "/test",
+            Solutions = solutions,
+            Entities = []
+        };
+        var source = CreateSource(options);
+
+        await source.GetSecurityRolesAsync(rootBuId);
+
+        await _securityRoleReader.Received(1).GetSecurityRolesAsync(
+            Arg.Any<Guid>(),
+            Arg.Is<string[]>(s => s.SequenceEqual(solutions)),
+            Arg.Any<string[]>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSecurityRolesAsync_PassesSecurityRolesToReader()
+    {
+        var rootBuId = Guid.NewGuid();
+        var securityRoles = new[] { "System Administrator", "Basic User" };
+        var options = new GeneratorOptions
+        {
+            OutputDirectory = "/test",
+            Solutions = [],
+            Entities = [],
+            SecurityRoles = securityRoles
+        };
+        var source = CreateSource(options);
+
+        await source.GetSecurityRolesAsync(rootBuId);
+
+        await _securityRoleReader.Received(1).GetSecurityRolesAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<string[]>(),
+            Arg.Is<string[]>(r => r.SequenceEqual(securityRoles)),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSecurityRolesAsync_WithSolutionsAndSecurityRoles_PassesBothToReader()
+    {
+        var rootBuId = Guid.NewGuid();
+        var solutions = new[] { "MySolution" };
+        var securityRoles = new[] { "System Administrator" };
+        var options = new GeneratorOptions
+        {
+            OutputDirectory = "/test",
+            Solutions = solutions,
+            Entities = [],
+            SecurityRoles = securityRoles
+        };
+        var source = CreateSource(options);
+
+        await source.GetSecurityRolesAsync(rootBuId);
+
+        await _securityRoleReader.Received(1).GetSecurityRolesAsync(
+            Arg.Is<Guid>(id => id == rootBuId),
+            Arg.Is<string[]>(s => s.SequenceEqual(solutions)),
+            Arg.Is<string[]>(r => r.SequenceEqual(securityRoles)),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSecurityRolesAsync_WithEmptySolutionsAndSecurityRoles_PassesEmptyArrays()
+    {
+        var rootBuId = Guid.NewGuid();
+        var options = new GeneratorOptions
+        {
+            OutputDirectory = "/test",
+            Solutions = [],
+            Entities = [],
+            SecurityRoles = []
+        };
+        var source = CreateSource(options);
+
+        await source.GetSecurityRolesAsync(rootBuId);
+
+        await _securityRoleReader.Received(1).GetSecurityRolesAsync(
+            Arg.Is<Guid>(id => id == rootBuId),
+            Arg.Is<string[]>(s => s.Length == 0),
+            Arg.Is<string[]>(r => r.Length == 0),
             Arg.Any<CancellationToken>());
     }
 
