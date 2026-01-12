@@ -1,3 +1,9 @@
+### 1.17.8 - 12 January 2026
+* Add: Support for specifying which security roles are included (@magesoe) (#304)
+* Add: Settings option to skip execution of workflows. Defaults to the value of TriggerProcesses but allows specific override (@mkholt) (#305)
+* Add: Better error messages when workflow can't find code-activity (@mkholt) (#305)
+* Add: Better error message when Core can't find Entity Metadata (@mkholt) (#305)
+
 ### 1.17.7 - 08 January 2026
 * Fix: Use ConcurrentQueue for plugin execution to avoid issues with parallel tests
 * Fix: Use ConcurrentDictionary for database tables to avoid issues with parallel tests
