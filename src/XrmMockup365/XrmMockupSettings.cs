@@ -34,6 +34,11 @@ namespace DG.Tools.XrmMockup
         public bool? IncludeAllWorkflows { get; set; }
 
         /// <summary>
+        /// Sets whether workflows should be triggered during execution. Default is true.
+        /// </summary>
+        public bool? TriggerWorkflows { get; set; }
+
+        /// <summary>
         /// List of request that will not throw exceptions.
         /// </summary>
         public IEnumerable<string> ExceptionFreeRequests { get; set; }

@@ -825,7 +825,11 @@ namespace DG.Tools.XrmMockup
 
                 // Pre-operation
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                }
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
 
                 // System Pre-operation
@@ -860,21 +864,37 @@ namespace DG.Tools.XrmMockup
                 pluginManager.TriggerSystem(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
 
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+                }
+
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
                     
                 var asyncPostImage = TryRetrieve(primaryRef);
                 pluginManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
-                workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+                }
 
                 //When last Sync has been executed we trigger the Async jobs.
                 if (parentPluginContext == null)
                 {
                     pluginManager.TriggerAsyncWaitingJobs();
-                    workflowManager.TriggerAsync(this);
+
+                    if (settings.TriggerWorkflows)
+                    {
+                        workflowManager.TriggerAsync(this);
+                    }
                 }
 
-                workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
+                }
             }
 
             // Trigger Extension
@@ -1339,7 +1359,12 @@ namespace DG.Tools.XrmMockup
 
         internal EntityMetadata GetEntityMetadata(string entityLogicalName)
         {
-            return metadata.EntityMetadata[entityLogicalName];
+            if (!metadata.EntityMetadata.TryGetValue(entityLogicalName, out var entityMetadata))
+            {
+                throw new MockupException($"No EntityMetadata found for entity with logical name '{entityLogicalName}'");
+            }
+
+            return entityMetadata;
         }
 
         internal void ExecuteCalculatedFields(DbRow row)
@@ -1358,7 +1383,7 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                var tree = WorkflowConstructor.ParseCalculated(definition);
+                var tree = WorkflowConstructor.ParseCalculated(definition, $"{attr.EntityLogicalName}.{attr.LogicalName}");
                 var factory = ServiceFactory;
                 tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
