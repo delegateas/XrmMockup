@@ -100,17 +100,20 @@ jobs:
         # For manual triggers, only publish if dry_run is explicitly set to false
         $isDryRun = "${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.dry_run }}" -ne "false"
 
+        $apiKey = "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+
         if ($isDryRun) {
             Write-Host "Dry run mode - skipping NuGet publish"
-            if ("${{ steps.nuget-login.outputs.NUGET_API_KEY }}" -neq "") {
+            if ($apiKey -ne "") {
                 Write-Host "- Has NuGet API key from login"
             } else {
                 Write-Host "- WARNING: Missing NuGet API key from login"
+                exit 1
             }
         } else {
             Write-Host "Publishing to NuGet..."
             foreach ($file in $nupkgFiles) {
                 Write-Host "Publishing: $($file.FullName)"
-                dotnet nuget push "$($file.FullName)" --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+                dotnet nuget push "$($file.FullName)" --api-key $apiKey --source "https://api.nuget.org/v3/index.json" --skip-duplicate
             }
         }
