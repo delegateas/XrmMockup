@@ -11,6 +11,8 @@ on:
         default: true
         type: boolean
 
+run-name: ${{ github.event_name == 'release' && format('Release {0}', github.event.release.tag_name) || (github.event.inputs.dry_run == 'false' && 'Release (Manual)' || 'Release (Dry Run)') }}
+
 jobs:
   build:
     runs-on: windows-latest
