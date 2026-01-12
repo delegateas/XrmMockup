@@ -6,22 +6,19 @@
     <Nullable>enable</Nullable>
     <RootNamespace>XrmMockup.MetadataGenerator.Tool</RootNamespace>
     <AssemblyName>XrmMockup.MetadataGenerator.Tool</AssemblyName>
+    <!-- Version set by CI from CHANGELOG.md -->
+    <Version>0.0.0</Version>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- Tool-specific settings -->
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>xrmmockup-metadata</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageId>XrmMockup.MetadataGenerator</PackageId>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageIcon>XrmMockup-sticker_small.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/delegateas/XrmMockup</PackageProjectUrl>
+    <!-- Project-specific metadata (shared metadata comes from Directory.Build.props) -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/CHANGELOG.md'))</PackageReleaseNotes>
     <Description>CLI tool for generating XrmMockup metadata from Dataverse</Description>
-    <Copyright>Context&amp; A/S</Copyright>
-    <Company>Context&amp; A/S</Company>
-    <Authors>Context&amp;</Authors>
-    <Version>1.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\MetadataGenerator.Core\MetadataGenerator.Core.csproj" />
@@ -31,9 +28,8 @@
     <PackageReference Include="System.CommandLine" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\LICENSE.txt" Pack="true" PackagePath="" Condition="Exists('..\..\..\LICENSE.txt')" />
+    <!-- Icon is included by Directory.Build.props, license via PackageLicenseExpression -->
     <None Include="README.md" Pack="true" PackagePath="" />
-    <None Include="..\..\..\resources\XrmMockup-sticker_small.png" Pack="true" PackagePath="" Condition="Exists('..\..\..\resources\XrmMockup-sticker_small.png')" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.example.json">

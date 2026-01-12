@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Perform a dry run (skip actual NuGet publish)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write      # For release asset upload
+      id-token: write      # Required for OIDC token (NuGet Trusted Publishing)
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.x
+          10.x
+
+    - name: Set XrmMockup365 version from RELEASE_NOTES.md
+      shell: pwsh
+      run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./RELEASE_NOTES.md -CsprojPath ./src/XrmMockup365/XrmMockup365.csproj
+
+    - name: Set MetadataGenerator.Tool version from CHANGELOG.md
+      shell: pwsh
+      run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj
+
+    - name: Set MetadataGenerator.Core version from CHANGELOG.md
+      shell: pwsh
+      run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Core/MetadataGenerator.Core.csproj
+
+    - name: Set MetadataGenerator.Context version from CHANGELOG.md
+      shell: pwsh
+      run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Context/MetadataGenerator.Context.csproj
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Pack XrmMockup365
+      run: dotnet pack src/XrmMockup365/XrmMockup365.csproj --configuration Release --no-build --output ./nupkg
+
+    - name: Pack MetadataGenerator.Tool
+      run: dotnet pack src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj --configuration Release --no-build --output ./nupkg
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: ./nupkg
+
+    - name: Add packages to release
+      uses: softprops/action-gh-release@v2
+      if: github.event_name == 'release'
+      with:
+        files: |
+          ./nupkg/*.nupkg
+          ./nupkg/*.snupkg
+
+    - name: Login to NuGet (OIDC)
+      id: nuget-login
+      uses: nuget/login@v1
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
+    - name: Publish to NuGet
+      shell: pwsh
+      run: |
+        Write-Host "Looking for nupkg files..."
+        $nupkgFiles = Get-ChildItem -Path "./nupkg/*.nupkg" -File
+
+        if ($nupkgFiles.Count -eq 0) {
+            Write-Host "No nupkg files found in nupkg"
+            exit 1
+        }
+
+        Write-Host "Found $($nupkgFiles.Count) nupkg file(s):"
+        foreach ($file in $nupkgFiles) {
+            Write-Host "  Full path: $($file.FullName)"
+            Write-Host "  Size: $([math]::Round($file.Length / 1KB, 2)) KB"
+        }
+
+        # For automatic triggers (release events), always publish
+        # For manual triggers, only publish if dry_run is explicitly set to false
+        $isDryRun = "${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.dry_run }}" -ne "false"
+
+        if ($isDryRun) {
+            Write-Host "Dry run mode - skipping NuGet publish"
+        } else {
+            Write-Host "Publishing to NuGet..."
+            foreach ($file in $nupkgFiles) {
+                Write-Host "Publishing: $($file.FullName)"
+                dotnet nuget push "$($file.FullName)" --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+            }
+        }
