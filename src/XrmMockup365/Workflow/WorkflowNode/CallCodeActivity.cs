@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Runtime.Serialization;
 using System.Activities;
+using DG.Tools.XrmMockup;
 
 namespace WorkflowExecuter
 {
@@ -19,10 +20,14 @@ namespace WorkflowExecuter
         [DataMember]
         public Dictionary<string, string> outArguments;
 
+        [DataMember]
+        public string WorkflowName;
 
-        public CallCodeActivity(string CodeActivityName, Dictionary<string, string> inArguments, Dictionary<string, string> outArguments)
+
+        public CallCodeActivity(string CodeActivityName, string WorkflowName, Dictionary<string, string> inArguments, Dictionary<string, string> outArguments)
         {
             this.CodeActivityName = CodeActivityName;
+            this.WorkflowName = WorkflowName;
             this.inArguments = inArguments;
             this.outArguments = outArguments;
         }
@@ -31,15 +36,41 @@ namespace WorkflowExecuter
             IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
         {
             var variablesInstance = variables;
-            var arguments = this.inArguments.Where(arg => !outArguments.ContainsKey(arg.Value) && variablesInstance[arg.Value] != null)
-                .ToDictionary(arg => arg.Key, arg => (outArguments.ContainsKey(arg.Value) ? null : variablesInstance[arg.Value]));
+
+            var filteredArgs = new List<KeyValuePair<string, string>>();
+            foreach (var arg in this.inArguments)
+            {
+                var inOutArguments = outArguments.ContainsKey(arg.Value);
+                var hasVarInInstance = variablesInstance.TryGetValue(arg.Value, out var instanceVar);
+                if (!inOutArguments && hasVarInInstance && instanceVar != null)
+                {
+                    filteredArgs.Add(arg);
+                }
+            }
+
+            var arguments = new Dictionary<string, object>();
+            foreach (var arg in filteredArgs)
+            {
+                arguments[arg.Key] = variablesInstance.TryGetValue(arg.Value, out var v) ? v : null;
+            }
 
             var codeActivities = variables["CodeActivites"] as Dictionary<string, CodeActivity>;
-            var codeActivity = codeActivities[CodeActivityName];
+            if (!codeActivities.TryGetValue(CodeActivityName, out var codeActivity))
+            {
+                throw new MockupException("Attempting to execute step with name {0} in the workflow \"{1}\", but no code activity by that name was found.", CodeActivityName, WorkflowName);
+            }
+
             var primaryEntity = variables["InputEntities(\"primaryEntity\")"] as Entity;
-            var workflowContext = new XrmWorkflowContext();
-            workflowContext.PrimaryEntityId = primaryEntity.Id;
-            workflowContext.PrimaryEntityName = primaryEntity.LogicalName;
+            if (primaryEntity is null)
+            {
+                throw new MockupException("Attempting to pass primary entity to CodeActivity failed, entity is null or not of type Entity");
+            }
+
+            var workflowContext = new XrmWorkflowContext
+            {
+                PrimaryEntityId = primaryEntity.Id,
+                PrimaryEntityName = primaryEntity.LogicalName
+            };
 
             if (factory is IServiceProvider serviceProvider)
             {
