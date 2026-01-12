@@ -17,6 +17,13 @@ namespace DG.Tools.XrmMockup
             var token = Guid.NewGuid().ToString();
             var fileAttachmentId = Guid.NewGuid();
 
+            // Create the fileattachment entity in the database
+            var fileAttachment = new Entity("fileattachment");
+            fileAttachment["filename"] = request.FileName;
+            fileAttachment["regardingfieldname"] = request.FileAttributeName;
+            fileAttachment["objectid"] = request.Target;
+            db.Add(fileAttachment);
+
             var session = new FileUploadSession
             {
                 FileAttachmentId = fileAttachmentId,
