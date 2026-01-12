@@ -92,21 +92,24 @@ Target.create "MetadataGeneratorVersion" (fun _ ->
 
 // --------------------------------------------------------------------------------------
 // Setting up VS for building with FAKE
-let commonBuild solution =
-  let packArgs (defaults:MSBuild.CliArguments) = 
+let commonBuildWithConfig solution configuration =
+  let packArgs (defaults:MSBuild.CliArguments) =
     { defaults with
         NoWarn = Some(["NU5100"])
-        Properties = 
+        Properties =
         [
           "Version", release.NugetVersion
           "ReleaseNotes", String.Join(Environment.NewLine, release.Notes)
-        ] 
+        ]
     }
   solution
-  |> DotNet.build (fun buildOp -> 
-    { buildOp with 
+  |> DotNet.build (fun buildOp ->
+    { buildOp with
+          Configuration = configuration
           MSBuildParams = packArgs buildOp.MSBuildParams
     })
+
+let commonBuild solution = commonBuildWithConfig solution DotNet.BuildConfiguration.Release
 
 // --------------------------------------------------------------------------------------
 // Clean build results
@@ -124,6 +127,10 @@ Target.create "Clean" (fun _ ->
 
 Target.create "Build" (fun _ ->
     commonBuild solutionFile |> ignore
+)
+
+Target.create "BuildDebug" (fun _ ->
+    commonBuildWithConfig solutionFile DotNet.BuildConfiguration.Debug |> ignore
 )
 
 // --------------------------------------------------------------------------------------
@@ -168,6 +175,31 @@ Target.create "NuGet" (fun _ ->
         NoBuild = true
         OutputPath = Some("bin")
     }) ("src" ++ "MetadataGen" ++ "MetadataGenerator.Tool")
+  )
+
+// --------------------------------------------------------------------------------------
+// Build a Debug NuGet package (for debugging purposes)
+Target.create "NuGetDebug" (fun _ ->
+  let packArgs (defaults:MSBuild.CliArguments) =
+    { defaults with
+        NoWarn = Some(["NU5100"])
+        Properties =
+        [
+          "Version", release.NugetVersion + "-debug"
+          "ReleaseNotes", String.Join(Environment.NewLine, release.Notes)
+        ]
+    }
+
+  projectPaths
+  |> Array.iter (fun projectPath ->
+    DotNet.pack (fun def ->
+      { def with
+          Configuration = DotNet.BuildConfiguration.Debug
+          NoBuild = true
+          MSBuildParams = packArgs def.MSBuildParams
+          OutputPath = Some("bin")
+
+      }) projectPath)
   )
 
 
@@ -242,5 +274,11 @@ Target.create "All" ignore
   
 "BuildPackage"
   ==> "PublishNuget"
-  
+
+"Clean"
+  ==> "AssemblyInfo"
+  ==> "MetadataGeneratorVersion"
+  ==> "BuildDebug"
+  ==> "NuGetDebug"
+
 Target.runOrDefault "Build"
