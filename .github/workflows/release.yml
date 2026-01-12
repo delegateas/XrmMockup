@@ -76,7 +76,6 @@ jobs:
     - name: Login to NuGet (OIDC)
       id: nuget-login
       uses: nuget/login@v1
-      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
       with:
         user: ${{ secrets.NUGET_USER }}
 
@@ -103,6 +102,11 @@ jobs:
 
         if ($isDryRun) {
             Write-Host "Dry run mode - skipping NuGet publish"
+            if ("${{ steps.nuget-login.outputs.NUGET_API_KEY }}" -neq "") {
+                Write-Host "- Has NuGet API key from login"
+            } else {
+                Write-Host "- WARNING: Missing NuGet API key from login"
+            }
         } else {
             Write-Host "Publishing to NuGet..."
             foreach ($file in $nupkgFiles) {
