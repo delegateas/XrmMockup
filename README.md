@@ -1,6 +1,6 @@
 # XrmMockup
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/delegateAS/XrmMockup?svg=true&branch=master)](https://ci.appveyor.com/project/DelegateAS/XrmMockup)
+[![Build Status](https://github.com/delegateas/XrmMockup/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/delegateas/XrmMockup/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/XrmMockup365.svg)](https://www.nuget.org/packages/XrmMockup365)
 
 

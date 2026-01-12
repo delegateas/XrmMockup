@@ -4,6 +4,8 @@
 		<DebugType>portable</DebugType>
 		<Title>XrmMockup365Test</Title>
 		<RootNamespace>DG.XrmMockupTest</RootNamespace>
+		<!-- Test project, not a NuGet package -->
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<Optimize>false</Optimize>
