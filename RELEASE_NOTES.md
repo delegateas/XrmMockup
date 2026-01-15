@@ -1,3 +1,6 @@
+### 1.17.9 - 15 January 2026
+* Add: File block upload/download support (@magesoe) (#307)
+
 ### 1.17.8 - 12 January 2026
 * Add: Support for specifying which security roles are included (@magesoe) (#304)
 * Add: Settings option to skip execution of workflows. Defaults to the value of TriggerProcesses but allows specific override (@mkholt) (#305)
