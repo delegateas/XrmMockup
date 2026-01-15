@@ -53,8 +53,6 @@ namespace DG.Tools.XrmMockup
 
             core.FileBlockStore.CommitUpload(request.FileContinuationToken, committedFile);
 
-            // file attachment metadata not added, so we don't store in fileattachment entity
-
             var resp = new CommitFileBlocksUploadResponse();
             resp.Results["FileId"] = session.FileAttachmentId;
             resp.Results["FileSizeInBytes"] = (long)fileData.Length;
