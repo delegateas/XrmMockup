@@ -1,6 +1,6 @@
 # XrmMockup Metadata Generator
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/delegateAS/XrmMockup?svg=true&branch=master)](https://ci.appveyor.com/project/DelegateAS/XrmMockup)
+[![Build Status](https://github.com/delegateas/XrmMockup/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/delegateas/XrmMockup/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/XrmMockup.MetadataGenerator.svg)](https://www.nuget.org/packages/XrmMockup.MetadataGenerator)
 
 A .NET CLI tool for generating metadata from Microsoft Dataverse/Dynamics 365 environments. This tool is a companion to [XrmMockup](https://github.com/delegateas/XrmMockup), extracting the metadata files required for local CRM simulation in your tests.
