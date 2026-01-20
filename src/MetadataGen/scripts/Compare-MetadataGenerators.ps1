@@ -58,7 +58,7 @@ Write-Host ""
 # Build paths
 $oldExePath = Join-Path $repoRoot "MetadataGenerator365\bin\Release\net462\MetadataGenerator365.exe"
 $newToolPath = Join-Path $repoRoot "MetadataGenerator.Tool\bin\Release\net10.0\XrmMockup.MetadataGenerator.Tool.dll"
-$solutionPath = Join-Path $repoRoot "..\..\XrmMockup.sln"
+$solutionPath = Join-Path $repoRoot "..\..\XrmMockup.slnx"
 
 if ($NoBuild) {
     # Verify executables exist when skipping build

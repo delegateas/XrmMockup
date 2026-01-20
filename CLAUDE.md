@@ -10,7 +10,7 @@ XrmMockup is a simulation engine that mocks Microsoft Dynamics 365/CRM instances
 
 ```bash
 # Build the solution (debug)
-dotnet build XrmMockup.sln
+dotnet build XrmMockup.slnx
 
 # Build for release (uses FAKE build script)
 build.cmd Build
