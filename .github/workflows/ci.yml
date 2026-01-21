@@ -27,6 +27,14 @@ jobs:
         shell: pwsh
         run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./RELEASE_NOTES.md -CsprojPath ./src/XrmMockup365/XrmMockup365.csproj
 
+      - name: Set XrmMockup.DataverseProxy.Contracts version from RELEASE_NOTES.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./RELEASE_NOTES.md -CsprojPath ./src/XrmMockup.DataverseProxy.Contracts/XrmMockup.DataverseProxy.Contracts.csproj
+
+      - name: Set XrmMockup.DataverseProxy version from RELEASE_NOTES.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./RELEASE_NOTES.md -CsprojPath ./src/XrmMockup.DataverseProxy/XrmMockup.DataverseProxy.csproj
+
       - name: Set MetadataGenerator.Tool version from CHANGELOG.md
         shell: pwsh
         run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj

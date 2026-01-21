@@ -1,7 +1,7 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
+using DG.Tools.XrmMockup.Online;
 
 namespace DG.Tools.XrmMockup.Internal
 {
@@ -16,7 +16,7 @@ namespace DG.Tools.XrmMockup.Internal
         public List<SecurityRole> SecurityRoles { get; set; }
         public EntityReference BaseCurrency { get; set; }
         public int BaseCurrencyPrecision { get; set; }
-        public OrganizationServiceProxy OnlineProxy { get; set; }
+        public IOnlineDataService OnlineDataService { get; set; }
         public Dictionary<string, Type> EntityTypeMap { get; set; }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using DG.Some.Namespace;
 using DG.Tools.XrmMockup;
 using XrmPluginCore;
-using Microsoft.Xrm.Sdk.Client;
 using System;
 
 public class XrmMockupFixtureNoProxyTypes : IDisposable
@@ -43,10 +42,7 @@ public class XrmMockupFixtureNoProxyTypes : IDisposable
                         MetadataDirectoryPath = GetMetadataPath(),
                         OnlineEnvironment = new Env
                         {
-                            providerType = AuthenticationProviderType.OnlineFederation,
-                            uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-                            username = "exampleUser",
-                            password = "examplePass"
+                            Url = "https://example.crm.dynamics.com"
                         }
                     };
                 }

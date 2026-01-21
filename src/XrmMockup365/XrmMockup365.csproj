@@ -74,5 +74,25 @@
     <PackageReference Include="Microsoft.PowerFx.Dataverse.Eval" Version="1.3.2" />
     <PackageReference Include="XrmPluginCore.Abstractions" Version="1.1.0" />
   </ItemGroup>
+  <Import Project="..\XrmMockup.DataverseProxy.Contracts\XrmMockup.DataverseProxy.Contracts.projitems" Label="Shared" />
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>XrmMockup.DataverseProxy.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>XrmMockup365Test</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   <Import Project="..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />
+
+  <!-- Include DataverseProxy in NuGet package tools folder (only during pack, not build) -->
+  <Target Name="IncludeDataverseProxyInPackage" BeforeTargets="_GetPackageFiles" Condition="'$(IsPackable)' != 'false'">
+    <ItemGroup>
+      <_DataverseProxyFiles Include="..\XrmMockup.DataverseProxy\bin\$(Configuration)\net8.0\**\*"
+                            Condition="Exists('..\XrmMockup.DataverseProxy\bin\$(Configuration)\net8.0\')" />
+      <None Include="@(_DataverseProxyFiles)"
+            Pack="true"
+            PackagePath="tools\net8.0\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
 </Project>

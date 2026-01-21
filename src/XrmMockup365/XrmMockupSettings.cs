@@ -1,8 +1,8 @@
-﻿using Microsoft.Xrm.Sdk.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
 using System.Reflection;
+using DG.Tools.XrmMockup.Online;
 
 namespace DG.Tools.XrmMockup
 {
@@ -44,7 +44,9 @@ namespace DG.Tools.XrmMockup
         public IEnumerable<string> ExceptionFreeRequests { get; set; }
 
         /// <summary>
-        /// Environment settings for connection to an online environment for live debugging.
+        /// Settings for connecting to an online Dataverse environment for live debugging.
+        /// Uses Azure DefaultAzureCredential for authentication (supports managed identity,
+        /// Visual Studio credentials, Azure CLI, etc.).
         /// </summary>
         public Env? OnlineEnvironment { get; set; }
 
@@ -98,15 +100,28 @@ namespace DG.Tools.XrmMockup
         /// Default is true.
         /// </summary>
         public bool EnablePowerFxFields { get; set; } = true;
+
+        /// <summary>
+        /// Optional factory for creating IOnlineDataService. For testing purposes.
+        /// If set, this takes precedence over OnlineEnvironment.
+        /// </summary>
+        internal Func<IOnlineDataService> OnlineDataServiceFactory { get; set; }
     }
 
-
+    /// <summary>
+    /// Settings for connecting to an online Dataverse environment.
+    /// </summary>
     public struct Env
     {
-        public string uri;
-        public AuthenticationProviderType providerType;
-        public string username;
-        public string password;
-        public string domain;
+        /// <summary>
+        /// URL of the Dataverse environment (e.g., https://org.crm.dynamics.com).
+        /// Uses Azure DefaultAzureCredential for authentication.
+        /// </summary>
+        public string Url;
+
+        /// <summary>
+        /// Optional path to the proxy DLL. If not specified, auto-discovery is used.
+        /// </summary>
+        public string ProxyPath;
     }
 }
