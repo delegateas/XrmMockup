@@ -1000,7 +1000,12 @@ namespace DG.Tools.XrmMockup
             var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
             if (handler != null)
             {
-                return handler.Execute(request, userRef);
+                var response = handler.Execute(request, userRef);
+                if (response != null && string.IsNullOrEmpty(response.ResponseName))
+                {
+                    response.ResponseName = request.RequestName;
+                }
+                return response;
             }
 
             if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false)
