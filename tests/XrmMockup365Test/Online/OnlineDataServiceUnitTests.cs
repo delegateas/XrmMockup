@@ -1,3 +1,4 @@
+#if DATAVERSE_SERVICE_CLIENT
 using System;
 using System.Linq;
 using DG.Tools.XrmMockup;
@@ -11,7 +12,7 @@ namespace DG.XrmMockupTest.Online
     /// <summary>
     /// Unit tests verifying XrmMockup's integration with IOnlineDataService.
     /// Uses mock IOnlineDataService to verify correct behavior without real proxy.
-    /// Works on both net462 and net8.0 frameworks.
+    /// Only available on net8.0 (DATAVERSE_SERVICE_CLIENT).
     /// </summary>
     public class OnlineDataServiceUnitTests : IClassFixture<XrmMockupFixture>
     {
@@ -229,3 +230,4 @@ namespace DG.XrmMockupTest.Online
         }
     }
 }
+#endif

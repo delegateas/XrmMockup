@@ -1,7 +1,9 @@
 using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Serialization;
+#if DATAVERSE_SERVICE_CLIENT
 using DG.Tools.XrmMockup.Online;
+#endif
 using XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
@@ -59,7 +61,9 @@ namespace DG.Tools.XrmMockup
         private XrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
+#if DATAVERSE_SERVICE_CLIENT
         private IOnlineDataService OnlineDataService;
+#endif
         private int baseCurrencyPrecision;
         private FormulaFieldEvaluator FormulaFieldEvaluator { get; set; }
         private List<string> systemAttributeNames;
@@ -79,7 +83,9 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = SecurityRoles,
                 BaseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid"),
                 BaseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision"),
+#if DATAVERSE_SERVICE_CLIENT
                 OnlineDataService = null,
+#endif
                 EntityTypeMap = new Dictionary<string, Type>()
             };
 
@@ -99,7 +105,9 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = staticCache.SecurityRoles,
                 BaseCurrency = staticCache.BaseCurrency,
                 BaseCurrencyPrecision = staticCache.BaseCurrencyPrecision,
+#if DATAVERSE_SERVICE_CLIENT
                 OnlineDataService = staticCache.OnlineDataService,
+#endif
                 EntityTypeMap = staticCache.EntityTypeMap
             };
 
@@ -116,10 +124,13 @@ namespace DG.Tools.XrmMockup
             metadata = initData.Metadata;
             BaseCurrency = initData.BaseCurrency;
             baseCurrencyPrecision = initData.BaseCurrencyPrecision;
+#if DATAVERSE_SERVICE_CLIENT
             OnlineDataService = initData.OnlineDataService;
-            entityTypeMap = initData.EntityTypeMap;
-
             db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineDataService);
+#else
+            db = new XrmDb(initData.Metadata.EntityMetadata);
+#endif
+            entityTypeMap = initData.EntityTypeMap;
             EnsureFileAttachmentMetadata();
             FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
@@ -185,7 +196,9 @@ namespace DG.Tools.XrmMockup
             var baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             var baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
+#if DATAVERSE_SERVICE_CLIENT
             var onlineDataService = BuildOnlineDataService(settings);
+#endif
             var entityTypeMap = new Dictionary<string, Type>();
 
             // Build entity type map for proxy types if enabled
@@ -197,10 +210,16 @@ namespace DG.Tools.XrmMockup
             // Note: IPluginMetadata is handled per-instance in the Core constructor
             // to avoid modifying the shared cache
 
+#if DATAVERSE_SERVICE_CLIENT
             return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap,
                 baseCurrency, baseCurrencyPrecision, onlineDataService);
+#else
+            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap,
+                baseCurrency, baseCurrencyPrecision);
+#endif
         }
 
+#if DATAVERSE_SERVICE_CLIENT
         private static IOnlineDataService BuildOnlineDataService(XrmMockupSettings settings)
         {
             // Allow injection for testing
@@ -212,11 +231,12 @@ namespace DG.Tools.XrmMockup
             if (settings.OnlineEnvironment.HasValue)
             {
                 var env = settings.OnlineEnvironment.Value;
-                return new ProxyOnlineDataService(env.Url, env.ProxyPath);
+                return new OnlineDataService(env.Url);
             }
 
             return null;
         }
+#endif
 
         private static void BuildEntityTypeMap(XrmMockupSettings settings, Dictionary<string, Type> entityTypeMap)
         {
@@ -423,19 +443,6 @@ namespace DG.Tools.XrmMockup
                     entityTypeMap.Add(logicalName, type);
                 }
             }
-        }
-
-        private IOnlineDataService GetOnlineDataService()
-        {
-            if (OnlineDataService == null)
-            {
-                if (settings.OnlineEnvironment.HasValue)
-                {
-                    var env = settings.OnlineEnvironment.Value;
-                    OnlineDataService = new ProxyOnlineDataService(env.Url, env.ProxyPath);
-                }
-            }
-            return OnlineDataService;
         }
 
         internal IOrganizationService GetWorkflowService()
@@ -1113,6 +1120,7 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
         /// Prefills the local database with data from the online service based on the query.
         /// </summary>
@@ -1120,6 +1128,7 @@ namespace DG.Tools.XrmMockup
         {
             db.PrefillDBWithOnlineData(query);
         }
+#endif
 
         internal Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> GetPrivilege(Guid principleId)
         {
@@ -1356,7 +1365,11 @@ namespace DG.Tools.XrmMockup
             workflowManager.ResetWorkflows(settings.IncludeAllWorkflows);
 
             pluginManager.ResetPlugins();
+#if DATAVERSE_SERVICE_CLIENT
             this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
+#else
+            this.db = new XrmDb(metadata.EntityMetadata);
+#endif
             EnsureFileAttachmentMetadata();
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();

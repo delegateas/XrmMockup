@@ -40,7 +40,9 @@ namespace DG.Tools.XrmMockup
 
             FillAliasIfEmpty(queryExpr);
 
+#if DATAVERSE_SERVICE_CLIENT
             db.PrefillDBWithOnlineData(queryExpr);
+#endif
             // Create a snapshot for thread-safe enumeration during calculated field execution
             var rows = db.GetDBEntityRows(queryExpr.EntityName).ToList();
 

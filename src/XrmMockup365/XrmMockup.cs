@@ -72,15 +72,26 @@ namespace DG.Tools.XrmMockup {
                 else
                 {
                     // Create a new cache entry using the existing instance's data
+#if DATAVERSE_SERVICE_CLIENT
                     cache = new StaticMetadataCache(
-                        xrmMockup.Metadata, 
-                        xrmMockup.Workflows, 
+                        xrmMockup.Metadata,
+                        xrmMockup.Workflows,
                         xrmMockup.SecurityRoles,
                         new Dictionary<string, Type>(), // Will be rebuilt if needed
                         xrmMockup.BaseCurrency,
                         0, // Will be retrieved from metadata
                         null // Will be rebuilt if needed
                     );
+#else
+                    cache = new StaticMetadataCache(
+                        xrmMockup.Metadata,
+                        xrmMockup.Workflows,
+                        xrmMockup.SecurityRoles,
+                        new Dictionary<string, Type>(), // Will be rebuilt if needed
+                        xrmMockup.BaseCurrency,
+                        0 // Will be retrieved from metadata
+                    );
+#endif
                     metadataCache[effectiveSettings] = cache;
                 }
             }

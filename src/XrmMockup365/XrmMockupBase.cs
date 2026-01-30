@@ -285,6 +285,7 @@ namespace DG.Tools.XrmMockup
             Core.PopulateWith(entities);
         }
 
+#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
         /// Prefills the local database with data from the online service based on the query.
         /// Only works when OnlineDataServiceFactory or OnlineEnvironment is configured.
@@ -293,6 +294,7 @@ namespace DG.Tools.XrmMockup
         public void PrefillDBWithOnlineData(QueryExpression query) {
             Core.PrefillDBWithOnlineData(query);
         }
+#endif
 
         /// <summary>
         /// Create a new user with a specific businessunit

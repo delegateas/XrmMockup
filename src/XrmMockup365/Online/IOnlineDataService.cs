@@ -1,3 +1,4 @@
+#if DATAVERSE_SERVICE_CLIENT
 using System;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -25,3 +26,4 @@ namespace DG.Tools.XrmMockup.Online
         bool IsConnected { get; }
     }
 }
+#endif

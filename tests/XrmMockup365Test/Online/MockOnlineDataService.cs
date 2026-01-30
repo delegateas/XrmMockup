@@ -1,3 +1,4 @@
+#if DATAVERSE_SERVICE_CLIENT
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,3 +120,4 @@ namespace DG.XrmMockupTest.Online
         }
     }
 }
+#endif

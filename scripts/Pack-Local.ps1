@@ -1,3 +1,7 @@
+param(
+    [string]$Output = "./nupkg"
+)
+
 # Local pack script for XrmMockup packages
 # Sets versions from changelogs and creates NuGet packages locally
 
@@ -13,5 +17,5 @@
 dotnet build --configuration Release
 
 # Pack specific projects (not the entire solution to avoid legacy project errors)
-dotnet pack ./src/XrmMockup365/XrmMockup365.csproj --configuration Release --no-build --output ./nupkg
-dotnet pack ./src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj --configuration Release --no-build --output ./nupkg
+dotnet pack ./src/XrmMockup365/XrmMockup365.csproj --configuration Release --no-build --output $Output
+dotnet pack ./src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj --configuration Release --no-build --output $Output
