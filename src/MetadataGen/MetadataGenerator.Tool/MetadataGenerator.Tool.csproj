@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>XrmMockup.MetadataGenerator.Tool</RootNamespace>
+    <AssemblyName>XrmMockup.MetadataGenerator.Tool</AssemblyName>
+    <!-- Version set by CI from CHANGELOG.md -->
+    <Version>0.0.0</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Tool-specific settings -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>xrmmockup-metadata</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageId>XrmMockup.MetadataGenerator</PackageId>
+    <!-- Project-specific metadata (shared metadata comes from Directory.Build.props) -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/CHANGELOG.md'))</PackageReleaseNotes>
+    <Description>CLI tool for generating XrmMockup metadata from Dataverse</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MetadataGenerator.Core\MetadataGenerator.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Icon is included by Directory.Build.props, license via PackageLicenseExpression -->
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.example.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

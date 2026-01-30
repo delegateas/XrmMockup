@@ -35,7 +35,7 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<string, CodeActivity> codeActivityTriggers;
         private Dictionary<Guid, WorkflowTree> parsedWorkflows;
 
-        private Queue<WorkflowExecutionContext> pendingAsyncWorkflows;
+        private ConcurrentQueue<WorkflowExecutionContext> pendingAsyncWorkflows;
 
         public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata) {
             this.metadata = metadata;
@@ -48,7 +48,7 @@ namespace DG.Tools.XrmMockup {
             codeActivityTriggers = new Dictionary<string, CodeActivity>();
             parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
 
-            pendingAsyncWorkflows = new Queue<WorkflowExecutionContext>();
+            pendingAsyncWorkflows = new ConcurrentQueue<WorkflowExecutionContext>();
 
             if (!workflows.All(e => e.LogicalName == "workflow")) {
                 throw new MockupException("Trying to parse workflow, but found a non workflow entity");
@@ -103,11 +103,8 @@ namespace DG.Tools.XrmMockup {
 
         public void TriggerAsync(Core core)
         {
-            while (pendingAsyncWorkflows.Count > 0)
+            while (pendingAsyncWorkflows.TryDequeue(out var workflowContext))
             {
-                var workflowContext = pendingAsyncWorkflows.Dequeue();
-
-
                 Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
 
                 var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
@@ -131,7 +128,8 @@ namespace DG.Tools.XrmMockup {
 
         internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
-            var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+            var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
             foreach (var waitInfo in waitingWorkflows.ToList()) {
                 waitingWorkflows.Remove(waitInfo);
                 var variables = waitInfo.VariablesInstance;
@@ -394,7 +392,8 @@ namespace DG.Tools.XrmMockup {
 
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
-            var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+            var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
             return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
         }
 

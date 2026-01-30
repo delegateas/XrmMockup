@@ -185,6 +185,7 @@ TestResults.xml
 
 # Nuget outputs
 nuget/*.nupkg
+nupkg/
 release.cmd
 release.sh
 localpackages/

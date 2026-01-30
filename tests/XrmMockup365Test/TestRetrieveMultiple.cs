@@ -1441,5 +1441,355 @@ namespace DG.XrmMockupTest
             Assert.Single(industryResult.Entities);
             Assert.Equal(lead1.Id, industryResult.Entities[0].Id);
         }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterCreate()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Use RetrieveMultiple with QueryExpression to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Doe"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateFirstName()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY firstname (create a new Entity with just the Id and firstname, no lastname)
+            var updateContact = new Contact(contact.Id)
+            {
+                FirstName = "Jane"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "Jane Doe" (not just "Jane")
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("Jane", retrievedContact.FirstName);
+            Assert.Equal("Doe", retrievedContact.LastName);
+            Assert.Equal("Jane Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateLastName()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY lastname (create a new Entity with just the Id and lastname, no firstname)
+            var updateContact = new Contact(contact.Id)
+            {
+                LastName = "Smith"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("firstname", "lastname", "fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Smith"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John", retrievedContact.FirstName);
+            Assert.Equal("Smith", retrievedContact.LastName);
+            Assert.Equal("John Smith", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFullNameAfterPartialUpdateOtherField()
+        {
+            // Arrange: Create a Contact with firstname and lastname
+            var contact = new Contact
+            {
+                FirstName = "John",
+                LastName = "Doe"
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            // Act: Update ONLY lastname (create a new Entity with just the Id and lastname, no firstname)
+            var updateContact = new Contact(contact.Id)
+            {
+                Description = "Updated description"
+            };
+            orgAdminService.Update(updateContact);
+
+            // Use RetrieveMultiple to get the contact
+            var query = new QueryExpression(Contact.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("fullname")
+            };
+            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, contact.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: fullname should be "John Smith"
+            Assert.Single(result.Entities);
+            var retrievedContact = result.Entities[0].ToEntity<Contact>();
+            Assert.Equal("John Doe", retrievedContact.FullName);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleEntityReferenceNamePopulated()
+        {
+            // Arrange: Create entities with a lookup relationship
+            var parentAccount = new Account
+            {
+                Name = "Parent Company ABC"
+            };
+            parentAccount.Id = orgAdminService.Create(parentAccount);
+
+            var childAccount = new Account
+            {
+                Name = "Child Company",
+                ParentAccountId = parentAccount.ToEntityReference()
+            };
+            childAccount.Id = orgAdminService.Create(childAccount);
+
+            // Act: Use RetrieveMultiple with QueryExpression to get the child account
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name", "parentaccountid")
+            };
+            query.Criteria.AddCondition("accountid", ConditionOperator.Equal, childAccount.Id);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: EntityReference.Name should be populated
+            Assert.Single(result.Entities);
+            var retrievedAccount = result.Entities[0].ToEntity<Account>();
+            Assert.NotNull(retrievedAccount.ParentAccountId);
+            Assert.Equal(parentAccount.Id, retrievedAccount.ParentAccountId.Id);
+            Assert.Equal("Parent Company ABC", retrievedAccount.ParentAccountId.Name);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleEntityReferenceNamePopulatedWithLinkEntities()
+        {
+            // Arrange: Create entities with relationships
+            var referencedAccount = new Account
+            {
+                Name = "Referenced Account XYZ"
+            };
+            referencedAccount.Id = orgAdminService.Create(referencedAccount);
+
+            var testContact = new Contact
+            {
+                FirstName = "Test",
+                LastName = "Person",
+                ParentCustomerId = referencedAccount.ToEntityReference()
+            };
+            testContact.Id = orgAdminService.Create(testContact);
+
+            var testLead = new Lead
+            {
+                Subject = "Test Lead for LinkEntity",
+                ParentContactId = testContact.ToEntityReference()
+            };
+            testLead.Id = orgAdminService.Create(testLead);
+
+            // Act: Use RetrieveMultiple with LinkEntity
+            var query = new QueryExpression(Lead.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("subject", "parentcontactid")
+            };
+            query.Criteria.AddCondition("leadid", ConditionOperator.Equal, testLead.Id);
+
+            var linkEntity = new LinkEntity
+            {
+                LinkFromEntityName = Lead.EntityLogicalName,
+                LinkFromAttributeName = "parentcontactid",
+                LinkToEntityName = Contact.EntityLogicalName,
+                LinkToAttributeName = "contactid",
+                JoinOperator = JoinOperator.Inner,
+                Columns = new ColumnSet(false),
+                EntityAlias = "linkedContact"
+            };
+            query.LinkEntities.Add(linkEntity);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: EntityReference.Name should be populated on the main entity's lookup field
+            Assert.Single(result.Entities);
+            var retrievedLead = result.Entities[0].ToEntity<Lead>();
+            Assert.NotNull(retrievedLead.ParentContactId);
+            Assert.Equal(testContact.Id, retrievedLead.ParentContactId.Id);
+            Assert.Equal("Test Person", retrievedLead.ParentContactId.Name);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleAliasedEntityReferenceNamePopulated()
+        {
+            // Arrange: Create entities with relationships where the linked entity has a lookup field
+            var referencedAccount = new Account
+            {
+                Name = "Ultimate Parent Account"
+            };
+            referencedAccount.Id = orgAdminService.Create(referencedAccount);
+
+            var testContact = new Contact
+            {
+                FirstName = "Aliased",
+                LastName = "Contact",
+                ParentCustomerId = referencedAccount.ToEntityReference()
+            };
+            testContact.Id = orgAdminService.Create(testContact);
+
+            var testLead = new Lead
+            {
+                Subject = "Lead for Aliased Test",
+                ParentContactId = testContact.ToEntityReference()
+            };
+            testLead.Id = orgAdminService.Create(testLead);
+
+            // Act: Use RetrieveMultiple with LinkEntity and include the lookup column from the linked entity
+            var query = new QueryExpression(Lead.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("subject")
+            };
+            query.Criteria.AddCondition("leadid", ConditionOperator.Equal, testLead.Id);
+
+            var linkEntity = new LinkEntity
+            {
+                LinkFromEntityName = Lead.EntityLogicalName,
+                LinkFromAttributeName = "parentcontactid",
+                LinkToEntityName = Contact.EntityLogicalName,
+                LinkToAttributeName = "contactid",
+                JoinOperator = JoinOperator.Inner,
+                Columns = new ColumnSet("parentcustomerid"),
+                EntityAlias = "linkedContact"
+            };
+            query.LinkEntities.Add(linkEntity);
+
+            var result = orgAdminService.RetrieveMultiple(query);
+
+            // Assert: EntityReference.Name inside AliasedValue should be populated
+            Assert.Single(result.Entities);
+            var retrievedEntity = result.Entities[0];
+
+            // Get the aliased value for the linked entity's lookup field
+            var aliasedValue = retrievedEntity.GetAttributeValue<AliasedValue>("linkedContact.parentcustomerid");
+            Assert.NotNull(aliasedValue);
+            Assert.IsType<EntityReference>(aliasedValue.Value);
+
+            var aliasedEntityRef = (EntityReference)aliasedValue.Value;
+            Assert.Equal(referencedAccount.Id, aliasedEntityRef.Id);
+            Assert.Equal("Ultimate Parent Account", aliasedEntityRef.Name);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleEntityReferenceNamePopulatedUsingLinq()
+        {
+            // Arrange: Create entities with lookup relationship
+            var parentAccount = new Account
+            {
+                Name = "LINQ Test Parent Account"
+            };
+            parentAccount.Id = orgAdminService.Create(parentAccount);
+
+            var childAccount = new Account
+            {
+                Name = "LINQ Test Child Account",
+                ParentAccountId = parentAccount.ToEntityReference()
+            };
+            childAccount.Id = orgAdminService.Create(childAccount);
+
+            // Act: Use LINQ query to retrieve the child account
+            using (var context = new Xrm(orgAdminService))
+            {
+                var query = from acc in context.AccountSet
+                            where acc.AccountId == childAccount.Id
+                            select new { acc.Name, acc.ParentAccountId };
+
+                var results = query.ToList();
+
+                // Assert: EntityReference.Name should be populated
+                Assert.Single(results);
+                var retrievedAccount = results[0];
+                Assert.NotNull(retrievedAccount.ParentAccountId);
+                Assert.Equal(parentAccount.Id, retrievedAccount.ParentAccountId.Id);
+                Assert.Equal("LINQ Test Parent Account", retrievedAccount.ParentAccountId.Name);
+            }
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleEntityReferenceNamePopulatedWithFetchXml()
+        {
+            // Arrange: Create entities with lookup relationship
+            var parentAccount = new Account
+            {
+                Name = "FetchXml Parent Account"
+            };
+            parentAccount.Id = orgAdminService.Create(parentAccount);
+
+            var childAccount = new Account
+            {
+                Name = "FetchXml Child Account",
+                ParentAccountId = parentAccount.ToEntityReference()
+            };
+            childAccount.Id = orgAdminService.Create(childAccount);
+
+            // Act: Use FetchXML to retrieve the child account
+            var fetchXml = $@"<fetch>
+                <entity name='account'>
+                    <attribute name='name' />
+                    <attribute name='parentaccountid' />
+                    <filter>
+                        <condition attribute='accountid' operator='eq' value='{childAccount.Id}' />
+                    </filter>
+                </entity>
+            </fetch>";
+
+            var result = orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml));
+
+            // Assert: EntityReference.Name should be populated
+            Assert.Single(result.Entities);
+            var retrievedAccount = result.Entities[0].ToEntity<Account>();
+            Assert.NotNull(retrievedAccount.ParentAccountId);
+            Assert.Equal(parentAccount.Id, retrievedAccount.ParentAccountId.Id);
+            Assert.Equal("FetchXml Parent Account", retrievedAccount.ParentAccountId.Name);
+        }
     }
 }

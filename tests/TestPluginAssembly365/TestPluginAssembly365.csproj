@@ -4,6 +4,8 @@
 		<TargetFrameworks>net462;net8.0</TargetFrameworks>
 		<DebugType>portable</DebugType>
 		<Title>TestPluginAssembly365</Title>
+		<!-- Test support assembly, not a NuGet package -->
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<Optimize>false</Optimize>

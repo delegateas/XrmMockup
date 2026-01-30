@@ -1,3 +1,27 @@
+### 1.17.9 - 15 January 2026
+* Add: File block upload/download support (@magesoe) (#307)
+
+### 1.17.8 - 12 January 2026
+* Add: Support for specifying which security roles are included (@magesoe) (#304)
+* Add: Settings option to skip execution of workflows. Defaults to the value of TriggerProcesses but allows specific override (@mkholt) (#305)
+* Add: Better error messages when workflow can't find code-activity (@mkholt) (#305)
+* Add: Better error message when Core can't find Entity Metadata (@mkholt) (#305)
+
+### 1.17.7 - 08 January 2026
+* Fix: Use ConcurrentQueue for plugin execution to avoid issues with parallel tests
+* Fix: Use ConcurrentDictionary for database tables to avoid issues with parallel tests
+
+### 1.17.6 - 07 January 2026
+* Fix: If metadata didn't contain the organization entity it would fail on initialization
+
+### 1.17.5 - 16 December 2025
+* Add: Full filtering support for RetrieveMetadataChangesRequest
+* Add: Preliminary support for BooleanManagedProperty
+* Add: Deprecation warning to metadata generator - replaced by dotnet tool
+
+### 1.17.4 - 15 December 2025
+* Fix: Issues with fullname and name on EntityReference
+
 ### 1.17.3 - 14 November 2025
 * Add: Added IManagedIdentityService (@magesoe) (#300)
 

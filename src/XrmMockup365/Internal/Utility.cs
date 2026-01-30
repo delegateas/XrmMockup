@@ -264,17 +264,20 @@ namespace DG.Tools.XrmMockup.Internal
             RelationshipMetadataBase relationshipBase;
             foreach (var meta in entityMetadata)
             {
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
+                var manyToMany = meta.Value.ManyToManyRelationships ?? Array.Empty<ManyToManyRelationshipMetadata>();
+                relationshipBase = manyToMany.FirstOrDefault(rel => rel.MetadataId == metadataId);
                 if (relationshipBase != null)
                 {
                     return relationshipBase;
                 }
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.SchemaName == name);
+                relationshipBase = manyToMany.FirstOrDefault(rel => rel.SchemaName == name);
                 if (relationshipBase != null)
                 {
                     return relationshipBase;
                 }
-                var oneToManyBases = meta.Value.ManyToOneRelationships.Concat(meta.Value.OneToManyRelationships);
+                var manyToOne = meta.Value.ManyToOneRelationships ?? Array.Empty<OneToManyRelationshipMetadata>();
+                var oneToMany = meta.Value.OneToManyRelationships ?? Array.Empty<OneToManyRelationshipMetadata>();
+                var oneToManyBases = manyToOne.Concat(oneToMany);
                 relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.MetadataId == metadataId);
                 if (relationshipBase != null)
                 {
@@ -622,6 +625,15 @@ namespace DG.Tools.XrmMockup.Internal
                         eRef.Name = row.GetColumn<string>(nameAttr);
                     }
                 }
+                else if (attr.Value is AliasedValue aliasedValue && aliasedValue.Value is EntityReference aliasedRef)
+                {
+                    var row = db.GetDbRowOrNull(aliasedRef);
+                    if (row != null)
+                    {
+                        var nameAttr = row.Metadata.PrimaryNameAttribute;
+                        aliasedRef.Name = row.GetColumn<string>(nameAttr);
+                    }
+                }
             }
         }
 
@@ -707,13 +719,13 @@ namespace DG.Tools.XrmMockup.Internal
         internal static List<Entity> GetWorkflows(string folderLocation)
         {
             var pathToWorkflows = Path.Combine(folderLocation, "Workflows");
-            var files = Directory.GetFiles(pathToWorkflows, "*.xml");
-            var workflows = new List<Entity>();
-            foreach (var file in files)
+            if (!Directory.Exists(pathToWorkflows))
             {
-                workflows.Add(GetWorkflow(file));
+                return new List<Entity>();
             }
-            return workflows;
+
+            var files = Directory.GetFiles(pathToWorkflows, "*.xml");
+            return files.Select(GetWorkflow).ToList();
         }
 
         internal static Entity GetWorkflow(string path)
@@ -728,18 +740,22 @@ namespace DG.Tools.XrmMockup.Internal
         internal static List<SecurityRole> GetSecurityRoles(string folderLocation)
         {
             var pathToSecurity = Path.Combine(folderLocation, "SecurityRoles");
+
+            if (!Directory.Exists(pathToSecurity))
+            {
+                return new List<SecurityRole>();
+            }
+
             var files = Directory.GetFiles(pathToSecurity, "*.xml");
-            var securityRoles = new List<SecurityRole>();
 
             var serializer = new DataContractSerializer(typeof(SecurityRole));
-            foreach (var file in files)
+            return files.Select(file =>
             {
                 using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    securityRoles.Add((SecurityRole)serializer.ReadObject(stream));
+                    return (SecurityRole)serializer.ReadObject(stream);
                 }
-            }
-            return securityRoles;
+            }).ToList();
         }
 
         internal static Guid GetGuidFromReference(object reference)
@@ -990,6 +1006,19 @@ namespace DG.Tools.XrmMockup.Internal
                 };
                 jsonColObj.Value = JsonSerializer.Serialize(dto);
             }
+            else if (colToSerialize is BooleanManagedProperty)
+            {
+                // BooleanManagedProperty has ExtensionDataObject that can't be serialized
+                // Serialize just the essential properties
+                var mp = (BooleanManagedProperty)colToSerialize;
+                var dto = new BooleanManagedPropertyDTO
+                {
+                    Value = mp.Value,
+                    CanBeChanged = mp.CanBeChanged,
+                    ManagedPropertyLogicalName = mp.ManagedPropertyLogicalName
+                };
+                jsonColObj.Value = JsonSerializer.Serialize(dto);
+            }
             else
             {
                 jsonColObj.Value = JsonSerializer.Serialize(colToSerialize);
@@ -1069,6 +1098,15 @@ namespace DG.Tools.XrmMockup.Internal
                     EntityName = typed.EntityName
                 };
                 return newCollection;
+            else if (type == typeof(BooleanManagedProperty))
+            {
+                var node = JsonNode.Parse(colToSerialize.Value);
+                var typed = (BooleanManagedPropertyDTO)node.Deserialize(typeof(BooleanManagedPropertyDTO));
+                // ManagedPropertyLogicalName is read-only and not settable, but Value and CanBeChanged are what matters
+                return new BooleanManagedProperty(typed.Value)
+                {
+                    CanBeChanged = typed.CanBeChanged
+                };
             }
             else
             {
