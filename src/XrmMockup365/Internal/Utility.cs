@@ -1098,6 +1098,7 @@ namespace DG.Tools.XrmMockup.Internal
                     EntityName = typed.EntityName
                 };
                 return newCollection;
+            }
             else if (type == typeof(BooleanManagedProperty))
             {
                 var node = JsonNode.Parse(colToSerialize.Value);
