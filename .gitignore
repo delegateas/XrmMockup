@@ -207,3 +207,6 @@ docs/tools/FSharp.Formatting.svclog
 /XrmMockup/tools/Signature/delegate.snk
 /tools/XrmContext/EnvInfo.config
 /src/MetadataGen/XrmMockupTest.csproj
+
+# Claude temp files
+tmpclaude-*-cwd

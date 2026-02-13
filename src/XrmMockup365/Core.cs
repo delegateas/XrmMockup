@@ -1,10 +1,10 @@
-﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Serialization;
+using DG.Tools.XrmMockup.Online;
 using XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Organization;
@@ -59,7 +59,7 @@ namespace DG.Tools.XrmMockup
         private XrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
-        private OrganizationServiceProxy OnlineProxy;
+        private IOnlineDataService OnlineDataService;
         private int baseCurrencyPrecision;
         private FormulaFieldEvaluator FormulaFieldEvaluator { get; set; }
         private List<string> systemAttributeNames;
@@ -79,7 +79,7 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = SecurityRoles,
                 BaseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid"),
                 BaseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision"),
-                OnlineProxy = null,
+                OnlineDataService = null,
                 EntityTypeMap = new Dictionary<string, Type>()
             };
 
@@ -99,7 +99,7 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = staticCache.SecurityRoles,
                 BaseCurrency = staticCache.BaseCurrency,
                 BaseCurrencyPrecision = staticCache.BaseCurrencyPrecision,
-                OnlineProxy = staticCache.OnlineProxy,
+                OnlineDataService = staticCache.OnlineDataService,
                 EntityTypeMap = staticCache.EntityTypeMap
             };
 
@@ -116,10 +116,9 @@ namespace DG.Tools.XrmMockup
             metadata = initData.Metadata;
             BaseCurrency = initData.BaseCurrency;
             baseCurrencyPrecision = initData.BaseCurrencyPrecision;
-            OnlineProxy = initData.OnlineProxy;
+            OnlineDataService = initData.OnlineDataService;
+            db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineDataService);
             entityTypeMap = initData.EntityTypeMap;
-
-            db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineProxy);
             EnsureFileAttachmentMetadata();
             FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
@@ -185,7 +184,7 @@ namespace DG.Tools.XrmMockup
             var baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             var baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            var onlineProxy = BuildOnlineProxy(settings);
+            var onlineDataService = BuildOnlineDataService(settings);
             var entityTypeMap = new Dictionary<string, Type>();
 
             // Build entity type map for proxy types if enabled
@@ -194,29 +193,28 @@ namespace DG.Tools.XrmMockup
                 BuildEntityTypeMap(settings, entityTypeMap);
             }
 
-            // Note: IPluginMetadata is handled per-instance in the Core constructor 
+            // Note: IPluginMetadata is handled per-instance in the Core constructor
             // to avoid modifying the shared cache
 
-            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap, 
-                baseCurrency, baseCurrencyPrecision, onlineProxy);
+            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap,
+                baseCurrency, baseCurrencyPrecision, onlineDataService);
         }
 
-        private static OrganizationServiceProxy BuildOnlineProxy(XrmMockupSettings settings)
+        private static IOnlineDataService BuildOnlineDataService(XrmMockupSettings settings)
         {
+#if DATAVERSE_SERVICE_CLIENT
+            // Allow injection for testing
+            if (settings.OnlineDataServiceFactory != null)
+            {
+                return settings.OnlineDataServiceFactory();
+            }
+
             if (settings.OnlineEnvironment.HasValue)
             {
                 var env = settings.OnlineEnvironment.Value;
-                var orgHelper = new OrganizationHelper(
-                    new Uri(env.uri),
-                    env.providerType,
-                    env.username,
-                    env.password,
-                    env.domain);
-                var proxy = orgHelper.GetServiceProxy();
-                if (settings.EnableProxyTypes == true)
-                    proxy.EnableProxyTypes();
-                return proxy;
+                return new OnlineDataService(env.Url);
             }
+#endif
             return null;
         }
 
@@ -425,25 +423,6 @@ namespace DG.Tools.XrmMockup
                     entityTypeMap.Add(logicalName, type);
                 }
             }
-        }
-
-        private OrganizationServiceProxy GetOnlineProxy()
-        {
-            if (OnlineProxy == null && settings.OnlineEnvironment.HasValue)
-            {
-                var env = settings.OnlineEnvironment.Value;
-                var orgHelper = new OrganizationHelper(
-                    new Uri(env.uri),
-                    env.providerType,
-                    env.username,
-                    env.password,
-                    env.domain);
-                this.OnlineProxy = orgHelper.GetServiceProxy();
-                if (settings.EnableProxyTypes == true)
-                    OnlineProxy.EnableProxyTypes();
-            }
-
-            return OnlineProxy;
         }
 
         internal IOrganizationService GetWorkflowService()
@@ -1121,6 +1100,14 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        /// <summary>
+        /// Prefills the local database with data from the online service based on the query.
+        /// </summary>
+        internal void PrefillDBWithOnlineData(QueryExpression query)
+        {
+            db.PrefillDBWithOnlineData(query);
+        }
+
         internal Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> GetPrivilege(Guid principleId)
         {
             return security.GetPrincipalPrivilege(principleId);
@@ -1356,7 +1343,7 @@ namespace DG.Tools.XrmMockup
             workflowManager.ResetWorkflows(settings.IncludeAllWorkflows);
 
             pluginManager.ResetPlugins();
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
             EnsureFileAttachmentMetadata();
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();

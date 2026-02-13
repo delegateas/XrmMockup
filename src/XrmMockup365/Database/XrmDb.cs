@@ -1,28 +1,28 @@
-﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Metadata;
-using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
 using System.Threading;
 using DG.Tools.XrmMockup.Serialization;
 using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Online;
 
 namespace DG.Tools.XrmMockup.Database {
 
     internal class XrmDb {
         // Using ConcurrentDictionary for thread-safe table access in parallel test scenarios
         private ConcurrentDictionary<string, DbTable> TableDict = new ConcurrentDictionary<string, DbTable>();
-        private Dictionary<string, EntityMetadata> EntityMetadata;
-        private OrganizationServiceProxy OnlineProxy;
+        private readonly Dictionary<string, EntityMetadata> EntityMetadata;
+        private readonly IOnlineDataService OnlineDataService;
         private int sequence;
 
-        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, OrganizationServiceProxy onlineProxy) {
+        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, IOnlineDataService onlineDataService) {
             this.EntityMetadata = entityMetadata;
-            this.OnlineProxy = onlineProxy;
+            this.OnlineDataService = onlineDataService;
             sequence = 0;
         }
 
@@ -37,7 +37,7 @@ namespace DG.Tools.XrmMockup.Database {
             }
         }
 
-        public void Add(Entity xrmEntity, bool withReferenceChecks = true) 
+        public void Add(Entity xrmEntity, bool withReferenceChecks = true)
         {
             int nextSequence = Interlocked.Increment(ref sequence);
             var dbEntity = ToDbRow(xrmEntity,nextSequence, withReferenceChecks);
@@ -113,9 +113,9 @@ namespace DG.Tools.XrmMockup.Database {
 
         internal void PrefillDBWithOnlineData(QueryExpression queryExpr)
         {
-            if (OnlineProxy != null)
+            if (OnlineDataService != null)
             {
-                var onlineEntities = OnlineProxy.RetrieveMultiple(queryExpr).Entities;
+                var onlineEntities = OnlineDataService.RetrieveMultiple(queryExpr).Entities;
                 foreach (var onlineEntity in onlineEntities)
                 {
                     if (this[onlineEntity.LogicalName][onlineEntity.Id] == null)
@@ -133,13 +133,15 @@ namespace DG.Tools.XrmMockup.Database {
             if (reference?.Id != Guid.Empty)
             {
                 currentDbRow = this[reference.LogicalName][reference.Id];
-                if (currentDbRow == null && OnlineProxy != null)
+                if (currentDbRow == null && OnlineDataService != null)
                 {
                     if (!withReferenceCheck)
+                    {
                         currentDbRow = DbRow.MakeDBRowRef(reference, this);
+                    }
                     else
                     {
-                        var onlineEntity = OnlineProxy.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
+                        var onlineEntity = OnlineDataService.Retrieve(reference.LogicalName, reference.Id, new ColumnSet(true));
                         Add(onlineEntity, withReferenceCheck);
                         currentDbRow = this[reference.LogicalName][reference.Id];
                     }
@@ -165,7 +167,7 @@ namespace DG.Tools.XrmMockup.Database {
             // No identification given for the entity, throw error
             else
             {
-                throw new FaultException($"Missing a form of identification for the desired record in order to retrieve it.");
+                throw new FaultException("Missing a form of identification for the desired record in order to retrieve it.");
             }
 
             return currentDbRow;
@@ -234,8 +236,7 @@ namespace DG.Tools.XrmMockup.Database {
 
         internal DbRow GetDbRowOrNull(EntityReference reference)
         {
-            DbRow row;
-            if (TryGetDbRow(reference, out row))
+            if (TryGetDbRow(reference, out DbRow row))
             {
                 return row;
             }
@@ -247,8 +248,7 @@ namespace DG.Tools.XrmMockup.Database {
 
         internal Entity GetEntityOrNull(EntityReference reference)
         {
-            DbRow row;
-            if (TryGetDbRow(reference, out row))
+            if (TryGetDbRow(reference, out DbRow row))
             {
                 return row.ToEntity();
             }
@@ -263,7 +263,7 @@ namespace DG.Tools.XrmMockup.Database {
         public XrmDb Clone()
         {
             var clonedTables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.Clone());
-            var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineProxy)
+            var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineDataService)
             {
                 TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };
@@ -281,7 +281,7 @@ namespace DG.Tools.XrmMockup.Database {
         public static XrmDb RestoreSerializableDTO(XrmDb current, DbDTO model)
         {
             var clonedTables = model.Tables.ToDictionary(x => x.Key, x => DbTable.RestoreSerializableDTO(new DbTable(current.EntityMetadata[x.Key]), x.Value));
-            var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineProxy)
+            var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineDataService)
             {
                 TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };

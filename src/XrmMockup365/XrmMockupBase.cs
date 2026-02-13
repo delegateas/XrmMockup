@@ -286,6 +286,15 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
+        /// Prefills the local database with data from the online service based on the query.
+        /// Only works when OnlineDataServiceFactory or OnlineEnvironment is configured.
+        /// </summary>
+        /// <param name="query">The query to execute against the online service.</param>
+        public void PrefillDBWithOnlineData(QueryExpression query) {
+            Core.PrefillDBWithOnlineData(query);
+        }
+
+        /// <summary>
         /// Create a new user with a specific businessunit
         /// </summary>
         /// <param name="service"></param>

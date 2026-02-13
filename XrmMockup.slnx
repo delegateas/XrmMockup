@@ -25,6 +25,8 @@
     <File Path=".github/workflows/release.yml" />
     <File Path="README.md" />
     <File Path="RELEASE_NOTES.md" />
+    <File Path="scripts/Pack-Local.ps1" />
+    <File Path="scripts/Set-VersionFromChangelog.ps1" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
