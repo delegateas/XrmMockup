@@ -27,7 +27,7 @@
 		<PackageReference Include="Microsoft.CrmSdk.Workflow" Version="9.0.2.28" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' != 'net462'">
-		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.3" />
+		<PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="1.2.10" />
 		<PackageReference Include="UiPath.Workflow" Version="6.0.3" />
 		<ProjectReference Include="..\..\src\XrmMockup365\XrmMockup365.csproj" />
 	</ItemGroup>
