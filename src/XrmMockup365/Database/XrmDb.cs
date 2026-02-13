@@ -9,9 +9,7 @@ using Microsoft.Xrm.Sdk.Query;
 using System.Threading;
 using DG.Tools.XrmMockup.Serialization;
 using DG.Tools.XrmMockup.Internal;
-#if DATAVERSE_SERVICE_CLIENT
 using DG.Tools.XrmMockup.Online;
-#endif
 
 namespace DG.Tools.XrmMockup.Database {
 
@@ -19,23 +17,14 @@ namespace DG.Tools.XrmMockup.Database {
         // Using ConcurrentDictionary for thread-safe table access in parallel test scenarios
         private ConcurrentDictionary<string, DbTable> TableDict = new ConcurrentDictionary<string, DbTable>();
         private readonly Dictionary<string, EntityMetadata> EntityMetadata;
-#if DATAVERSE_SERVICE_CLIENT
         private readonly IOnlineDataService OnlineDataService;
-#endif
         private int sequence;
 
-#if DATAVERSE_SERVICE_CLIENT
         public XrmDb(Dictionary<string, EntityMetadata> entityMetadata, IOnlineDataService onlineDataService) {
             this.EntityMetadata = entityMetadata;
             this.OnlineDataService = onlineDataService;
             sequence = 0;
         }
-#else
-        public XrmDb(Dictionary<string, EntityMetadata> entityMetadata) {
-            this.EntityMetadata = entityMetadata;
-            sequence = 0;
-        }
-#endif
 
         public DbTable this[string tableName] {
             get {
@@ -122,7 +111,6 @@ namespace DG.Tools.XrmMockup.Database {
             EntityMetadata[entityMetadata.LogicalName] = entityMetadata;
         }
 
-#if DATAVERSE_SERVICE_CLIENT
         internal void PrefillDBWithOnlineData(QueryExpression queryExpr)
         {
             if (OnlineDataService != null)
@@ -137,7 +125,6 @@ namespace DG.Tools.XrmMockup.Database {
                 }
             }
         }
-#endif
 
         internal DbRow GetDbRow(EntityReference reference, bool withReferenceCheck = true)
         {
@@ -146,7 +133,6 @@ namespace DG.Tools.XrmMockup.Database {
             if (reference?.Id != Guid.Empty)
             {
                 currentDbRow = this[reference.LogicalName][reference.Id];
-#if DATAVERSE_SERVICE_CLIENT
                 if (currentDbRow == null && OnlineDataService != null)
                 {
                     if (!withReferenceCheck)
@@ -160,7 +146,6 @@ namespace DG.Tools.XrmMockup.Database {
                         currentDbRow = this[reference.LogicalName][reference.Id];
                     }
                 }
-#endif
                 if (currentDbRow == null)
                 {
                     throw new FaultException($"The record of type '{reference.LogicalName}' with id '{reference.Id}' " +
@@ -278,11 +263,7 @@ namespace DG.Tools.XrmMockup.Database {
         public XrmDb Clone()
         {
             var clonedTables = this.TableDict.ToDictionary(x => x.Key, x => x.Value.Clone());
-#if DATAVERSE_SERVICE_CLIENT
             var clonedDB = new XrmDb(this.EntityMetadata, this.OnlineDataService)
-#else
-            var clonedDB = new XrmDb(this.EntityMetadata)
-#endif
             {
                 TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };
@@ -300,11 +281,7 @@ namespace DG.Tools.XrmMockup.Database {
         public static XrmDb RestoreSerializableDTO(XrmDb current, DbDTO model)
         {
             var clonedTables = model.Tables.ToDictionary(x => x.Key, x => DbTable.RestoreSerializableDTO(new DbTable(current.EntityMetadata[x.Key]), x.Value));
-#if DATAVERSE_SERVICE_CLIENT
             var clonedDB = new XrmDb(current.EntityMetadata, current.OnlineDataService)
-#else
-            var clonedDB = new XrmDb(current.EntityMetadata)
-#endif
             {
                 TableDict = new ConcurrentDictionary<string, DbTable>(clonedTables)
             };

@@ -1,9 +1,7 @@
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
-#if DATAVERSE_SERVICE_CLIENT
 using DG.Tools.XrmMockup.Online;
-#endif
 
 namespace DG.Tools.XrmMockup.Internal
 {
@@ -18,9 +16,7 @@ namespace DG.Tools.XrmMockup.Internal
         public List<SecurityRole> SecurityRoles { get; set; }
         public EntityReference BaseCurrency { get; set; }
         public int BaseCurrencyPrecision { get; set; }
-#if DATAVERSE_SERVICE_CLIENT
         public IOnlineDataService OnlineDataService { get; set; }
-#endif
         public Dictionary<string, Type> EntityTypeMap { get; set; }
     }
 }
