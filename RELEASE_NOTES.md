@@ -1,3 +1,6 @@
+### 1.17.10 - 24 February 2026
+* Add: NotAny join support (@KristianKlodeD) (#281)
+
 ### 1.17.9 - 15 January 2026
 * Add: File block upload/download support (@magesoe) (#307)
 
