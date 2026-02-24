@@ -51,12 +51,6 @@
 		<Reference Include="System.Xml" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Compile Remove="Plugins\FaxPreOperationPlugin.cs" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Include="Plugins\FaxPreOperationPlugin.cs" />
-	</ItemGroup>
-	<ItemGroup>
 	  <PackageReference Include="XrmPluginCore" Version="1.2.3" />
 	</ItemGroup>
 </Project>
