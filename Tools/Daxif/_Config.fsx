@@ -69,6 +69,7 @@ let entitiesToGenerate =
     "queueitem"
     "incident"
     "incidentresolution"
+    "quoteclose"
   ]
 
 (** 

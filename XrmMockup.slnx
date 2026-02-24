@@ -1,0 +1,43 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/files/">
+    <File Path="files/TypeDeclarations.cs" />
+  </Folder>
+  <Folder Name="/MetadataGen/">
+    <File Path="src/MetadataGen/appsettings.json" />
+    <Project Path="src/MetadataGen/MetadataGenerator.Context/MetadataGenerator.Context.csproj" />
+    <Project Path="src/MetadataGen/MetadataGenerator.Core/MetadataGenerator.Core.csproj" />
+    <Project Path="src/MetadataGen/MetadataGenerator.Tool.Tests/MetadataGenerator.Tool.Tests.csproj" />
+    <Project Path="src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj" />
+    <Project Path="src/MetadataGen/MetadataGenerator365/MetadataGenerator365.csproj" />
+  </Folder>
+  <Folder Name="/MetadataGen/scripts/">
+    <File Path="src/MetadataGen/scripts/Compare-MetadataGenerators.ps1" />
+    <File Path="src/MetadataGen/scripts/Regenerate-Metadata.ps1" />
+    <File Path="src/MetadataGen/scripts/Set-MetadataGeneratorVersion.ps1" />
+  </Folder>
+  <Folder Name="/project/">
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/release.yml" />
+    <File Path="README.md" />
+    <File Path="RELEASE_NOTES.md" />
+    <File Path="scripts/Pack-Local.ps1" />
+    <File Path="scripts/Set-VersionFromChangelog.ps1" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TestPluginAssembly365/TestPluginAssembly365.csproj" />
+    <Project Path="tests/XrmMockup365Test/XrmMockup365Test.csproj" />
+  </Folder>
+  <Project Path="src/MetadataSkeleton/MetadataSkeleton.shproj" />
+  <Project Path="src/XrmMockup365/XrmMockup365.csproj" />
+  <Project Path="Tools/Tools.csproj" Id="d375a019-3229-4d24-955b-06248d1d12f5" />
+</Solution>

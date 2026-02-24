@@ -4,8 +4,9 @@
     <TargetFramework>net462</TargetFramework>
     <DebugType>portable</DebugType>
     <Title>MetadataGenerator365</Title>
-    <Company>Delegate</Company>
     <Description>Tool to generate early-bound .NET classes and enumerations for MS Dynamics 365/CRM server-side coding.</Description>
+    <!-- Legacy exe, included as content in XrmMockup365 package, not a separate NuGet -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -40,7 +41,5 @@
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.59" />
     <PackageReference Include="Microsoft.CrmSdk.XrmTooling.CoreAssembly" Version="9.1.0.51" />
   </ItemGroup>
-  <Import Project="..\..\MetadataShared\MetadataShared.projitems" Label="Shared" />
   <Import Project="..\..\MetadataSkeleton\MetadataSkeleton.projitems" Label="Shared" />
-  <!--<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />-->
 </Project>

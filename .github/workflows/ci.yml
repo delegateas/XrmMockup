@@ -1,0 +1,61 @@
+name: Check PR
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  run-ci:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: windows-latest
+
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+            10.x
+
+      - name: Set XrmMockup365 version from RELEASE_NOTES.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./RELEASE_NOTES.md -CsprojPath ./src/XrmMockup365/XrmMockup365.csproj
+
+      - name: Set MetadataGenerator.Tool version from CHANGELOG.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj
+
+      - name: Set MetadataGenerator.Core version from CHANGELOG.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Core/MetadataGenerator.Core.csproj
+
+      - name: Set MetadataGenerator.Context version from CHANGELOG.md
+        shell: pwsh
+        run: ./scripts/Set-VersionFromChangelog.ps1 -ChangelogPath ./src/MetadataGen/MetadataGenerator.Tool/CHANGELOG.md -CsprojPath ./src/MetadataGen/MetadataGenerator.Context/MetadataGenerator.Context.csproj
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack XrmMockup365
+        run: dotnet pack src/XrmMockup365/XrmMockup365.csproj --configuration Release --no-build --output ./nupkg
+
+      - name: Pack MetadataGenerator.Tool
+        run: dotnet pack src/MetadataGen/MetadataGenerator.Tool/MetadataGenerator.Tool.csproj --configuration Release --no-build --output ./nupkg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: ./nupkg

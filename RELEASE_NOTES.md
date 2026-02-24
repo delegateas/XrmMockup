@@ -1,3 +1,52 @@
+### 1.17.9 - 15 January 2026
+* Add: File block upload/download support (@magesoe) (#307)
+
+### 1.17.8 - 12 January 2026
+* Add: Support for specifying which security roles are included (@magesoe) (#304)
+* Add: Settings option to skip execution of workflows. Defaults to the value of TriggerProcesses but allows specific override (@mkholt) (#305)
+* Add: Better error messages when workflow can't find code-activity (@mkholt) (#305)
+* Add: Better error message when Core can't find Entity Metadata (@mkholt) (#305)
+
+### 1.17.7 - 08 January 2026
+* Fix: Use ConcurrentQueue for plugin execution to avoid issues with parallel tests
+* Fix: Use ConcurrentDictionary for database tables to avoid issues with parallel tests
+
+### 1.17.6 - 07 January 2026
+* Fix: If metadata didn't contain the organization entity it would fail on initialization
+
+### 1.17.5 - 16 December 2025
+* Add: Full filtering support for RetrieveMetadataChangesRequest
+* Add: Preliminary support for BooleanManagedProperty
+* Add: Deprecation warning to metadata generator - replaced by dotnet tool
+
+### 1.17.4 - 15 December 2025
+* Fix: Issues with fullname and name on EntityReference
+
+### 1.17.3 - 14 November 2025
+* Add: Added IManagedIdentityService (@magesoe) (#300)
+
+### 1.17.2 - 08 October 2025
+* Refactor: Change plugin and workflow handling to use string instead of EventOperation (@mkholt) (#292)
+* Add: Support Revise Quote Request (@Lucki2g) (#294)
+
+### 1.17.1 - 03 October 2025
+* Update: Move to new version of XrmPluginCore to support combined Plugin / CustomAPI base classes (@mkholt)
+
+### 1.17.0 - 29 September 2025
+* Add: Support for DG.XrmPluginCore based plugins and custom apis (@mkholt)
+* Support: Remove .NET6 build target, since .NET6 is out of support by Microsoft. (@mkholt)
+* Fix: Improve implementation of Win- and CloseQuoteRequestHandlers (@Lucki2g)
+* Fix: Type conversion in RetrieveMultiple logic (@mkholt)
+* Fix: Order was ignored in FetchXML parsing (@AnyTick)
+
+### 1.16.1 - 23 September 2025
+* Add: Support for Win- & CloseQuoteRequestHandlers (@Lucki2g)
+
+### 1.16.0 - 12 September 2025
+* Add: Caching of the static parts of XrmMockup, such that each test can get its own instance with their own db. (@magesoe)
+* Add: Support for OverrideCreatedOn (@AnyTick)
+* Fix: In/NotIn operators in FetchXML parsing (@AnyTick)
+
 ### 1.15.3 - 17 June 2025
 * Add: Support for OlderThanX... DateTime operators in FetchXML parsing (@AnyTick)
 * Fix: Make ToActivityPointer support custom activities by using the metadata provided objecttypecode for activitytypecode (@nedergaardcloud)
