@@ -127,7 +127,6 @@ namespace DG.Tools.XrmMockup
                 throw new FaultException("The email must have at least one recipient before it can be sent");
             }
 
-
             email["statecode"] = new OptionSetValue(EMAIL_STATE_COMPLETED);
             email["statuscode"] = new OptionSetValue(request.IssueSend ? EMAIL_STATUS_PENDING_SEND : EMAIL_STATUS_SENT);
 
