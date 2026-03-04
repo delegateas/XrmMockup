@@ -8,10 +8,13 @@ namespace DG.Tools.XrmMockup.Logging
     {
         private readonly StreamWriter _writer;
         private readonly object _writeLock = new object();
+        private readonly LogLevel _minLogLevel;
         private bool _disposed;
 
-        public FileLoggerFactory(string filePath)
+        public FileLoggerFactory(string filePath, LogLevel minLogLevel = LogLevel.Information)
         {
+            _minLogLevel = minLogLevel;
+
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
@@ -32,7 +35,7 @@ namespace DG.Tools.XrmMockup.Logging
                 shortName = categoryName.Substring(lastDot + 1);
             }
 
-            return new FileLogger(shortName, _writer, _writeLock);
+            return new FileLogger(shortName, _writer, _writeLock, _minLogLevel);
         }
 
         public void AddProvider(ILoggerProvider provider)

@@ -28,15 +28,16 @@ namespace DG.Tools.XrmMockup
 
         internal int RegisteredApiCount => registeredApis.Count;
 
-        private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
-        {
-            new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(),
-            new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy()
-        };
+        private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies;
 
         public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes, ILogger logger = null)
         {
             _logger = logger ?? NullLogger.Instance;
+            registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
+            {
+                new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(_logger),
+                new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy(_logger)
+            };
             var cacheKey = GenerateApiCacheKey(baseCustomApiTypes);
 
             // Check if we have cached results
@@ -92,9 +93,13 @@ namespace DG.Tools.XrmMockup
                 var prefix = customApiMapping.Item1;
                 var baseApiType = customApiMapping.Item2;
 
+                _logger.LogDebug("Scanning for types extending custom API base type: {BaseType} (prefix={Prefix})", baseApiType.FullName, prefix);
+
                 var customApiTypes = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(a => a.GetLoadableTypes().Where(t => !t.IsAbstract && t.IsPublic && t.BaseType != null && (t.BaseType == baseApiType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == baseApiType))))
                     .ToList();
+
+                _logger.LogDebug("Found {Count} concrete type(s) extending {BaseType}", customApiTypes.Count, baseApiType.FullName);
 
                 foreach (var type in customApiTypes)
                 {
@@ -105,10 +110,13 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterApi(string prefix, Type pluginType)
         {
+            _logger.LogDebug("Evaluating custom API type: {TypeName} (prefix={Prefix})", pluginType.FullName, prefix);
+
             var plugin = _apiInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
 
             if (plugin == null)
             {
+                _logger.LogWarning("Failed to create instance of custom API type: {TypeName}", pluginType.FullName);
                 return;
             }
 
@@ -118,11 +126,14 @@ namespace DG.Tools.XrmMockup
 
             if (registration is null)
             {
+                _logger.LogDebug("{TypeName}: no custom API registration found from any strategy", pluginType.FullName);
                 missingRegistration.Add(pluginType);
             }
             else
             {
-                registeredApis.Add($"{prefix}_{registration.UniqueName}", plugin.Execute);
+                var key = $"{prefix}_{registration.UniqueName}";
+                _logger.LogDebug("{TypeName}: registered as '{ApiKey}'", pluginType.FullName, key);
+                registeredApis.Add(key, plugin.Execute);
             }
         }
 

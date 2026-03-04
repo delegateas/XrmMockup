@@ -9,17 +9,19 @@ namespace DG.Tools.XrmMockup.Logging
         private readonly string _categoryName;
         private readonly StreamWriter _writer;
         private readonly object _lock;
+        private readonly LogLevel _minLogLevel;
 
-        public FileLogger(string categoryName, StreamWriter writer, object writeLock)
+        public FileLogger(string categoryName, StreamWriter writer, object writeLock, LogLevel minLogLevel)
         {
             _categoryName = categoryName;
             _writer = writer;
             _lock = writeLock;
+            _minLogLevel = minLogLevel;
         }
 
         public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
 
-        public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
+        public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None && logLevel >= _minLogLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
@@ -35,16 +37,11 @@ namespace DG.Tools.XrmMockup.Logging
             lock (_lock)
             {
                 _writer.WriteLine(line);
-                _writer.Flush();
-            }
-
-            if (exception != null)
-            {
-                lock (_lock)
+                if (exception != null)
                 {
                     _writer.WriteLine(exception.ToString());
-                    _writer.Flush();
                 }
+                _writer.Flush();
             }
         }
 

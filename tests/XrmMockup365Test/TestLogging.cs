@@ -120,6 +120,45 @@ namespace DG.XrmMockupTest
             Assert.True(factory.LogMessages.Count > 0, "Logger should have captured log messages");
         }
 
+        [Fact]
+        public void TestMinLogLevelFiltersDebugMessages()
+        {
+            // Default MinLogLevel is Information, so Debug messages should be filtered out
+            var settings = CreateSettingsWithLogFile(out var logFilePath);
+            var crm = XrmMockup365.GetInstance(settings);
+
+            var content = ReadLogFile(logFilePath);
+            Assert.DoesNotContain("[Debug]", content);
+            Assert.Contains("[Information]", content);
+        }
+
+        [Fact]
+        public void TestDebugLogLevelIncludesDetailedMessages()
+        {
+            var logFilePath = Path.Combine(Path.GetTempPath(), $"xrmmockup_test_{Guid.NewGuid():N}.log");
+            _tempFiles.Add(logFilePath);
+
+            var settings = new XrmMockupSettings
+            {
+                BasePluginTypes = new Type[] { typeof(Plugin), typeof(PluginNonDaxif), typeof(LegacyPlugin), typeof(DIPlugin) },
+                BaseCustomApiTypes = new[] { new Tuple<string, Type>("dg", typeof(Plugin)), new Tuple<string, Type>("dg", typeof(LegacyCustomApi)) },
+                CodeActivityInstanceTypes = new Type[] { typeof(AccountWorkflowActivity) },
+                EnableProxyTypes = true,
+                IncludeAllWorkflows = false,
+                MetadataDirectoryPath = GetMetadataPath(),
+                LogFilePath = logFilePath,
+                MinLogLevel = LogLevel.Debug
+            };
+
+            var crm = XrmMockup365.GetInstance(settings);
+
+            var content = ReadLogFile(logFilePath);
+            // Debug level should produce [Debug] entries (cache-hit or cache-miss both log at Debug)
+            Assert.Contains("[Debug]", content);
+            // Should contain per-plugin registration details
+            Assert.Contains("Plugin", content);
+        }
+
         public void Dispose()
         {
             foreach (var file in _tempFiles)

@@ -107,6 +107,13 @@ namespace DG.Tools.XrmMockup
         public string LogFilePath { get; set; }
 
         /// <summary>
+        /// Minimum log level for the built-in file logger. Default is <see cref="LogLevel.Information"/>.
+        /// Only applies when <see cref="LogFilePath"/> is set. Ignored when <see cref="LoggerFactory"/> is provided,
+        /// as the custom factory controls its own filtering.
+        /// </summary>
+        public LogLevel MinLogLevel { get; set; } = LogLevel.Information;
+
+        /// <summary>
         /// Optional logger factory for diagnostic logging. When set, takes precedence
         /// over <see cref="LogFilePath"/>. Use this to integrate with your own logging infrastructure.
         /// </summary>

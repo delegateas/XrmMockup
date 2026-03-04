@@ -232,7 +232,7 @@ namespace DG.Tools.XrmMockup
                 return settings.LoggerFactory;
 
             if (!string.IsNullOrEmpty(settings.LogFilePath))
-                return new FileLoggerFactory(settings.LogFilePath);
+                return new FileLoggerFactory(settings.LogFilePath, settings.MinLogLevel);
 
             return NullLoggerFactory.Instance;
         }
