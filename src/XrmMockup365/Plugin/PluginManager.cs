@@ -3,6 +3,8 @@ using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using DG.Tools.XrmMockup.SystemPlugins;
 using XrmPluginCore.Enums;
 using XrmPluginCore.Interfaces.Plugin;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
@@ -22,6 +24,8 @@ namespace DG.Tools.XrmMockup
 
     internal class PluginManager
     {
+        private readonly ILogger _logger;
+
         // Static caches shared across all PluginManager instances
         private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedRegisteredPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
         private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedSystemPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
@@ -50,14 +54,16 @@ namespace DG.Tools.XrmMockup
             new SetAnnotationIsDocument()
         };
 
-        private readonly List<IRegistrationStrategy<IPluginStepConfig>> registrationStrategies = new List<IRegistrationStrategy<IPluginStepConfig>>
-        {
-            new Plugin.RegistrationStrategy.XrmPluginCore.PluginRegistrationStrategy(),
-            new Plugin.RegistrationStrategy.DAXIF.PluginRegistrationStrategy()
-        };
+        private readonly List<IRegistrationStrategy<IPluginStepConfig>> registrationStrategies;
 
-        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
+        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, ILogger logger = null)
         {
+            _logger = logger ?? NullLogger.Instance;
+            registrationStrategies = new List<IRegistrationStrategy<IPluginStepConfig>>
+            {
+                new Plugin.RegistrationStrategy.XrmPluginCore.PluginRegistrationStrategy(_logger),
+                new Plugin.RegistrationStrategy.DAXIF.PluginRegistrationStrategy(_logger)
+            };
             temporaryPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
             var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes);
@@ -69,6 +75,12 @@ namespace DG.Tools.XrmMockup
                 // Use cached results - no reflection/instantiation needed
                 registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
                 registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+
+                _logger.LogDebug("Loaded {Count} plugin registrations from cache", registeredPlugins.Values.SelectMany(s => s.Values.SelectMany(l => l)).Count());
+                foreach (var reg in PluginRegistrations)
+                {
+                    _logger.LogDebug("  Plugin: {Registration}", reg);
+                }
             }
             else
             {
@@ -79,6 +91,8 @@ namespace DG.Tools.XrmMockup
                     {
                         registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
                         registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+
+                        _logger.LogDebug("Loaded {Count} plugin registrations from cache", registeredPlugins.Values.SelectMany(s => s.Values.SelectMany(l => l)).Count());
                     }
                     else
                     {
@@ -86,9 +100,7 @@ namespace DG.Tools.XrmMockup
                         registeredPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
                         registeredSystemPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
-                        // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
-                        // TODO: How do we filter CustomAPIs?
-                        // TODO: Should basePluginTypes act as an optional filter?
+                        _logger.LogInformation("Scanning assemblies for plugin registrations...");
 
                         RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
                         RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
@@ -97,6 +109,19 @@ namespace DG.Tools.XrmMockup
                         // Cache for future instances
                         _cachedRegisteredPlugins[pluginCacheKey] = ClonePluginDictionary(registeredPlugins);
                         _cachedSystemPlugins[systemCacheKey] = ClonePluginDictionary(registeredSystemPlugins);
+
+                        foreach (var reg in PluginRegistrations)
+                        {
+                            _logger.LogInformation("  Registered plugin: {Registration}", reg);
+                        }
+
+                        foreach (var missing in missingRegistrations)
+                        {
+                            _logger.LogWarning("  Plugin type missing registration: {TypeName}", missing.FullName);
+                        }
+
+                        _logger.LogInformation("Plugin scanning complete: {Count} registrations, {MissingCount} missing",
+                            PluginRegistrations.Count, missingRegistrations.Count);
                     }
                 }
             }
@@ -123,6 +148,8 @@ namespace DG.Tools.XrmMockup
             {
                 if (basePluginType == null) continue;
 
+                _logger.LogDebug("Scanning for types extending base plugin type: {BaseType}", basePluginType.FullName);
+
                 // Look for any currently loaded types in the AppDomain that implement the base type
                 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(a =>
@@ -130,7 +157,10 @@ namespace DG.Tools.XrmMockup
                             !t.IsAbstract
                             && t.IsPublic
                             && t.BaseType != null
-                            && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))));
+                            && (t.BaseType == basePluginType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == basePluginType))))
+                    .ToList();
+
+                _logger.LogDebug("Found {Count} concrete type(s) extending {BaseType}", pluginTypes.Count, basePluginType.FullName);
 
                 foreach (var type in pluginTypes)
                 {
@@ -150,9 +180,14 @@ namespace DG.Tools.XrmMockup
 
                 Assembly proxyTypeAssembly = pluginType.Assembly;
 
+                _logger.LogDebug("Scanning assembly {Assembly} for direct IPlugin implementations", proxyTypeAssembly.GetName().Name);
+
                 // Look for any currently loaded types in assembly that implement IPlugin
                 var types = proxyTypeAssembly.GetLoadableTypes()
-                    .Where(t => t.BaseType == typeof(object) && !t.IsAbstract && t.IsPublic && typeof(IPlugin).IsAssignableFrom(t));
+                    .Where(t => t.BaseType == typeof(object) && !t.IsAbstract && t.IsPublic && typeof(IPlugin).IsAssignableFrom(t))
+                    .ToList();
+
+                _logger.LogDebug("Found {Count} direct IPlugin type(s) in {Assembly}", types.Count, proxyTypeAssembly.GetName().Name);
 
                 foreach (var type in types)
                 {
@@ -164,9 +199,12 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterPlugin(Type pluginType, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> metaPlugins, Dictionary<EventOperation, StageToTriggerMap> register)
         {
+            _logger.LogDebug("Evaluating plugin type: {TypeName}", pluginType.FullName);
+
             var plugin = _pluginInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
             if (plugin == null)
             {
+                _logger.LogWarning("Failed to create instance of plugin type: {TypeName}", pluginType.FullName);
                 return;
             }
 
@@ -176,17 +214,19 @@ namespace DG.Tools.XrmMockup
 
             // If we didn't find any steps, try the MetadataRegistrationStrategy as a last resort
             if (!steps.Any()) {
-                steps = new MetadataRegistrationStrategy().AnalyzeType(pluginType, metaPlugins);
+                _logger.LogDebug("{TypeName}: no steps from primary strategies, trying MetadataRegistrationStrategy", pluginType.FullName);
+                steps = new MetadataRegistrationStrategy(_logger).AnalyzeType(pluginType, metaPlugins);
             }
 
             var triggers = steps.Select(t => new PluginTrigger(t.EventOperation, t.ExecutionStage, plugin.Execute, t, metadata));
 
             if (!triggers.Any())
             {
+                _logger.LogDebug("{TypeName}: no registrations found from any strategy", pluginType.FullName);
                 missingRegistrations.Add(pluginType);
                 return;
             }
-            
+
             foreach (var trigger in triggers)
             {
                 AddTrigger(trigger, register);

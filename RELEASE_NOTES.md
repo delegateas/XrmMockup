@@ -1,3 +1,6 @@
+### 1.17.12-preview.1 - 04 March 2026
+* Add: Added ability to log startup sequence and Plugin/API detection to a file
+
 ### 1.17.11 - 02 March 2026
 * Fix: Added validation of emailaddress on all to references in SendEmailRequest (@JonasGLund99) #313
 

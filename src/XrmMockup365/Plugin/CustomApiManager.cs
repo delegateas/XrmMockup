@@ -1,6 +1,8 @@
 ﻿using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using XrmPluginCore.Interfaces.CustomApi;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Concurrent;
@@ -14,6 +16,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class CustomApiManager
     {
+        private readonly ILogger _logger;
 
         // Static caches shared across all CustomApiManager instances
         private static readonly ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>> _cachedApis = new ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>>();
@@ -23,14 +26,18 @@ namespace DG.Tools.XrmMockup
         internal List<Type> missingRegistration = new List<Type>();
         private Dictionary<string, Action<MockupServiceProviderAndFactory>> registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
 
-        private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
-        {
-            new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(),
-            new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy()
-        };
+        internal int RegisteredApiCount => registeredApis.Count;
 
-        public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
+        private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies;
+
+        public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes, ILogger logger = null)
         {
+            _logger = logger ?? NullLogger.Instance;
+            registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
+            {
+                new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(_logger),
+                new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy(_logger)
+            };
             var cacheKey = GenerateApiCacheKey(baseCustomApiTypes);
 
             // Check if we have cached results
@@ -38,6 +45,7 @@ namespace DG.Tools.XrmMockup
             {
                 // Use cached results - no reflection/instantiation needed
                 registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
+                _logger.LogDebug("Loaded {Count} custom API registrations from cache", registeredApis.Count);
                 return;
             }
 
@@ -47,6 +55,7 @@ namespace DG.Tools.XrmMockup
                 if (_cachedApis.ContainsKey(cacheKey))
                 {
                     registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
+                    _logger.LogDebug("Loaded {Count} custom API registrations from cache", registeredApis.Count);
                     return;
                 }
 
@@ -59,6 +68,19 @@ namespace DG.Tools.XrmMockup
 
                 // Cache for future instances
                 _cachedApis[cacheKey] = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(registeredApis);
+
+                foreach (var apiKey in registeredApis.Keys)
+                {
+                    _logger.LogInformation("  Registered custom API: {ApiKey}", apiKey);
+                }
+
+                foreach (var missing in missingRegistration)
+                {
+                    _logger.LogWarning("  Custom API type missing registration: {TypeName}", missing.FullName);
+                }
+
+                _logger.LogInformation("Custom API scanning complete: {Count} registrations, {MissingCount} missing",
+                    registeredApis.Count, missingRegistration.Count);
             }
         }
 
@@ -71,9 +93,13 @@ namespace DG.Tools.XrmMockup
                 var prefix = customApiMapping.Item1;
                 var baseApiType = customApiMapping.Item2;
 
+                _logger.LogDebug("Scanning for types extending custom API base type: {BaseType} (prefix={Prefix})", baseApiType.FullName, prefix);
+
                 var customApiTypes = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(a => a.GetLoadableTypes().Where(t => !t.IsAbstract && t.IsPublic && t.BaseType != null && (t.BaseType == baseApiType || (t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == baseApiType))))
                     .ToList();
+
+                _logger.LogDebug("Found {Count} concrete type(s) extending {BaseType}", customApiTypes.Count, baseApiType.FullName);
 
                 foreach (var type in customApiTypes)
                 {
@@ -84,10 +110,13 @@ namespace DG.Tools.XrmMockup
 
         private void RegisterApi(string prefix, Type pluginType)
         {
+            _logger.LogDebug("Evaluating custom API type: {TypeName} (prefix={Prefix})", pluginType.FullName, prefix);
+
             var plugin = _apiInstanceCache.GetOrAdd(pluginType, Utility.CreatePluginInstance);
 
             if (plugin == null)
             {
+                _logger.LogWarning("Failed to create instance of custom API type: {TypeName}", pluginType.FullName);
                 return;
             }
 
@@ -97,11 +126,14 @@ namespace DG.Tools.XrmMockup
 
             if (registration is null)
             {
+                _logger.LogDebug("{TypeName}: no custom API registration found from any strategy", pluginType.FullName);
                 missingRegistration.Add(pluginType);
             }
             else
             {
-                registeredApis.Add($"{prefix}_{registration.UniqueName}", plugin.Execute);
+                var key = $"{prefix}_{registration.UniqueName}";
+                _logger.LogDebug("{TypeName}: registered as '{ApiKey}'", pluginType.FullName, key);
+                registeredApis.Add(key, plugin.Execute);
             }
         }
 

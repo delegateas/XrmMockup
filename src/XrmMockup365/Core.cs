@@ -1,9 +1,12 @@
 using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Logging;
 using DG.Tools.XrmMockup.Serialization;
 using DG.Tools.XrmMockup.Online;
 using XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
@@ -11,6 +14,7 @@ using Microsoft.Xrm.Sdk.Organization;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -80,7 +84,8 @@ namespace DG.Tools.XrmMockup
                 BaseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid"),
                 BaseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision"),
                 OnlineDataService = null,
-                EntityTypeMap = new Dictionary<string, Type>()
+                EntityTypeMap = new Dictionary<string, Type>(),
+                LoggerFactory = ResolveLoggerFactory(Settings)
             };
 
             InitializeCore(initData);
@@ -100,7 +105,8 @@ namespace DG.Tools.XrmMockup
                 BaseCurrency = staticCache.BaseCurrency,
                 BaseCurrencyPrecision = staticCache.BaseCurrencyPrecision,
                 OnlineDataService = staticCache.OnlineDataService,
-                EntityTypeMap = staticCache.EntityTypeMap
+                EntityTypeMap = staticCache.EntityTypeMap,
+                LoggerFactory = staticCache.LoggerFactory
             };
 
             InitializeCore(initData);
@@ -111,6 +117,10 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         private void InitializeCore(CoreInitializationData initData)
         {
+            var sw = Stopwatch.StartNew();
+            var loggerFactory = initData.LoggerFactory ?? NullLoggerFactory.Instance;
+            var coreLogger = loggerFactory.CreateLogger(typeof(Core).FullName);
+
             TimeOffset = new TimeSpan();
             settings = initData.Settings;
             metadata = initData.Metadata;
@@ -133,10 +143,15 @@ namespace DG.Tools.XrmMockup
                 allPlugins.AddRange(initData.Settings.IPluginMetadata);
             }
 
-            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins);
+            var pluginLogger = loggerFactory.CreateLogger(typeof(PluginManager).FullName);
+            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins, pluginLogger);
+
+            var workflowLogger = loggerFactory.CreateLogger(typeof(WorkflowManager).FullName);
             workflowManager = new WorkflowManager(initData.Settings.CodeActivityInstanceTypes, initData.Settings.IncludeAllWorkflows,
-                initData.Workflows, initData.Metadata.EntityMetadata);
-            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes);
+                initData.Workflows, initData.Metadata.EntityMetadata, workflowLogger);
+
+            var apiLogger = loggerFactory.CreateLogger(typeof(CustomApiManager).FullName);
+            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes, apiLogger);
 
             var typesMissingRegistration = pluginManager.missingRegistrations
                 .Intersect(customApiManager.missingRegistration)
@@ -146,6 +161,14 @@ namespace DG.Tools.XrmMockup
                 var typeNames = string.Join(", ", typesMissingRegistration.Select(t => t.FullName));
                 throw new Exception($"The following plugin types are missing plugin or custom api registrations: {typeNames}");
             }
+
+            sw.Stop();
+            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms — Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
+                sw.ElapsedMilliseconds,
+                pluginManager.PluginRegistrations.Count,
+                workflowManager.SynchronousWorkflowCount,
+                workflowManager.AsynchronousWorkflowCount,
+                customApiManager.RegisteredApiCount);
 
             systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
@@ -196,8 +219,21 @@ namespace DG.Tools.XrmMockup
             // Note: IPluginMetadata is handled per-instance in the Core constructor
             // to avoid modifying the shared cache
 
+            var loggerFactory = ResolveLoggerFactory(settings);
+
             return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap,
-                baseCurrency, baseCurrencyPrecision, onlineDataService);
+                baseCurrency, baseCurrencyPrecision, onlineDataService, loggerFactory);
+        }
+
+        private static ILoggerFactory ResolveLoggerFactory(XrmMockupSettings settings)
+        {
+            if (settings.LoggerFactory != null)
+                return settings.LoggerFactory;
+
+            if (!string.IsNullOrEmpty(settings.LogFilePath))
+                return new FileLoggerFactory(settings.LogFilePath, settings.MinLogLevel);
+
+            return NullLoggerFactory.Instance;
         }
 
         private static IOnlineDataService BuildOnlineDataService(XrmMockupSettings settings)

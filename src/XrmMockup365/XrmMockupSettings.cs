@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
@@ -52,6 +53,12 @@ namespace DG.Tools.XrmMockup
         /// Visual Studio credentials, Azure CLI, etc.).
         /// </summary>
         public Env? OnlineEnvironment { get; set; }
+
+        /// <summary>
+        /// Optional factory for creating IOnlineDataService. For testing purposes.
+        /// If set, this takes precedence over OnlineEnvironment.
+        /// </summary>
+        internal Func<IOnlineDataService> OnlineDataServiceFactory { get; set; }
 #endif
 
         /// <summary>
@@ -105,13 +112,24 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public bool EnablePowerFxFields { get; set; } = true;
 
-#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
-        /// Optional factory for creating IOnlineDataService. For testing purposes.
-        /// If set, this takes precedence over OnlineEnvironment.
+        /// Optional file path for diagnostic logging. When set, XrmMockup writes startup
+        /// information (discovered plugins, workflows, custom APIs) to this file.
         /// </summary>
-        internal Func<IOnlineDataService> OnlineDataServiceFactory { get; set; }
-#endif
+        public string LogFilePath { get; set; }
+
+        /// <summary>
+        /// Minimum log level for the built-in file logger. Default is <see cref="LogLevel.Information"/>.
+        /// Only applies when <see cref="LogFilePath"/> is set. Ignored when <see cref="LoggerFactory"/> is provided,
+        /// as the custom factory controls its own filtering.
+        /// </summary>
+        public LogLevel MinLogLevel { get; set; } = LogLevel.Information;
+
+        /// <summary>
+        /// Optional logger factory for diagnostic logging. When set, takes precedence
+        /// over <see cref="LogFilePath"/>. Use this to integrate with your own logging infrastructure.
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; set; }
     }
 
 #if DATAVERSE_SERVICE_CLIENT
