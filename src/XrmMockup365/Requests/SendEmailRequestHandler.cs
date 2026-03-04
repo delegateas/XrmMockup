@@ -106,9 +106,14 @@ namespace DG.Tools.XrmMockup
                     if (activityParty.Contains("partyid"))
                     {
                         var partyRef = activityParty.GetAttributeValue<EntityReference>("partyid");
-                        if (db.GetEntityOrNull(partyRef) is null)
+                        var partyEntity = db.GetEntityOrNull(partyRef);
+                        if (partyEntity is null)
                         {
                             throw new FaultException($"{partyRef.LogicalName} with Id = {partyRef.Id} does not exist");
+                        }
+                        if (string.IsNullOrEmpty(partyEntity.GetAttributeValue<string>("emailaddress1")))
+                        {
+                            throw new FaultException($"{partyRef.LogicalName} with Id = {partyRef.Id} does not have an email address");
                         }
                     }
                     else if (!activityParty.Contains("addressused"))
@@ -121,7 +126,6 @@ namespace DG.Tools.XrmMockup
             {
                 throw new FaultException("The email must have at least one recipient before it can be sent");
             }
-
 
             email["statecode"] = new OptionSetValue(EMAIL_STATE_COMPLETED);
             email["statuscode"] = new OptionSetValue(request.IssueSend ? EMAIL_STATUS_PENDING_SEND : EMAIL_STATUS_SENT);

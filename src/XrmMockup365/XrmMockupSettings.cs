@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
 using System.Reflection;
+#if DATAVERSE_SERVICE_CLIENT
+using DG.Tools.XrmMockup.Online;
+#endif
 
 namespace DG.Tools.XrmMockup
 {
@@ -44,10 +46,20 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public IEnumerable<string> ExceptionFreeRequests { get; set; }
 
+#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
-        /// Environment settings for connection to an online environment for live debugging.
+        /// Settings for connecting to an online Dataverse environment for live debugging.
+        /// Uses Azure DefaultAzureCredential for authentication (supports managed identity,
+        /// Visual Studio credentials, Azure CLI, etc.).
         /// </summary>
         public Env? OnlineEnvironment { get; set; }
+
+        /// <summary>
+        /// Optional factory for creating IOnlineDataService. For testing purposes.
+        /// If set, this takes precedence over OnlineEnvironment.
+        /// </summary>
+        internal Func<IOnlineDataService> OnlineDataServiceFactory { get; set; }
+#endif
 
         /// <summary>
         /// Overwrites the path to the directory containing metadata files. Default is '../../Metadata/'.
@@ -120,13 +132,17 @@ namespace DG.Tools.XrmMockup
         public ILoggerFactory LoggerFactory { get; set; }
     }
 
-
+#if DATAVERSE_SERVICE_CLIENT
+    /// <summary>
+    /// Settings for connecting to an online Dataverse environment.
+    /// </summary>
     public struct Env
     {
-        public string uri;
-        public AuthenticationProviderType providerType;
-        public string username;
-        public string password;
-        public string domain;
+        /// <summary>
+        /// URL of the Dataverse environment (e.g., https://org.crm.dynamics.com).
+        /// Uses Azure DefaultAzureCredential for authentication.
+        /// </summary>
+        public string Url;
     }
+#endif
 }

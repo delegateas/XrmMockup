@@ -5,7 +5,8 @@
       "Bash(cat:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet pack:*)"
+      "Bash(dotnet pack:*)",
+      "Bash(find:*)"
     ]
   }
 }

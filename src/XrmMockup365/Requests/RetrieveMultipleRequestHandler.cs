@@ -216,6 +216,16 @@ namespace DG.Tools.XrmMockup
             {
                 collection.Add(toAdd);
             }
+            else if (linkEntity.JoinOperator == JoinOperator.NotAny && collection.Count == 0)
+            {
+                // NotAny join: return parent entity only if no matching linked entities were found
+                collection.Add(toAdd);
+            }
+            else if (linkEntity.JoinOperator == JoinOperator.NotAny && collection.Count > 0)
+            {
+                // NotAny join: if matching linked entities were found, don't return anything
+                collection.Clear();
+            }
             return collection;
         }
 

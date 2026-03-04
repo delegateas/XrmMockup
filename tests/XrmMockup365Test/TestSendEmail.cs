@@ -356,5 +356,42 @@ namespace DG.XrmMockupTest
 
             Assert.Throws<FaultException>(() => orgAdminUIService.Execute(sendEmailRequest));
         }
+
+        [Fact]
+        public void TestSendEmailRequestFailsWhenRecipientHasNoEmailAddress1()
+        {
+            var contact = new Contact
+            {
+                FirstName = "Test"
+            };
+            contact.Id = orgAdminUIService.Create(contact);
+
+            var email = new Email
+            {
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = crm.AdminUser
+                    }
+                },
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = contact.ToEntityReference()
+                    }
+                },
+                Subject = "Test Email",
+            };
+            email.Id = orgAdminUIService.Create(email);
+
+            var sendEmailRequest = new SendEmailRequest
+            {
+                EmailId = email.Id
+            };
+
+            Assert.Throws<FaultException>(() => orgAdminUIService.Execute(sendEmailRequest));
+        }
     }
 }

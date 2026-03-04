@@ -1,3 +1,9 @@
+### 1.17.11 - 02 March 2026
+* Fix: Added validation of emailaddress on all to references in SendEmailRequest (@JonasGLund99) #313
+
+### 1.17.10 - 24 February 2026
+* Add: NotAny join support (@KristianKlodeD) (#281)
+
 ### 1.17.9 - 15 January 2026
 * Add: File block upload/download support (@magesoe) (#307)
 
