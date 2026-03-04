@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
@@ -22,6 +24,8 @@ namespace DG.Tools.XrmMockup {
 
 
     internal class WorkflowManager {
+        private readonly ILogger _logger;
+
         // Static caches shared across all WorkflowManager instances
         private static readonly ConcurrentDictionary<string, WorkflowTree> _staticParsedWorkflows = new ConcurrentDictionary<string, WorkflowTree>();
         private static readonly ConcurrentDictionary<string, CodeActivity> _staticCodeActivityCache = new ConcurrentDictionary<string, CodeActivity>();
@@ -37,7 +41,13 @@ namespace DG.Tools.XrmMockup {
 
         private ConcurrentQueue<WorkflowExecutionContext> pendingAsyncWorkflows;
 
-        public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata) {
+        internal int SynchronousWorkflowCount => synchronousWorkflows.Count;
+        internal int AsynchronousWorkflowCount => asynchronousWorkflows.Count;
+        internal int ActionsCount => actions.Count;
+        internal int CodeActivityCount => codeActivityTriggers.Count;
+
+        public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata, ILogger logger = null) {
+            _logger = logger ?? NullLogger.Instance;
             this.metadata = metadata;
             this.actions = mixedWorkflows.Where(w => w.GetAttributeValue<OptionSetValue>("category").Value == 3).ToList();
 
@@ -58,7 +68,7 @@ namespace DG.Tools.XrmMockup {
                 foreach (var codeActivityInstance in codeActivityInstances) {
                     foreach (var type in codeActivityInstance.Assembly.GetTypes()) {
                         if (type.BaseType != codeActivityInstance.BaseType || type.Module.Name.StartsWith("System") || type.IsAbstract) continue;
-                        
+
                         // Use static cache to avoid recreating CodeActivity instances
                         var codeActivity = _staticCodeActivityCache.GetOrAdd(type.Name, typeName =>
                         {
@@ -67,6 +77,7 @@ namespace DG.Tools.XrmMockup {
 
                         if (!codeActivityTriggers.ContainsKey(type.Name)) {
                             codeActivityTriggers.Add(type.Name, codeActivity);
+                            _logger.LogDebug("Discovered CodeActivity: {TypeName}", type.Name);
                         }
                     }
                 }
@@ -77,6 +88,9 @@ namespace DG.Tools.XrmMockup {
                     AddWorkflow(workflow);
                 }
             }
+
+            _logger.LogInformation("Workflows loaded: sync={SyncCount}, async={AsyncCount}, actions={ActionsCount}, code activities={CodeActivityCount}",
+                synchronousWorkflows.Count, asynchronousWorkflows.Count, actions.Count, codeActivityTriggers.Count);
         }
 
         
@@ -427,18 +441,21 @@ namespace DG.Tools.XrmMockup {
                 _staticParsedWorkflows.TryAdd(cacheKey, parsed);
                 
                 return parsed;
-            } catch (Exception) {
-                Console.WriteLine($"Tried to parse workflow with name '{workflow.Attributes["name"]}' but failed");
+            } catch (Exception ex) {
+                _logger.LogWarning(ex, "Failed to parse workflow '{WorkflowName}'", workflow.Attributes["name"]);
             }
             return null;
         }
 
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
+            var name = workflow.GetAttributeValue<string>("name") ?? workflow.Id.ToString();
             if (workflow.GetOptionSetValue<Workflow_Mode>("mode") == Workflow_Mode.Background) {
                 asynchronousWorkflows.Add(workflow);
+                _logger.LogDebug("Added async workflow: {WorkflowName}", name);
             } else {
                 synchronousWorkflows.Add(workflow);
+                _logger.LogDebug("Added sync workflow: {WorkflowName}", name);
             }
         }
 

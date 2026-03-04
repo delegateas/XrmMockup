@@ -1,4 +1,6 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
@@ -14,10 +16,11 @@ namespace DG.Tools.XrmMockup
         public EntityReference BaseCurrency { get; }
         public int BaseCurrencyPrecision { get; }
         public OrganizationServiceProxy OnlineProxy { get; }
+        public ILoggerFactory LoggerFactory { get; }
 
         public StaticMetadataCache(MetadataSkeleton metadata, List<Entity> workflows, List<SecurityRole> securityRoles,
-            Dictionary<string, Type> entityTypeMap, EntityReference baseCurrency, int baseCurrencyPrecision, 
-            OrganizationServiceProxy onlineProxy)
+            Dictionary<string, Type> entityTypeMap, EntityReference baseCurrency, int baseCurrencyPrecision,
+            OrganizationServiceProxy onlineProxy, ILoggerFactory loggerFactory = null)
         {
             Metadata = metadata;
             Workflows = workflows;
@@ -26,6 +29,7 @@ namespace DG.Tools.XrmMockup
             BaseCurrency = baseCurrency;
             BaseCurrencyPrecision = baseCurrencyPrecision;
             OnlineProxy = onlineProxy;
+            LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         }
     }
 }

@@ -3,6 +3,8 @@ using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using DG.Tools.XrmMockup.SystemPlugins;
 using XrmPluginCore.Enums;
 using XrmPluginCore.Interfaces.Plugin;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
@@ -22,6 +24,8 @@ namespace DG.Tools.XrmMockup
 
     internal class PluginManager
     {
+        private readonly ILogger _logger;
+
         // Static caches shared across all PluginManager instances
         private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedRegisteredPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
         private static readonly ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>> _cachedSystemPlugins = new ConcurrentDictionary<string, Dictionary<EventOperation, StageToTriggerMap>>();
@@ -56,8 +60,9 @@ namespace DG.Tools.XrmMockup
             new Plugin.RegistrationStrategy.DAXIF.PluginRegistrationStrategy()
         };
 
-        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins)
+        public PluginManager(IEnumerable<Type> basePluginTypes, Dictionary<string, EntityMetadata> metadata, List<MetaPlugin> plugins, ILogger logger = null)
         {
+            _logger = logger ?? NullLogger.Instance;
             temporaryPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
             var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes);
@@ -69,6 +74,12 @@ namespace DG.Tools.XrmMockup
                 // Use cached results - no reflection/instantiation needed
                 registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
                 registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+
+                _logger.LogDebug("Loaded {Count} plugin registrations from cache", registeredPlugins.Values.SelectMany(s => s.Values.SelectMany(l => l)).Count());
+                foreach (var reg in PluginRegistrations)
+                {
+                    _logger.LogDebug("  Plugin: {Registration}", reg);
+                }
             }
             else
             {
@@ -79,6 +90,8 @@ namespace DG.Tools.XrmMockup
                     {
                         registeredPlugins = ClonePluginDictionary(_cachedRegisteredPlugins[pluginCacheKey]);
                         registeredSystemPlugins = ClonePluginDictionary(_cachedSystemPlugins[systemCacheKey]);
+
+                        _logger.LogDebug("Loaded {Count} plugin registrations from cache", registeredPlugins.Values.SelectMany(s => s.Values.SelectMany(l => l)).Count());
                     }
                     else
                     {
@@ -86,9 +99,7 @@ namespace DG.Tools.XrmMockup
                         registeredPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
                         registeredSystemPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
-                        // TODO: Find all concrete types that implement IPlugin, handle system plugins separately
-                        // TODO: How do we filter CustomAPIs?
-                        // TODO: Should basePluginTypes act as an optional filter?
+                        _logger.LogInformation("Scanning assemblies for plugin registrations...");
 
                         RegisterPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
                         RegisterDirectPlugins(basePluginTypes, metadata, plugins, registeredPlugins);
@@ -97,6 +108,19 @@ namespace DG.Tools.XrmMockup
                         // Cache for future instances
                         _cachedRegisteredPlugins[pluginCacheKey] = ClonePluginDictionary(registeredPlugins);
                         _cachedSystemPlugins[systemCacheKey] = ClonePluginDictionary(registeredSystemPlugins);
+
+                        foreach (var reg in PluginRegistrations)
+                        {
+                            _logger.LogInformation("  Registered plugin: {Registration}", reg);
+                        }
+
+                        foreach (var missing in missingRegistrations)
+                        {
+                            _logger.LogWarning("  Plugin type missing registration: {TypeName}", missing.FullName);
+                        }
+
+                        _logger.LogInformation("Plugin scanning complete: {Count} registrations, {MissingCount} missing",
+                            PluginRegistrations.Count, missingRegistrations.Count);
                     }
                 }
             }

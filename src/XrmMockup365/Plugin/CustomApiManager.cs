@@ -1,6 +1,8 @@
 ﻿using DG.Tools.XrmMockup.Internal;
 using DG.Tools.XrmMockup.Plugin.RegistrationStrategy;
 using XrmPluginCore.Interfaces.CustomApi;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Concurrent;
@@ -14,6 +16,7 @@ namespace DG.Tools.XrmMockup
 {
     internal class CustomApiManager
     {
+        private readonly ILogger _logger;
 
         // Static caches shared across all CustomApiManager instances
         private static readonly ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>> _cachedApis = new ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>>();
@@ -23,14 +26,17 @@ namespace DG.Tools.XrmMockup
         internal List<Type> missingRegistration = new List<Type>();
         private Dictionary<string, Action<MockupServiceProviderAndFactory>> registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>();
 
+        internal int RegisteredApiCount => registeredApis.Count;
+
         private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
         {
             new Plugin.RegistrationStrategy.XrmPluginCore.CustomApiRegistrationStrategy(),
             new Plugin.RegistrationStrategy.DAXIF.CustomApiRegistrationStrategy()
         };
 
-        public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes)
+        public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes, ILogger logger = null)
         {
+            _logger = logger ?? NullLogger.Instance;
             var cacheKey = GenerateApiCacheKey(baseCustomApiTypes);
 
             // Check if we have cached results
@@ -38,6 +44,7 @@ namespace DG.Tools.XrmMockup
             {
                 // Use cached results - no reflection/instantiation needed
                 registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
+                _logger.LogDebug("Loaded {Count} custom API registrations from cache", registeredApis.Count);
                 return;
             }
 
@@ -47,6 +54,7 @@ namespace DG.Tools.XrmMockup
                 if (_cachedApis.ContainsKey(cacheKey))
                 {
                     registeredApis = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(_cachedApis[cacheKey]);
+                    _logger.LogDebug("Loaded {Count} custom API registrations from cache", registeredApis.Count);
                     return;
                 }
 
@@ -59,6 +67,19 @@ namespace DG.Tools.XrmMockup
 
                 // Cache for future instances
                 _cachedApis[cacheKey] = new Dictionary<string, Action<MockupServiceProviderAndFactory>>(registeredApis);
+
+                foreach (var apiKey in registeredApis.Keys)
+                {
+                    _logger.LogInformation("  Registered custom API: {ApiKey}", apiKey);
+                }
+
+                foreach (var missing in missingRegistration)
+                {
+                    _logger.LogWarning("  Custom API type missing registration: {TypeName}", missing.FullName);
+                }
+
+                _logger.LogInformation("Custom API scanning complete: {Count} registrations, {MissingCount} missing",
+                    registeredApis.Count, missingRegistration.Count);
             }
         }
 

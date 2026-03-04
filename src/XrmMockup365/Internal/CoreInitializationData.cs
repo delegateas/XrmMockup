@@ -1,4 +1,5 @@
-﻿using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,6 @@ namespace DG.Tools.XrmMockup.Internal
         public int BaseCurrencyPrecision { get; set; }
         public OrganizationServiceProxy OnlineProxy { get; set; }
         public Dictionary<string, Type> EntityTypeMap { get; set; }
+        public ILoggerFactory LoggerFactory { get; set; }
     }
 }

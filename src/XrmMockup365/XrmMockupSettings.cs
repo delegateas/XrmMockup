@@ -1,4 +1,5 @@
-﻿using Microsoft.Xrm.Sdk.Client;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Xrm.Sdk.Client;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
@@ -98,6 +99,18 @@ namespace DG.Tools.XrmMockup
         /// Default is true.
         /// </summary>
         public bool EnablePowerFxFields { get; set; } = true;
+
+        /// <summary>
+        /// Optional file path for diagnostic logging. When set, XrmMockup writes startup
+        /// information (discovered plugins, workflows, custom APIs) to this file.
+        /// </summary>
+        public string LogFilePath { get; set; }
+
+        /// <summary>
+        /// Optional logger factory for diagnostic logging. When set, takes precedence
+        /// over <see cref="LogFilePath"/>. Use this to integrate with your own logging infrastructure.
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; set; }
     }
 
 
