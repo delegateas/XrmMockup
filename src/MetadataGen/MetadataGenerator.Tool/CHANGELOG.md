@@ -5,6 +5,9 @@ All notable changes to XrmMockup.MetadataGenerator will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### v1.0.3 - 6 March 2026
+* Fix: Metadata for the package didn't get picked up after Directory.Build.props was created
+
 ### v1.0.2 - 6 March 2026
 * Fix: More explicit handling around when all security roles are downloaded
 
