@@ -45,7 +45,7 @@ public class OnlineMetadataSourceTests
             .Returns([]);
         _workflowReader.GetWorkflowsAsync(Arg.Any<CancellationToken>())
             .Returns([]);
-        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]>(), Arg.Any<CancellationToken>())
+        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns([]);
         _optionSetReader.GetOptionSetsAsync(Arg.Any<CancellationToken>())
             .Returns([]);
@@ -264,7 +264,7 @@ public class OnlineMetadataSourceTests
     {
         var rootBuId = Guid.NewGuid();
         var roles = new Dictionary<Guid, SecurityRole>();
-        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]>(), Arg.Any<CancellationToken>())
+        _securityRoleReader.GetSecurityRolesAsync(Arg.Any<Guid>(), Arg.Any<string[]>(), Arg.Any<string[]?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(roles);
 
         var options = new GeneratorOptions { OutputDirectory = "/test", Solutions = [], Entities = [] };
@@ -276,7 +276,8 @@ public class OnlineMetadataSourceTests
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Is<Guid>(id => id == rootBuId),
             Arg.Any<string[]>(),
-            Arg.Any<string[]>(),
+            Arg.Any<string[]?>(),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -298,7 +299,8 @@ public class OnlineMetadataSourceTests
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Any<Guid>(),
             Arg.Is<string[]>(s => s.SequenceEqual(solutions)),
-            Arg.Any<string[]>(),
+            Arg.Any<string[]?>(),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -321,7 +323,8 @@ public class OnlineMetadataSourceTests
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Any<Guid>(),
             Arg.Any<string[]>(),
-            Arg.Is<string[]>(r => r.SequenceEqual(securityRoles)),
+            Arg.Is<string[]?>(r => r != null && r.SequenceEqual(securityRoles)),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -345,7 +348,8 @@ public class OnlineMetadataSourceTests
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Is<Guid>(id => id == rootBuId),
             Arg.Is<string[]>(s => s.SequenceEqual(solutions)),
-            Arg.Is<string[]>(r => r.SequenceEqual(securityRoles)),
+            Arg.Is<string[]?>(r => r != null && r.SequenceEqual(securityRoles)),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -367,7 +371,8 @@ public class OnlineMetadataSourceTests
         await _securityRoleReader.Received(1).GetSecurityRolesAsync(
             Arg.Is<Guid>(id => id == rootBuId),
             Arg.Is<string[]>(s => s.Length == 0),
-            Arg.Is<string[]>(r => r.Length == 0),
+            Arg.Is<string[]?>(r => r != null && r.Length == 0),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
     }
 

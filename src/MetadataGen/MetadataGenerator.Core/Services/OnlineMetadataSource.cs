@@ -78,6 +78,7 @@ internal sealed class OnlineMetadataSource(
             rootBusinessUnitId,
             _options.Solutions,
             _options.SecurityRoles,
+            _options.AllSecurityRoles,
             ct);
     }
 }

@@ -55,6 +55,8 @@ Create an `appsettings.json` file in your working directory:
       "OutputDirectory": "./Metadata",
       "Solutions": ["MySolution", "AnotherSolution"],
       "Entities": ["account", "contact", "opportunity"],
+      "SecurityRoles": ["System Administrator", "Basic User"],
+      "AllSecurityRoles": false,
       "PrettyPrint": false
     }
   }
@@ -68,6 +70,8 @@ Create an `appsettings.json` file in your working directory:
 | `OutputDirectory` | string | `"./Metadata"` | Directory where metadata files will be written |
 | `Solutions` | string[] | `[]` | Solution unique names to extract entities from |
 | `Entities` | string[] | `[]` | Additional entity logical names to include |
+| `SecurityRoles` | string[] | not set | Security role names to include (see [Security Role Filtering](#security-role-filtering)) |
+| `AllSecurityRoles` | bool | `false` | Include all security roles regardless of other filtering |
 | `PrettyPrint` | bool | `false` | Format XML output for readability (increases file size) |
 
 ### Environment-Specific Configuration
@@ -91,6 +95,8 @@ Options:
   -o, --output <path>        Output directory for generated metadata files
   -s, --solutions <names>    Comma-separated list of solution unique names
   -e, --entities <names>     Comma-separated list of additional entity logical names
+  -r, --security-roles <names>  Comma-separated list of security role names to include
+  -a, --all-security-roles   Include all security roles regardless of filtering
   -c, --config <path>        Path to appsettings.json configuration file
   -p, --pretty-print         Format XML output for readability
   --help                     Show help information
@@ -123,11 +129,40 @@ Use a specific configuration file:
 xrmmockup-metadata --config "/path/to/appsettings.json"
 ```
 
+Include specific security roles:
+
+```bash
+xrmmockup-metadata -r "System Administrator,Basic User"
+```
+
+Include all security roles (useful when solutions contain no roles):
+
+```bash
+xrmmockup-metadata -s "MySolution" --all-security-roles
+```
+
 Enable pretty-printed XML output:
 
 ```bash
 xrmmockup-metadata --pretty-print
 ```
+
+## Security Role Filtering
+
+Security role inclusion depends on the combination of `Solutions`, `SecurityRoles`, and `AllSecurityRoles`:
+
+| `AllSecurityRoles` | `Solutions` | `SecurityRoles` | Result |
+|--------------------|-------------|-----------------|--------|
+| `true` | any | any | **All roles** |
+| `false` | none | not set | **All roles** (backward compatible default) |
+| `false` | none | `[]` (empty) | **No roles** |
+| `false` | none | `["X", ...]` | **Only named roles** |
+| `false` | specified | not set or `[]` | **Solution roles only** (may be empty) |
+| `false` | specified | `["X", ...]` | **Solution roles + named roles** |
+
+When `SecurityRoles` is not set (omitted from config), the behavior depends on whether solutions are specified. If no solutions are specified, all roles are included for backward compatibility. If solutions are specified, only roles within those solutions are included.
+
+Setting `SecurityRoles` to an empty array explicitly opts out of additional roles. Use `AllSecurityRoles` to force inclusion of all roles regardless of other settings.
 
 ## Default Entities
 

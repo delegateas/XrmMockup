@@ -42,6 +42,11 @@ var securityRolesOption = new Option<string?>(CliOptions.SecurityRoles.Primary, 
     Arity = ArgumentArity.ZeroOrOne
 };
 
+var allSecurityRolesOption = new Option<bool>(CliOptions.AllSecurityRoles.Primary, CliOptions.AllSecurityRoles.Alias)
+{
+    Description = CliOptions.AllSecurityRoles.Description
+};
+
 // Build root command
 var rootCommand = new RootCommand("XrmMockup Metadata Generator - Generate metadata from Dataverse for XrmMockup testing")
 {
@@ -50,7 +55,8 @@ var rootCommand = new RootCommand("XrmMockup Metadata Generator - Generate metad
     entitiesOption,
     configOption,
     prettyPrintOption,
-    securityRolesOption
+    securityRolesOption,
+    allSecurityRolesOption
 };
 
 rootCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -61,6 +67,7 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     var config = parseResult.GetValue(configOption);
     var prettyPrint = parseResult.GetValue(prettyPrintOption);
     var securityRoles = parseResult.GetValue(securityRolesOption);
+    var allSecurityRoles = parseResult.GetValue(allSecurityRolesOption);
 
     // If config path specified, change to that directory for config loading
     if (!string.IsNullOrEmpty(config))
@@ -80,6 +87,7 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
         Solutions = ParseCommaSeparated(solutions) ?? metadataConfig.Solutions,
         Entities = ParseCommaSeparated(entities) ?? metadataConfig.Entities,
         SecurityRoles = ParseCommaSeparated(securityRoles) ?? metadataConfig.SecurityRoles,
+        AllSecurityRoles = allSecurityRoles || metadataConfig.AllSecurityRoles,
         PrettyPrint = prettyPrint || metadataConfig.PrettyPrint
     });
 
