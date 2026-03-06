@@ -1,15 +1,27 @@
-# Sets the <Version> property in the given .csproj file to the latest version found in a changelog file (keepachangelog format)
+# Sets the <Version> property in the given .csproj or .props file to the latest version found in a changelog file (keepachangelog format)
 # Supports both "### v1.0.0" (with v prefix) and "### 1.0.0" (without v prefix) formats
 param(
     [string]$ChangelogPath,
-    [string]$CsprojPath
+    [string]$CsprojPath,
+    [string]$PropsPath
 )
+
+if ($CsprojPath -and $PropsPath) {
+    Write-Error 'Specify either -CsprojPath or -PropsPath, not both'
+    exit 1
+}
+if (-not $CsprojPath -and -not $PropsPath) {
+    Write-Error 'Specify either -CsprojPath or -PropsPath'
+    exit 1
+}
+
+$targetPath = if ($CsprojPath) { $CsprojPath } else { $PropsPath }
 
 $changelog = Get-Content $ChangelogPath
 # Match lines like: ### v1.0.0-rc.1 - xx xxxx 2025 OR ### 1.17.7 - 08 January 2026
 
 $regex = '^### v?([0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\-\.]+)?)'
-$resolved = Resolve-Path $CsprojPath
+$resolved = Resolve-Path $targetPath
 
 $versionLine = $changelog | Where-Object { $_ -match $regex } | Select-Object -First 1
 if ($versionLine -match $regex) {
@@ -30,7 +42,7 @@ if ($versionLine -match $regex) {
     }
 
     $xml.Save($resolved)
-    Write-Host "Updated $CsprojPath with version $version"
+    Write-Host "Updated $targetPath with version $version"
 } else {
     Write-Error 'No version found in changelog file'
     exit 1

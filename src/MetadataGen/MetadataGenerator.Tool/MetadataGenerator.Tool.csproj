@@ -1,13 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <RootNamespace>XrmMockup.MetadataGenerator.Tool</RootNamespace>
     <AssemblyName>XrmMockup.MetadataGenerator.Tool</AssemblyName>
-    <!-- Version set by CI from CHANGELOG.md -->
-    <Version>0.0.0</Version>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Tool-specific settings -->

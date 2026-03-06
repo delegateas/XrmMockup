@@ -18,7 +18,6 @@
   <Folder Name="/MetadataGen/scripts/">
     <File Path="src/MetadataGen/scripts/Compare-MetadataGenerators.ps1" />
     <File Path="src/MetadataGen/scripts/Regenerate-Metadata.ps1" />
-    <File Path="src/MetadataGen/scripts/Set-MetadataGeneratorVersion.ps1" />
   </Folder>
   <Folder Name="/project/">
     <File Path=".github/workflows/ci.yml" />

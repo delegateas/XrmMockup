@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Version set by CI from CHANGELOG.md -->
+    <Version>0.0.0</Version>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
