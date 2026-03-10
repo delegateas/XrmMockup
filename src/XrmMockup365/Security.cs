@@ -341,7 +341,7 @@ namespace DG.Tools.XrmMockup
             PrinciplePrivilages.Add(principleId, currentPrivileges);
         } 
 
-        private void AddPrinciplePrivlieges(Guid principleId, Guid[] roles)
+        private void AddPrinciplePrivileges(Guid principleId, Guid[] roles)
         {
             if (!roles.Any())
             {
@@ -358,9 +358,14 @@ namespace DG.Tools.XrmMockup
             // Combine users current privilege with the securityRoles
             foreach (var roleId in roles)
             {
-                var securityRolePrivilages = SecurityRoles[roleId].Privileges;
+                if (!SecurityRoles.TryGetValue(roleId, out var securityRole))
+                {
+                    throw new MockupException(
+                        $"Security role with id '{roleId}' was not found. " +
+                        $"Ensure the security role exists in the metadata or has been added via AddSecurityRole.");
+                }
 
-                currentPrivileges = JoinPrivileges(currentPrivileges, securityRolePrivilages);
+                currentPrivileges = JoinPrivileges(currentPrivileges, securityRole.Privileges);
             }
 
             // Update the principles privileges;
@@ -378,7 +383,7 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            AddPrinciplePrivlieges(entRef.Id, secRoles);
+            AddPrinciplePrivileges(entRef.Id, secRoles);
             if (secRoles.Any(s => !SecurityRoles.ContainsKey(s)))
             {
                 throw new MockupException($"Unknown security role");
