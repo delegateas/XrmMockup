@@ -384,10 +384,6 @@ namespace DG.Tools.XrmMockup
             }
 
             AddPrinciplePrivileges(entRef.Id, secRoles);
-            if (secRoles.Any(s => !SecurityRoles.ContainsKey(s)))
-            {
-                throw new MockupException($"Unknown security role");
-            }
             var user = Core.GetDbRow(entRef).ToEntity();
             var relationship = entRef.LogicalName == LogicalNames.SystemUser ? new Relationship("systemuserroles_association") : new Relationship("teamroles_association");
             var roles = secRoles
