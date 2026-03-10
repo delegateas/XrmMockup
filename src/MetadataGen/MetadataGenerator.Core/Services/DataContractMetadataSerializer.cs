@@ -131,7 +131,7 @@ internal sealed partial class DataContractMetadataSerializer(
             file.WriteLine("namespace DG.Tools.XrmMockup {");
             file.WriteLine("\tpublic struct SecurityRoles {");
 
-            foreach (var securityRole in securityRoles.OrderBy(x => x.Value.Name))
+            foreach (var securityRole in securityRoles.OrderBy(x => x.Value.Name, StringComparer.Ordinal))
             {
                 file.WriteLine($"\t\tpublic static Guid {ToSafeName(securityRole.Value.Name)} = new Guid(\"{securityRole.Key}\");");
             }
