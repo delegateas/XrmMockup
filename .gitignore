@@ -210,3 +210,4 @@ docs/tools/FSharp.Formatting.svclog
 
 # Claude temp files
 tmpclaude-*-cwd
+.nuget/nuget.exe
