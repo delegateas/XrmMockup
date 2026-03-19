@@ -147,6 +147,55 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestSendEmailRequestSuccessWhenEmailStatusFailed()
+        {
+            var contact = new Contact
+            {
+                FirstName = "Test",
+                EMailAddress1 = "test@test.com"
+            };
+            contact.Id = orgAdminUIService.Create(contact);
+
+            var email = new Email
+            {
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = crm.AdminUser
+                    }
+                },
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = contact.ToEntityReference()
+                    }
+                },
+                Subject = "Test Email",
+                StatusCode = Email_StatusCode.Failed
+            };
+            email.Id = orgAdminUIService.Create(email);
+
+            var sendEmailRequest = new SendEmailRequest
+            {
+                EmailId = email.Id,
+                IssueSend = false
+            };
+
+            var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
+            Assert.NotNull(response);
+            Assert.Equal(email.Subject, response.Subject);
+
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var retrievedEmail = context.EmailSet.FirstOrDefault();
+                Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
+                Assert.Equal(Email_StatusCode.Sent, retrievedEmail.StatusCode);
+            }
+        }
+
+        [Fact]
         public void TestSendEmailRequestFailsWhenTryingToSendAgain()
         {
             var contact = new Contact
