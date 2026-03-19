@@ -180,7 +180,7 @@ namespace DG.XrmMockupTest
             var sendEmailRequest = new SendEmailRequest
             {
                 EmailId = email.Id,
-                IssueSend = false
+                IssueSend = true
             };
 
             var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
@@ -191,7 +191,7 @@ namespace DG.XrmMockupTest
             {
                 var retrievedEmail = context.EmailSet.FirstOrDefault();
                 Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
-                Assert.Equal(Email_StatusCode.Sent, retrievedEmail.StatusCode);
+                Assert.Equal(Email_StatusCode.PendingSend, retrievedEmail.StatusCode);
             }
         }
 
