@@ -37,9 +37,12 @@ namespace DG.Some.Namespace
                 throw new InvalidPluginExecutionException("IPluginExecutionContext resolved to null");
             }
 
-            // Signal success via shared variables
-            context7.SharedVariables["Context7Resolved"] = true;
-            context7.SharedVariables["AuthenticatedUserId"] = context7.AuthenticatedUserId;
+            // Stamp the target to prove the plugin fired and resolved IPluginExecutionContext7
+            var target = context7.InputParameters["Target"] as Entity;
+            if (target != null)
+            {
+                target["description"] = "Context7Resolved";
+            }
         }
     }
 }
