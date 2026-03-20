@@ -1,5 +1,6 @@
 ﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
 using System.Linq;
 using System.ServiceModel;
 using Xunit;
@@ -380,6 +381,78 @@ namespace DG.XrmMockupTest
                     new ActivityParty
                     {
                         PartyId = contact.ToEntityReference()
+                    }
+                },
+                Subject = "Test Email",
+            };
+            email.Id = orgAdminUIService.Create(email);
+
+            var sendEmailRequest = new SendEmailRequest
+            {
+                EmailId = email.Id
+            };
+
+            Assert.Throws<FaultException>(() => orgAdminUIService.Execute(sendEmailRequest));
+        }
+
+        [Fact]
+        public void TestSendEmailRequestSuccessWithSystemUserRecipient()
+        {
+            var email = new Email
+            {
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = crm.AdminUser
+                    }
+                },
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = testUser1.ToEntityReference()
+                    }
+                },
+                Subject = "Test Email",
+            };
+            email.Id = orgAdminUIService.Create(email);
+
+            var sendEmailRequest = new SendEmailRequest
+            {
+                EmailId = email.Id,
+                IssueSend = true
+            };
+
+            var response = orgAdminUIService.Execute(sendEmailRequest) as SendEmailResponse;
+            Assert.NotNull(response);
+            Assert.Equal(email.Subject, response.Subject);
+        }
+
+        [Fact]
+        public void TestSendEmailRequestFailsWhenSystemUserRecipientHasNoEmailAddress()
+        {
+            var userWithNoEmail = new SystemUser
+            {
+                BusinessUnitId = crm.RootBusinessUnit,
+                IsLicensed = true
+            };
+            userWithNoEmail = crm.CreateUser(orgAdminService, userWithNoEmail, new System.Guid[0]).ToEntity<SystemUser>();
+
+            var email = new Email
+            {
+                From = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = crm.AdminUser
+                    }
+                },
+                To = new ActivityParty[]
+                {
+                    new ActivityParty
+                    {
+                        PartyId = userWithNoEmail.ToEntityReference()
                     }
                 },
                 Subject = "Test Email",

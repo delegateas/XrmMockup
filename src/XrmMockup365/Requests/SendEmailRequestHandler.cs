@@ -50,6 +50,22 @@ namespace DG.Tools.XrmMockup
             // Remaining security checks have been omitted to reduce complexity
         }
 
+        private static string GetEmailAddress(Entity entity)
+        {
+            if (entity.LogicalName == "systemuser")
+            {
+                return entity.GetAttributeValue<string>("internalemailaddress");
+            }
+            else if (entity.LogicalName == "queue")
+            {
+                return entity.GetAttributeValue<string>("emailaddress");
+            }
+            else
+            {
+                return entity.GetAttributeValue<string>("emailaddress1");
+            }
+        }
+
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef)
         {
             var request = MakeRequest<SendEmailRequest>(orgRequest);
@@ -111,7 +127,7 @@ namespace DG.Tools.XrmMockup
                         {
                             throw new FaultException($"{partyRef.LogicalName} with Id = {partyRef.Id} does not exist");
                         }
-                        if (string.IsNullOrEmpty(partyEntity.GetAttributeValue<string>("emailaddress1")))
+                        if (string.IsNullOrEmpty(GetEmailAddress(partyEntity)))
                         {
                             throw new FaultException($"{partyRef.LogicalName} with Id = {partyRef.Id} does not have an email address");
                         }
