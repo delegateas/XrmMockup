@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using XrmMockup.MetadataGenerator.Core.Models;
@@ -93,6 +94,11 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
 
     await using var serviceProvider = services.BuildServiceProvider();
 
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+    var version = Assembly.GetExecutingAssembly()
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+    logger.LogInformation("XrmMockup Metadata Generator v{Version}", version);
+
     try
     {
         var generator = serviceProvider.GetRequiredService<IMetadataGeneratorService>();
@@ -101,7 +107,6 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     }
     catch (Exception ex)
     {
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Metadata generation failed");
         return 1;
     }

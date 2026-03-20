@@ -184,6 +184,7 @@ temp/
 TestResults.xml
 
 # Nuget outputs
+.nuget/nuget.exe
 nuget/*.nupkg
 nupkg/
 release.cmd
@@ -208,6 +209,6 @@ docs/tools/FSharp.Formatting.svclog
 /tools/XrmContext/EnvInfo.config
 /src/MetadataGen/XrmMockupTest.csproj
 
-# Claude temp files
+# Claude files
 tmpclaude-*-cwd
-.nuget/nuget.exe
+.claude/*.local.json
