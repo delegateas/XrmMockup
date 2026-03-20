@@ -339,7 +339,14 @@ namespace DG.Tools.XrmMockup
                     ? request.RequestName
                     : throw new MockupException($"Could not create request for operation {operation}");
 
-                // TODO: Images for multiple are handled in IPluginExecutionContext4
+                // Populate IPluginExecutionContext4 image collections
+                multiplePluginContext.PreEntityImagesCollection = new[] {
+                    preImage != null ? new EntityImageCollection { { "PreImage", preImage } } : new EntityImageCollection()
+                };
+                multiplePluginContext.PostEntityImagesCollection = new[] {
+                    postImage != null ? new EntityImageCollection { { "PostImage", postImage } } : new EntityImageCollection()
+                };
+
                 TriggerSyncInternal(multipleOperation.ToString(), stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
             }
 
@@ -373,14 +380,20 @@ namespace DG.Tools.XrmMockup
 
                 var targets = pluginContext.InputParameters[multipleImageProperty] as EntityCollection;
 
-                foreach (var targetEntity in targets.Entities)
+                for (int i = 0; i < targets.Entities.Count; i++)
                 {
+                    var targetEntity = targets.Entities[i];
                     var singlePluginContext = pluginContext.Clone();
                     singlePluginContext.InputParameters[singleImageProperty] = targetEntity;
                     singlePluginContext.MessageName = singleMessageName;
-                    
-                    // TODO: Recalculate preImage and postImage here
-                    TriggerSyncInternal(singleOperation.ToString(), stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
+
+                    // Extract per-entity images from IPluginExecutionContext4 collections
+                    var entityPreImage = pluginContext.PreEntityImagesCollection.Length > i
+                        && pluginContext.PreEntityImagesCollection[i].TryGetValue("PreImage", out var pre) ? pre : preImage;
+                    var entityPostImage = pluginContext.PostEntityImagesCollection.Length > i
+                        && pluginContext.PostEntityImagesCollection[i].TryGetValue("PostImage", out var post) ? post : postImage;
+
+                    TriggerSyncInternal(singleOperation.ToString(), stage, targetEntity, entityPreImage, entityPostImage, singlePluginContext, core, executionOrderFilter);
                 }
             }
         }

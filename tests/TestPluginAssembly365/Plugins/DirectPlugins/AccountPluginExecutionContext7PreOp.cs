@@ -1,0 +1,45 @@
+using Microsoft.Xrm.Sdk;
+using System;
+
+namespace DG.Some.Namespace
+{
+    public class AccountPluginExecutionContext7PreOp : IPlugin
+    {
+        public void Execute(IServiceProvider serviceProvider)
+        {
+            // Resolve IPluginExecutionContext7 from the service provider
+            var context7 = (IPluginExecutionContext7)serviceProvider.GetService(typeof(IPluginExecutionContext7));
+            if (context7 == null)
+            {
+                throw new InvalidPluginExecutionException("IPluginExecutionContext7 resolved to null");
+            }
+
+            // Verify default property values
+            if (context7.IsPortalsClientCall)
+            {
+                throw new InvalidPluginExecutionException("IsPortalsClientCall should default to false");
+            }
+
+            if (context7.IsApplicationUser)
+            {
+                throw new InvalidPluginExecutionException("IsApplicationUser should default to false");
+            }
+
+            if (context7.AuthenticatedUserId == Guid.Empty)
+            {
+                throw new InvalidPluginExecutionException("AuthenticatedUserId should not be Guid.Empty");
+            }
+
+            // Verify that it still works as IPluginExecutionContext
+            var context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
+            if (context == null)
+            {
+                throw new InvalidPluginExecutionException("IPluginExecutionContext resolved to null");
+            }
+
+            // Signal success via shared variables
+            context7.SharedVariables["Context7Resolved"] = true;
+            context7.SharedVariables["AuthenticatedUserId"] = context7.AuthenticatedUserId;
+        }
+    }
+}
