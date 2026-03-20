@@ -339,7 +339,8 @@ namespace DG.Tools.XrmMockup
                     ? request.RequestName
                     : throw new MockupException($"Could not create request for operation {operation}");
 
-                // TODO: Images for multiple are handled in IPluginExecutionContext4
+                // Images for Multiple operations are accessed via IPluginExecutionContext4.PreEntityImagesCollection/PostEntityImagesCollection,
+                // not via PreEntityImages/PostEntityImages. Pass null until IPluginExecutionContext4 is implemented.
                 TriggerSyncInternal(multipleOperation.ToString(), stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
             }
 
@@ -378,9 +379,25 @@ namespace DG.Tools.XrmMockup
                     var singlePluginContext = pluginContext.Clone();
                     singlePluginContext.InputParameters[singleImageProperty] = targetEntity;
                     singlePluginContext.MessageName = singleMessageName;
-                    
-                    // TODO: Recalculate preImage and postImage here
-                    TriggerSyncInternal(singleOperation.ToString(), stage, targetEntity, preImage, postImage, singlePluginContext, core, executionOrderFilter);
+
+                    var entityRef = targetEntity.ToEntityReference();
+                    var currentImage = core.TryRetrieve(entityRef);
+
+                    Entity singlePreImage;
+                    Entity singlePostImage;
+                    if (stage == ExecutionStage.PostOperation)
+                    {
+                        singlePreImage = preImage;
+                        singlePostImage = currentImage;
+                    }
+                    else
+                    {
+                        singlePreImage = currentImage;
+                        singlePostImage = null;
+                    }
+
+                    TriggerSyncInternal(singleOperation.ToString(), stage, targetEntity,
+                        singlePreImage, singlePostImage, singlePluginContext, core, executionOrderFilter);
                 }
             }
         }
