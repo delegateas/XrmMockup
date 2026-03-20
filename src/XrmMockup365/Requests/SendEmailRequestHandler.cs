@@ -10,6 +10,7 @@ namespace DG.Tools.XrmMockup
     {
         const int EMAIL_STATE_COMPLETED = 1;
         const int EMAIL_STATUS_DRAFT = 1;
+        const int EMAIL_STATUS_FAILED = 8;
         const int EMAIL_STATUS_PENDING_SEND = 6;
         const int EMAIL_STATUS_SENT = 3;
 
@@ -72,9 +73,10 @@ namespace DG.Tools.XrmMockup
 
             var email = db.GetEntity(new EntityReference("email", request.EmailId));
 
-            if (email.GetAttributeValue<OptionSetValue>("statuscode").Value != EMAIL_STATUS_DRAFT)
+            var statusCode = email.GetAttributeValue<OptionSetValue>("statuscode").Value;
+            if (statusCode != EMAIL_STATUS_DRAFT && statusCode != EMAIL_STATUS_FAILED)
             {
-                throw new FaultException("Email must be in Draft status to send");
+                throw new FaultException("Email must be in Draft or Failed status to send");
             }
 
             if (email.GetAttributeValue<bool>("directioncode") is false)
