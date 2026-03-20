@@ -163,7 +163,7 @@ namespace DG.Tools.XrmMockup
             }
 
             sw.Stop();
-            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms � Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
+            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms - Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
                 sw.ElapsedMilliseconds,
                 pluginManager.PluginRegistrations.Count,
                 workflowManager.SynchronousWorkflowCount,
