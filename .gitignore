@@ -208,5 +208,6 @@ docs/tools/FSharp.Formatting.svclog
 /tools/XrmContext/EnvInfo.config
 /src/MetadataGen/XrmMockupTest.csproj
 
-# Claude temp files
+# Claude files
 tmpclaude-*-cwd
+.claude/*.local.json
