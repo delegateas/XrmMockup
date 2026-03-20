@@ -894,10 +894,17 @@ namespace DG.Tools.XrmMockup
                 // Populate IPluginExecutionContext4 post-images collection for Multiple operations
                 if (entityCollection != null)
                 {
+                    // For CreateMultiple, the original entities may not have their Ids set.
+                    // Use the response Ids (from CreateMultipleResponse) when available.
+                    var responseIds = response.Results.TryGetValue("Ids", out var idsObj) ? idsObj as Guid[] : null;
+
                     pluginContext.PostEntityImagesCollection = entityCollection.Entities
-                        .Select(e => {
+                        .Select((e, i) => {
                             var img = new EntityImageCollection();
-                            var post = e.Id != Guid.Empty ? TryRetrieve(e.ToEntityReference()) : null;
+                            var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
+                            var post = entityId != Guid.Empty
+                                ? TryRetrieve(new EntityReference(entityCollection.EntityName ?? e.LogicalName, entityId))
+                                : null;
                             if (post != null) img["PostImage"] = post;
                             return img;
                         }).ToArray();
