@@ -89,6 +89,15 @@ public class XrmMockupFixture : IDisposable
             PrimaryEntity = "contact",
             Rank = 10,
             Stage = 40 //pre op as it only updates a field name
+        },
+        new MetaPlugin()
+        {
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+            AssemblyName = "DG.Some.Namespace.AccountPluginExecutionContext7PreOp",
+            MessageName = "Create",
+            PrimaryEntity = "account",
+            Rank = 10,
+            Stage = 20
         }
     };
 }
