@@ -1,5 +1,12 @@
-### 1.17.12-preview.1 - 04 March 2026
-* Add: Added ability to log startup sequence and Plugin/API detection to a file
+### 1.18.0 - 23 March 2026
+* Add: Added ability to log startup sequence and Plugin/API detection to a file (#314)
+* Add: Support re-sending emails with Failed status in SendEmailRequestHandler (#318)
+* Add: IPluginExecutionContext2-7 support to PluginContext (#323)
+
+* Fix: Throw better exception when security role isn't found on create (#315)
+* Fix: Ordinal sorting (byte-code based instead of locale) of the SecurityRoles struct to reduce unnessary changes to the file (#316)
+* Fix: SendEmailRequestHandler to support all recipient entity types (#320)
+* Fix: NullReferenceException when plugins with post-images fire via Multiple requests (#322)
 
 ### 1.17.11 - 02 March 2026
 * Fix: Added validation of emailaddress on all to references in SendEmailRequest (@JonasGLund99) #313
