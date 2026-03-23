@@ -1316,7 +1316,7 @@ namespace DG.Tools.XrmMockup
         }
 
 
-        private Entity TryRetrieve(EntityReference reference)
+        internal Entity TryRetrieve(EntityReference reference)
         {
             return db.GetEntityOrNull(reference)?.CloneEntity();
         }

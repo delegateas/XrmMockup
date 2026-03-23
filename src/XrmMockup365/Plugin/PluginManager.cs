@@ -347,6 +347,7 @@ namespace DG.Tools.XrmMockup
                     postImage != null ? new EntityImageCollection { { "PostImage", postImage } } : new EntityImageCollection()
                 };
 
+
                 TriggerSyncInternal(multipleOperation.ToString(), stage, entityCollection, null, null, multiplePluginContext, core, executionOrderFilter);
             }
 
