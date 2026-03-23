@@ -163,7 +163,7 @@ namespace DG.Tools.XrmMockup
             }
 
             sw.Stop();
-            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms — Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
+            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms - Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
                 sw.ElapsedMilliseconds,
                 pluginManager.PluginRegistrations.Count,
                 workflowManager.SynchronousWorkflowCount,
@@ -776,6 +776,10 @@ namespace DG.Tools.XrmMockup
                 OrganizationName = OrganizationName,
                 OrganizationId = OrganizationId,
                 PrimaryEntityName = primaryRef?.LogicalName,
+                // IPluginExecutionContext2-7 defaults
+                IsPortalsClientCall = false,
+                IsApplicationUser = false,
+                AuthenticatedUserId = userRef.Id,
             };
             if (primaryRef != null)
             {
@@ -819,9 +823,23 @@ namespace DG.Tools.XrmMockup
 
             var shouldTrigger = settings.TriggerProcesses && entityInfo != null;
 
+            var entityCollection = entityInfo?.Item1 as EntityCollection;
+
             Entity preImage = TryRetrieve(primaryRef);
             if (preImage != null)
                 primaryRef.Id = preImage.Id;
+
+            // Populate IPluginExecutionContext4 pre-images collection for Multiple operations
+            if (entityCollection != null)
+            {
+                pluginContext.PreEntityImagesCollection = entityCollection.Entities
+                    .Select(e => {
+                        var img = new EntityImageCollection();
+                        var pre = e.Id != Guid.Empty ? TryRetrieve(e.ToEntityReference()) : null;
+                        if (pre != null) img["PreImage"] = pre;
+                        return img;
+                    }).ToArray();
+            }
 
             if (shouldTrigger)
             {
@@ -871,6 +889,25 @@ namespace DG.Tools.XrmMockup
                 else if (request is RetrieveRequest)
                 {
                     pluginContext.OutputParameters["BusinessEntity"] = TryRetrieve((request as RetrieveRequest).Target);
+                }
+
+                // Populate IPluginExecutionContext4 post-images collection for Multiple operations
+                if (entityCollection != null)
+                {
+                    // For CreateMultiple, the original entities may not have their Ids set.
+                    // Use the response Ids (from CreateMultipleResponse) when available.
+                    var responseIds = response.Results.TryGetValue("Ids", out var idsObj) ? idsObj as Guid[] : null;
+
+                    pluginContext.PostEntityImagesCollection = entityCollection.Entities
+                        .Select((e, i) => {
+                            var img = new EntityImageCollection();
+                            var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
+                            var post = entityId != Guid.Empty
+                                ? TryRetrieve(new EntityReference(entityCollection.EntityName ?? e.LogicalName, entityId))
+                                : null;
+                            if (post != null) img["PostImage"] = post;
+                            return img;
+                        }).ToArray();
                 }
 
                 var syncPostImage = TryRetrieve(primaryRef);
