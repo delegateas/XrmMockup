@@ -220,5 +220,37 @@ namespace DG.XrmMockupTest
                 );
             }
         }
+
+        /// <summary>
+        /// Verifies that a post-Update plugin can delete the target record without causing an error.
+        /// Regression test for: https://github.com/delegateas/XrmMockup/issues/303
+        /// </summary>
+        [Fact]
+        public void TestDeleteTargetInPostUpdatePlugin()
+        {
+            crm.DisableRegisteredPlugins(true);
+            crm.RegisterAdditionalPlugins(DG.Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(DG.Some.Namespace.AccountDeleteInPostPlugin));
+
+            var account = new Account { Name = "DeleteMe" };
+            account.Id = orgAdminService.Create(account);
+
+            // Update triggers AccountDeleteInPostPlugin which deletes the account — should not throw
+            var update = new Account { Id = account.Id, Name = "Updated" };
+            orgAdminService.Update(update);
+
+            // Verify the account was actually deleted by the plugin
+            var retrieved = orgAdminService.RetrieveMultiple(
+                new Microsoft.Xrm.Sdk.Query.QueryExpression(Account.EntityLogicalName)
+                {
+                    Criteria = new Microsoft.Xrm.Sdk.Query.FilterExpression
+                    {
+                        Conditions =
+                        {
+                            new Microsoft.Xrm.Sdk.Query.ConditionExpression("accountid", Microsoft.Xrm.Sdk.Query.ConditionOperator.Equal, account.Id)
+                        }
+                    }
+                });
+            Assert.Empty(retrieved.Entities);
+        }
     }
 }
