@@ -221,10 +221,6 @@ namespace DG.XrmMockupTest
             }
         }
 
-        /// <summary>
-        /// Verifies that a post-Update plugin can delete the target record without causing an error.
-        /// Regression test for: https://github.com/delegateas/XrmMockup/issues/303
-        /// </summary>
         [Fact]
         public void TestDeleteTargetInPostUpdatePlugin()
         {
