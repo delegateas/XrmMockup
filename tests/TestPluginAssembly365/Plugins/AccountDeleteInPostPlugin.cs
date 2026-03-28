@@ -11,7 +11,6 @@ namespace DG.Some.Namespace {
     /// Used to verify that XrmMockup handles record deletion inside a post-operation plugin gracefully.
     /// </summary>
     public class AccountDeleteInPostPlugin : TestPlugin {
-
         public AccountDeleteInPostPlugin() {
 #pragma warning disable CS0618 // Type or member is obsolete - disabled for testing purposes
             RegisterPluginStep<Account>(
