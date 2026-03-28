@@ -220,5 +220,33 @@ namespace DG.XrmMockupTest
                 );
             }
         }
+
+        [Fact]
+        public void TestDeleteTargetInPostUpdatePlugin()
+        {
+            crm.DisableRegisteredPlugins(true);
+            crm.RegisterAdditionalPlugins(DG.Tools.XrmMockup.PluginRegistrationScope.Temporary, typeof(DG.Some.Namespace.AccountDeleteInPostPlugin));
+
+            var account = new Account { Name = "DeleteMe" };
+            account.Id = orgAdminService.Create(account);
+
+            // Update triggers AccountDeleteInPostPlugin which deletes the account — should not throw
+            var update = new Account { Id = account.Id, Name = "Updated" };
+            orgAdminService.Update(update);
+
+            // Verify the account was actually deleted by the plugin
+            var retrieved = orgAdminService.RetrieveMultiple(
+                new QueryExpression(Account.EntityLogicalName)
+                {
+                    Criteria = new FilterExpression
+                    {
+                        Conditions =
+                        {
+                            new ConditionExpression("accountid", ConditionOperator.Equal, account.Id)
+                        }
+                    }
+                });
+            Assert.Empty(retrieved.Entities);
+        }
     }
 }
