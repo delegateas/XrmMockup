@@ -236,13 +236,13 @@ namespace DG.XrmMockupTest
 
             // Verify the account was actually deleted by the plugin
             var retrieved = orgAdminService.RetrieveMultiple(
-                new Microsoft.Xrm.Sdk.Query.QueryExpression(Account.EntityLogicalName)
+                new QueryExpression(Account.EntityLogicalName)
                 {
-                    Criteria = new Microsoft.Xrm.Sdk.Query.FilterExpression
+                    Criteria = new FilterExpression
                     {
                         Conditions =
                         {
-                            new Microsoft.Xrm.Sdk.Query.ConditionExpression("accountid", Microsoft.Xrm.Sdk.Query.ConditionOperator.Equal, account.Id)
+                            new ConditionExpression("accountid", ConditionOperator.Equal, account.Id)
                         }
                     }
                 });
