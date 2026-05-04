@@ -155,7 +155,6 @@ namespace DG.Tools.XrmMockup {
             { "yesterday", ConditionOperator.Yesterday }
         };
 
-
         public static EntityReference GetPrimaryEntityReferenceFromRequest(OrganizationRequest request)
         {
             switch (request)
