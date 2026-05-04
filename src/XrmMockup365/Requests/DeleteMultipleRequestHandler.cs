@@ -26,7 +26,7 @@ namespace DG.Tools.XrmMockup
             var distinctLogicalNames = request.Targets.Select(e => e.LogicalName).Distinct().ToList();
             if (distinctLogicalNames.Count > 1)
             {
-                throw new FaultException($"All entity references in a DeleteMultipleRequest must have the same entity logical name.");
+                throw new FaultException("All entity references in a DeleteMultipleRequest must have the same entity logical name.");
             }
 
             foreach (var entityRef in request.Targets)
