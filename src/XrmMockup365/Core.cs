@@ -439,6 +439,7 @@ namespace DG.Tools.XrmMockup
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
             new CreateMultipleRequestHandler(this, db, metadata, security),
             new UpdateMultipleRequestHandler(this, db, metadata, security),
+            new DeleteMultipleRequestHandler(this, db, metadata, security),
             new UpsertMultipleRequestHandler(this, db, metadata, security),
             new ExecuteTransactionRequestHandler(this, db, metadata, security),
             new WinQuoteRequestHandler(this, db, metadata, security),

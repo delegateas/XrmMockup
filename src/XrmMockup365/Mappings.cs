@@ -17,6 +17,7 @@ namespace DG.Tools.XrmMockup {
             { typeof(AssignRequest), nameof(AssignRequest.Target) },
             { typeof(AssociateRequest), nameof(AssociateRequest.Target) },
             { typeof(CreateMultipleRequest), nameof(CreateMultipleRequest.Targets) },
+            { typeof(DeleteMultipleRequest), nameof(DeleteMultipleRequest.Targets) },
             { typeof(CreateRequest), nameof(CreateRequest.Target) },
             { typeof(DeleteRequest), nameof(DeleteRequest.Target) },
             { typeof(DeliverIncomingEmailRequest), nameof(DeliverIncomingEmailRequest.MessageId) },
