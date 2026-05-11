@@ -144,7 +144,8 @@ namespace DG.Tools.XrmMockup
 
         private Entity AddPostImageAttributesToEntity(Entity entity, Entity preImage, Entity postImage)
         {
-            if (Operation.Matches(EventOperation.Update) && Stage == ExecutionStage.PostOperation)
+            if (Operation.Matches(EventOperation.Update) && Stage == ExecutionStage.PostOperation
+                && preImage != null && postImage != null)
             {
                 var shadowAddedAttributes = postImage.Attributes.Where(a => !preImage.Attributes.ContainsKey(a.Key) && !entity.Attributes.ContainsKey(a.Key));
                 entity = entity.CloneEntity();
@@ -215,7 +216,7 @@ namespace DG.Tools.XrmMockup
                 {
                     thisPluginContext.PostEntityImages.Add(image.ImageName, postImage.CloneEntity(Metadata.GetMetadata(postImage.LogicalName), cols));
                 }
-                if (preImage != null && imageType == ImageType.PreImage || imageType == ImageType.Both)
+                if (preImage != null && (imageType == ImageType.PreImage || imageType == ImageType.Both))
                 {
                     thisPluginContext.PreEntityImages.Add(image.ImageName, preImage.CloneEntity(Metadata.GetMetadata(preImage.LogicalName), cols));
                 }

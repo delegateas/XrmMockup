@@ -264,17 +264,20 @@ namespace DG.Tools.XrmMockup.Internal
             RelationshipMetadataBase relationshipBase;
             foreach (var meta in entityMetadata)
             {
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.MetadataId == metadataId);
+                var manyToMany = meta.Value.ManyToManyRelationships ?? Array.Empty<ManyToManyRelationshipMetadata>();
+                relationshipBase = manyToMany.FirstOrDefault(rel => rel.MetadataId == metadataId);
                 if (relationshipBase != null)
                 {
                     return relationshipBase;
                 }
-                relationshipBase = meta.Value.ManyToManyRelationships.FirstOrDefault(rel => rel.SchemaName == name);
+                relationshipBase = manyToMany.FirstOrDefault(rel => rel.SchemaName == name);
                 if (relationshipBase != null)
                 {
                     return relationshipBase;
                 }
-                var oneToManyBases = meta.Value.ManyToOneRelationships.Concat(meta.Value.OneToManyRelationships);
+                var manyToOne = meta.Value.ManyToOneRelationships ?? Array.Empty<OneToManyRelationshipMetadata>();
+                var oneToMany = meta.Value.OneToManyRelationships ?? Array.Empty<OneToManyRelationshipMetadata>();
+                var oneToManyBases = manyToOne.Concat(oneToMany);
                 relationshipBase = oneToManyBases.FirstOrDefault(rel => rel.MetadataId == metadataId);
                 if (relationshipBase != null)
                 {

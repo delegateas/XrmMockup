@@ -272,7 +272,7 @@ namespace DG.Tools.XrmMockup
                 var req = new CreateRequest
                 {
                     Target = clonedEntity.ToActivityPointer(entityMetadata),
-                    Parameters = { [MockupExecutionContext.Key] = new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK) }
+                    Parameters = { [MockupExecutionContext.Key] = new MockupServiceSettings(true, settings.TriggerWorkflows, true, MockupServiceSettings.Role.SDK) }
                 };
                 core.Execute(req, userRef);
             }
@@ -348,8 +348,9 @@ namespace DG.Tools.XrmMockup
             {
                 Target = Utility.CreateDefaultTeam(clonedEntity, userRef)
             };
+            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
             req.Parameters[MockupExecutionContext.Key] =
-                new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK);
+                new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK);
             core.Execute(req, userRef);
         }
     }

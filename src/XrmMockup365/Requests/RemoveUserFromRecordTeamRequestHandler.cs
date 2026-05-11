@@ -25,7 +25,7 @@ namespace DG.Tools.XrmMockup
 
             var callingUserPrivs = security.GetPrincipalPrivilege(userRef.Id);
 
-            var entityMetadata = metadata.EntityMetadata.Single(x => x.Value.ObjectTypeCode.Value == ttRow.GetAttributeValue<int>("objecttypecode"));
+            var entityMetadata = metadata.EntityMetadata.Single(x => x.Value.ObjectTypeCode.HasValue && x.Value.ObjectTypeCode.Value == ttRow.GetAttributeValue<int>("objecttypecode"));
 
             var callingPrivs = callingUserPrivs[entityMetadata.Value.LogicalName];
 

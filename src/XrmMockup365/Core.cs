@@ -1,16 +1,20 @@
-﻿using DG.Tools.XrmMockup.Database;
+using DG.Tools.XrmMockup.Database;
 using DG.Tools.XrmMockup.Internal;
+using DG.Tools.XrmMockup.Logging;
 using DG.Tools.XrmMockup.Serialization;
+using DG.Tools.XrmMockup.Online;
 using XrmPluginCore.Enums;
 using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Organization;
 using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -59,10 +63,11 @@ namespace DG.Tools.XrmMockup
         private XrmDb db;
         private Dictionary<string, Snapshot> snapshots;
         private Dictionary<string, Type> entityTypeMap = new Dictionary<string, Type>();
-        private OrganizationServiceProxy OnlineProxy;
+        private IOnlineDataService OnlineDataService;
         private int baseCurrencyPrecision;
         private FormulaFieldEvaluator FormulaFieldEvaluator { get; set; }
         private List<string> systemAttributeNames;
+        internal FileBlockStore FileBlockStore { get; private set; }
 
         /// <summary>
         /// Creates a new instance of Core
@@ -78,8 +83,9 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = SecurityRoles,
                 BaseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid"),
                 BaseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision"),
-                OnlineProxy = null,
-                EntityTypeMap = new Dictionary<string, Type>()
+                OnlineDataService = null,
+                EntityTypeMap = new Dictionary<string, Type>(),
+                LoggerFactory = ResolveLoggerFactory(Settings)
             };
 
             InitializeCore(initData);
@@ -98,8 +104,9 @@ namespace DG.Tools.XrmMockup
                 SecurityRoles = staticCache.SecurityRoles,
                 BaseCurrency = staticCache.BaseCurrency,
                 BaseCurrencyPrecision = staticCache.BaseCurrencyPrecision,
-                OnlineProxy = staticCache.OnlineProxy,
-                EntityTypeMap = staticCache.EntityTypeMap
+                OnlineDataService = staticCache.OnlineDataService,
+                EntityTypeMap = staticCache.EntityTypeMap,
+                LoggerFactory = staticCache.LoggerFactory
             };
 
             InitializeCore(initData);
@@ -110,15 +117,20 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         private void InitializeCore(CoreInitializationData initData)
         {
+            var sw = Stopwatch.StartNew();
+            var loggerFactory = initData.LoggerFactory ?? NullLoggerFactory.Instance;
+            var coreLogger = loggerFactory.CreateLogger(typeof(Core).FullName);
+
             TimeOffset = new TimeSpan();
             settings = initData.Settings;
             metadata = initData.Metadata;
             BaseCurrency = initData.BaseCurrency;
             baseCurrencyPrecision = initData.BaseCurrencyPrecision;
-            OnlineProxy = initData.OnlineProxy;
+            OnlineDataService = initData.OnlineDataService;
+            db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineDataService);
             entityTypeMap = initData.EntityTypeMap;
-
-            db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineProxy);
+            EnsureFileAttachmentMetadata();
+            FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
             security = new Security(this, initData.Metadata, initData.SecurityRoles, db);
             TracingServiceFactory = initData.Settings.TracingServiceFactory ?? new TracingServiceFactory();
@@ -131,10 +143,15 @@ namespace DG.Tools.XrmMockup
                 allPlugins.AddRange(initData.Settings.IPluginMetadata);
             }
 
-            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins);
+            var pluginLogger = loggerFactory.CreateLogger(typeof(PluginManager).FullName);
+            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins, pluginLogger);
+
+            var workflowLogger = loggerFactory.CreateLogger(typeof(WorkflowManager).FullName);
             workflowManager = new WorkflowManager(initData.Settings.CodeActivityInstanceTypes, initData.Settings.IncludeAllWorkflows,
-                initData.Workflows, initData.Metadata.EntityMetadata);
-            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes);
+                initData.Workflows, initData.Metadata.EntityMetadata, workflowLogger);
+
+            var apiLogger = loggerFactory.CreateLogger(typeof(CustomApiManager).FullName);
+            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes, apiLogger);
 
             var typesMissingRegistration = pluginManager.missingRegistrations
                 .Intersect(customApiManager.missingRegistration)
@@ -144,6 +161,14 @@ namespace DG.Tools.XrmMockup
                 var typeNames = string.Join(", ", typesMissingRegistration.Select(t => t.FullName));
                 throw new Exception($"The following plugin types are missing plugin or custom api registrations: {typeNames}");
             }
+
+            sw.Stop();
+            coreLogger.LogInformation("XrmMockup initialized in {ElapsedMs}ms - Plugins: {PluginCount}, Workflows: sync={SyncCount} async={AsyncCount}, Custom APIs: {ApiCount}",
+                sw.ElapsedMilliseconds,
+                pluginManager.PluginRegistrations.Count,
+                workflowManager.SynchronousWorkflowCount,
+                workflowManager.AsynchronousWorkflowCount,
+                customApiManager.RegisteredApiCount);
 
             systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
 
@@ -182,7 +207,7 @@ namespace DG.Tools.XrmMockup
             var baseCurrency = metadata.BaseOrganization.GetAttributeValue<EntityReference>("basecurrencyid");
             var baseCurrencyPrecision = metadata.BaseOrganization.GetAttributeValue<int>("pricingdecimalprecision");
 
-            var onlineProxy = BuildOnlineProxy(settings);
+            var onlineDataService = BuildOnlineDataService(settings);
             var entityTypeMap = new Dictionary<string, Type>();
 
             // Build entity type map for proxy types if enabled
@@ -191,29 +216,41 @@ namespace DG.Tools.XrmMockup
                 BuildEntityTypeMap(settings, entityTypeMap);
             }
 
-            // Note: IPluginMetadata is handled per-instance in the Core constructor 
+            // Note: IPluginMetadata is handled per-instance in the Core constructor
             // to avoid modifying the shared cache
 
-            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap, 
-                baseCurrency, baseCurrencyPrecision, onlineProxy);
+            var loggerFactory = ResolveLoggerFactory(settings);
+
+            return new StaticMetadataCache(metadata, workflows, securityRoles, entityTypeMap,
+                baseCurrency, baseCurrencyPrecision, onlineDataService, loggerFactory);
         }
 
-        private static OrganizationServiceProxy BuildOnlineProxy(XrmMockupSettings settings)
+        private static ILoggerFactory ResolveLoggerFactory(XrmMockupSettings settings)
         {
+            if (settings.LoggerFactory != null)
+                return settings.LoggerFactory;
+
+            if (!string.IsNullOrEmpty(settings.LogFilePath))
+                return new FileLoggerFactory(settings.LogFilePath, settings.MinLogLevel);
+
+            return NullLoggerFactory.Instance;
+        }
+
+        private static IOnlineDataService BuildOnlineDataService(XrmMockupSettings settings)
+        {
+#if DATAVERSE_SERVICE_CLIENT
+            // Allow injection for testing
+            if (settings.OnlineDataServiceFactory != null)
+            {
+                return settings.OnlineDataServiceFactory();
+            }
+
             if (settings.OnlineEnvironment.HasValue)
             {
                 var env = settings.OnlineEnvironment.Value;
-                var orgHelper = new OrganizationHelper(
-                    new Uri(env.uri),
-                    env.providerType,
-                    env.username,
-                    env.password,
-                    env.domain);
-                var proxy = orgHelper.GetServiceProxy();
-                if (settings.EnableProxyTypes == true)
-                    proxy.EnableProxyTypes();
-                return proxy;
+                return new OnlineDataService(env.Url);
             }
+#endif
             return null;
         }
 
@@ -304,7 +341,7 @@ namespace DG.Tools.XrmMockup
             this.OrganizationName = "MockupOrganization";
 
             // Add organization entity to database so it can be queried
-            if (metadata.BaseOrganization != null)
+            if (metadata.BaseOrganization != null && metadata.EntityMetadata.ContainsKey(metadata.BaseOrganization.LogicalName))
             {
                 var orgEntity = CloneEntity(metadata.BaseOrganization);
                 orgEntity.Id = this.OrganizationId;
@@ -397,9 +434,12 @@ namespace DG.Tools.XrmMockup
             new InitializeFileBlocksUploadRequestHandler(this, db, metadata, security),
             new UploadBlockRequestHandler(this, db, metadata, security),
             new CommitFileBlocksUploadRequestHandler(this, db, metadata, security),
+            new InitializeFileBlocksDownloadRequestHandler(this, db, metadata, security),
+            new DownloadBlockRequestHandler(this, db, metadata, security),
             new InstantiateTemplateRequestHandler(this, db, metadata, security),
             new CreateMultipleRequestHandler(this, db, metadata, security),
             new UpdateMultipleRequestHandler(this, db, metadata, security),
+            new DeleteMultipleRequestHandler(this, db, metadata, security),
             new UpsertMultipleRequestHandler(this, db, metadata, security),
             new ExecuteTransactionRequestHandler(this, db, metadata, security),
             new WinQuoteRequestHandler(this, db, metadata, security),
@@ -420,25 +460,6 @@ namespace DG.Tools.XrmMockup
                     entityTypeMap.Add(logicalName, type);
                 }
             }
-        }
-
-        private OrganizationServiceProxy GetOnlineProxy()
-        {
-            if (OnlineProxy == null && settings.OnlineEnvironment.HasValue)
-            {
-                var env = settings.OnlineEnvironment.Value;
-                var orgHelper = new OrganizationHelper(
-                    new Uri(env.uri),
-                    env.providerType,
-                    env.username,
-                    env.password,
-                    env.domain);
-                this.OnlineProxy = orgHelper.GetServiceProxy();
-                if (settings.EnableProxyTypes == true)
-                    OnlineProxy.EnableProxyTypes();
-            }
-
-            return OnlineProxy;
         }
 
         internal IOrganizationService GetWorkflowService()
@@ -756,6 +777,10 @@ namespace DG.Tools.XrmMockup
                 OrganizationName = OrganizationName,
                 OrganizationId = OrganizationId,
                 PrimaryEntityName = primaryRef?.LogicalName,
+                // IPluginExecutionContext2-7 defaults
+                IsPortalsClientCall = false,
+                IsApplicationUser = false,
+                AuthenticatedUserId = userRef.Id,
             };
             if (primaryRef != null)
             {
@@ -799,9 +824,23 @@ namespace DG.Tools.XrmMockup
 
             var shouldTrigger = settings.TriggerProcesses && entityInfo != null;
 
+            var entityCollection = entityInfo?.Item1 as EntityCollection;
+
             Entity preImage = TryRetrieve(primaryRef);
             if (preImage != null)
                 primaryRef.Id = preImage.Id;
+
+            // Populate IPluginExecutionContext4 pre-images collection for Multiple operations
+            if (entityCollection != null)
+            {
+                pluginContext.PreEntityImagesCollection = entityCollection.Entities
+                    .Select(e => {
+                        var img = new EntityImageCollection();
+                        var pre = e.Id != Guid.Empty ? TryRetrieve(e.ToEntityReference()) : null;
+                        if (pre != null) img["PreImage"] = pre;
+                        return img;
+                    }).ToArray();
+            }
 
             if (shouldTrigger)
             {
@@ -825,7 +864,11 @@ namespace DG.Tools.XrmMockup
 
                 // Pre-operation
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                }
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
 
                 // System Pre-operation
@@ -849,6 +892,25 @@ namespace DG.Tools.XrmMockup
                     pluginContext.OutputParameters["BusinessEntity"] = TryRetrieve((request as RetrieveRequest).Target);
                 }
 
+                // Populate IPluginExecutionContext4 post-images collection for Multiple operations
+                if (entityCollection != null)
+                {
+                    // For CreateMultiple, the original entities may not have their Ids set.
+                    // Use the response Ids (from CreateMultipleResponse) when available.
+                    var responseIds = response.Results.TryGetValue("Ids", out var idsObj) ? idsObj as Guid[] : null;
+
+                    pluginContext.PostEntityImagesCollection = entityCollection.Entities
+                        .Select((e, i) => {
+                            var img = new EntityImageCollection();
+                            var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
+                            var post = entityId != Guid.Empty
+                                ? TryRetrieve(new EntityReference(entityCollection.EntityName ?? e.LogicalName, entityId))
+                                : null;
+                            if (post != null) img["PostImage"] = post;
+                            return img;
+                        }).ToArray();
+                }
+
                 var syncPostImage = TryRetrieve(primaryRef);
 
                 //copy the createon etc system attributes onto the target so they are available for postoperation processing
@@ -860,21 +922,37 @@ namespace DG.Tools.XrmMockup
                 pluginManager.TriggerSystem(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
 
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-                workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
+                }
+
                 pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
                     
                 var asyncPostImage = TryRetrieve(primaryRef);
                 pluginManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
-                workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
+                }
 
                 //When last Sync has been executed we trigger the Async jobs.
                 if (parentPluginContext == null)
                 {
                     pluginManager.TriggerAsyncWaitingJobs();
-                    workflowManager.TriggerAsync(this);
+
+                    if (settings.TriggerWorkflows)
+                    {
+                        workflowManager.TriggerAsync(this);
+                    }
                 }
 
-                workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
+                if (settings.TriggerWorkflows)
+                {
+                    workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
+                }
             }
 
             // Trigger Extension
@@ -898,13 +976,13 @@ namespace DG.Tools.XrmMockup
                     var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
                     var reference = primaryRef ?? new EntityReference(entityLogicalName, createResponse.id);
 
-                    var createdEntity = GetDbRow(reference).ToEntity();
+                    var createdEntity = TryRetrieve(reference);
                     TriggerExtension(
                         new MockupService(this, userRef.Id, pluginContext), request,
                         createdEntity, null, userRef);
                     break;
                 case "Update":
-                    var updatedEntity = GetDbRow(primaryRef).ToEntity();
+                    var updatedEntity = TryRetrieve(primaryRef);
                     TriggerExtension(
                         new MockupService(this, userRef.Id, pluginContext), request,
                         updatedEntity, preImage, userRef);
@@ -1096,6 +1174,14 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        /// <summary>
+        /// Prefills the local database with data from the online service based on the query.
+        /// </summary>
+        internal void PrefillDBWithOnlineData(QueryExpression query)
+        {
+            db.PrefillDBWithOnlineData(query);
+        }
+
         internal Dictionary<string, Dictionary<AccessRights, PrivilegeDepth>> GetPrivilege(Guid principleId)
         {
             return security.GetPrincipalPrivilege(principleId);
@@ -1231,7 +1317,7 @@ namespace DG.Tools.XrmMockup
         }
 
 
-        private Entity TryRetrieve(EntityReference reference)
+        internal Entity TryRetrieve(EntityReference reference)
         {
             return db.GetEntityOrNull(reference)?.CloneEntity();
         }
@@ -1331,7 +1417,8 @@ namespace DG.Tools.XrmMockup
             workflowManager.ResetWorkflows(settings.IncludeAllWorkflows);
 
             pluginManager.ResetPlugins();
-            this.db = new XrmDb(metadata.EntityMetadata, GetOnlineProxy());
+            this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
+            EnsureFileAttachmentMetadata();
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
@@ -1339,7 +1426,12 @@ namespace DG.Tools.XrmMockup
 
         internal EntityMetadata GetEntityMetadata(string entityLogicalName)
         {
-            return metadata.EntityMetadata[entityLogicalName];
+            if (!metadata.EntityMetadata.TryGetValue(entityLogicalName, out var entityMetadata))
+            {
+                throw new MockupException($"No EntityMetadata found for entity with logical name '{entityLogicalName}'");
+            }
+
+            return entityMetadata;
         }
 
         internal void ExecuteCalculatedFields(DbRow row)
@@ -1358,7 +1450,7 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                var tree = WorkflowConstructor.ParseCalculated(definition);
+                var tree = WorkflowConstructor.ParseCalculated(definition, $"{attr.EntityLogicalName}.{attr.LogicalName}");
                 var factory = ServiceFactory;
                 tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
@@ -1399,6 +1491,54 @@ namespace DG.Tools.XrmMockup
         internal void AddSecurityRole(SecurityRole role)
         {
             security.AddSecurityRole(role);
+        }
+
+        private void EnsureFileAttachmentMetadata()
+        {
+            if (db.IsValidEntity("fileattachment"))
+                return;
+
+            var entityMetadata = new EntityMetadata();
+            SetMetadataProperty(entityMetadata, "LogicalName", "fileattachment");
+            SetMetadataProperty(entityMetadata, "PrimaryIdAttribute", "fileattachmentid");
+            SetMetadataProperty(entityMetadata, "PrimaryNameAttribute", "filename");
+
+            var attributes = new AttributeMetadata[]
+            {
+                CreateAttributeMetadata<UniqueIdentifierAttributeMetadata>("fileattachmentid", AttributeTypeCode.Uniqueidentifier),
+                CreateAttributeMetadata<StringAttributeMetadata>("filename", AttributeTypeCode.String),
+                CreateAttributeMetadata<DateTimeAttributeMetadata>("createdon", AttributeTypeCode.DateTime),
+                CreateAttributeMetadata<BigIntAttributeMetadata>("filesizeinbytes", AttributeTypeCode.BigInt),
+                CreateAttributeMetadata<StringAttributeMetadata>("mimetype", AttributeTypeCode.String),
+                CreateAttributeMetadata<StringAttributeMetadata>("objecttypecode", AttributeTypeCode.String),
+                CreateAttributeMetadata<StringAttributeMetadata>("regardingfieldname", AttributeTypeCode.String),
+                CreateAttributeMetadata<LookupAttributeMetadata>("objectid", AttributeTypeCode.Lookup)
+            };
+
+            SetMetadataProperty(entityMetadata, "Attributes", attributes);
+            db.RegisterEntityMetadata(entityMetadata);
+        }
+
+        private static void SetMetadataProperty(object metadata, string propertyName, object value)
+        {
+            var property = metadata.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (property != null && property.CanWrite)
+            {
+                property.SetValue(metadata, value);
+                return;
+            }
+
+            var field = metadata.GetType().GetField($"_{char.ToLower(propertyName[0])}{propertyName.Substring(1)}",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            field?.SetValue(metadata, value);
+        }
+
+        private static T CreateAttributeMetadata<T>(string logicalName, AttributeTypeCode typeCode) where T : AttributeMetadata, new()
+        {
+            var attribute = new T();
+            SetMetadataProperty(attribute, "LogicalName", logicalName);
+            SetMetadataProperty(attribute, "AttributeType", typeCode);
+            return attribute;
         }
 
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,

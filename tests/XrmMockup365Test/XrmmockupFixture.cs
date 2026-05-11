@@ -2,20 +2,17 @@
 using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
 using XrmPluginCore;
-using Microsoft.Xrm.Sdk.Client;
 using System;
 using TestPluginAssembly365.Plugins.LegacyDaxif;
 using TestPluginAssembly365.Plugins.ServiceBased;
 
 public class XrmMockupFixture : IDisposable
 {
-    // Shared settings instances to ensure metadata cache hits
+    // Shared settings instance to ensure metadata cache hits
     private static XrmMockupSettings _sharedSettings;
-    private static XrmMockupSettings _sharedRealDataSettings;
     private static readonly object _settingsLock = new object();
-    
+
     public XrmMockupSettings Settings => _sharedSettings;
-    public XrmMockupSettings RealDataSettings => _sharedRealDataSettings;
 
     public XrmMockupFixture()
     {
@@ -34,31 +31,6 @@ public class XrmMockupFixture : IDisposable
                     MetadataDirectoryPath = GetMetadataPath(),
                     IPluginMetadata = metaPlugins
                 };
-
-                try
-                {
-                    _sharedRealDataSettings = new XrmMockupSettings
-                    {
-                        BasePluginTypes = _sharedSettings.BasePluginTypes,
-                        CodeActivityInstanceTypes = _sharedSettings.CodeActivityInstanceTypes,
-                        EnableProxyTypes = _sharedSettings.EnableProxyTypes,
-                        IncludeAllWorkflows = _sharedSettings.IncludeAllWorkflows,
-                        ExceptionFreeRequests = _sharedSettings.ExceptionFreeRequests,
-                        MetadataDirectoryPath = GetMetadataPath(),
-                        OnlineEnvironment = new Env
-                        {
-                            providerType = AuthenticationProviderType.OnlineFederation,
-                            uri = "https://exampleURL/XRMServices/2011/Organization.svc",
-                            username = "exampleUser",
-                            password = "examplePass"
-                        }
-                    };
-                }
-                catch
-                {
-                    // ignore - set to null
-                    _sharedRealDataSettings = null;
-                }
             }
         }
     }
@@ -117,6 +89,15 @@ public class XrmMockupFixture : IDisposable
             PrimaryEntity = "contact",
             Rank = 10,
             Stage = 40 //pre op as it only updates a field name
+        },
+        new MetaPlugin()
+        {
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+            AssemblyName = "DG.Some.Namespace.AccountPluginExecutionContext7PreOp",
+            MessageName = "Create",
+            PrimaryEntity = "account",
+            Rank = 10,
+            Stage = 20
         }
     };
 }

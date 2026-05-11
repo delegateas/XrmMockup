@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
@@ -22,6 +24,8 @@ namespace DG.Tools.XrmMockup {
 
 
     internal class WorkflowManager {
+        private readonly ILogger _logger;
+
         // Static caches shared across all WorkflowManager instances
         private static readonly ConcurrentDictionary<string, WorkflowTree> _staticParsedWorkflows = new ConcurrentDictionary<string, WorkflowTree>();
         private static readonly ConcurrentDictionary<string, CodeActivity> _staticCodeActivityCache = new ConcurrentDictionary<string, CodeActivity>();
@@ -35,9 +39,15 @@ namespace DG.Tools.XrmMockup {
         private Dictionary<string, CodeActivity> codeActivityTriggers;
         private Dictionary<Guid, WorkflowTree> parsedWorkflows;
 
-        private Queue<WorkflowExecutionContext> pendingAsyncWorkflows;
+        private ConcurrentQueue<WorkflowExecutionContext> pendingAsyncWorkflows;
 
-        public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata) {
+        internal int SynchronousWorkflowCount => synchronousWorkflows.Count;
+        internal int AsynchronousWorkflowCount => asynchronousWorkflows.Count;
+        internal int ActionsCount => actions.Count;
+        internal int CodeActivityCount => codeActivityTriggers.Count;
+
+        public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata, ILogger logger = null) {
+            _logger = logger ?? NullLogger.Instance;
             this.metadata = metadata;
             this.actions = mixedWorkflows.Where(w => w.GetAttributeValue<OptionSetValue>("category").Value == 3).ToList();
 
@@ -48,7 +58,7 @@ namespace DG.Tools.XrmMockup {
             codeActivityTriggers = new Dictionary<string, CodeActivity>();
             parsedWorkflows = new Dictionary<Guid, WorkflowTree>();
 
-            pendingAsyncWorkflows = new Queue<WorkflowExecutionContext>();
+            pendingAsyncWorkflows = new ConcurrentQueue<WorkflowExecutionContext>();
 
             if (!workflows.All(e => e.LogicalName == "workflow")) {
                 throw new MockupException("Trying to parse workflow, but found a non workflow entity");
@@ -58,7 +68,7 @@ namespace DG.Tools.XrmMockup {
                 foreach (var codeActivityInstance in codeActivityInstances) {
                     foreach (var type in codeActivityInstance.Assembly.GetTypes()) {
                         if (type.BaseType != codeActivityInstance.BaseType || type.Module.Name.StartsWith("System") || type.IsAbstract) continue;
-                        
+
                         // Use static cache to avoid recreating CodeActivity instances
                         var codeActivity = _staticCodeActivityCache.GetOrAdd(type.Name, typeName =>
                         {
@@ -67,6 +77,7 @@ namespace DG.Tools.XrmMockup {
 
                         if (!codeActivityTriggers.ContainsKey(type.Name)) {
                             codeActivityTriggers.Add(type.Name, codeActivity);
+                            _logger.LogDebug("Discovered CodeActivity: {TypeName}", type.Name);
                         }
                     }
                 }
@@ -77,6 +88,9 @@ namespace DG.Tools.XrmMockup {
                     AddWorkflow(workflow);
                 }
             }
+
+            _logger.LogInformation("Workflows loaded: sync={SyncCount}, async={AsyncCount}, actions={ActionsCount}, code activities={CodeActivityCount}",
+                synchronousWorkflows.Count, asynchronousWorkflows.Count, actions.Count, codeActivityTriggers.Count);
         }
 
         
@@ -103,11 +117,8 @@ namespace DG.Tools.XrmMockup {
 
         public void TriggerAsync(Core core)
         {
-            while (pendingAsyncWorkflows.Count > 0)
+            while (pendingAsyncWorkflows.TryDequeue(out var workflowContext))
             {
-                var workflowContext = pendingAsyncWorkflows.Dequeue();
-
-
                 Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
 
                 var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
@@ -131,7 +142,8 @@ namespace DG.Tools.XrmMockup {
 
         internal void ExecuteWaitingWorkflows(PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
-            var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+            var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
             foreach (var waitInfo in waitingWorkflows.ToList()) {
                 waitingWorkflows.Remove(waitInfo);
                 var variables = waitInfo.VariablesInstance;
@@ -394,7 +406,8 @@ namespace DG.Tools.XrmMockup {
 
         internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, Core core) {
             var provider = new MockupServiceProviderAndFactory(core, pluginContext, core.TracingServiceFactory);
-            var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, true, MockupServiceSettings.Role.SDK));
+            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+            var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
             return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
         }
 
@@ -428,18 +441,21 @@ namespace DG.Tools.XrmMockup {
                 _staticParsedWorkflows.TryAdd(cacheKey, parsed);
                 
                 return parsed;
-            } catch (Exception) {
-                Console.WriteLine($"Tried to parse workflow with name '{workflow.Attributes["name"]}' but failed");
+            } catch (Exception ex) {
+                _logger.LogWarning(ex, "Failed to parse workflow '{WorkflowName}'", workflow.Attributes["name"]);
             }
             return null;
         }
 
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
+            var name = workflow.GetAttributeValue<string>("name") ?? workflow.Id.ToString();
             if (workflow.GetOptionSetValue<Workflow_Mode>("mode") == Workflow_Mode.Background) {
                 asynchronousWorkflows.Add(workflow);
+                _logger.LogDebug("Added async workflow: {WorkflowName}", name);
             } else {
                 synchronousWorkflows.Add(workflow);
+                _logger.LogDebug("Added sync workflow: {WorkflowName}", name);
             }
         }
 

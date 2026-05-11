@@ -1,3 +1,35 @@
+### 1.18.0 - 23 March 2026
+* Add: Added ability to log startup sequence and Plugin/API detection to a file (#314)
+* Add: Support re-sending emails with Failed status in SendEmailRequestHandler (#318)
+* Add: IPluginExecutionContext2-7 support to PluginContext (#323)
+
+* Fix: Throw better exception when security role isn't found on create (#315)
+* Fix: Ordinal sorting (byte-code based instead of locale) of the SecurityRoles struct to reduce unnessary changes to the file (#316)
+* Fix: SendEmailRequestHandler to support all recipient entity types (#320)
+* Fix: NullReferenceException when plugins with post-images fire via Multiple requests (#322)
+
+### 1.17.11 - 02 March 2026
+* Fix: Added validation of emailaddress on all to references in SendEmailRequest (@JonasGLund99) #313
+
+### 1.17.10 - 24 February 2026
+* Add: NotAny join support (@KristianKlodeD) (#281)
+
+### 1.17.9 - 15 January 2026
+* Add: File block upload/download support (@magesoe) (#307)
+
+### 1.17.8 - 12 January 2026
+* Add: Support for specifying which security roles are included (@magesoe) (#304)
+* Add: Settings option to skip execution of workflows. Defaults to the value of TriggerProcesses but allows specific override (@mkholt) (#305)
+* Add: Better error messages when workflow can't find code-activity (@mkholt) (#305)
+* Add: Better error message when Core can't find Entity Metadata (@mkholt) (#305)
+
+### 1.17.7 - 08 January 2026
+* Fix: Use ConcurrentQueue for plugin execution to avoid issues with parallel tests
+* Fix: Use ConcurrentDictionary for database tables to avoid issues with parallel tests
+
+### 1.17.6 - 07 January 2026
+* Fix: If metadata didn't contain the organization entity it would fail on initialization
+
 ### 1.17.5 - 16 December 2025
 * Add: Full filtering support for RetrieveMetadataChangesRequest
 * Add: Preliminary support for BooleanManagedProperty

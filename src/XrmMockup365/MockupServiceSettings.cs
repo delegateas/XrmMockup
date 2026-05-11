@@ -11,32 +11,46 @@ namespace DG.Tools.XrmMockup {
     /// </summary>
     public class MockupServiceSettings {
         public enum Role { SDK, UI }
+
         /// <summary>
         /// Indicates whether plugins and workflows should be triggered
         /// </summary>
-        public bool TriggerProcesses { get; private set; }
+        public bool TriggerProcesses { get; }
+
+        /// <summary>
+        /// <para>
+        /// Indicates whether workflows should be triggered.
+        /// </para>
+        /// <para>
+        /// If <see cref="TriggerProcesses"/> is false, this is implicitly false.
+        /// </para>
+        /// </summary>
+        public bool TriggerWorkflows { get; }
+
         /// <summary>
         /// Indicates whether read only attributes should be settable
         /// </summary>
-        public bool SetUnsettableFields { get; private set; }
+        public bool SetUnsettableFields { get; }
+
         /// <summary>
         /// Indicates whether the service should be a SDK or UI service
         /// </summary>
-        public Role ServiceRole { get; private set; }
+        public Role ServiceRole { get; }
         /// <summary>
         /// Creates a default service setting
         /// </summary>
 
-        public MockupServiceSettings() : this(true, false, Role.SDK) { }
+        public MockupServiceSettings() : this(true, true, false, Role.SDK) { }
 
         /// <summary>
         /// Creates a custom service setting
         /// </summary>
-        /// <param name="triggerProcesses"></param>
-        /// <param name="setUnsettableFields"></param>
-        /// <param name="serviceRole"></param>
-        public MockupServiceSettings(bool triggerProcesses, bool setUnsettableFields, Role serviceRole) {
+        public MockupServiceSettings(bool triggerProcesses, bool setUnsettableFields, Role serviceRole) : this(triggerProcesses, triggerProcesses, setUnsettableFields, serviceRole) { }
+
+        public MockupServiceSettings(bool triggerProcesses, bool triggerWorkflows, bool setUnsettableFields, Role serviceRole)
+        {
             this.TriggerProcesses = triggerProcesses;
+            this.TriggerWorkflows = triggerWorkflows;
             this.SetUnsettableFields = setUnsettableFields;
             this.ServiceRole = serviceRole;
         }

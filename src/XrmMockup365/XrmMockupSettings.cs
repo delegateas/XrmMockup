@@ -1,8 +1,11 @@
-﻿using Microsoft.Xrm.Sdk.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xrm.Sdk.Organization;
 using System.Reflection;
+#if DATAVERSE_SERVICE_CLIENT
+using DG.Tools.XrmMockup.Online;
+#endif
 
 namespace DG.Tools.XrmMockup
 {
@@ -34,14 +37,29 @@ namespace DG.Tools.XrmMockup
         public bool? IncludeAllWorkflows { get; set; }
 
         /// <summary>
+        /// Sets whether workflows should be triggered during execution. Default is true.
+        /// </summary>
+        public bool? TriggerWorkflows { get; set; }
+
+        /// <summary>
         /// List of request that will not throw exceptions.
         /// </summary>
         public IEnumerable<string> ExceptionFreeRequests { get; set; }
 
+#if DATAVERSE_SERVICE_CLIENT
         /// <summary>
-        /// Environment settings for connection to an online environment for live debugging.
+        /// Settings for connecting to an online Dataverse environment for live debugging.
+        /// Uses Azure DefaultAzureCredential for authentication (supports managed identity,
+        /// Visual Studio credentials, Azure CLI, etc.).
         /// </summary>
         public Env? OnlineEnvironment { get; set; }
+
+        /// <summary>
+        /// Optional factory for creating IOnlineDataService. For testing purposes.
+        /// If set, this takes precedence over OnlineEnvironment.
+        /// </summary>
+        internal Func<IOnlineDataService> OnlineDataServiceFactory { get; set; }
+#endif
 
         /// <summary>
         /// Overwrites the path to the directory containing metadata files. Default is '../../Metadata/'.
@@ -93,15 +111,38 @@ namespace DG.Tools.XrmMockup
         /// Default is true.
         /// </summary>
         public bool EnablePowerFxFields { get; set; } = true;
+
+        /// <summary>
+        /// Optional file path for diagnostic logging. When set, XrmMockup writes startup
+        /// information (discovered plugins, workflows, custom APIs) to this file.
+        /// </summary>
+        public string LogFilePath { get; set; }
+
+        /// <summary>
+        /// Minimum log level for the built-in file logger. Default is <see cref="LogLevel.Information"/>.
+        /// Only applies when <see cref="LogFilePath"/> is set. Ignored when <see cref="LoggerFactory"/> is provided,
+        /// as the custom factory controls its own filtering.
+        /// </summary>
+        public LogLevel MinLogLevel { get; set; } = LogLevel.Information;
+
+        /// <summary>
+        /// Optional logger factory for diagnostic logging. When set, takes precedence
+        /// over <see cref="LogFilePath"/>. Use this to integrate with your own logging infrastructure.
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; set; }
     }
 
-
+#if DATAVERSE_SERVICE_CLIENT
+    /// <summary>
+    /// Settings for connecting to an online Dataverse environment.
+    /// </summary>
     public struct Env
     {
-        public string uri;
-        public AuthenticationProviderType providerType;
-        public string username;
-        public string password;
-        public string domain;
+        /// <summary>
+        /// URL of the Dataverse environment (e.g., https://org.crm.dynamics.com).
+        /// Uses Azure DefaultAzureCredential for authentication.
+        /// </summary>
+        public string Url;
     }
+#endif
 }

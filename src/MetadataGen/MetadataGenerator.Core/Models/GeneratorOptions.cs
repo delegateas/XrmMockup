@@ -21,6 +21,18 @@ public record GeneratorOptions
     public string[] Entities { get; init; } = [];
 
     /// <summary>
+    /// Security role names to include beyond those in solutions.
+    /// null = not configured (default behavior: all roles when no solutions specified).
+    /// Empty array = explicitly no additional roles.
+    /// </summary>
+    public string[]? SecurityRoles { get; init; }
+
+    /// <summary>
+    /// When true, all security roles are included regardless of solutions or named roles.
+    /// </summary>
+    public bool AllSecurityRoles { get; init; }
+
+    /// <summary>
     /// Whether to format XML output for readability.
     /// Default is false to minimize file size.
     /// </summary>

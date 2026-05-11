@@ -108,6 +108,8 @@ namespace DG.Tools.XrmMockup {
                 linkEntity.JoinOperator = JoinOperator.LeftOuter;
             } else if (joinOperator.Value == "natural") {
                 linkEntity.JoinOperator = JoinOperator.Natural;
+            } else if (joinOperator.Value == "notany") {
+                linkEntity.JoinOperator = JoinOperator.NotAny;
             }
 
             if (link.Element("filter") != null) {

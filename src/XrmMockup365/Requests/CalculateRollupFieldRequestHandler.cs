@@ -14,7 +14,6 @@ namespace DG.Tools.XrmMockup {
         internal override OrganizationResponse Execute(OrganizationRequest orgRequest, EntityReference userRef) {
             var request = MakeRequest<CalculateRollupFieldRequest>(orgRequest);
 
-
             var dbEntity = db.GetEntity(request.Target);
             var metadata = this.metadata.EntityMetadata.GetMetadata(dbEntity.LogicalName);
             var field = metadata.Attributes.FirstOrDefault(a => a.LogicalName == request.FieldName);
@@ -29,7 +28,7 @@ namespace DG.Tools.XrmMockup {
                 }
                 else
                 {
-                    var tree = WorkflowConstructor.ParseRollUp(definition);
+                    var tree = WorkflowConstructor.ParseRollUp(definition, $"{dbEntity.LogicalName}.{field.LogicalName}");
                     var factory = core.ServiceFactory;
                     var resultTree = tree.Execute(dbEntity, core.TimeOffset, core.GetWorkflowService(), factory, factory.GetService<ITracingService>());
                     var resultLocaltion = ((resultTree.StartActivity as RollUp).Aggregation[1] as Aggregate).VariableName;

@@ -4,7 +4,6 @@ namespace WorkflowParser {
 
     [XmlRoot("Activity")]
     public class ActivityRoot {
-
         [XmlElement("Members")]
         public Members Members;
 

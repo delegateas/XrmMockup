@@ -18,7 +18,6 @@ namespace DG.XrmMockupTest
         public IOrganizationServiceAsync2 orgAdminUIService { get; protected set; }
         public IOrganizationServiceAsync2 orgAdminService { get; protected set; }
         public IOrganizationServiceAsync2 orgGodService { get; protected set; }
-        public IOrganizationServiceAsync2 orgRealDataService { get; protected set; }
 
         public IOrganizationServiceAsync2 testUser1Service { get; protected set; }
         public IOrganizationServiceAsync2 testUser2Service { get; protected set; }
@@ -28,7 +27,6 @@ namespace DG.XrmMockupTest
         public IOrganizationService orgAdminUIService { get; protected set; }
         public IOrganizationService orgAdminService { get; protected set; }
         public IOrganizationService orgGodService { get; protected set; }
-        public IOrganizationService orgRealDataService { get; protected set; }
 
         public IOrganizationService testUser1Service { get; protected set; }
         public IOrganizationService testUser2Service { get; protected set; }
@@ -97,8 +95,6 @@ namespace DG.XrmMockupTest
             orgAdminUIService = crm.GetAdminService(new MockupServiceSettings(true, false, MockupServiceSettings.Role.UI));
             orgGodService = crm.GetAdminService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
             orgAdminService = crm.GetAdminService();
-            // Skip real data service - it causes online connection issues and isn't needed for most tests
-            orgRealDataService = null;
 
             //create an admin user to run our impersonating user plugins as
             var adminUser = new Entity("systemuser") { Id = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c") };

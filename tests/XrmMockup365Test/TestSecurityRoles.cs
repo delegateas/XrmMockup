@@ -255,6 +255,17 @@ namespace DG.XrmMockupTest
             }
         }
 
+        [Fact]
+        public void TestCreateUserWithNonExistentSecurityRoleThrowsMockupException()
+        {
+            var nonExistentRoleId = Guid.NewGuid();
+
+            var ex = Assert.Throws<MockupException>(() =>
+                crm.CreateUser(orgAdminUIService, crm.RootBusinessUnit, nonExistentRoleId));
+
+            Assert.Contains(nonExistentRoleId.ToString(), ex.Message);
+            Assert.Contains("was not found", ex.Message);
+        }
     }
 
 }

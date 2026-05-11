@@ -39,4 +39,18 @@ internal static class CliOptions
         public const string Alias = "-p";
         public const string Description = "Format XML output for readability (increases file size)";
     }
+
+    internal static class SecurityRoles
+    {
+        public const string Primary = "--security-roles";
+        public const string Alias = "-r";
+        public const string Description = "Comma-separated list of additional security role names to include";
+    }
+
+    internal static class AllSecurityRoles
+    {
+        public const string Primary = "--all-security-roles";
+        public const string Alias = "-a";
+        public const string Description = "Include all security roles regardless of solution or named role filtering";
+    }
 }
