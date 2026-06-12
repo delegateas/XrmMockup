@@ -309,7 +309,7 @@ namespace DG.Tools.XrmMockup
         }
 
         public void TriggerSync(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core, Func<PluginTrigger, bool> executionOrderFilter)
         {
             TriggerSyncInternal(operation, stage, entity, preImage, postImage, pluginContext, core, executionOrderFilter);
 
@@ -400,7 +400,7 @@ namespace DG.Tools.XrmMockup
         }
 
         private void TriggerSyncInternal(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core, Func<PluginTrigger, bool> executionOrderFilter)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core, Func<PluginTrigger, bool> executionOrderFilter)
         {
             if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operation, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
                 stagePlugins
@@ -420,7 +420,7 @@ namespace DG.Tools.XrmMockup
         }
 
         public void StageAsync(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
         {
             if (!disableRegisteredPlugins && registeredPlugins.TryGetValue(operation, out var operationPlugins) && operationPlugins.TryGetValue(stage, out var stagePlugins))
                 stagePlugins
@@ -448,7 +448,7 @@ namespace DG.Tools.XrmMockup
         }
 
         public void TriggerSystem(EventOperation operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
         {
             if (!registeredSystemPlugins.TryGetValue(operation, out var stagePlugins))
             {

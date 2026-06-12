@@ -63,7 +63,7 @@ namespace DG.Tools.XrmMockup
         }
 
         // Saves "execution" for Async plugins to be executed after sync plugins.
-        public PluginExecutionProvider ToPluginExecution(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        public PluginExecutionProvider ToPluginExecution(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
         {
             var entity = entityObject as Entity;
             var entityRef = entityObject as EntityReference;
@@ -75,13 +75,13 @@ namespace DG.Tools.XrmMockup
             {
                 // Create the plugin context
                 var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
-                return new PluginExecutionProvider(PluginExecute, new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory));
+                return new PluginExecutionProvider(PluginExecute, core.CreateServiceProviderAndFactory(thisPluginContext));
             }
 
             return null;
         }
 
-        public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, Core core)
+        public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             var entity = entityObject as Entity;
@@ -106,7 +106,7 @@ namespace DG.Tools.XrmMockup
                 var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
 
                 //Create Serviceprovider, and execute plugin
-                MockupServiceProviderAndFactory provider = new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory);
+                MockupServiceProviderAndFactory provider = core.CreateServiceProviderAndFactory(thisPluginContext);
                 try
                 {
                     PluginExecute(provider);

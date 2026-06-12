@@ -32,7 +32,7 @@ namespace DG.Tools.XrmMockup
     /// <summary>
     /// Class for handling all requests to the database
     /// </summary>
-    internal class Core : IXrmMockupExtension
+    internal class Core : IXrmMockupExtension, ICoreOperations
     {
         public TimeSpan TimeOffset { get; private set; }
         public MockupServiceProviderAndFactory ServiceFactory { get; private set; }
@@ -54,6 +54,7 @@ namespace DG.Tools.XrmMockup
         internal OrganizationDetail OrganizationDetail { get; private set; }
         internal EntityReference BaseCurrency { get; private set; }
 
+        private RequestExecutionPipeline pipeline;
         private PluginManager pluginManager;
         private CustomApiManager customApiManager;
         private WorkflowManager workflowManager;
@@ -188,6 +189,8 @@ namespace DG.Tools.XrmMockup
 
             security.InitializeSecurityRoles(db);
             OrganizationDetail = initData.Settings.OrganizationDetail;
+
+            pipeline = new RequestExecutionPipeline(this, pluginManager, workflowManager);
 
             FormulaFieldEvaluator = new FormulaFieldEvaluator(ServiceFactory);
         }
@@ -483,7 +486,7 @@ namespace DG.Tools.XrmMockup
             return null;
         }
 
-        internal DbRow GetDbRow(EntityReference entityReference)
+        public DbRow GetDbRow(EntityReference entityReference)
         {
             return db.GetDbRow(entityReference);
         }
@@ -755,295 +758,50 @@ namespace DG.Tools.XrmMockup
             return Execute(request, userRef, null);
         }
 
-        internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef,
+        public OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef,
             PluginContext parentPluginContext)
         {
-            var ctx = BuildPipelineContext(request, userRef, parentPluginContext);
-            ExecutePreValidationStage(ctx);
-            ExecuteSecurityAndInit(ctx);
-            ExecutePreOperationStage(ctx);
-            ctx.Response = ExecuteRequest(ctx.Request, ctx.UserRef, ctx.ParentPluginContext, ctx.PluginContext);
-            ExecutePostOperationStage(ctx);
-            ExecuteExtensionStage(ctx);
-            return ctx.Response;
+            return pipeline.Execute(request, userRef, parentPluginContext);
         }
 
-        private ExecutionPipelineContext BuildPipelineContext(OrganizationRequest request, EntityReference userRef,
-            PluginContext parentPluginContext)
+        // ── ICoreOperations — infrastructure methods the pipeline calls back into Core for ──
+
+        public bool HasMockupExtensions => settings.MockUpExtensions.Count != 0;
+
+        public EntityReference GetBusinessUnit(EntityReference owner)
         {
-            HandleInternalPreOperations(request, userRef);
-
-            var primaryRef = Mappings.GetPrimaryEntityReferenceFromRequest(request);
-
-            var pluginContext = new PluginContext()
-            {
-                UserId = userRef.Id,
-                InitiatingUserId = userRef.Id,
-                MessageName = RequestNameToMessageName(request.RequestName),
-                Depth = 1,
-                ExtensionDepth = 1,
-                OrganizationName = OrganizationName,
-                OrganizationId = OrganizationId,
-                PrimaryEntityName = primaryRef?.LogicalName,
-                // IPluginExecutionContext2-7 defaults
-                IsPortalsClientCall = false,
-                IsApplicationUser = false,
-                AuthenticatedUserId = userRef.Id,
-            };
-            if (primaryRef != null)
-            {
-                var refEntity = db.GetEntityOrNull(primaryRef);
-                pluginContext.PrimaryEntityId = refEntity == null ? Guid.Empty : refEntity.Id;
-            }
-
-            foreach (var prop in request.Parameters)
-            {
-                pluginContext.InputParameters[prop.Key] = prop.Value;
-            }
-
-            if (parentPluginContext != null)
-            {
-                pluginContext.ParentContext = parentPluginContext;
-                pluginContext.Depth = parentPluginContext.Depth + 1;
-                pluginContext.ExtensionDepth = parentPluginContext.ExtensionDepth + 1;
-                parentPluginContext.ExtensionDepth = pluginContext.ExtensionDepth;
-            }
-
-            pluginContext.BusinessUnitId = GetBusinessUnit(userRef).Id;
-
-            var requestMessage = Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out var eventOperation)
-                ? eventOperation.ToString()
-                : request.RequestName;
-
-            var entityInfo = GetEntityInfo(request);
-
-            var requestSettings = MockupExecutionContext.GetSettings(request);
-            if (!requestSettings.SetUnsettableFields && (request is UpdateRequest || request is CreateRequest))
-            {
-                var entity = request is UpdateRequest
-                    ? (request as UpdateRequest).Target
-                    : (request as CreateRequest).Target;
-                Utility.RemoveUnsettableAttributes(request.RequestName,
-                    metadata.EntityMetadata.GetMetadata(entity.LogicalName), entity);
-            }
-
-            var entityCollection = entityInfo?.Item1 as EntityCollection;
-
-            Entity preImage = TryRetrieve(primaryRef);
-            if (preImage != null)
-                primaryRef.Id = preImage.Id;
-
-            // Populate IPluginExecutionContext4 pre-images collection for Multiple operations
-            if (entityCollection != null)
-            {
-                pluginContext.PreEntityImagesCollection = entityCollection.Entities
-                    .Select(e => {
-                        var img = new EntityImageCollection();
-                        var pre = e.Id != Guid.Empty ? TryRetrieve(e.ToEntityReference()) : null;
-                        if (pre != null) img["PreImage"] = pre;
-                        return img;
-                    }).ToArray();
-            }
-
-            return new ExecutionPipelineContext
-            {
-                Request = request,
-                UserRef = userRef,
-                ParentPluginContext = parentPluginContext,
-                Settings = requestSettings,
-                PluginContext = pluginContext,
-                RequestMessage = requestMessage,
-                EntityInfo = entityInfo,
-                PrimaryRef = primaryRef,
-                EntityCollection = entityCollection,
-                ShouldTrigger = requestSettings.TriggerProcesses && entityInfo != null,
-                PreImage = preImage,
-            };
+            return Utility.GetBusinessUnit(db, owner);
         }
 
-        private void ExecutePreValidationStage(ExecutionPipelineContext ctx)
+        public void CopySystemAttributes(Entity postImage, Entity target)
         {
-            if (!ctx.ShouldTrigger) return;
+            if (target == null) return;
 
-            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreValidation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
-            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreValidation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this, (_) => true);
-        }
-
-        private void ExecuteSecurityAndInit(ExecutionPipelineContext ctx)
-        {
-            CheckRequestSecurity(ctx.Request, ctx.UserRef);
-            InitializePreOperation(ctx.Request, ctx.UserRef, ctx.PreImage);
-        }
-
-        private void ExecutePreOperationStage(ExecutionPipelineContext ctx)
-        {
-            if (!ctx.ShouldTrigger) return;
-
-            // Shared variables move to parent context when transitioning stage 10 → stage 20
-            ctx.PluginContext.ParentContext = ctx.PluginContext.Clone();
-            ctx.PluginContext.SharedVariables.Clear();
-
-            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this,
-                (p) => p.GetExecutionOrder() == 0);
-
-            if (ctx.Settings.TriggerWorkflows)
-                workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
-
-            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this,
-                (p) => p.GetExecutionOrder() != 0);
-
-            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
-        }
-
-        private void ExecutePostOperationStage(ExecutionPipelineContext ctx)
-        {
-            if (!ctx.ShouldTrigger) return;
-
-            // Populate OutputParameters for retrieve operations so plugins can read them
-            if (ctx.Request is RetrieveMultipleRequest)
-            {
-                ctx.PluginContext.OutputParameters["BusinessEntityCollection"] =
-                    (ctx.Response as RetrieveMultipleResponse)?.EntityCollection;
-            }
-            else if (ctx.Request is RetrieveRequest)
-            {
-                ctx.PluginContext.OutputParameters["BusinessEntity"] =
-                    TryRetrieve((ctx.Request as RetrieveRequest).Target);
-            }
-
-            // Populate IPluginExecutionContext4 post-images collection for Multiple operations
-            if (ctx.EntityCollection != null)
-            {
-                // For CreateMultiple, the original entities may not have their Ids set.
-                // Use the response Ids (from CreateMultipleResponse) when available.
-                var responseIds = ctx.Response.Results.TryGetValue("Ids", out var idsObj)
-                    ? idsObj as Guid[]
-                    : null;
-
-                ctx.PluginContext.PostEntityImagesCollection = ctx.EntityCollection.Entities
-                    .Select((e, i) => {
-                        var img = new EntityImageCollection();
-                        var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
-                        var post = entityId != Guid.Empty
-                            ? TryRetrieve(new EntityReference(ctx.EntityCollection.EntityName ?? e.LogicalName, entityId))
-                            : null;
-                        if (post != null) img["PostImage"] = post;
-                        return img;
-                    }).ToArray();
-            }
-
-            ctx.SyncPostImage = TryRetrieve(ctx.PrimaryRef);
-            if (ctx.SyncPostImage != null)
-                CopySystemAttributes(ctx.SyncPostImage, ctx.EntityInfo.Item1 as Entity);
-
-            // Sync post-operation: system first, then user plugins ordered by ExecutionOrder, then workflows
-            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this);
-
-            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this,
-                (p) => p.GetExecutionOrder() == 0);
-
-            if (ctx.Settings.TriggerWorkflows)
-                workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this);
-
-            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this,
-                (p) => p.GetExecutionOrder() != 0);
-
-            // Stage async work — re-fetch post-image so async jobs see the final committed state
-            ctx.AsyncPostImage = TryRetrieve(ctx.PrimaryRef);
-            pluginManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, this);
-
-            if (ctx.Settings.TriggerWorkflows)
-                workflowManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, this);
-
-            // Async jobs only fire at the top-level call, not from within a plugin
-            if (ctx.ParentPluginContext == null)
-            {
-                pluginManager.TriggerAsyncWaitingJobs();
-
-                if (ctx.Settings.TriggerWorkflows)
-                    workflowManager.TriggerAsync(this);
-            }
-
-            if (ctx.Settings.TriggerWorkflows)
-                workflowManager.ExecuteWaitingWorkflows(ctx.PluginContext, this);
-        }
-
-        private void ExecuteExtensionStage(ExecutionPipelineContext ctx)
-        {
-            if (settings.MockUpExtensions.Count == 0) return;
-
-            // Guard against infinite recursion when moving business units (8+ layers can occur)
-            if (ctx.PluginContext.ExtensionDepth > 8)
-            {
-                throw new FaultException(
-                    "This workflow job was canceled because the workflow that started it included an infinite loop." +
-                    " Correct the workflow logic and try again.");
-            }
-
-            var service = new MockupService(this, ctx.UserRef.Id, ctx.PluginContext);
-            switch (ctx.Request.RequestName)
-            {
-                case "Create":
-                    var createResponse = (CreateResponse)ctx.Response;
-                    var entityLogicalName = ((Entity)ctx.Request.Parameters["Target"]).LogicalName;
-                    var reference = ctx.PrimaryRef ?? new EntityReference(entityLogicalName, createResponse.id);
-                    TriggerExtension(service, ctx.Request, TryRetrieve(reference), null, ctx.UserRef);
-                    break;
-                case "Update":
-                    TriggerExtension(service, ctx.Request, TryRetrieve(ctx.PrimaryRef), ctx.PreImage, ctx.UserRef);
-                    break;
-                case "Delete":
-                    TriggerExtension(service, ctx.Request, null, ctx.PreImage, ctx.UserRef);
-                    break;
-            }
-        }
-
-        private void CopySystemAttributes(Entity postImage, Entity item1)
-        {
-            if (item1 == null)
-            {
-                return;
-            }
-
-            foreach (var systemAttributeName in this.systemAttributeNames)
+            foreach (var systemAttributeName in systemAttributeNames)
             {
                 if (postImage.Contains(systemAttributeName))
                 {
                     if (postImage[systemAttributeName] is EntityReference)
                     {
-                        item1[systemAttributeName] = new EntityReference(
+                        target[systemAttributeName] = new EntityReference(
                             postImage.GetAttributeValue<EntityReference>(systemAttributeName).LogicalName,
                             postImage.GetAttributeValue<EntityReference>(systemAttributeName).Id);
                     }
                     else if (postImage[systemAttributeName] is DateTime)
                     {
-                        item1[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
+                        target[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
                     }
                 }
             }
         }
 
-        internal void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef)
+        public void HandleInternalPreOperations(OrganizationRequest request, EntityReference userRef)
         {
             if (request.RequestName == "Create")
             {
                 var entity = request["Target"] as Entity;
                 if (entity.Id == Guid.Empty)
-                {
                     entity.Id = Guid.NewGuid();
-                }
 
                 if (entity.GetAttributeValue<EntityReference>("ownerid") == null &&
                     Utility.IsValidAttribute("ownerid", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
@@ -1053,105 +811,39 @@ namespace DG.Tools.XrmMockup
             }
         }
 
+        public OrganizationResponse ExecuteAction(OrganizationRequest request)
+        {
+            return ExecuteActionInternal(request);
+        }
+
+        public bool HandlesCustomApi(string requestName) => customApiManager.HandlesRequest(requestName);
+
+        public OrganizationResponse ExecuteCustomApi(OrganizationRequest request, PluginContext pluginContext)
+        {
+            return customApiManager.Execute(request, this, pluginContext);
+        }
+
+        public bool IsExceptionFreeRequest(string requestName)
+        {
+            return settings.ExceptionFreeRequests?.Contains(requestName) ?? false;
+        }
+
+        public IOrganizationService CreateMockupService(Guid? userId, PluginContext pluginContext)
+        {
+            return new MockupService(this, userId, pluginContext);
+        }
+
+        public MockupServiceProviderAndFactory CreateServiceProviderAndFactory(PluginContext pluginContext)
+        {
+            return new MockupServiceProviderAndFactory(this, pluginContext, TracingServiceFactory);
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────
+
         internal void AddTime(TimeSpan offset)
         {
             this.TimeOffset = this.TimeOffset.Add(offset);
             TriggerWaitingWorkflows();
-        }
-
-        private OrganizationResponse ExecuteRequest(
-            OrganizationRequest request, 
-            EntityReference userRef,
-            PluginContext parentPluginContext,
-            PluginContext pluginContext)
-        {
-            if (request is AssignRequest assignRequest)
-            {
-                var targetEntity = db.GetEntityOrNull(assignRequest.Target);
-                if (targetEntity.GetAttributeValue<EntityReference>("ownerid") != assignRequest.Assignee)
-                {
-                    var req = new UpdateRequest
-                    {
-                        Target = new Entity(assignRequest.Target.LogicalName, assignRequest.Target.Id)
-                    };
-                    req.Target.Attributes["ownerid"] = assignRequest.Assignee;
-                    Execute(req, userRef, parentPluginContext);
-                }
-
-                return new AssignResponse();
-            }
-
-            if (request is SetStateRequest setstateRequest)
-            {
-                var targetEntity = db.GetEntityOrNull(setstateRequest.EntityMoniker);
-                if (targetEntity.GetAttributeValue<OptionSetValue>("statecode") != setstateRequest.State ||
-                    targetEntity.GetAttributeValue<OptionSetValue>("statuscode") != setstateRequest.Status)
-                {
-                    var req = new UpdateRequest
-                    {
-                        Target = new Entity(setstateRequest.EntityMoniker.LogicalName, setstateRequest.EntityMoniker.Id)
-                    };
-                    req.Target.Attributes["statecode"] = setstateRequest.State;
-                    req.Target.Attributes["statuscode"] = setstateRequest.Status;
-                    Execute(req, userRef, parentPluginContext);
-                }
-
-                return new SetStateResponse();
-            }
-
-            if (workflowManager.GetActionDefaultNull(request.RequestName) != null)
-            {
-                return ExecuteAction(request);
-            }
-
-            if (customApiManager.HandlesRequest(request.RequestName))
-            {
-                return customApiManager.Execute(request, this, pluginContext);
-            }
-
-            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
-            if (handler != null)
-            {
-                return handler.Execute(request, userRef);
-            }
-
-            if (settings.ExceptionFreeRequests?.Contains(request.RequestName) ?? false)
-            {
-                return new OrganizationResponse();
-            }
-
-            throw new NotImplementedException(
-                $"Execute for the request '{request.RequestName}' has not been implemented yet.");
-        }
-
-        private void CheckRequestSecurity(OrganizationRequest request, EntityReference userRef)
-        {
-            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
-            if (handler != null)
-            {
-                handler.CheckSecurity(request, userRef);
-            }
-        }
-
-        private void InitializePreOperation(OrganizationRequest request, EntityReference userRef, Entity preImage)
-        {
-            var handler = RequestHandlers.FirstOrDefault(x => x.HandlesRequest(request.RequestName));
-            if(handler != null)
-            {
-                handler.InitializePreOperation(request, userRef, preImage);
-            }
-        }
-
-        private string RequestNameToMessageName(string requestName)
-        {
-            switch (requestName)
-            {
-                case "LoseOpportunity": return "Lose";
-                case "WinOpportunity": return "Win";
-                case "CloseQuote": return "Lose";
-                case "WinQuote": return "Win";
-                default: return requestName;
-            }
         }
 
         internal void TriggerWaitingWorkflows()
@@ -1216,7 +908,7 @@ namespace DG.Tools.XrmMockup
             return security.HasPermission(entityRef, access, principleRef);
         }
 
-        private OrganizationResponse ExecuteAction(OrganizationRequest request)
+        private OrganizationResponse ExecuteActionInternal(OrganizationRequest request)
         {
             var action = workflowManager.GetActionDefaultNull(request.RequestName);
 
@@ -1330,15 +1022,11 @@ namespace DG.Tools.XrmMockup
         }
 
 
-        internal Entity TryRetrieve(EntityReference reference)
+        public Entity TryRetrieve(EntityReference reference)
         {
             return db.GetEntityOrNull(reference)?.CloneEntity();
         }
 
-        private EntityReference GetBusinessUnit(EntityReference owner)
-        {
-            return Utility.GetBusinessUnit(db, owner);
-        }
         #endregion
 
         internal void DisableRegisteredPlugins(bool include)
@@ -1350,7 +1038,7 @@ namespace DG.Tools.XrmMockup
         internal List<string> TemporaryPluginRegistrations => pluginManager.TemporaryPluginRegistrations;
         internal List<string> SystemPluginRegistrations => pluginManager.SystemPluginRegistrations;
 
-        internal XrmMockupSettings GetMockupSettings()
+        public XrmMockupSettings GetMockupSettings()
         {
             return settings;
         }
@@ -1437,7 +1125,7 @@ namespace DG.Tools.XrmMockup
             security.ResetEnvironment(db);
         }
 
-        internal EntityMetadata GetEntityMetadata(string entityLogicalName)
+        public EntityMetadata GetEntityMetadata(string entityLogicalName)
         {
             if (!metadata.EntityMetadata.TryGetValue(entityLogicalName, out var entityMetadata))
             {
