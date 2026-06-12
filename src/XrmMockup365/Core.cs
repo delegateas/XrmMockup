@@ -750,9 +750,6 @@ namespace DG.Tools.XrmMockup
         /// <summary>
         /// Execute the request and trigger plugins if needed
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="userRef"></param>
-        /// <returns></returns>
         public OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef)
         {
             return Execute(request, userRef, null);
@@ -761,12 +758,23 @@ namespace DG.Tools.XrmMockup
         internal OrganizationResponse Execute(OrganizationRequest request, EntityReference userRef,
             PluginContext parentPluginContext)
         {
-            // Setup
+            var ctx = BuildPipelineContext(request, userRef, parentPluginContext);
+            ExecutePreValidationStage(ctx);
+            ExecuteSecurityAndInit(ctx);
+            ExecutePreOperationStage(ctx);
+            ctx.Response = ExecuteRequest(ctx.Request, ctx.UserRef, ctx.ParentPluginContext, ctx.PluginContext);
+            ExecutePostOperationStage(ctx);
+            ExecuteExtensionStage(ctx);
+            return ctx.Response;
+        }
+
+        private ExecutionPipelineContext BuildPipelineContext(OrganizationRequest request, EntityReference userRef,
+            PluginContext parentPluginContext)
+        {
             HandleInternalPreOperations(request, userRef);
 
             var primaryRef = Mappings.GetPrimaryEntityReferenceFromRequest(request);
 
-            // Create the plugin context
             var pluginContext = new PluginContext()
             {
                 UserId = userRef.Id,
@@ -801,19 +809,16 @@ namespace DG.Tools.XrmMockup
                 parentPluginContext.ExtensionDepth = pluginContext.ExtensionDepth;
             }
 
-            var buRef = GetBusinessUnit(userRef);
-            pluginContext.BusinessUnitId = buRef.Id;
+            pluginContext.BusinessUnitId = GetBusinessUnit(userRef).Id;
 
-            // Get the request message from the mapping, if present, otherwise use the RequestName
             var requestMessage = Mappings.RequestToEventOperation.TryGetValue(request.GetType(), out var eventOperation)
                 ? eventOperation.ToString()
                 : request.RequestName;
 
             var entityInfo = GetEntityInfo(request);
 
-            var settings = MockupExecutionContext.GetSettings(request);
-            // Validation
-            if (!settings.SetUnsettableFields && (request is UpdateRequest || request is CreateRequest))
+            var requestSettings = MockupExecutionContext.GetSettings(request);
+            if (!requestSettings.SetUnsettableFields && (request is UpdateRequest || request is CreateRequest))
             {
                 var entity = request is UpdateRequest
                     ? (request as UpdateRequest).Target
@@ -821,8 +826,6 @@ namespace DG.Tools.XrmMockup
                 Utility.RemoveUnsettableAttributes(request.RequestName,
                     metadata.EntityMetadata.GetMetadata(entity.LogicalName), entity);
             }
-
-            var shouldTrigger = settings.TriggerProcesses && entityInfo != null;
 
             var entityCollection = entityInfo?.Item1 as EntityCollection;
 
@@ -842,159 +845,169 @@ namespace DG.Tools.XrmMockup
                     }).ToArray();
             }
 
-            if (shouldTrigger)
+            return new ExecutionPipelineContext
             {
-                // System Pre-validation
-                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this);
-                // Pre-validation
-                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreValidation, entityInfo.Item1, preImage, null, pluginContext, this, (_) => true);
+                Request = request,
+                UserRef = userRef,
+                ParentPluginContext = parentPluginContext,
+                Settings = requestSettings,
+                PluginContext = pluginContext,
+                RequestMessage = requestMessage,
+                EntityInfo = entityInfo,
+                PrimaryRef = primaryRef,
+                EntityCollection = entityCollection,
+                ShouldTrigger = requestSettings.TriggerProcesses && entityInfo != null,
+                PreImage = preImage,
+            };
+        }
+
+        private void ExecutePreValidationStage(ExecutionPipelineContext ctx)
+        {
+            if (!ctx.ShouldTrigger) return;
+
+            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreValidation,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
+            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreValidation,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this, (_) => true);
+        }
+
+        private void ExecuteSecurityAndInit(ExecutionPipelineContext ctx)
+        {
+            CheckRequestSecurity(ctx.Request, ctx.UserRef);
+            InitializePreOperation(ctx.Request, ctx.UserRef, ctx.PreImage);
+        }
+
+        private void ExecutePreOperationStage(ExecutionPipelineContext ctx)
+        {
+            if (!ctx.ShouldTrigger) return;
+
+            // Shared variables move to parent context when transitioning stage 10 → stage 20
+            ctx.PluginContext.ParentContext = ctx.PluginContext.Clone();
+            ctx.PluginContext.SharedVariables.Clear();
+
+            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this,
+                (p) => p.GetExecutionOrder() == 0);
+
+            if (ctx.Settings.TriggerWorkflows)
+                workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
+                    ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
+
+            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this,
+                (p) => p.GetExecutionOrder() != 0);
+
+            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, this);
+        }
+
+        private void ExecutePostOperationStage(ExecutionPipelineContext ctx)
+        {
+            if (!ctx.ShouldTrigger) return;
+
+            // Populate OutputParameters for retrieve operations so plugins can read them
+            if (ctx.Request is RetrieveMultipleRequest)
+            {
+                ctx.PluginContext.OutputParameters["BusinessEntityCollection"] =
+                    (ctx.Response as RetrieveMultipleResponse)?.EntityCollection;
+            }
+            else if (ctx.Request is RetrieveRequest)
+            {
+                ctx.PluginContext.OutputParameters["BusinessEntity"] =
+                    TryRetrieve((ctx.Request as RetrieveRequest).Target);
             }
 
-            //perform security checks for the request
-            CheckRequestSecurity(request, userRef);
-
-            //perform initialization of preoperation 
-            InitializePreOperation(request, userRef, preImage);
-
-            if (shouldTrigger)
+            // Populate IPluginExecutionContext4 post-images collection for Multiple operations
+            if (ctx.EntityCollection != null)
             {
-                // Shared variables should be moved to parent context when transitioning from 10 to 20.
-                pluginContext.ParentContext = pluginContext.Clone();
-                pluginContext.SharedVariables.Clear();
+                // For CreateMultiple, the original entities may not have their Ids set.
+                // Use the response Ids (from CreateMultipleResponse) when available.
+                var responseIds = ctx.Response.Results.TryGetValue("Ids", out var idsObj)
+                    ? idsObj as Guid[]
+                    : null;
 
-                // Pre-operation
-                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-
-                if (settings.TriggerWorkflows)
-                {
-                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
-                }
-                pluginManager.TriggerSync(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
-
-                // System Pre-operation
-                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PreOperation, entityInfo.Item1, preImage, null, pluginContext, this);
+                ctx.PluginContext.PostEntityImagesCollection = ctx.EntityCollection.Entities
+                    .Select((e, i) => {
+                        var img = new EntityImageCollection();
+                        var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
+                        var post = entityId != Guid.Empty
+                            ? TryRetrieve(new EntityReference(ctx.EntityCollection.EntityName ?? e.LogicalName, entityId))
+                            : null;
+                        if (post != null) img["PostImage"] = post;
+                        return img;
+                    }).ToArray();
             }
 
-            // Core operation
-            OrganizationResponse response = ExecuteRequest(request, userRef, parentPluginContext, pluginContext);
+            ctx.SyncPostImage = TryRetrieve(ctx.PrimaryRef);
+            if (ctx.SyncPostImage != null)
+                CopySystemAttributes(ctx.SyncPostImage, ctx.EntityInfo.Item1 as Entity);
 
-            // Post-operation
-            if (shouldTrigger)
+            // Sync post-operation: system first, then user plugins ordered by ExecutionOrder, then workflows
+            pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PostOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this);
+
+            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this,
+                (p) => p.GetExecutionOrder() == 0);
+
+            if (ctx.Settings.TriggerWorkflows)
+                workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
+                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this);
+
+            pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, this,
+                (p) => p.GetExecutionOrder() != 0);
+
+            // Stage async work — re-fetch post-image so async jobs see the final committed state
+            ctx.AsyncPostImage = TryRetrieve(ctx.PrimaryRef);
+            pluginManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, this);
+
+            if (ctx.Settings.TriggerWorkflows)
+                workflowManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
+                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, this);
+
+            // Async jobs only fire at the top-level call, not from within a plugin
+            if (ctx.ParentPluginContext == null)
             {
-                // In RetrieveMultipleRequests, the OutputParameters bag contains the entity collection
-                if (request is RetrieveMultipleRequest)
-                {
-                    pluginContext.OutputParameters["BusinessEntityCollection"] =
-                        (response as RetrieveMultipleResponse)?.EntityCollection;
-                }
-                else if (request is RetrieveRequest)
-                {
-                    pluginContext.OutputParameters["BusinessEntity"] = TryRetrieve((request as RetrieveRequest).Target);
-                }
+                pluginManager.TriggerAsyncWaitingJobs();
 
-                // Populate IPluginExecutionContext4 post-images collection for Multiple operations
-                if (entityCollection != null)
-                {
-                    // For CreateMultiple, the original entities may not have their Ids set.
-                    // Use the response Ids (from CreateMultipleResponse) when available.
-                    var responseIds = response.Results.TryGetValue("Ids", out var idsObj) ? idsObj as Guid[] : null;
-
-                    pluginContext.PostEntityImagesCollection = entityCollection.Entities
-                        .Select((e, i) => {
-                            var img = new EntityImageCollection();
-                            var entityId = responseIds != null && i < responseIds.Length ? responseIds[i] : e.Id;
-                            var post = entityId != Guid.Empty
-                                ? TryRetrieve(new EntityReference(entityCollection.EntityName ?? e.LogicalName, entityId))
-                                : null;
-                            if (post != null) img["PostImage"] = post;
-                            return img;
-                        }).ToArray();
-                }
-
-                var syncPostImage = TryRetrieve(primaryRef);
-
-                //copy the createon etc system attributes onto the target so they are available for postoperation processing
-                if (syncPostImage != null)
-                {
-                    CopySystemAttributes(syncPostImage, entityInfo.Item1 as Entity);
-                }
-
-                pluginManager.TriggerSystem(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
-
-                pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() == 0);
-
-                if (settings.TriggerWorkflows)
-                {
-                    workflowManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this);
-                }
-
-                pluginManager.TriggerSync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, syncPostImage, pluginContext, this, (p) => p.GetExecutionOrder() != 0);
-                    
-                var asyncPostImage = TryRetrieve(primaryRef);
-                pluginManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
-
-                if (settings.TriggerWorkflows)
-                {
-                    workflowManager.StageAsync(requestMessage, ExecutionStage.PostOperation, entityInfo.Item1, preImage, asyncPostImage, pluginContext, this);
-                }
-
-                //When last Sync has been executed we trigger the Async jobs.
-                if (parentPluginContext == null)
-                {
-                    pluginManager.TriggerAsyncWaitingJobs();
-
-                    if (settings.TriggerWorkflows)
-                    {
-                        workflowManager.TriggerAsync(this);
-                    }
-                }
-
-                if (settings.TriggerWorkflows)
-                {
-                    workflowManager.ExecuteWaitingWorkflows(pluginContext, this);
-                }
+                if (ctx.Settings.TriggerWorkflows)
+                    workflowManager.TriggerAsync(this);
             }
 
-            // Trigger Extension
-            if (this.settings.MockUpExtensions.Count != 0)
+            if (ctx.Settings.TriggerWorkflows)
+                workflowManager.ExecuteWaitingWorkflows(ctx.PluginContext, this);
+        }
+
+        private void ExecuteExtensionStage(ExecutionPipelineContext ctx)
+        {
+            if (settings.MockUpExtensions.Count == 0) return;
+
+            // Guard against infinite recursion when moving business units (8+ layers can occur)
+            if (ctx.PluginContext.ExtensionDepth > 8)
             {
-                /*
-                 * When moving business units, more than eight layers occur...
-                 */
-                if (pluginContext.ExtensionDepth > 8)
-                {
-                    throw new FaultException(
-                        "This workflow job was canceled because the workflow that started it included an infinite loop." +
-                        " Correct the workflow logic and try again.");
-                }
+                throw new FaultException(
+                    "This workflow job was canceled because the workflow that started it included an infinite loop." +
+                    " Correct the workflow logic and try again.");
             }
 
-            switch (request.RequestName)
+            var service = new MockupService(this, ctx.UserRef.Id, ctx.PluginContext);
+            switch (ctx.Request.RequestName)
             {
                 case "Create":
-                    var createResponse = (CreateResponse)response;
-                    var entityLogicalName = ((Entity)request.Parameters["Target"]).LogicalName;
-                    var reference = primaryRef ?? new EntityReference(entityLogicalName, createResponse.id);
-
-                    var createdEntity = TryRetrieve(reference);
-                    TriggerExtension(
-                        new MockupService(this, userRef.Id, pluginContext), request,
-                        createdEntity, null, userRef);
+                    var createResponse = (CreateResponse)ctx.Response;
+                    var entityLogicalName = ((Entity)ctx.Request.Parameters["Target"]).LogicalName;
+                    var reference = ctx.PrimaryRef ?? new EntityReference(entityLogicalName, createResponse.id);
+                    TriggerExtension(service, ctx.Request, TryRetrieve(reference), null, ctx.UserRef);
                     break;
                 case "Update":
-                    var updatedEntity = TryRetrieve(primaryRef);
-                    TriggerExtension(
-                        new MockupService(this, userRef.Id, pluginContext), request,
-                        updatedEntity, preImage, userRef);
+                    TriggerExtension(service, ctx.Request, TryRetrieve(ctx.PrimaryRef), ctx.PreImage, ctx.UserRef);
                     break;
                 case "Delete":
-                    TriggerExtension(
-                        new MockupService(this, userRef.Id, pluginContext), request,
-                        null, preImage, userRef);
+                    TriggerExtension(service, ctx.Request, null, ctx.PreImage, ctx.UserRef);
                     break;
             }
-
-            return response;
         }
 
         private void CopySystemAttributes(Entity postImage, Entity item1)
