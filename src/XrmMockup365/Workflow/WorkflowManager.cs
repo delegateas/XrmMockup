@@ -25,6 +25,7 @@ namespace DG.Tools.XrmMockup {
 
     internal class WorkflowManager {
         private readonly ILogger _logger;
+        private readonly ICoreOperations _core;
 
         // Static caches shared across all WorkflowManager instances
         private static readonly ConcurrentDictionary<string, WorkflowTree> _staticParsedWorkflows = new ConcurrentDictionary<string, WorkflowTree>();
@@ -46,7 +47,8 @@ namespace DG.Tools.XrmMockup {
         internal int ActionsCount => actions.Count;
         internal int CodeActivityCount => codeActivityTriggers.Count;
 
-        public WorkflowManager(IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata, ILogger logger = null) {
+        public WorkflowManager(ICoreOperations core, IEnumerable<Type> codeActivityInstances, bool? IncludeAllWorkflows, List<Entity> mixedWorkflows, Dictionary<string, EntityMetadata> metadata, ILogger logger = null) {
+            _core = core;
             _logger = logger ?? NullLogger.Instance;
             this.metadata = metadata;
             this.actions = mixedWorkflows.Where(w => w.GetAttributeValue<OptionSetValue>("category").Value == 3).ToList();
@@ -105,23 +107,23 @@ namespace DG.Tools.XrmMockup {
         /// <param name="pluginContext"></param>
         /// <param name="core"></param>
         public void TriggerSync(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext)
         {
             var toExecute = synchronousWorkflows.Where(x => ShouldExecute(x, operation, stage, entity, pluginContext)).ToList();
             foreach (var workflow in toExecute)
             {
-                Execute(workflow, operation, entity, preImage, postImage, pluginContext, core);
+                Execute(workflow, operation, entity, preImage, postImage, pluginContext);
             }
         }
 
 
-        public void TriggerAsync(ICoreOperations core)
+        public void TriggerAsync()
         {
             while (pendingAsyncWorkflows.TryDequeue(out var workflowContext))
             {
-                Entity primaryEntity = core.GetDbRow(workflowContext.primaryRef).ToEntity();
+                Entity primaryEntity = _core.GetDbRow(workflowContext.primaryRef).ToEntity();
 
-                var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, core);
+                var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext);
 
                 if (execution.Variables["Wait"] != null)
                 {
@@ -131,7 +133,7 @@ namespace DG.Tools.XrmMockup {
         }
 
         public void StageAsync(string operation, ExecutionStage stage,
-                object entity, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
+                object entity, Entity preImage, Entity postImage, PluginContext pluginContext)
         {
             var toExecute = asynchronousWorkflows.Where(x => ShouldStage(x, operation, stage, entity, pluginContext)).ToList();
             foreach (var workflow in toExecute)
@@ -140,18 +142,18 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal void ExecuteWaitingWorkflows(PluginContext pluginContext, ICoreOperations core) {
-            var provider = core.CreateServiceProviderAndFactory(pluginContext);
-            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+        internal void ExecuteWaitingWorkflows(PluginContext pluginContext) {
+            var provider = _core.CreateServiceProviderAndFactory(pluginContext);
+            var triggerWorkflows = _core.GetMockupSettings().TriggerWorkflows ?? true;
             var service = provider.CreateOrganizationService(null, new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
             foreach (var waitInfo in waitingWorkflows.ToList()) {
                 waitingWorkflows.Remove(waitInfo);
                 var variables = waitInfo.VariablesInstance;
-                var shadowService = core.ServiceFactory.CreateAdminOrganizationService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
+                var shadowService = _core.ServiceFactory.CreateAdminOrganizationService(new MockupServiceSettings(false, true, MockupServiceSettings.Role.SDK));
 
                 var primaryEntity = shadowService.Retrieve(waitInfo.PrimaryEntity.LogicalName, waitInfo.PrimaryEntity.Id, new ColumnSet(true));
                 variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
-                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
+                waitInfo.Element.Execute(waitInfo.ElementIndex, ref variables, _core.TimeOffset, service, provider, provider.GetService<ITracingService>());
                 if (variables["Wait"] != null) {
                     waitingWorkflows.Add(variables["Wait"] as WaitInfo);
                 }
@@ -352,7 +354,7 @@ namespace DG.Tools.XrmMockup {
             return true;
         }
 
-        private void Execute(Entity workflow, string operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
+        private void Execute(Entity workflow, string operation, object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             var entity = entityObject as Entity;
@@ -391,11 +393,11 @@ namespace DG.Tools.XrmMockup {
             WorkflowTree postExecution = null;
             if (thisStage == workflow_stage.Preoperation)
             {
-                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext, core);
+                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext);
             }
             else
             {
-                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext, core);
+                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext);
             }
 
             if (postExecution.Variables["Wait"] != null)
@@ -404,11 +406,11 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, ICoreOperations core) {
-            var provider = core.CreateServiceProviderAndFactory(pluginContext);
-            var triggerWorkflows = core.GetMockupSettings().TriggerWorkflows ?? true;
+        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext) {
+            var provider = _core.CreateServiceProviderAndFactory(pluginContext);
+            var triggerWorkflows = _core.GetMockupSettings().TriggerWorkflows ?? true;
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
-            return workflow.Execute(primaryEntity, core.TimeOffset, service, provider, provider.GetService<ITracingService>());
+            return workflow.Execute(primaryEntity, _core.TimeOffset, service, provider, provider.GetService<ITracingService>());
         }
 
         internal WorkflowTree ParseWorkflow(Entity workflow) {

@@ -17,6 +17,7 @@ namespace DG.Tools.XrmMockup
     internal class CustomApiManager
     {
         private readonly ILogger _logger;
+        private readonly Core _core;
 
         // Static caches shared across all CustomApiManager instances
         private static readonly ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>> _cachedApis = new ConcurrentDictionary<string, Dictionary<string, Action<MockupServiceProviderAndFactory>>>();
@@ -30,8 +31,9 @@ namespace DG.Tools.XrmMockup
 
         private readonly List<IRegistrationStrategy<ICustomApiConfig>> registrationStrategies;
 
-        public CustomApiManager(IEnumerable<Tuple<string, Type>> baseCustomApiTypes, ILogger logger = null)
+        public CustomApiManager(Core core, IEnumerable<Tuple<string, Type>> baseCustomApiTypes, ILogger logger = null)
         {
+            _core = core;
             _logger = logger ?? NullLogger.Instance;
             registrationStrategies = new List<IRegistrationStrategy<ICustomApiConfig>>
             {
@@ -142,7 +144,7 @@ namespace DG.Tools.XrmMockup
             return registeredApis.ContainsKey(requestName);
         }
 
-        internal OrganizationResponse Execute(OrganizationRequest request, Core core, PluginContext pluginContext)
+        internal OrganizationResponse Execute(OrganizationRequest request, PluginContext pluginContext)
         {
             if (!registeredApis.ContainsKey(request.RequestName))
             {
@@ -153,7 +155,7 @@ namespace DG.Tools.XrmMockup
             thisPluginContext.Stage = 30;
             thisPluginContext.Mode = 0;
 
-            var serviceProvider = new MockupServiceProviderAndFactory(core, thisPluginContext, core.TracingServiceFactory);
+            var serviceProvider = new MockupServiceProviderAndFactory(_core, thisPluginContext, _core.TracingServiceFactory);
             registeredApis[request.RequestName](serviceProvider);
             
             pluginContext.OutputParameters.Clear();

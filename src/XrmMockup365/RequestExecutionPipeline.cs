@@ -144,9 +144,9 @@ namespace DG.Tools.XrmMockup
             if (!ctx.ShouldTrigger) return;
 
             pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreValidation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core);
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext);
             pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreValidation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core, (_) => true);
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, (_) => true);
         }
 
         // ── Stage 3: security check + attribute initialisation ───────────────────
@@ -169,19 +169,19 @@ namespace DG.Tools.XrmMockup
             ctx.PluginContext.SharedVariables.Clear();
 
             pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext,
                 p => p.GetExecutionOrder() == 0);
 
             if (ctx.Settings.TriggerWorkflows)
                 workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core);
+                    ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext);
 
             pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core,
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext,
                 p => p.GetExecutionOrder() != 0);
 
             pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PreOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext, core);
+                ctx.EntityInfo.Item1, ctx.PreImage, null, ctx.PluginContext);
         }
 
         // ── Stage 5: main operation (stage 30) ───────────────────────────────────
@@ -286,28 +286,28 @@ namespace DG.Tools.XrmMockup
 
             // Sync post-operation: system first, then user plugins ordered by ExecutionOrder, interleaved with workflows
             pluginManager.TriggerSystem(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, core);
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext);
 
             pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, core,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext,
                 p => p.GetExecutionOrder() == 0);
 
             if (ctx.Settings.TriggerWorkflows)
                 workflowManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, core);
+                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext);
 
             pluginManager.TriggerSync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext, core,
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.SyncPostImage, ctx.PluginContext,
                 p => p.GetExecutionOrder() != 0);
 
             // Stage async work — re-fetch post-image so async jobs see the final committed state
             ctx.AsyncPostImage = core.TryRetrieve(ctx.PrimaryRef);
             pluginManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, core);
+                ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext);
 
             if (ctx.Settings.TriggerWorkflows)
                 workflowManager.StageAsync(ctx.RequestMessage, ExecutionStage.PostOperation,
-                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext, core);
+                    ctx.EntityInfo.Item1, ctx.PreImage, ctx.AsyncPostImage, ctx.PluginContext);
 
             // Async jobs only fire at the top-level call, not from within a plugin
             if (ctx.ParentPluginContext == null)
@@ -315,11 +315,11 @@ namespace DG.Tools.XrmMockup
                 pluginManager.TriggerAsyncWaitingJobs();
 
                 if (ctx.Settings.TriggerWorkflows)
-                    workflowManager.TriggerAsync(core);
+                    workflowManager.TriggerAsync();
             }
 
             if (ctx.Settings.TriggerWorkflows)
-                workflowManager.ExecuteWaitingWorkflows(ctx.PluginContext, core);
+                workflowManager.ExecuteWaitingWorkflows(ctx.PluginContext);
         }
 
         // ── Stage 7: MockupExtensions ─────────────────────────────────────────────

@@ -145,14 +145,14 @@ namespace DG.Tools.XrmMockup
             }
 
             var pluginLogger = loggerFactory.CreateLogger(typeof(PluginManager).FullName);
-            pluginManager = new PluginManager(initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins, pluginLogger);
+            pluginManager = new PluginManager(this, initData.Settings.BasePluginTypes, initData.Metadata.EntityMetadata, allPlugins, pluginLogger);
 
             var workflowLogger = loggerFactory.CreateLogger(typeof(WorkflowManager).FullName);
-            workflowManager = new WorkflowManager(initData.Settings.CodeActivityInstanceTypes, initData.Settings.IncludeAllWorkflows,
+            workflowManager = new WorkflowManager(this, initData.Settings.CodeActivityInstanceTypes, initData.Settings.IncludeAllWorkflows,
                 initData.Workflows, initData.Metadata.EntityMetadata, workflowLogger);
 
             var apiLogger = loggerFactory.CreateLogger(typeof(CustomApiManager).FullName);
-            customApiManager = new CustomApiManager(initData.Settings.BaseCustomApiTypes, apiLogger);
+            customApiManager = new CustomApiManager(this, initData.Settings.BaseCustomApiTypes, apiLogger);
 
             var typesMissingRegistration = pluginManager.missingRegistrations
                 .Intersect(customApiManager.missingRegistration)
@@ -820,7 +820,7 @@ namespace DG.Tools.XrmMockup
 
         public OrganizationResponse ExecuteCustomApi(OrganizationRequest request, PluginContext pluginContext)
         {
-            return customApiManager.Execute(request, this, pluginContext);
+            return customApiManager.Execute(request, pluginContext);
         }
 
         public bool IsExceptionFreeRequest(string requestName)
@@ -848,7 +848,7 @@ namespace DG.Tools.XrmMockup
 
         internal void TriggerWaitingWorkflows()
         {
-            workflowManager.ExecuteWaitingWorkflows(null, this);
+            workflowManager.ExecuteWaitingWorkflows(null);
         }
 
         internal void AddWorkflow(Entity workflow)
@@ -929,7 +929,7 @@ namespace DG.Tools.XrmMockup
                 workflow.Variables.Add(argumentName, input.Value);
             }
 
-            var postExecution = workflowManager.ExecuteWorkflow(workflow, entity, null, this);
+            var postExecution = workflowManager.ExecuteWorkflow(workflow, entity, null);
 
             var outputs = workflow.Output.Where(a => postExecution.Variables.ContainsKey(a.Name))
                 .Select(a => new KeyValuePair<string, object>(a.Name, postExecution.Variables[a.Name]));
