@@ -11,7 +11,7 @@ using System.ServiceModel;
 namespace DG.Tools.XrmMockup
 {
     /// <summary>
-    /// Orchestrates the Dataverse request execution pipeline across its five stages:
+    /// Orchestrates the Dataverse request execution pipeline across its six stages:
     /// Setup → PreValidation → PreOperation → MainOperation → PostOperation → Extensions.
     ///
     /// Core provides infrastructure (DB, security, extensions).
