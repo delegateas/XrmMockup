@@ -1966,6 +1966,22 @@ public partial class Account : ExtendedEntity
         set => SetRelatedEntities("contact_customer_accounts", null, value);
     }
 
+    [RelationshipSchemaName("ctx_account_contact")]
+    [RelationshipMetadata("ManyToMany", "accountid", "contact", "contactid", "Entity1")]
+    public IEnumerable<Contact> ctx_account_contact
+    {
+        get => GetRelatedEntities<Contact>("ctx_account_contact", null);
+        set => SetRelatedEntities("ctx_account_contact", null, value);
+    }
+
+    [RelationshipSchemaName("ctx_account_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "accountid", "ctx_parent", "ctx_accountid", "Referenced")]
+    public IEnumerable<ctx_parent> ctx_account_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("ctx_account_ctx_parent", null);
+        set => SetRelatedEntities("ctx_account_ctx_parent", null, value);
+    }
+
     [AttributeLogicalName("createdby")]
     [RelationshipSchemaName("lk_accountbase_createdby")]
     [RelationshipMetadata("ManyToOne", "createdby", "systemuser", "systemuserid", "Referencing")]

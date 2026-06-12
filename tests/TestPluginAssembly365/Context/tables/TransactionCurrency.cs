@@ -354,6 +354,22 @@ public partial class TransactionCurrency : ExtendedEntity
         set => SetRelatedEntities("transactioncurrency_contact", null, value);
     }
 
+    [RelationshipSchemaName("TransactionCurrency_ctx_child")]
+    [RelationshipMetadata("OneToMany", "transactioncurrencyid", "ctx_child", "transactioncurrencyid", "Referenced")]
+    public IEnumerable<ctx_child> TransactionCurrency_ctx_child
+    {
+        get => GetRelatedEntities<ctx_child>("TransactionCurrency_ctx_child", null);
+        set => SetRelatedEntities("TransactionCurrency_ctx_child", null, value);
+    }
+
+    [RelationshipSchemaName("TransactionCurrency_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "transactioncurrencyid", "ctx_parent", "transactioncurrencyid", "Referenced")]
+    public IEnumerable<ctx_parent> TransactionCurrency_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("TransactionCurrency_ctx_parent", null);
+        set => SetRelatedEntities("TransactionCurrency_ctx_parent", null, value);
+    }
+
     [RelationshipSchemaName("TransactionCurrency_Email")]
     [RelationshipMetadata("OneToMany", "transactioncurrencyid", "email", "transactioncurrencyid", "Referenced")]
     public IEnumerable<Email> TransactionCurrency_Email

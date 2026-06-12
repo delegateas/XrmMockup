@@ -1814,6 +1814,70 @@ public partial class SystemUser : ExtendedEntity
         set => SetRelatedEntities("lk_contactbase_modifiedby", null, value);
     }
 
+    [RelationshipSchemaName("lk_ctx_child_createdby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_child", "createdby", "Referenced")]
+    public IEnumerable<ctx_child> lk_ctx_child_createdby
+    {
+        get => GetRelatedEntities<ctx_child>("lk_ctx_child_createdby", null);
+        set => SetRelatedEntities("lk_ctx_child_createdby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_child_createdonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_child", "createdonbehalfby", "Referenced")]
+    public IEnumerable<ctx_child> lk_ctx_child_createdonbehalfby
+    {
+        get => GetRelatedEntities<ctx_child>("lk_ctx_child_createdonbehalfby", null);
+        set => SetRelatedEntities("lk_ctx_child_createdonbehalfby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_child_modifiedby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_child", "modifiedby", "Referenced")]
+    public IEnumerable<ctx_child> lk_ctx_child_modifiedby
+    {
+        get => GetRelatedEntities<ctx_child>("lk_ctx_child_modifiedby", null);
+        set => SetRelatedEntities("lk_ctx_child_modifiedby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_child_modifiedonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_child", "modifiedonbehalfby", "Referenced")]
+    public IEnumerable<ctx_child> lk_ctx_child_modifiedonbehalfby
+    {
+        get => GetRelatedEntities<ctx_child>("lk_ctx_child_modifiedonbehalfby", null);
+        set => SetRelatedEntities("lk_ctx_child_modifiedonbehalfby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_parent_createdby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_parent", "createdby", "Referenced")]
+    public IEnumerable<ctx_parent> lk_ctx_parent_createdby
+    {
+        get => GetRelatedEntities<ctx_parent>("lk_ctx_parent_createdby", null);
+        set => SetRelatedEntities("lk_ctx_parent_createdby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_parent_createdonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_parent", "createdonbehalfby", "Referenced")]
+    public IEnumerable<ctx_parent> lk_ctx_parent_createdonbehalfby
+    {
+        get => GetRelatedEntities<ctx_parent>("lk_ctx_parent_createdonbehalfby", null);
+        set => SetRelatedEntities("lk_ctx_parent_createdonbehalfby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_parent_modifiedby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_parent", "modifiedby", "Referenced")]
+    public IEnumerable<ctx_parent> lk_ctx_parent_modifiedby
+    {
+        get => GetRelatedEntities<ctx_parent>("lk_ctx_parent_modifiedby", null);
+        set => SetRelatedEntities("lk_ctx_parent_modifiedby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_ctx_parent_modifiedonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_parent", "modifiedonbehalfby", "Referenced")]
+    public IEnumerable<ctx_parent> lk_ctx_parent_modifiedonbehalfby
+    {
+        get => GetRelatedEntities<ctx_parent>("lk_ctx_parent_modifiedonbehalfby", null);
+        set => SetRelatedEntities("lk_ctx_parent_modifiedonbehalfby", null, value);
+    }
+
     [RelationshipSchemaName("lk_email_createdby")]
     [RelationshipMetadata("OneToMany", "systemuserid", "email", "createdby", "Referenced")]
     public IEnumerable<Email> lk_email_createdby
@@ -2113,6 +2177,22 @@ public partial class SystemUser : ExtendedEntity
     {
         get => GetRelatedEntities<Account>("user_accounts", null);
         set => SetRelatedEntities("user_accounts", null, value);
+    }
+
+    [RelationshipSchemaName("user_ctx_child")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_child", "owninguser", "Referenced")]
+    public IEnumerable<ctx_child> user_ctx_child
+    {
+        get => GetRelatedEntities<ctx_child>("user_ctx_child", null);
+        set => SetRelatedEntities("user_ctx_child", null, value);
+    }
+
+    [RelationshipSchemaName("user_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "ctx_parent", "owninguser", "Referenced")]
+    public IEnumerable<ctx_parent> user_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("user_ctx_parent", null);
+        set => SetRelatedEntities("user_ctx_parent", null, value);
     }
 
     [RelationshipSchemaName("user_email")]

@@ -521,6 +521,22 @@ public partial class Team : ExtendedEntity
         set => SetRelatedEntities("team_contacts", null, value);
     }
 
+    [RelationshipSchemaName("team_ctx_child")]
+    [RelationshipMetadata("OneToMany", "teamid", "ctx_child", "owningteam", "Referenced")]
+    public IEnumerable<ctx_child> team_ctx_child
+    {
+        get => GetRelatedEntities<ctx_child>("team_ctx_child", null);
+        set => SetRelatedEntities("team_ctx_child", null, value);
+    }
+
+    [RelationshipSchemaName("team_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "teamid", "ctx_parent", "owningteam", "Referenced")]
+    public IEnumerable<ctx_parent> team_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("team_ctx_parent", null);
+        set => SetRelatedEntities("team_ctx_parent", null, value);
+    }
+
     [RelationshipSchemaName("team_email")]
     [RelationshipMetadata("OneToMany", "teamid", "email", "owningteam", "Referenced")]
     public IEnumerable<Email> team_email

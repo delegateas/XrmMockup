@@ -999,6 +999,22 @@ public partial class BusinessUnit : ExtendedEntity
         set => SetRelatedEntities("business_unit_contacts", null, value);
     }
 
+    [RelationshipSchemaName("business_unit_ctx_child")]
+    [RelationshipMetadata("OneToMany", "businessunitid", "ctx_child", "owningbusinessunit", "Referenced")]
+    public IEnumerable<ctx_child> business_unit_ctx_child
+    {
+        get => GetRelatedEntities<ctx_child>("business_unit_ctx_child", null);
+        set => SetRelatedEntities("business_unit_ctx_child", null, value);
+    }
+
+    [RelationshipSchemaName("business_unit_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "businessunitid", "ctx_parent", "owningbusinessunit", "Referenced")]
+    public IEnumerable<ctx_parent> business_unit_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("business_unit_ctx_parent", null);
+        set => SetRelatedEntities("business_unit_ctx_parent", null, value);
+    }
+
     [RelationshipSchemaName("business_unit_email_activities")]
     [RelationshipMetadata("OneToMany", "businessunitid", "email", "owningbusinessunit", "Referenced")]
     public IEnumerable<Email> business_unit_email_activities

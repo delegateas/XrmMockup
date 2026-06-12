@@ -31,6 +31,16 @@ public class Xrm : OrganizationServiceContext
         get { return CreateQuery<Contact>(); }
     }
 
+    public IQueryable<ctx_child> ctx_childSet
+    {
+        get { return CreateQuery<ctx_child>(); }
+    }
+
+    public IQueryable<ctx_parent> ctx_parentSet
+    {
+        get { return CreateQuery<ctx_parent>(); }
+    }
+
     public IQueryable<Email> EmailSet
     {
         get { return CreateQuery<Email>(); }

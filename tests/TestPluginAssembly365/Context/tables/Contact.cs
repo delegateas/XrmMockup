@@ -2914,6 +2914,22 @@ public partial class Contact : ExtendedEntity
         set => SetRelatedEntities("Contact_Tasks", null, value);
     }
 
+    [RelationshipSchemaName("ctx_account_contact")]
+    [RelationshipMetadata("ManyToMany", "contactid", "account", "accountid", "Entity2")]
+    public IEnumerable<Account> ctx_account_contact
+    {
+        get => GetRelatedEntities<Account>("ctx_account_contact", null);
+        set => SetRelatedEntities("ctx_account_contact", null, value);
+    }
+
+    [RelationshipSchemaName("ctx_contact_ctx_parent")]
+    [RelationshipMetadata("OneToMany", "contactid", "ctx_parent", "ctx_contactid", "Referenced")]
+    public IEnumerable<ctx_parent> ctx_contact_ctx_parent
+    {
+        get => GetRelatedEntities<ctx_parent>("ctx_contact_ctx_parent", null);
+        set => SetRelatedEntities("ctx_contact_ctx_parent", null, value);
+    }
+
     [AttributeLogicalName("createdonbehalfby")]
     [RelationshipSchemaName("lk_contact_createdonbehalfby")]
     [RelationshipMetadata("ManyToOne", "createdonbehalfby", "systemuser", "systemuserid", "Referencing")]
