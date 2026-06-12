@@ -174,11 +174,19 @@ namespace DG.Tools.XrmMockup
         {
             if (basePluginTypes == null) return;
 
+            var scannedAssemblies = new HashSet<Assembly>();
+
             foreach (var pluginType in basePluginTypes)
             {
                 if (pluginType == null) continue;
 
                 Assembly proxyTypeAssembly = pluginType.Assembly;
+
+                if (!scannedAssemblies.Add(proxyTypeAssembly))
+                {
+                    _logger.LogDebug("Skipping already-scanned assembly {Assembly}", proxyTypeAssembly.GetName().Name);
+                    continue;
+                }
 
                 _logger.LogDebug("Scanning assembly {Assembly} for direct IPlugin implementations", proxyTypeAssembly.GetName().Name);
 
@@ -295,15 +303,18 @@ namespace DG.Tools.XrmMockup
         }
 
         /// <summary>
-        /// Sorts all the registered which shares the same entry point based on their given order
+        /// Sorts all the registered which shares the same entry point based on their given order.
+        /// Uses a stable sort so plugins with equal ExecutionOrder preserve their registration order.
         /// </summary>
-        private void SortAllLists(Dictionary<EventOperation, StageToTriggerMap> plugins)
+        private static void SortAllLists(Dictionary<EventOperation, StageToTriggerMap> plugins)
         {
             foreach (var dictEntry in plugins)
             {
                 foreach (var listEntry in dictEntry.Value)
                 {
-                    listEntry.Value.Sort();
+                    var sorted = listEntry.Value.OrderBy(t => t.Order).ToList();
+                    listEntry.Value.Clear();
+                    listEntry.Value.AddRange(sorted);
                 }
             }
         }
