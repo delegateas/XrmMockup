@@ -1,0 +1,440 @@
+using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.Xrm.Sdk.Query;
+using System.Linq;
+using System.ServiceModel;
+
+namespace XrmMockup.TestEnvProvisioner;
+
+/// <summary>
+/// Idempotent helpers for creating Dataverse metadata (entities, attributes, relationships) and
+/// supporting records (publishers, roles). Every "Ensure*/Create*" method first checks for the
+/// component and skips creation if it already exists, so the provisioner is safe to re-run.
+/// </summary>
+public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
+{
+    public IOrganizationService Service => service;
+    public bool WhatIf => whatIf;
+
+    /// <summary>
+    /// When set, every entity/attribute/relationship created is added to this (unmanaged) solution,
+    /// and roles can be added with <see cref="AddComponentToSolution"/>.
+    /// </summary>
+    public string? SolutionUniqueName { get; set; }
+
+    public static Label L(string text) => new(text, 1033);
+
+    private void Log(string msg) => Console.WriteLine((whatIf ? "[plan] " : "  ") + msg);
+
+    // ---------------------------------------------------------------- Publishers / solutions
+
+    /// <summary>Ensures the publisher exists and returns its id.</summary>
+    public Guid EnsurePublisher(string uniqueName, string prefix, int optionValuePrefix)
+    {
+        var existing = service.RetrieveMultiple(new QueryExpression("publisher")
+        {
+            ColumnSet = new ColumnSet("publisherid"),
+            Criteria = new FilterExpression { Conditions = { new ConditionExpression("uniquename", ConditionOperator.Equal, uniqueName) } }
+        });
+        if (existing.Entities.Count > 0)
+        {
+            Log($"publisher '{uniqueName}' (prefix '{prefix}') already exists");
+            return existing.Entities[0].Id;
+        }
+        Log($"create publisher '{uniqueName}' (prefix '{prefix}')");
+        if (whatIf) return Guid.Empty;
+        return service.Create(new Entity("publisher")
+        {
+            ["uniquename"] = uniqueName,
+            ["friendlyname"] = uniqueName,
+            ["customizationprefix"] = prefix,
+            ["customizationoptionvalueprefix"] = optionValuePrefix
+        });
+    }
+
+    /// <summary>
+    /// Ensures an unmanaged solution exists for the given publisher and records it as the target
+    /// solution (<see cref="SolutionUniqueName"/>) for all subsequently created components.
+    /// If the solution already exists it is reused as-is (its publisher is not changed).
+    /// </summary>
+    public void EnsureSolution(string uniqueName, string friendlyName, Guid publisherId)
+    {
+        SolutionUniqueName = uniqueName;
+        var existing = service.RetrieveMultiple(new QueryExpression("solution")
+        {
+            ColumnSet = new ColumnSet("solutionid"),
+            Criteria = new FilterExpression { Conditions = { new ConditionExpression("uniquename", ConditionOperator.Equal, uniqueName) } }
+        });
+        if (existing.Entities.Count > 0)
+        {
+            Log($"solution '{uniqueName}' already exists (components will be added to it)");
+            return;
+        }
+        Log($"create unmanaged solution '{uniqueName}' (publisher {publisherId})");
+        if (whatIf) return;
+        service.Create(new Entity("solution")
+        {
+            ["uniquename"] = uniqueName,
+            ["friendlyname"] = friendlyName,
+            ["version"] = "1.0.0.0",
+            ["publisherid"] = new EntityReference("publisher", publisherId),
+        });
+    }
+
+    /// <summary>Adds an existing component (e.g. a security role) to the target solution.</summary>
+    public void AddComponentToSolution(int componentType, Guid componentId)
+    {
+        if (string.IsNullOrEmpty(SolutionUniqueName)) return;
+        Log($"add component (type {componentType}) {componentId} to solution '{SolutionUniqueName}'");
+        if (whatIf) return;
+        try
+        {
+            service.Execute(new AddSolutionComponentRequest
+            {
+                ComponentType = componentType,
+                ComponentId = componentId,
+                SolutionUniqueName = SolutionUniqueName,
+                AddRequiredComponents = false,
+            });
+        }
+        catch (FaultException ex)
+        {
+            // Most commonly: the component is already a member of the solution.
+            Log($"  (skipped: {ex.Message})");
+        }
+    }
+
+    // ---------------------------------------------------------------- Existence checks
+
+    public bool EntityExists(string logicalName)
+    {
+        try
+        {
+            service.Execute(new RetrieveEntityRequest { LogicalName = logicalName, EntityFilters = EntityFilters.Entity });
+            return true;
+        }
+        catch (FaultException) { return false; }
+    }
+
+    public bool AttributeExists(string entityLogicalName, string attributeLogicalName)
+    {
+        try
+        {
+            service.Execute(new RetrieveAttributeRequest { EntityLogicalName = entityLogicalName, LogicalName = attributeLogicalName });
+            return true;
+        }
+        catch (FaultException) { return false; }
+    }
+
+    public bool RelationshipExists(string schemaName)
+    {
+        try
+        {
+            service.Execute(new RetrieveRelationshipRequest { Name = schemaName });
+            return true;
+        }
+        catch (FaultException) { return false; }
+    }
+
+    // ---------------------------------------------------------------- Entities / attributes
+
+    public void CreateEntity(string schemaName, string displayName, string displayCollectionName,
+        OwnershipTypes ownership, StringAttributeMetadata primaryAttribute, bool hasActivities = false, bool hasNotes = false)
+    {
+        var logical = schemaName.ToLowerInvariant();
+        if (EntityExists(logical))
+        {
+            Log($"entity '{logical}' already exists");
+            return;
+        }
+        Log($"create entity '{schemaName}' (primary attr '{primaryAttribute.SchemaName}')");
+        if (whatIf) return;
+        service.Execute(new CreateEntityRequest
+        {
+            Entity = new EntityMetadata
+            {
+                SchemaName = schemaName,
+                DisplayName = L(displayName),
+                DisplayCollectionName = L(displayCollectionName),
+                OwnershipType = ownership,
+                IsActivity = false,
+            },
+            PrimaryAttribute = primaryAttribute,
+            HasActivities = hasActivities,
+            HasNotes = hasNotes,
+            SolutionUniqueName = SolutionUniqueName,
+        });
+    }
+
+    public void CreateAttribute(string entitySchemaName, AttributeMetadata attribute)
+    {
+        var entityLogical = entitySchemaName.ToLowerInvariant();
+        var attrLogical = attribute.SchemaName!.ToLowerInvariant();
+        if (AttributeExists(entityLogical, attrLogical))
+        {
+            Log($"attribute '{entityLogical}.{attrLogical}' already exists");
+            return;
+        }
+        Log($"create attribute '{entityLogical}.{attribute.SchemaName}' ({attribute.GetType().Name})");
+        if (whatIf) return;
+        service.Execute(new CreateAttributeRequest { EntityName = entityLogical, Attribute = attribute, SolutionUniqueName = SolutionUniqueName });
+    }
+
+    // SourceType values for computed columns.
+    public const int SourceCalculated = 1;  // classic calculated field   (FormulaDefinition = classic XAML)
+    public const int SourceRollup = 2;       // rollup field               (FormulaDefinition = rollup XAML)
+    public const int SourceFormula = 3;      // Power Fx formula column     (FormulaDefinition = Power Fx text)
+
+    /// <summary>
+    /// Creates a computed column (Power Fx formula, classic calculated, or rollup) by setting the
+    /// attribute's SourceType and FormulaDefinition. XrmMockup evaluates all three on Retrieve/
+    /// RetrieveMultiple. FormulaDefinition lives on the concrete typed attribute classes, not the
+    /// AttributeMetadata base, so it is set via reflection. A blank definition is skipped with a hint
+    /// (use --dump-formula to capture the XAML); an org rejection is logged non-fatally.
+    /// </summary>
+    public void CreateComputedColumn(string entitySchemaName, AttributeMetadata attribute, int sourceType, string formulaDefinition)
+    {
+        var kind = sourceType switch { SourceCalculated => "calculated", SourceRollup => "rollup", _ => "formula" };
+        var entityLogical = entitySchemaName.ToLowerInvariant();
+        var attrLogical = attribute.SchemaName!.ToLowerInvariant();
+        if (AttributeExists(entityLogical, attrLogical))
+        {
+            Log($"{kind} column '{entityLogical}.{attrLogical}' already exists");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(formulaDefinition))
+        {
+            Log($"  ! no definition supplied for {kind} column '{attribute.SchemaName}' — skipped. " +
+                $"Capture one with --dump-formula <entity>.<attribute> and add it to TestSchema.");
+            return;
+        }
+
+        attribute.SourceType = sourceType;
+        var formulaProperty = attribute.GetType().GetProperty("FormulaDefinition");
+        if (formulaProperty is null)
+        {
+            Log($"  ! attribute type {attribute.GetType().Name} has no FormulaDefinition; create '{attribute.SchemaName}' manually.");
+            return;
+        }
+        formulaProperty.SetValue(attribute, formulaDefinition);
+
+        Log($"create {kind} column '{entityLogical}.{attribute.SchemaName}'");
+        if (whatIf) return;
+        try
+        {
+            service.Execute(new CreateAttributeRequest { EntityName = entityLogical, Attribute = attribute, SolutionUniqueName = SolutionUniqueName });
+        }
+        catch (FaultException ex)
+        {
+            Log($"  ! could not auto-create {kind} column '{attribute.SchemaName}' ({ex.Message}); create it manually.");
+        }
+    }
+
+    public void CreateFormulaColumn(string entity, AttributeMetadata attribute, string powerFx)
+        => CreateComputedColumn(entity, attribute, SourceFormula, powerFx);
+
+    public void CreateCalculatedColumn(string entity, AttributeMetadata attribute, string classicXaml)
+        => CreateComputedColumn(entity, attribute, SourceCalculated, classicXaml);
+
+    public void CreateRollupColumn(string entity, AttributeMetadata attribute, string rollupXaml)
+        => CreateComputedColumn(entity, attribute, SourceRollup, rollupXaml);
+
+    /// <summary>
+    /// Prints the SourceType and FormulaDefinition (the classic calculated / rollup XAML, or the
+    /// Power Fx text) of an existing attribute, so it can be captured and baked into TestSchema.
+    /// </summary>
+    public void DumpFormula(string entityLogicalName, string attributeLogicalName)
+    {
+        // Logical names are always lower-case in Dataverse; normalise so callers can pass any casing.
+        entityLogicalName = entityLogicalName.ToLowerInvariant();
+        attributeLogicalName = attributeLogicalName.ToLowerInvariant();
+
+        AttributeMetadata attr;
+        try
+        {
+            attr = ((RetrieveAttributeResponse)service.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogicalName,
+                LogicalName = attributeLogicalName,
+            })).AttributeMetadata;
+        }
+        catch (FaultException ex)
+        {
+            Console.Error.WriteLine($"Could not read '{entityLogicalName}.{attributeLogicalName}': {ex.Message}");
+            Console.Error.WriteLine("This tool does not create calculated/rollup columns until their XAML is supplied, " +
+                "so create the example field in the maker portal first, then dump it.");
+            return;
+        }
+
+        var sourceType = attr.SourceType;
+        var formula = attr.GetType().GetProperty("FormulaDefinition")?.GetValue(attr) as string;
+        Console.WriteLine($"Entity:        {entityLogicalName}");
+        Console.WriteLine($"Attribute:     {attributeLogicalName} ({attr.GetType().Name})");
+        Console.WriteLine($"SourceType:    {sourceType} (1=Calculated, 2=Rollup, 3=Formula/PowerFx)");
+        Console.WriteLine("FormulaDefinition:");
+        Console.WriteLine("-----------------------------------------------------------------------");
+        Console.WriteLine(string.IsNullOrEmpty(formula) ? "(none)" : formula);
+        Console.WriteLine("-----------------------------------------------------------------------");
+    }
+
+    // ---------------------------------------------------------------- Attribute factories
+
+    public StringAttributeMetadata String(string schema, string display, int maxLength = 200,
+        AttributeRequiredLevel required = AttributeRequiredLevel.None) => new()
+        {
+            SchemaName = schema,
+            DisplayName = L(display),
+            MaxLength = maxLength,
+            FormatName = StringFormatName.Text,
+            RequiredLevel = new AttributeRequiredLevelManagedProperty(required),
+        };
+
+    public IntegerAttributeMetadata WholeNumber(string schema, string display) => new()
+    {
+        SchemaName = schema,
+        DisplayName = L(display),
+        Format = IntegerFormat.None,
+        MinValue = int.MinValue,
+        MaxValue = int.MaxValue,
+    };
+
+    public DecimalAttributeMetadata Decimal(string schema, string display, int precision = 2) => new()
+    {
+        SchemaName = schema,
+        DisplayName = L(display),
+        Precision = precision,
+        MinValue = -100000000000m,
+        MaxValue = 100000000000m,
+    };
+
+    public MoneyAttributeMetadata Money(string schema, string display, int precision = 2) => new()
+    {
+        SchemaName = schema,
+        DisplayName = L(display),
+        PrecisionSource = 0, // 0 = use the Precision below; 1 = org pricing precision; 2 = currency precision
+        Precision = precision,
+        MinValue = -1000000000d,
+        MaxValue = 1000000000d,
+    };
+
+    public DateTimeAttributeMetadata DateTime(string schema, string display) => new()
+    {
+        SchemaName = schema,
+        DisplayName = L(display),
+        Format = DateTimeFormat.DateAndTime,
+    };
+
+    public PicklistAttributeMetadata Picklist(string schema, string display, params (int value, string label)[] options)
+    {
+        var set = new OptionSetMetadata { IsGlobal = false, OptionSetType = OptionSetType.Picklist };
+        foreach (var (value, label) in options)
+            set.Options.Add(new OptionMetadata(L(label), value));
+        return new PicklistAttributeMetadata { SchemaName = schema, DisplayName = L(display), OptionSet = set };
+    }
+
+    public MultiSelectPicklistAttributeMetadata MultiSelect(string schema, string display, params (int value, string label)[] options)
+    {
+        var set = new OptionSetMetadata { IsGlobal = false, OptionSetType = OptionSetType.Picklist };
+        foreach (var (value, label) in options)
+            set.Options.Add(new OptionMetadata(L(label), value));
+        return new MultiSelectPicklistAttributeMetadata { SchemaName = schema, DisplayName = L(display), OptionSet = set };
+    }
+
+    // ---------------------------------------------------------------- Relationships
+
+    public void CreateLookup(string relationshipSchemaName, string referencedEntity, string referencingEntity,
+        string lookupSchemaName, string lookupDisplayName)
+    {
+        if (RelationshipExists(relationshipSchemaName))
+        {
+            Log($"relationship '{relationshipSchemaName}' already exists");
+            return;
+        }
+        Log($"create 1:N '{relationshipSchemaName}' ({referencedEntity} -> {referencingEntity}.{lookupSchemaName})");
+        if (whatIf) return;
+        service.Execute(new CreateOneToManyRequest
+        {
+            OneToManyRelationship = new OneToManyRelationshipMetadata
+            {
+                SchemaName = relationshipSchemaName,
+                ReferencedEntity = referencedEntity,
+                ReferencingEntity = referencingEntity,
+            },
+            Lookup = new LookupAttributeMetadata { SchemaName = lookupSchemaName, DisplayName = L(lookupDisplayName) },
+            SolutionUniqueName = SolutionUniqueName,
+        });
+    }
+
+    public void CreateManyToMany(string relationshipSchemaName, string intersectName, string entity1, string entity2)
+    {
+        if (RelationshipExists(relationshipSchemaName))
+        {
+            Log($"relationship '{relationshipSchemaName}' already exists");
+            return;
+        }
+        Log($"create N:N '{relationshipSchemaName}' ({entity1} <-> {entity2}, intersect '{intersectName}')");
+        if (whatIf) return;
+        service.Execute(new CreateManyToManyRequest
+        {
+            IntersectEntitySchemaName = intersectName,
+            ManyToManyRelationship = new ManyToManyRelationshipMetadata
+            {
+                SchemaName = relationshipSchemaName,
+                Entity1LogicalName = entity1,
+                Entity2LogicalName = entity2,
+            },
+            SolutionUniqueName = SolutionUniqueName,
+        });
+    }
+
+    // ---------------------------------------------------------------- Role privileges
+
+    /// <summary>
+    /// Grants a role the requested privilege types on an entity, at the given depth. Privilege ids
+    /// are read from the entity's metadata (by <see cref="PrivilegeType"/>) rather than guessed by
+    /// name, so this works identically for standard and custom entities.
+    /// </summary>
+    public void GrantEntityPrivileges(Guid roleId, string entityLogicalName, PrivilegeType[] types, PrivilegeDepth depth)
+    {
+        Log($"grant [{string.Join(",", types)}] on '{entityLogicalName}' @ {depth} to role {roleId}");
+        if (whatIf) return;
+
+        var meta = ((RetrieveEntityResponse)service.Execute(new RetrieveEntityRequest
+        {
+            LogicalName = entityLogicalName,
+            EntityFilters = EntityFilters.Privileges,
+        })).EntityMetadata;
+
+        var grants = meta.Privileges
+            .Where(p => types.Contains(p.PrivilegeType))
+            .Select(p => new RolePrivilege { PrivilegeId = p.PrivilegeId, Depth = depth })
+            .ToArray();
+
+        if (grants.Length == 0)
+        {
+            Log($"  (no matching privileges found on '{entityLogicalName}')");
+            return;
+        }
+        try
+        {
+            service.Execute(new AddPrivilegesRoleRequest { RoleId = roleId, Privileges = grants });
+        }
+        catch (FaultException ex)
+        {
+            // Non-fatal: e.g. a privilege that rejects the requested depth. Log and keep going so one
+            // bad grant doesn't abort the whole provisioning run.
+            Log($"  ! could not grant [{string.Join(",", types)}] on '{entityLogicalName}' @ {depth} ({ex.Message})");
+        }
+    }
+
+    // ---------------------------------------------------------------- Publish
+
+    public void PublishAll()
+    {
+        Log("publish all customizations");
+        if (whatIf) return;
+        service.Execute(new PublishAllXmlRequest());
+    }
+}

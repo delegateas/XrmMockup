@@ -34,6 +34,7 @@
   </Folder>
   <Folder Name="/tests/">
     <File Path="Tools/appsettings.json" />
+    <Project Path="tests/TestEnvProvisioner/TestEnvProvisioner.csproj" />
     <Project Path="tests/TestPluginAssembly365/TestPluginAssembly365.csproj" />
     <Project Path="tests/XrmMockup365Test/XrmMockup365Test.csproj" />
   </Folder>
