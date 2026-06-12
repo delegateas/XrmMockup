@@ -4,7 +4,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
 
-namespace DG.Tools.XrmMockup
+namespace DG.Tools.XrmMockup.Internal
 {
     /// <summary>
     /// Infrastructure contract that Core exposes to the pipeline and its managers.
