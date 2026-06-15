@@ -1011,6 +1011,71 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestQueryExpressionLinkEntityNotEqualExcludesNull()
+        {
+            // lead1 (-> contact1) has Address1_PostalCode = "MK111DW"; lead2 (-> contact2) has none (null).
+            // A NotEqual link-criteria must exclude the contact whose linked lead has a null value,
+            // matching real Dataverse (NULL <> value is unknown -> row excluded).
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("lastname")
+            };
+            query.Criteria = new FilterExpression(LogicalOperator.And);
+            query.Criteria.AddCondition(new ConditionExpression("lastname", ConditionOperator.Like, "contact%"));
+
+            var linkEntity = new LinkEntity()
+            {
+                LinkToEntityName = "lead",
+                LinkToAttributeName = "parentcontactid",
+                LinkFromEntityName = "contact",
+                LinkFromAttributeName = "contactid",
+                Columns = new ColumnSet("address1_postalcode"),
+                EntityAlias = "lead"
+            };
+            linkEntity.LinkCriteria = new FilterExpression(LogicalOperator.And);
+            linkEntity.LinkCriteria.AddCondition(new ConditionExpression("lead", "address1_postalcode", ConditionOperator.NotEqual, "ZZZ"));
+            query.LinkEntities.Add(linkEntity);
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+            Assert.Single(res);
+            Assert.Equal("contact1", res[0].GetAttributeValue<string>("lastname"));
+        }
+
+        [Fact]
+        public void TestQueryExpressionNotEqualExcludesNull()
+        {
+            // Only lead1 has a postal code; leads 2-4 are null. NotEqual must exclude the null rows.
+            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.NotEqual, "ZZZ"));
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            Assert.Single(res);
+            Assert.Equal(lead1.Id, res[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionNotInExcludesNull()
+        {
+            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.NotIn, new[] { "AAA", "BBB" }));
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            Assert.Single(res);
+            Assert.Equal(lead1.Id, res[0].Id);
+        }
+
+        [Fact]
+        public void TestQueryExpressionDoesNotBeginWithExcludesNull()
+        {
+            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.DoesNotBeginWith, "ZZ"));
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            Assert.Single(res);
+            Assert.Equal(lead1.Id, res[0].Id);
+        }
+
+        [Fact]
         public void TestQueryExpressionLinkEntityNoSetEntityName()
         {
             var query = new QueryExpression("contact")
