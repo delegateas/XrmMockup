@@ -412,6 +412,34 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
         });
     }
 
+    /// <summary>
+    /// Sets an existing money column's PrecisionSource to "currency precision" (2). CreateAttribute is
+    /// idempotent and won't change an existing column, so this updates one in place.
+    /// </summary>
+    public void SetMoneyPrecisionToCurrency(string entitySchemaName, string attributeSchemaName)
+    {
+        var entityLogical = entitySchemaName.ToLowerInvariant();
+        var attrLogical = attributeSchemaName.ToLowerInvariant();
+        Log($"set '{entityLogical}.{attrLogical}' precision source to currency");
+        if (whatIf) return;
+        try
+        {
+            var attr = (MoneyAttributeMetadata)((RetrieveAttributeResponse)service.Execute(
+                new RetrieveAttributeRequest { EntityLogicalName = entityLogical, LogicalName = attrLogical })).AttributeMetadata;
+            if (attr.PrecisionSource == 2)
+            {
+                Log("  (already currency precision)");
+                return;
+            }
+            attr.PrecisionSource = 2;
+            service.Execute(new UpdateAttributeRequest { EntityName = entityLogical, Attribute = attr, MergeLabels = true });
+        }
+        catch (FaultException ex)
+        {
+            Log($"  ! could not update precision of '{entityLogical}.{attrLogical}' ({ex.Message})");
+        }
+    }
+
     // ---------------------------------------------------------------- Alternate keys
 
     /// <summary>

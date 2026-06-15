@@ -98,6 +98,7 @@ public static class TestSchema
             b.String(Names.Name, "Name", 200, AttributeRequiredLevel.None));
 
         b.CreateAttribute(Names.ParentEntity, b.Money(Names.Amount, "Amount"));               // -> ctx_amount (+ _base auto) : currency base-calc
+        b.SetMoneyPrecisionToCurrency(Names.ParentEntity, Names.Amount);                      // update existing column to currency precision
         b.CreateAttribute(Names.ParentEntity, b.WholeNumber(Names.WholeNumber, "Whole number")); // source for whole-number rollups/formulas
         b.CreateAttribute(Names.ParentEntity, b.DateTime(Names.DateValue, "Date value"));     // datetime field + formula source
         b.CreateAttribute(Names.ParentEntity, b.MultiSelect(Names.DocumentTypes, "Document types",
@@ -113,6 +114,7 @@ public static class TestSchema
         b.CreateEntity(Names.ChildEntity, "Child", "Children", OwnershipTypes.UserOwned,
             b.String(Names.Name, "Name", 200, AttributeRequiredLevel.None));
         b.CreateAttribute(Names.ChildEntity, b.Money(Names.Allowance, "Allowance"));
+        b.SetMoneyPrecisionToCurrency(Names.ChildEntity, Names.Allowance);
     }
 
     public static void CreateRelationships(MetadataBuilder b)
