@@ -126,6 +126,8 @@ public static class TestSchema
         // cascade/security parent lookup (ctx_ParentId).
         b.CreateLookup(Names.RelParentChildRollup, Names.ParentEntity, Names.ChildEntity, Names.RollupParentLookup, "Rollup parent");
         b.CreateLookup(Names.RelParentChildCascade, Names.ParentEntity, Names.ChildEntity, Names.ParentLookup, "Parent");
+        // Reparenting a child to a parent owned by another user should reassign the child (cascade).
+        b.SetCascade(Names.RelParentChildCascade, Microsoft.Xrm.Sdk.Metadata.CascadeType.Cascade, Microsoft.Xrm.Sdk.Metadata.CascadeType.Cascade);
 
         // ctx_parent <-> ctx_child N:N (associate/disassociate + the sync plugin).
         b.CreateManyToMany(Names.NnParentChild, Names.NnParentChildIntersect, Names.ParentEntity, Names.ChildEntity);

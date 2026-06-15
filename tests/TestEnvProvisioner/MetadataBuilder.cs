@@ -367,6 +367,29 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
         });
     }
 
+    /// <summary>
+    /// Updates an existing 1:N relationship's Assign/Reparent cascade behaviour (applies to relationships
+    /// that already exist, which CreateLookup would otherwise skip). Used so reparenting a child to a
+    /// parent owned by another user reassigns the child (TestParentChangeCascading).
+    /// </summary>
+    public void SetCascade(string relationshipSchemaName, CascadeType assign, CascadeType reparent)
+    {
+        Log($"set cascade on '{relationshipSchemaName}' (assign={assign}, reparent={reparent})");
+        if (whatIf) return;
+        try
+        {
+            var rel = (OneToManyRelationshipMetadata)((RetrieveRelationshipResponse)service.Execute(
+                new RetrieveRelationshipRequest { Name = relationshipSchemaName })).RelationshipMetadata;
+            rel.CascadeConfiguration.Assign = assign;
+            rel.CascadeConfiguration.Reparent = reparent;
+            service.Execute(new UpdateRelationshipRequest { Relationship = rel });
+        }
+        catch (FaultException ex)
+        {
+            Log($"  ! could not set cascade on '{relationshipSchemaName}' ({ex.Message})");
+        }
+    }
+
     public void CreateManyToMany(string relationshipSchemaName, string intersectName, string entity1, string entity2)
     {
         if (RelationshipExists(relationshipSchemaName))
@@ -489,14 +512,20 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
             EntityFilters = EntityFilters.Privileges,
         })).EntityMetadata;
 
+        // Only add privileges the role doesn't already hold, so re-running against an existing role
+        // reliably adds NEW grants (e.g. Assign) instead of failing the whole batch on duplicates.
+        var existing = ((RetrieveRolePrivilegesRoleResponse)service.Execute(
+            new RetrieveRolePrivilegesRoleRequest { RoleId = roleId })).RolePrivileges
+            .Select(p => p.PrivilegeId).ToHashSet();
+
         var grants = meta.Privileges
-            .Where(p => types.Contains(p.PrivilegeType))
+            .Where(p => types.Contains(p.PrivilegeType) && !existing.Contains(p.PrivilegeId))
             .Select(p => new RolePrivilege { PrivilegeId = p.PrivilegeId, Depth = depth })
             .ToArray();
 
         if (grants.Length == 0)
         {
-            Log($"  (no matching privileges found on '{entityLogicalName}')");
+            Log($"  ({string.Join(",", types)} on '{entityLogicalName}' already granted)");
             return;
         }
         try

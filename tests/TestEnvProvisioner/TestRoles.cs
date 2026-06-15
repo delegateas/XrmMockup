@@ -32,6 +32,17 @@ public static class TestRoles
         PrivilegeType.Delete, PrivilegeType.Append, PrivilegeType.AppendTo,
     };
     private static readonly PrivilegeType[] ReadOnly = { PrivilegeType.Read };
+    private static readonly PrivilegeType[] CrudAssign =
+    {
+        PrivilegeType.Create, PrivilegeType.Read, PrivilegeType.Write, PrivilegeType.Delete,
+        PrivilegeType.Append, PrivilegeType.AppendTo, PrivilegeType.Assign,
+    };
+    // Own/assignee access without Create (so a record can be owned/assigned but not created).
+    private static readonly PrivilegeType[] OwnNoCreate =
+    {
+        PrivilegeType.Read, PrivilegeType.Write, PrivilegeType.Assign, PrivilegeType.Append, PrivilegeType.AppendTo,
+    };
+    private static readonly PrivilegeType[] ReadCreate = { PrivilegeType.Read, PrivilegeType.Create };
     private static readonly PrivilegeType[] FullAccess =
     {
         PrivilegeType.Create, PrivilegeType.Read, PrivilegeType.Write, PrivilegeType.Delete,
@@ -55,13 +66,16 @@ public static class TestRoles
     private static readonly RoleDef[] Roles =
     [
         new RoleDef("XrmMockup Test User",
-            "User-level CRUD on contact + custom entities; used by the ownership security tests (can " +
-            "act on own records but not others'; has no create privilege on account, so creating one is denied).",
+            "User-level CRUD (+Assign) on contact + custom entities; user-level own/assign on account " +
+            "(but NO account create, so creating one is still denied); user-level CRUD on annotation. " +
+            "Used by the ownership/assign/cascade security tests (can act on own records, not others').",
             [
                 .. Baseline(),
-                new Grant("contact", Crud, PrivilegeDepth.Basic),
-                new Grant(TestSchema.Names.ParentEntity, Crud, PrivilegeDepth.Basic),
-                new Grant(TestSchema.Names.ChildEntity, Crud, PrivilegeDepth.Basic),
+                new Grant("contact", CrudAssign, PrivilegeDepth.Basic),
+                new Grant(TestSchema.Names.ParentEntity, CrudAssign, PrivilegeDepth.Basic),
+                new Grant(TestSchema.Names.ChildEntity, CrudAssign, PrivilegeDepth.Basic),
+                new Grant("account", OwnNoCreate, PrivilegeDepth.Basic),   // can own/be-assigned accounts (cascade), not create
+                new Grant("annotation", Crud, PrivilegeDepth.Basic),        // impersonation/notes test
             ]),
 
         new RoleDef("XrmMockup Test No Contact Access",
@@ -82,16 +96,20 @@ public static class TestRoles
                 .. Baseline(),
                 new Grant(TestSchema.Names.ParentEntity, ReadOnly, PrivilegeDepth.Global),
                 new Grant("contact", ReadOnly, PrivilegeDepth.Basic),
+                new Grant("account", ReadCreate, PrivilegeDepth.Global), // RetrievePrincipalAccess on account expects Read|Create
             ]),
 
         new RoleDef("XrmMockup Test Access Team",
             "Source role that UnitTestBase clones (then downgrades contact/account to Basic) to build the " +
-            "access-team test roles. Has the full privilege set (incl. Assign/Share) on contact + account, " +
-            "so the suite no longer has to clone System Administrator.",
+            "access-team test roles. Full privilege set (incl. Assign/Share) on contact + account at BU " +
+            "level, plus the custom entities (so AccountPostPlugin's ctx_parent side-records succeed when " +
+            "these users create accounts). The suite no longer clones System Administrator.",
             [
                 .. Baseline(),
                 new Grant("contact", FullAccess, PrivilegeDepth.Local),
                 new Grant("account", FullAccess, PrivilegeDepth.Local),
+                new Grant(TestSchema.Names.ParentEntity, FullAccess, PrivilegeDepth.Global),
+                new Grant(TestSchema.Names.ChildEntity, FullAccess, PrivilegeDepth.Global),
             ]),
     ];
 
