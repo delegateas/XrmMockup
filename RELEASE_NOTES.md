@@ -1,3 +1,6 @@
+### 1.18.1 - 15 June 2026
+* Fix: LinkCriteria and negative conditions did work correctly
+
 ### 1.18.0 - 23 March 2026
 * Add: Added ability to log startup sequence and Plugin/API detection to a file (#314)
 * Add: Support re-sending emails with Failed status in SendEmailRequestHandler (#318)
