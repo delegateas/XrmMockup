@@ -1434,9 +1434,9 @@ namespace DG.Tools.XrmMockup
             return entityMetadata;
         }
 
-        internal void ExecuteCalculatedFields(DbRow row)
+        internal void ExecuteCalculatedFields(EntityMetadata entityMetadata, Entity entity)
         {
-            var attributes = row.Metadata.Attributes.Where(
+            var attributes = entityMetadata.Attributes.Where(
                 m => m.SourceType == (int)SourceType.CalculatedAttribute && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
             foreach (var attr in attributes)
@@ -1452,8 +1452,18 @@ namespace DG.Tools.XrmMockup
 
                 var tree = WorkflowConstructor.ParseCalculated(definition, $"{attr.EntityLogicalName}.{attr.LogicalName}");
                 var factory = ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
+                // Calculated fields are evaluated on demand and projected onto the entity being
+                // returned. Unlike rollup fields they are never persisted to the database, so we run
+                // the calculation workflow against a clone and copy the computed value back onto the
+                // returned entity (the workflow leaves its result in the "primaryEntity" variable).
+                var resultTree = tree.Execute(entity.CloneEntity(entityMetadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
+
+                if (resultTree.Variables.TryGetValue("InputEntities(\"primaryEntity\")", out var resultObj)
+                    && resultObj is Entity result && result.Contains(attr.LogicalName))
+                {
+                    entity[attr.LogicalName] = result[attr.LogicalName];
+                }
             }
         }
 
@@ -1474,7 +1484,31 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset);
+                entity[attr.LogicalName] = CoerceFormulaValue(await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset), attr);
+            }
+        }
+
+        // PowerFx evaluates numeric expressions to decimal. Coerce the result to the formula
+        // attribute's declared CLR type so the strongly-typed accessors (e.g. int? for a whole-number
+        // formula column) don't fail casting decimal to the target type.
+        private static object CoerceFormulaValue(object value, AttributeMetadata attr)
+        {
+            if (value == null) return null;
+
+            switch (attr.AttributeType)
+            {
+                case AttributeTypeCode.Integer:
+                    return Convert.ToInt32(value);
+                case AttributeTypeCode.BigInt:
+                    return Convert.ToInt64(value);
+                case AttributeTypeCode.Double:
+                    return Convert.ToDouble(value);
+                case AttributeTypeCode.Decimal:
+                    return value is decimal ? value : Convert.ToDecimal(value);
+                case AttributeTypeCode.Money:
+                    return value is Money ? value : new Money(Convert.ToDecimal(value));
+                default:
+                    return value;
             }
         }
 

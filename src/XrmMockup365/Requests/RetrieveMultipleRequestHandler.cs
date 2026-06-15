@@ -46,26 +46,15 @@ namespace DG.Tools.XrmMockup
 
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
-            var rowBag = new ConcurrentBag<DbRow>();
-            //don't add the rows by passing in via the constructor as it can change the order
-            foreach (var row in rows)
-            {
-                rowBag.Add(row);
-            }
-
-            foreach (var row in rowBag)
-            {
-                core.ExecuteCalculatedFields(row);
-            }
-
-            // Get fresh snapshot after calculated field execution to include updated values
-            rows = db.GetDBEntityRows(queryExpr.EntityName).ToList();
-
             var collection = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
 
             Parallel.ForEach(rows, row =>
             {
                 var entity = row.ToEntity();
+
+                // Calculated fields are evaluated on demand (never persisted); project them onto the
+                // in-memory entity before criteria matching so filters can reference them.
+                core.ExecuteCalculatedFields(row.Metadata, entity);
 
                 var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
