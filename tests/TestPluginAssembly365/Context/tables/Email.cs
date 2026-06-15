@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Activity that is delivered using email protocols.</para>
 /// <para>Display Name: Email</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("email")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -68,9 +68,9 @@ public partial class Email : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("activityid")]
     [DisplayName("Email Message")]
-    public Guid ActivityId
+    public Guid? ActivityId
     {
-        get => GetAttributeValue<Guid>("activityid");
+        get => GetAttributeValue<Guid?>("activityid");
         set => SetId("activityid", value);
     }
 
@@ -1394,6 +1394,15 @@ public partial class Email : ExtendedEntity
     {
         get => GetRelatedEntity<Account>("Account_Emails", null);
         set => SetRelatedEntity("Account_Emails", null, value);
+    }
+
+    [AttributeLogicalName("activityid")]
+    [RelationshipSchemaName("activity_pointer_email")]
+    [RelationshipMetadata("ManyToOne", "activityid", "activitypointer", "activityid", "Referencing")]
+    public ActivityPointer activity_pointer_email
+    {
+        get => GetRelatedEntity<ActivityPointer>("activity_pointer_email", null);
+        set => SetRelatedEntity("activity_pointer_email", null, value);
     }
 
     [AttributeLogicalName("owningbusinessunit")]

@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Generic activity representing work needed to be done.</para>
 /// <para>Display Name: Task</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("task")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -56,9 +56,9 @@ public partial class Task : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("activityid")]
     [DisplayName("Task")]
-    public Guid ActivityId
+    public Guid? ActivityId
     {
-        get => GetAttributeValue<Guid>("activityid");
+        get => GetAttributeValue<Guid?>("activityid");
         set => SetId("activityid", value);
     }
 
@@ -634,6 +634,15 @@ public partial class Task : ExtendedEntity
     {
         get => GetRelatedEntity<Account>("Account_Tasks", null);
         set => SetRelatedEntity("Account_Tasks", null, value);
+    }
+
+    [AttributeLogicalName("activityid")]
+    [RelationshipSchemaName("activity_pointer_task")]
+    [RelationshipMetadata("ManyToOne", "activityid", "activitypointer", "activityid", "Referencing")]
+    public ActivityPointer activity_pointer_task
+    {
+        get => GetRelatedEntity<ActivityPointer>("activity_pointer_task", null);
+        set => SetRelatedEntity("activity_pointer_task", null, value);
     }
 
     [AttributeLogicalName("owningbusinessunit")]

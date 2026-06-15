@@ -11,7 +11,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <summary>
 /// <para>Display Name: Child</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("ctx_child")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -101,9 +101,9 @@ public partial class ctx_child : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("ctx_childid")]
     [DisplayName("Child")]
-    public Guid ctx_childId
+    public Guid? ctx_childId
     {
-        get => GetAttributeValue<Guid>("ctx_childid");
+        get => GetAttributeValue<Guid?>("ctx_childid");
         set => SetId("ctx_childid", value);
     }
 

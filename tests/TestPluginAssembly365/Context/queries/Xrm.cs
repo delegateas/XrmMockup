@@ -3,7 +3,7 @@ using Microsoft.Xrm.Sdk.Client;
 
 namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 public class Xrm : OrganizationServiceContext
 {
     public Xrm(IOrganizationService service)
@@ -19,6 +19,11 @@ public class Xrm : OrganizationServiceContext
     public IQueryable<ActivityParty> ActivityPartySet
     {
         get { return CreateQuery<ActivityParty>(); }
+    }
+
+    public IQueryable<ActivityPointer> ActivityPointerSet
+    {
+        get { return CreateQuery<ActivityPointer>(); }
     }
 
     public IQueryable<BusinessUnit> BusinessUnitSet
@@ -64,6 +69,11 @@ public class Xrm : OrganizationServiceContext
     public IQueryable<Team> TeamSet
     {
         get { return CreateQuery<Team>(); }
+    }
+
+    public IQueryable<TeamMembership> TeamMembershipSet
+    {
+        get { return CreateQuery<TeamMembership>(); }
     }
 
     public IQueryable<Template> TemplateSet

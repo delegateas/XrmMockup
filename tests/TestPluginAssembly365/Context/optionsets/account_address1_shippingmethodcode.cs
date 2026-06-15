@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [DataContract]
 #pragma warning disable CS8981
 public enum account_address1_shippingmethodcode
@@ -35,9 +35,11 @@ public enum account_address1_shippingmethodcode
 
     [EnumMember]
     [OptionSetMetadata("Full Load", 1033)]
+    [OptionSetMetadata("Fuld last", 1030)]
     FullLoad = 6,
 
     [EnumMember]
     [OptionSetMetadata("Will Call", 1033)]
+    [OptionSetMetadata("Afhenter", 1030)]
     WillCall = 7,
 }

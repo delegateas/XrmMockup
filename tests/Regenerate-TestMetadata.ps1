@@ -46,7 +46,7 @@ $toolProjectPath = Join-Path $scriptDir "..\src\MetadataGen\MetadataGenerator.To
 $configPath = Join-Path $scriptDir "appsettings.json"
 
 # Keep in sync with src/MetadataGen/.config/dotnet-tools.json
-$xrmContextVersion = "4.0.0-beta.22"
+$xrmContextVersion = "4.0.0-beta.25"
 
 if (-not (Test-Path $configPath)) {
     Write-Error "appsettings.json not found at: $configPath"

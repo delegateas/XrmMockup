@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Template for an email message that contains the standard attributes of an email message.</para>
 /// <para>Display Name: Email Template</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("template")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -478,9 +478,9 @@ public partial class Template : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("templateid")]
     [DisplayName("Email Template")]
-    public Guid TemplateId
+    public Guid? TemplateId
     {
-        get => GetAttributeValue<Guid>("templateid");
+        get => GetAttributeValue<Guid?>("templateid");
         set => SetId("templateid", value);
     }
 

@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Activity that tracks call outcome and number of pages for a fax and optionally stores an electronic copy of the document.</para>
 /// <para>Display Name: Fax</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("fax")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -43,9 +43,9 @@ public partial class Fax : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("activityid")]
     [DisplayName("Fax")]
-    public Guid ActivityId
+    public Guid? ActivityId
     {
-        get => GetAttributeValue<Guid>("activityid");
+        get => GetAttributeValue<Guid?>("activityid");
         set => SetId("activityid", value);
     }
 
@@ -709,6 +709,15 @@ public partial class Fax : ExtendedEntity
     {
         get => GetRelatedEntity<Account>("Account_Faxes", null);
         set => SetRelatedEntity("Account_Faxes", null, value);
+    }
+
+    [AttributeLogicalName("activityid")]
+    [RelationshipSchemaName("activity_pointer_fax")]
+    [RelationshipMetadata("ManyToOne", "activityid", "activitypointer", "activityid", "Referencing")]
+    public ActivityPointer activity_pointer_fax
+    {
+        get => GetRelatedEntity<ActivityPointer>("activity_pointer_fax", null);
+        set => SetRelatedEntity("activity_pointer_fax", null, value);
     }
 
     [AttributeLogicalName("owningbusinessunit")]

@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Business that represents a customer or potential customer. The company that is billed in business transactions.</para>
 /// <para>Display Name: Account</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("account")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -67,9 +67,9 @@ public partial class Account : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("accountid")]
     [DisplayName("Account")]
-    public Guid AccountId
+    public Guid? AccountId
     {
-        get => GetAttributeValue<Guid>("accountid");
+        get => GetAttributeValue<Guid?>("accountid");
         set => SetId("accountid", value);
     }
 
@@ -1880,6 +1880,14 @@ public partial class Account : ExtendedEntity
     {
         get => GetRelatedEntities<ActivityParty>("account_activity_parties", null);
         set => SetRelatedEntities("account_activity_parties", null, value);
+    }
+
+    [RelationshipSchemaName("Account_ActivityPointers")]
+    [RelationshipMetadata("OneToMany", "accountid", "activitypointer", "regardingobjectid", "Referenced")]
+    public IEnumerable<ActivityPointer> Account_ActivityPointers
+    {
+        get => GetRelatedEntities<ActivityPointer>("Account_ActivityPointers", null);
+        set => SetRelatedEntities("Account_ActivityPointers", null, value);
     }
 
     [RelationshipSchemaName("Account_Email_EmailSender")]

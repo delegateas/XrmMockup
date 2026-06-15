@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Person with whom a business unit has a relationship, such as customer, supplier, and colleague.</para>
 /// <para>Display Name: Contact</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("contact")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -1517,9 +1517,9 @@ public partial class Contact : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("contactid")]
     [DisplayName("Contact")]
-    public Guid ContactId
+    public Guid? ContactId
     {
-        get => GetAttributeValue<Guid>("contactid");
+        get => GetAttributeValue<Guid?>("contactid");
         set => SetId("contactid", value);
     }
 
@@ -2844,6 +2844,14 @@ public partial class Contact : ExtendedEntity
     {
         get => GetRelatedEntities<ActivityParty>("contact_activity_parties", null);
         set => SetRelatedEntities("contact_activity_parties", null, value);
+    }
+
+    [RelationshipSchemaName("Contact_ActivityPointers")]
+    [RelationshipMetadata("OneToMany", "contactid", "activitypointer", "regardingobjectid", "Referenced")]
+    public IEnumerable<ActivityPointer> Contact_ActivityPointers
+    {
+        get => GetRelatedEntities<ActivityPointer>("Contact_ActivityPointers", null);
+        set => SetRelatedEntities("Contact_ActivityPointers", null, value);
     }
 
     [AttributeLogicalName("parentcustomerid")]

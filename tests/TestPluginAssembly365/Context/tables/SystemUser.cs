@@ -12,7 +12,7 @@ namespace DG.XrmFramework.BusinessDomain.ServiceContext;
 /// <para>Person with access to the Microsoft CRM system and who owns objects in the Microsoft CRM database.</para>
 /// <para>Display Name: User</para>
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.22")]
+[System.CodeDom.Compiler.GeneratedCode("DataverseProxyGenerator", "4.0.0.25")]
 [EntityLogicalName("systemuser")]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract]
@@ -1482,9 +1482,9 @@ public partial class SystemUser : ExtendedEntity
     /// </summary>
     [AttributeLogicalName("systemuserid")]
     [DisplayName("User")]
-    public Guid SystemUserId
+    public Guid? SystemUserId
     {
-        get => GetAttributeValue<Guid>("systemuserid");
+        get => GetAttributeValue<Guid?>("systemuserid");
         set => SetId("systemuserid", value);
     }
 
@@ -1748,6 +1748,38 @@ public partial class SystemUser : ExtendedEntity
     {
         get => GetRelatedEntities<Account>("lk_accountbase_modifiedonbehalfby", null);
         set => SetRelatedEntities("lk_accountbase_modifiedonbehalfby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_activitypointer_createdby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "activitypointer", "createdby", "Referenced")]
+    public IEnumerable<ActivityPointer> lk_activitypointer_createdby
+    {
+        get => GetRelatedEntities<ActivityPointer>("lk_activitypointer_createdby", null);
+        set => SetRelatedEntities("lk_activitypointer_createdby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_activitypointer_createdonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "activitypointer", "createdonbehalfby", "Referenced")]
+    public IEnumerable<ActivityPointer> lk_activitypointer_createdonbehalfby
+    {
+        get => GetRelatedEntities<ActivityPointer>("lk_activitypointer_createdonbehalfby", null);
+        set => SetRelatedEntities("lk_activitypointer_createdonbehalfby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_activitypointer_modifiedby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "activitypointer", "modifiedby", "Referenced")]
+    public IEnumerable<ActivityPointer> lk_activitypointer_modifiedby
+    {
+        get => GetRelatedEntities<ActivityPointer>("lk_activitypointer_modifiedby", null);
+        set => SetRelatedEntities("lk_activitypointer_modifiedby", null, value);
+    }
+
+    [RelationshipSchemaName("lk_activitypointer_modifiedonbehalfby")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "activitypointer", "modifiedonbehalfby", "Referenced")]
+    public IEnumerable<ActivityPointer> lk_activitypointer_modifiedonbehalfby
+    {
+        get => GetRelatedEntities<ActivityPointer>("lk_activitypointer_modifiedonbehalfby", null);
+        set => SetRelatedEntities("lk_activitypointer_modifiedonbehalfby", null, value);
     }
 
     [RelationshipSchemaName("lk_businessunit_createdonbehalfby")]
@@ -2177,6 +2209,14 @@ public partial class SystemUser : ExtendedEntity
     {
         get => GetRelatedEntities<Account>("user_accounts", null);
         set => SetRelatedEntities("user_accounts", null, value);
+    }
+
+    [RelationshipSchemaName("user_activity")]
+    [RelationshipMetadata("OneToMany", "systemuserid", "activitypointer", "owninguser", "Referenced")]
+    public IEnumerable<ActivityPointer> user_activity
+    {
+        get => GetRelatedEntities<ActivityPointer>("user_activity", null);
+        set => SetRelatedEntities("user_activity", null, value);
     }
 
     [RelationshipSchemaName("user_ctx_child")]
