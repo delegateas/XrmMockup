@@ -10,13 +10,16 @@ namespace XrmMockup.TestEnvProvisioner;
 /// part of the XrmMockup test suite, and grants the privileges each test actually exercises — so a
 /// developer can stand up the environment without hooking up any roles by hand.
 ///
-/// Three roles cover every requirement (the old set had seven; two were only referenced by
+/// Four focused roles cover every requirement (the old set had seven; two were only referenced by
 /// commented-out tests, and two more were merely "some role to assign to a user" and collapse into
 /// the read-only role):
 ///   • Test User            — user-level CRUD on contact + the custom entities (ownership tests).
 ///   • Test No Contact Access — functional, but no contact access (denied-then-granted-via-team test).
 ///   • Test Read Only       — org read on the custom entity + user-level contact read (principal
 ///                            access + sharing), and the catch-all "assign any role" placeholder.
+///   • Test Access Team     — full contact + account privileges (incl. Assign/Share); UnitTestBase
+///                            clones it (and downgrades to Basic) to build the access-team roles,
+///                            so the suite need not clone System Administrator.
 ///
 /// Regeneration emits a SecurityRoles.&lt;sanitized name&gt; constant per role; the (migrated) tests
 /// bind to those names.
@@ -29,6 +32,11 @@ public static class TestRoles
         PrivilegeType.Delete, PrivilegeType.Append, PrivilegeType.AppendTo,
     };
     private static readonly PrivilegeType[] ReadOnly = { PrivilegeType.Read };
+    private static readonly PrivilegeType[] FullAccess =
+    {
+        PrivilegeType.Create, PrivilegeType.Read, PrivilegeType.Write, PrivilegeType.Delete,
+        PrivilegeType.Append, PrivilegeType.AppendTo, PrivilegeType.Assign, PrivilegeType.Share,
+    };
 
     private sealed record Grant(string Entity, PrivilegeType[] Types, PrivilegeDepth Depth);
     private sealed record RoleDef(string Name, string Purpose, Grant[] Grants);
@@ -74,6 +82,16 @@ public static class TestRoles
                 .. Baseline(),
                 new Grant(TestSchema.Names.ParentEntity, ReadOnly, PrivilegeDepth.Global),
                 new Grant("contact", ReadOnly, PrivilegeDepth.Basic),
+            ]),
+
+        new RoleDef("XrmMockup Test Access Team",
+            "Source role that UnitTestBase clones (then downgrades contact/account to Basic) to build the " +
+            "access-team test roles. Has the full privilege set (incl. Assign/Share) on contact + account, " +
+            "so the suite no longer has to clone System Administrator.",
+            [
+                .. Baseline(),
+                new Grant("contact", FullAccess, PrivilegeDepth.Local),
+                new Grant("account", FullAccess, PrivilegeDepth.Local),
             ]),
     ];
 
