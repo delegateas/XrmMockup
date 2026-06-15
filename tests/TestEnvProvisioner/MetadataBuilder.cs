@@ -422,6 +422,55 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
         }
     }
 
+    // ---------------------------------------------------------------- State transitions
+
+    /// <summary>
+    /// Turns on enforced state transitions for an entity and sets the allowed status moves. Each
+    /// tuple is (fromStatusValue, allowed toStatusValues); any move not listed (including same-state)
+    /// becomes invalid. Best-effort + non-fatal: if the org rejects it, configure it in the portal.
+    /// </summary>
+    public void SetEnforcedStateTransitions(string entitySchemaName, params (int From, int[] To)[] transitions)
+    {
+        var entityLogical = entitySchemaName.ToLowerInvariant();
+        Log($"enforce state transitions on '{entityLogical}' ({string.Join("; ", transitions.Select(t => $"{t.From}->[{string.Join(",", t.To)}]"))})");
+        if (whatIf) return;
+        try
+        {
+            // 1. Enable enforcement at the entity level.
+            var em = ((RetrieveEntityResponse)service.Execute(new RetrieveEntityRequest
+            {
+                LogicalName = entityLogical,
+                EntityFilters = EntityFilters.Entity,
+            })).EntityMetadata;
+            // EnforceStateTransitions has a non-public setter, so set it via reflection.
+            typeof(EntityMetadata).GetProperty("EnforceStateTransitions")!.SetValue(em, true);
+            service.Execute(new UpdateEntityRequest { Entity = em, MergeLabels = true });
+
+            // 2. Set per-status TransitionData on the statuscode options.
+            var statusAttr = (StatusAttributeMetadata)((RetrieveAttributeResponse)service.Execute(new RetrieveAttributeRequest
+            {
+                EntityLogicalName = entityLogical,
+                LogicalName = "statuscode",
+            })).AttributeMetadata;
+
+            var allowed = transitions.ToDictionary(t => t.From, t => t.To);
+            foreach (StatusOptionMetadata option in statusAttr.OptionSet.Options.Cast<StatusOptionMetadata>())
+            {
+                var from = option.Value!.Value;
+                var tos = allowed.TryGetValue(from, out var arr) ? arr : System.Array.Empty<int>();
+                var xml = "<allowedtransitions>" +
+                          string.Concat(tos.Select(to => $"<allowedtransition sourcestatusid=\"{from}\" tostatusid=\"{to}\" />")) +
+                          "</allowedtransitions>";
+                option.TransitionData = xml;
+            }
+            service.Execute(new UpdateAttributeRequest { EntityName = entityLogical, Attribute = statusAttr, MergeLabels = true });
+        }
+        catch (FaultException ex)
+        {
+            Log($"  ! could not set enforced state transitions on '{entityLogical}' ({ex.Message}); configure them in the maker portal.");
+        }
+    }
+
     // ---------------------------------------------------------------- Role privileges
 
     /// <summary>

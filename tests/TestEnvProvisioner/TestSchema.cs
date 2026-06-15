@@ -214,10 +214,9 @@ paste the printed XAML into TestSchema.Definitions, and re-run this tool.
 (The classic calculated field is kept distinct from the PowerFx columns on purpose — XrmMockup has
 separate engines for Calculated and Formula fields, so the tests should cover both.)
 
-{Names.ParentEntity} state transitions (state/status tests):
-  - Set {Names.ParentEntity} to ENFORCE state transitions and allow Active -> Inactive only (Inactive ->
-    Active and same-state must be disallowed; the IsValidStateTransition tests assert faults for
-    those). The non-enforced case is covered by 'account', which does not enforce transitions.
+{Names.ParentEntity} enforced state transitions (Active -> Inactive only) are now applied automatically
+(best-effort) by SetEnforcedStateTransitions; if a TestStates IsValidStateTransition test still fails,
+verify the transition rules on {Names.ParentEntity} in the maker portal.
 ");
         Console.WriteLine("======================================================================");
     }

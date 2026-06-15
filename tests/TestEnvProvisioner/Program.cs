@@ -117,7 +117,11 @@ try
     // 4. Security roles required by the security/privilege tests.
     TestRoles.CreateRoles(builder);
 
-    // 4. Publish everything.
+    // 5. Enforced state transitions on ctx_parent: Active(1) -> Inactive(2) only (Inactive->Active and
+    //    same-state are then invalid), matching the state-transition tests in TestStates.
+    builder.SetEnforcedStateTransitions(TestSchema.Names.ParentEntity, (1, new[] { 2 }), (2, System.Array.Empty<int>()));
+
+    // 6. Publish everything.
     builder.PublishAll();
 
     // 5. Report the pieces that are intentionally NOT scripted (see TestSchema.PrintManualSteps).
