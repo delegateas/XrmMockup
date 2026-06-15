@@ -828,4 +828,21 @@ public partial class ctx_parent : ExtendedEntity
     {
         return service.Retrieve(id, columns);
     }
+
+    /// <summary>
+    /// Retrieves the ctx_parent using the Name key alternate key.
+    /// </summary>
+    /// <param name="service">Organization service</param>
+    /// <param name="ctx_Name">ctx_Name key value</param>
+    /// <param name="columns">Expressions that specify columns to retrieve</param>
+    /// <returns>The retrieved ctx_parent</returns>
+    public static ctx_parent Retrieve_ctx_NameKey(IOrganizationService service, string ctx_Name, params Expression<Func<ctx_parent, object>>[] columns)
+    {
+        var keyedEntityReference = new EntityReference(EntityLogicalName, new KeyAttributeCollection
+        {
+            ["ctx_name"] = ctx_Name,
+        });
+
+        return service.Retrieve(keyedEntityReference, columns);
+    }
 }

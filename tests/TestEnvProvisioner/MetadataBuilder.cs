@@ -313,7 +313,7 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
     {
         SchemaName = schema,
         DisplayName = L(display),
-        PrecisionSource = 0, // 0 = use the Precision below; 1 = org pricing precision; 2 = currency precision
+        PrecisionSource = 2, // 0 = fixed Precision below; 1 = org pricing precision; 2 = currency precision
         Precision = precision,
         MinValue = -1000000000d,
         MaxValue = 1000000000d,
@@ -387,6 +387,39 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
             },
             SolutionUniqueName = SolutionUniqueName,
         });
+    }
+
+    // ---------------------------------------------------------------- Alternate keys
+
+    /// <summary>
+    /// Creates an alternate key on an entity over the given attribute(s). XrmContext generates a
+    /// strongly-typed <c>Retrieve_&lt;keyname&gt;</c> helper per alternate key, so adding one here makes
+    /// that helper appear after regeneration. Key creation triggers an async index job in Dataverse.
+    /// </summary>
+    public void CreateAlternateKey(string entitySchemaName, string keySchemaName, string keyDisplayName, params string[] keyAttributeLogicalNames)
+    {
+        var entityLogical = entitySchemaName.ToLowerInvariant();
+        Log($"create alternate key '{keySchemaName}' on '{entityLogical}' ({string.Join(",", keyAttributeLogicalNames)})");
+        if (whatIf) return;
+        try
+        {
+            service.Execute(new CreateEntityKeyRequest
+            {
+                EntityName = entityLogical,
+                EntityKey = new EntityKeyMetadata
+                {
+                    SchemaName = keySchemaName,
+                    DisplayName = L(keyDisplayName),
+                    KeyAttributes = keyAttributeLogicalNames,
+                },
+                SolutionUniqueName = SolutionUniqueName,
+            });
+        }
+        catch (FaultException ex)
+        {
+            // Most commonly: the key already exists. Non-fatal.
+            Log($"  ! could not create alternate key '{keySchemaName}' ({ex.Message})");
+        }
     }
 
     // ---------------------------------------------------------------- Role privileges

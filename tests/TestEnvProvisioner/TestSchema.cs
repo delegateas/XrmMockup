@@ -75,6 +75,18 @@ public static class TestSchema
         public const string NnParentChildIntersect = "ctx_parent_ctx_child";
         public const string NnAccountContact = "ctx_account_contact";
         public const string NnAccountContactIntersect = "ctx_account_contact";
+
+        // Alternate key on ctx_parent over ctx_Name (drives the generated Retrieve_<key> helper).
+        public const string NameKey = "ctx_NameKey";
+    }
+
+    /// <summary>
+    /// Alternate keys. Each one makes XrmContext emit a strongly-typed Retrieve_&lt;key&gt; helper after
+    /// regeneration, so the alternate-key retrieve test can use it. Call after <see cref="CreateEntities"/>.
+    /// </summary>
+    public static void CreateAlternateKeys(MetadataBuilder b)
+    {
+        b.CreateAlternateKey(Names.ParentEntity, Names.NameKey, "Name key", Names.Name.ToLowerInvariant());
     }
 
     public static void CreateEntities(MetadataBuilder b)

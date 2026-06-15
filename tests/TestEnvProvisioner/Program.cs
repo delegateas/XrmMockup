@@ -111,6 +111,9 @@ try
     //    captured into TestSchema.Definitions via --dump-formula). Reference the base columns above.
     TestSchema.CreateComputedColumns(builder);
 
+    // 3b. Alternate keys (XrmContext emits a Retrieve_<key> helper per key on regeneration).
+    TestSchema.CreateAlternateKeys(builder);
+
     // 4. Security roles required by the security/privilege tests.
     TestRoles.CreateRoles(builder);
 
