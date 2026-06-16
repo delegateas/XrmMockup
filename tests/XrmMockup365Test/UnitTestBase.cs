@@ -113,7 +113,7 @@ namespace DG.XrmMockupTest
         private void InitialiseAccessTeamConfiguration()
         {
             //create a new security role with basic level only on all contact privileges
-            var accessTeamTestRole = crm.CloneSecurityRole("Salesperson");
+            var accessTeamTestRole = crm.CloneSecurityRole("XrmMockup Test Access Team");
             accessTeamTestRole.Name = "AccessTeamTest";
             var contactPriv = accessTeamTestRole.Privileges["contact"];
             var newPriv = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
@@ -139,7 +139,7 @@ namespace DG.XrmMockupTest
             crm.AddSecurityRole(accessTeamTestRole);
 
             //create a new security role without share priv on contact
-            var accessTeamTestRole2 = crm.CloneSecurityRole("Salesperson");
+            var accessTeamTestRole2 = crm.CloneSecurityRole("XrmMockup Test Access Team");
             accessTeamTestRole2.Name = "AccessTeamTestNoShare";
             var contactPriv2 = accessTeamTestRole.Privileges["contact"];
             var newPriv2 = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();
@@ -154,7 +154,7 @@ namespace DG.XrmMockupTest
             crm.AddSecurityRole(accessTeamTestRole2);
 
             //create a new security role without write priv on contact
-            var accessTeamTestRole3 = crm.CloneSecurityRole("Salesperson");
+            var accessTeamTestRole3 = crm.CloneSecurityRole("XrmMockup Test Access Team");
             accessTeamTestRole3.Name = "AccessTeamTestNoWrite";
             var contactPriv3 = accessTeamTestRole.Privileges["contact"];
             var newPriv3 = new Dictionary<AccessRights, DG.Tools.XrmMockup.RolePrivilege>();

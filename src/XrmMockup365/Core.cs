@@ -1484,7 +1484,19 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                entity[attr.LogicalName] = CoerceFormulaValue(await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset), attr);
+                try
+                {
+                    entity[attr.LogicalName] = CoerceFormulaValue(await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset), attr);
+                }
+                catch (Exception ex)
+                {
+                    // In Dataverse a formula field whose expression errors at runtime (e.g. referencing
+                    // a blank source, like Mid(name, 3) on an empty name) surfaces as a blank value on
+                    // that field — it does not fail the whole Retrieve. Mirror that: trace and leave the
+                    // field unset rather than letting one formula column break reading the record.
+                    var trace = ServiceFactory.GetService<ITracingService>();
+                    trace.Trace($"Formula field on {attr.EntityLogicalName} field {attr.LogicalName} could not be evaluated: {ex.Message}");
+                }
             }
         }
 

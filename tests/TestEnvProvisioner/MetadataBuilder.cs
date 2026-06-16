@@ -487,17 +487,9 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
         if (whatIf) return;
         try
         {
-            // 1. Enable enforcement at the entity level.
-            var em = ((RetrieveEntityResponse)service.Execute(new RetrieveEntityRequest
-            {
-                LogicalName = entityLogical,
-                EntityFilters = EntityFilters.Entity,
-            })).EntityMetadata;
-            // EnforceStateTransitions has a non-public setter, so set it via reflection.
-            typeof(EntityMetadata).GetProperty("EnforceStateTransitions")!.SetValue(em, true);
-            service.Execute(new UpdateEntityRequest { Entity = em, MergeLabels = true });
-
-            // 2. Set per-status TransitionData on the statuscode options.
+            // 1. Set per-status TransitionData on the statuscode options FIRST. Dataverse rejects
+            //    enabling EnforceStateTransitions on an entity that has no transitions defined yet,
+            //    so the transitions must exist before we flip the entity-level flag.
             var statusAttr = (StatusAttributeMetadata)((RetrieveAttributeResponse)service.Execute(new RetrieveAttributeRequest
             {
                 EntityLogicalName = entityLogical,
@@ -515,6 +507,32 @@ public sealed class MetadataBuilder(IOrganizationService service, bool whatIf)
                 option.TransitionData = xml;
             }
             service.Execute(new UpdateAttributeRequest { EntityName = entityLogical, Attribute = statusAttr, MergeLabels = true });
+
+            // 2. Now enable enforcement at the entity level.
+            var em = ((RetrieveEntityResponse)service.Execute(new RetrieveEntityRequest
+            {
+                LogicalName = entityLogical,
+                EntityFilters = EntityFilters.Entity,
+            })).EntityMetadata;
+            // EnforceStateTransitions has a non-public setter, so set it via reflection.
+            typeof(EntityMetadata).GetProperty("EnforceStateTransitions")!.SetValue(em, true);
+            service.Execute(new UpdateEntityRequest { Entity = em, MergeLabels = true });
+
+            // 3. Publish so the change is committed (metadata regeneration reads published state),
+            //    then read it back AS IF PUBLISHED so the log reflects the true committed value
+            //    (a default retrieve returns the *published* definition and would show the stale
+            //    pre-update value until PublishAll runs at the end of the program).
+            service.Execute(new PublishXmlRequest
+            {
+                ParameterXml = $"<importexportxml><entities><entity>{entityLogical}</entity></entities></importexportxml>"
+            });
+            var verify = ((RetrieveEntityResponse)service.Execute(new RetrieveEntityRequest
+            {
+                LogicalName = entityLogical,
+                EntityFilters = EntityFilters.Entity,
+                RetrieveAsIfPublished = true,
+            })).EntityMetadata;
+            Log($"  EnforceStateTransitions on '{entityLogical}' is now {verify.EnforceStateTransitions}");
         }
         catch (FaultException ex)
         {

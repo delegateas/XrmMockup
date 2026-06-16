@@ -3,6 +3,7 @@
 		<OutputType>Library</OutputType>
 		<TargetFrameworks>net462;net8.0</TargetFrameworks>
 		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
 		<DebugType>portable</DebugType>
 		<Title>TestPluginAssembly365</Title>
 		<!-- Test support assembly, not a NuGet package -->
