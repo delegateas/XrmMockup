@@ -53,10 +53,12 @@ namespace DG.XrmMockupTest
             account1.DoNotEMail = true;
 
             // account_accountratingcode has only DefaultValue in this environment, so ordering by it
-            // can't distinguish records; use NumberOfEmployees (distinct, orderable) instead. account2's
-            // value is lower than account1's to preserve the original ascending order (account2 first).
-            account1.NumberOfEmployees = 2;
-            account2.NumberOfEmployees = 1;
+            // can't distinguish records; use Revenue (distinct, orderable) instead. account2's value is
+            // lower than account1's to preserve the original ascending order (account2 first).
+            // NumberOfEmployees is intentionally left unset on all accounts so the null-filter tests
+            // (TestRetrieveMultipleFilterNullOrGreaterThan etc.) see no records with a value.
+            account1.Revenue = 2;
+            account2.Revenue = 1;
 
             account1.Id = orgAdminUIService.Create(account1);
             account2.Id = orgAdminUIService.Create(account2);
@@ -436,7 +438,7 @@ namespace DG.XrmMockupTest
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
-                    orderby acc.NumberOfEmployees
+                    orderby acc.Revenue
                     select new { acc.AccountId };
 
                 var result = query.ToArray();
@@ -454,7 +456,7 @@ namespace DG.XrmMockupTest
                 var query =
                     from acc in context.AccountSet
                     where acc.Address1_City == "Virum"
-                    orderby acc.NumberOfEmployees descending
+                    orderby acc.Revenue descending
                     select new { acc.AccountId };
 
                 var result = query.ToArray();
@@ -474,7 +476,7 @@ namespace DG.XrmMockupTest
                         <filter>
                             <condition attribute='address1_city' operator='eq' value='Virum'/>
                         </filter>
-                        <order attribute='numberofemployees' />
+                        <order attribute='revenue' />
                     </entity>
                 </fetch>"
             });
@@ -494,7 +496,7 @@ namespace DG.XrmMockupTest
                         <filter>
                             <condition attribute='address1_city' operator='eq' value='Virum'/>
                         </filter>
-                        <order attribute='numberofemployees' descending='true'/>
+                        <order attribute='revenue' descending='true'/>
                     </entity>
                 </fetch>"
             });

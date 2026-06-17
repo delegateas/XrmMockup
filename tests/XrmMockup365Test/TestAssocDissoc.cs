@@ -347,12 +347,16 @@ namespace DG.XrmMockupTest
                 ctx_parent bus = new ctx_parent { ctx_Amount = 1 };
                 bus.Id = orgAdminService.Create(bus);
 
-                ctx_child child = new ctx_child { ctx_Name = "Margrethe", ctx_ParentId = bus.ToEntityReference() };
+                ctx_child child = new ctx_child { ctx_Name = "Margrethe" };
                 child.Id = orgAdminService.Create(child);
 
                 relatedEntities.Add(new EntityReference(ctx_child.EntityLogicalName, child.Id));
                 Relationship relationship = new Relationship("ctx_parent_child");
 
+                // Associate over the N:N first so there is a link to remove (BusTicketSync stamps 25),
+                // then disassociate it (BusTicketSync stamps 26 — the value under test).
+                orgAdminUIService.Associate(ctx_parent.EntityLogicalName, bus.Id, relationship,
+                    relatedEntities);
                 orgAdminUIService.Disassociate(ctx_parent.EntityLogicalName, bus.Id, relationship,
                     relatedEntities);
 
