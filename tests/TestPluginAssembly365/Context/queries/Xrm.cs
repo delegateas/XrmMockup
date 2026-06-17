@@ -56,6 +56,11 @@ public class Xrm : OrganizationServiceContext
         get { return CreateQuery<Fax>(); }
     }
 
+    public IQueryable<FileAttachment> FileAttachmentSet
+    {
+        get { return CreateQuery<FileAttachment>(); }
+    }
+
     public IQueryable<SystemUser> SystemUserSet
     {
         get { return CreateQuery<SystemUser>(); }

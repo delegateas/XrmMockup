@@ -774,6 +774,14 @@ public partial class ActivityPointer : ExtendedEntity
         set => SetRelatedEntities("activitypointer_activity_parties", null, value);
     }
 
+    [RelationshipSchemaName("activitypointer_FileAttachments")]
+    [RelationshipMetadata("OneToMany", "activityid", "fileattachment", "objectid", "Referenced")]
+    public IEnumerable<FileAttachment> activitypointer_FileAttachments
+    {
+        get => GetRelatedEntities<FileAttachment>("activitypointer_FileAttachments", null);
+        set => SetRelatedEntities("activitypointer_FileAttachments", null, value);
+    }
+
     [AttributeLogicalName("owningbusinessunit")]
     [RelationshipSchemaName("business_unit_activitypointer")]
     [RelationshipMetadata("ManyToOne", "owningbusinessunit", "businessunit", "businessunitid", "Referencing")]
@@ -790,6 +798,15 @@ public partial class ActivityPointer : ExtendedEntity
     {
         get => GetRelatedEntity<Contact>("Contact_ActivityPointers", null);
         set => SetRelatedEntity("Contact_ActivityPointers", null, value);
+    }
+
+    [AttributeLogicalName("descriptionblobid")]
+    [RelationshipSchemaName("FileAttachment_ActivityPointer_DescriptionBlobId")]
+    [RelationshipMetadata("ManyToOne", "descriptionblobid", "fileattachment", "fileattachmentid", "Referencing")]
+    public FileAttachment FileAttachment_ActivityPointer_DescriptionBlobId
+    {
+        get => GetRelatedEntity<FileAttachment>("FileAttachment_ActivityPointer_DescriptionBlobId", null);
+        set => SetRelatedEntity("FileAttachment_ActivityPointer_DescriptionBlobId", null, value);
     }
 
     [AttributeLogicalName("createdby")]

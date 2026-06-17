@@ -15,16 +15,13 @@ public enum contact_paymenttermscode
 
     [EnumMember]
     [OptionSetMetadata("2% 10, Net 30", 1033)]
-    [OptionSetMetadata("2% 10, Netto 30 dage", 1030)]
     _210Net30 = 2,
 
     [EnumMember]
     [OptionSetMetadata("Net 45", 1033)]
-    [OptionSetMetadata("Netto 45 dage", 1030)]
     Net45 = 3,
 
     [EnumMember]
     [OptionSetMetadata("Net 60", 1033)]
-    [OptionSetMetadata("Netto 60 dage", 1030)]
     Net60 = 4,
 }

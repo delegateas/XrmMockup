@@ -35,11 +35,9 @@ public enum account_address1_shippingmethodcode
 
     [EnumMember]
     [OptionSetMetadata("Full Load", 1033)]
-    [OptionSetMetadata("Fuld last", 1030)]
     FullLoad = 6,
 
     [EnumMember]
     [OptionSetMetadata("Will Call", 1033)]
-    [OptionSetMetadata("Afhenter", 1030)]
     WillCall = 7,
 }

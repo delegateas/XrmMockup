@@ -1476,6 +1476,23 @@ public partial class Email : ExtendedEntity
         set => SetRelatedEntity("Email_EmailTemplate", null, value);
     }
 
+    [RelationshipSchemaName("email_FileAttachments")]
+    [RelationshipMetadata("OneToMany", "activityid", "fileattachment", "objectid", "Referenced")]
+    public IEnumerable<FileAttachment> email_FileAttachments
+    {
+        get => GetRelatedEntities<FileAttachment>("email_FileAttachments", null);
+        set => SetRelatedEntities("email_FileAttachments", null, value);
+    }
+
+    [AttributeLogicalName("descriptionblobid")]
+    [RelationshipSchemaName("FileAttachment_Email_DescriptionBlobId")]
+    [RelationshipMetadata("ManyToOne", "descriptionblobid", "fileattachment", "fileattachmentid", "Referencing")]
+    public FileAttachment FileAttachment_Email_DescriptionBlobId
+    {
+        get => GetRelatedEntity<FileAttachment>("FileAttachment_Email_DescriptionBlobId", null);
+        set => SetRelatedEntity("FileAttachment_Email_DescriptionBlobId", null, value);
+    }
+
     [AttributeLogicalName("createdby")]
     [RelationshipSchemaName("lk_email_createdby")]
     [RelationshipMetadata("ManyToOne", "createdby", "systemuser", "systemuserid", "Referencing")]
