@@ -1,6 +1,7 @@
-﻿using DG.XrmFramework.BusinessDomain.ServiceContext;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using System.Linq;
 using System;
 using System.ServiceModel;
@@ -9,97 +10,103 @@ using Xunit.Sdk;
 
 namespace DG.XrmMockupTest
 {
+    // Late-bound tests for the CloseIncident request handler; the Incident/IncidentResolution
+    // metadata is supplied by RemovedEntitiesMetadata.xml (the entities are not in the
+    // environment, so early-bound types are unavailable).
     public class TestIncident : UnitTestBase
     {
         public TestIncident(XrmMockupFixture fixture) : base(fixture) { }
 
-        // These tests exercise XrmMockup's CloseIncidentRequest handler against the Incident /
-        // IncidentResolution entities, which were removed from the environment (so the early-bound
-        // types + state enums no longer exist). They are preserved here in their original form behind
-        // an undefined compile symbol so the team can decide the fix: to re-enable, provision Incident
-        // + IncidentResolution, regenerate the context, then define INCLUDE_REMOVED_ENTITY_TESTS.
-#if INCLUDE_REMOVED_ENTITY_TESTS
-
         [Fact]
         public void TestCloseIncidentRequestSuccess()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
 
             orgAdminUIService.Update(incident);
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
             Assert.NotNull(response);
 
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+            var retrievedIncident = orgAdminUIService.Retrieve("incident", incident.Id, new ColumnSet(true));
+            Assert.Equal(1, retrievedIncident.GetAttributeValue<OptionSetValue>("statecode").Value);
+            Assert.Equal(5, retrievedIncident.GetAttributeValue<OptionSetValue>("statuscode").Value);
 
-                var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
-                Assert.NotNull(retrievedIncidentResolution);
-            }
+            var resolutionQuery = new QueryExpression("incidentresolution")
+            {
+                ColumnSet = new ColumnSet(true),
+                Criteria =
+                {
+                    Conditions = { new ConditionExpression("incidentid", ConditionOperator.Equal, incident.Id) }
+                }
+            };
+            var retrievedIncidentResolution = orgAdminUIService.RetrieveMultiple(resolutionQuery).Entities.FirstOrDefault();
+            Assert.NotNull(retrievedIncidentResolution);
         }
 
         [Fact]
         public void TestCloseIncidentRequestFailsWhenPreviouslyResolved()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             var response = orgAdminUIService.Execute(request) as CloseIncidentResponse;
             Assert.NotNull(response);
 
-            using (var context = new Xrm(orgAdminUIService))
-            {
-                var retrievedIncident = context.IncidentSet.FirstOrDefault(x => x.Id == incident.Id);
-                Assert.Equal(IncidentState.Resolved, retrievedIncident.StateCode);
-                Assert.Equal(Incident_StatusCode.ProblemSolved, retrievedIncident.StatusCode);
+            var retrievedIncident = orgAdminUIService.Retrieve("incident", incident.Id, new ColumnSet(true));
+            Assert.Equal(1, retrievedIncident.GetAttributeValue<OptionSetValue>("statecode").Value);
+            Assert.Equal(5, retrievedIncident.GetAttributeValue<OptionSetValue>("statuscode").Value);
 
-                var retrievedIncidentResolution = context.IncidentResolutionSet.FirstOrDefault(x => x.IncidentId.Id == incident.Id);
-                Assert.NotNull(retrievedIncidentResolution);
-            }
-
-            var incidentResolution2 = new IncidentResolution
+            var resolutionQuery = new QueryExpression("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ColumnSet = new ColumnSet(true),
+                Criteria =
+                {
+                    Conditions = { new ConditionExpression("incidentid", ConditionOperator.Equal, incident.Id) }
+                }
+            };
+            var retrievedIncidentResolution = orgAdminUIService.RetrieveMultiple(resolutionQuery).Entities.FirstOrDefault();
+            Assert.NotNull(retrievedIncidentResolution);
+
+            var incidentResolution2 = new Entity("incidentresolution")
+            {
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request2 = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution2,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -116,16 +123,16 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenIncidentResolutionMissing()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
             var request = new CloseIncidentRequest()
             {
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -142,11 +149,11 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenLogicalNameMissing()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
             var incidentResolution = new Entity();
@@ -155,7 +162,7 @@ namespace DG.XrmMockupTest
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -172,11 +179,11 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenLogicalNameDoesNotExist()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
             var incidentResolution = new Entity
@@ -190,7 +197,7 @@ namespace DG.XrmMockupTest
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -207,11 +214,11 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenLogicalNameWrong()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
             var incidentResolution = new Account
@@ -223,7 +230,7 @@ namespace DG.XrmMockupTest
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -240,17 +247,17 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenStatusMissing()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
@@ -272,17 +279,17 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenStatusDoesNotExist()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
@@ -305,23 +312,23 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenStateOfStatusWrong()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.InProgress)
+                Status = new OptionSetValue(1)
             };
 
             try
@@ -338,22 +345,22 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenIncidentidMissing()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                Subject = "Resolved Incident"
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -370,18 +377,18 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenIncidentDoesNotExist()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.InformationProvided)
+                Status = new OptionSetValue(1000)
             };
 
             try
@@ -398,17 +405,17 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCloseIncidentRequestFailsWhenIncidentResolutionAlreadyExists()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Active;
-            incident.StatusCode = Incident_StatusCode.InProgress;
+            incident["statecode"] = new OptionSetValue(0);
+            incident["statuscode"] = new OptionSetValue(1);
             orgAdminUIService.Update(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                IncidentId = incident.ToEntityReference(),
-                Subject = "Resolved Incident"
+                ["incidentid"] = incident.ToEntityReference(),
+                ["subject"] = "Resolved Incident"
             };
 
             incidentResolution.Id = orgAdminUIService.Create(incidentResolution);
@@ -416,7 +423,7 @@ namespace DG.XrmMockupTest
             var request = new CloseIncidentRequest()
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
 
             try
@@ -433,28 +440,28 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestUpdateResolvedIncidentFailsWhenFieldModificationIsNotAllowed()
         {
-            var incident = new Incident()
+            var incident = new Entity("incident")
             {
-                Title = "Old Title"
+                ["title"] = "Old Title"
             };
             incident.Id = orgAdminService.Create(incident);
 
-            var resolution = new IncidentResolution
+            var resolution = new Entity("incidentresolution")
             {
-                Subject = "Case closed",
-                IncidentId = incident.ToEntityReference()
+                ["subject"] = "Case closed",
+                ["incidentid"] = incident.ToEntityReference()
             };
 
             var closeRequest = new CloseIncidentRequest()
             {
                 IncidentResolution = resolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
             orgAdminService.Execute(closeRequest);
 
-            var incidentUpdate = new Incident(incident.Id)
+            var incidentUpdate = new Entity("incident", incident.Id)
             {
-                Title = "New Title"
+                ["title"] = "New Title"
             };
 
             try
@@ -467,79 +474,84 @@ namespace DG.XrmMockupTest
                 Assert.IsType<FaultException>(e);
             }
 
-            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-            Assert.Equal(incident.Title, retrievedIncident.Title);
+            var retrievedIncident = orgAdminService.Retrieve("incident", incident.Id, new ColumnSet(true));
+            Assert.Equal(incident["title"], retrievedIncident.GetAttributeValue<string>("title"));
         }
 
         [Fact]
         public void TestUpdateResolvedIncidentSucceedsWhenFieldModificationIsAllowed()
         {
-            var incident = new Incident()
+            var incident = new Entity("incident")
             {
-                Title = "Old Title",
+                ["title"] = "Old Title",
             };
             incident.Id = orgAdminService.Create(incident);
 
-            var resolution = new IncidentResolution
+            var resolution = new Entity("incidentresolution")
             {
-                Subject = "Case closed",
-                IncidentId = incident.ToEntityReference()
+                ["subject"] = "Case closed",
+                ["incidentid"] = incident.ToEntityReference()
             };
 
             var closeRequest = new CloseIncidentRequest()
             {
                 IncidentResolution = resolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
             orgAdminService.Execute(closeRequest);
 
-            var incidentUpdate = new Incident(incident.Id)
+            var incidentUpdate = new Entity("incident", incident.Id)
             {
-                StateCode = IncidentState.Active
+                ["statecode"] = new OptionSetValue(0)
             };
 
             orgAdminService.Update(incidentUpdate);
 
-            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-            Assert.Equal(IncidentState.Active, retrievedIncident.StateCode);
+            var retrievedIncident = orgAdminService.Retrieve("incident", incident.Id, new ColumnSet(true));
+            Assert.Equal(0, retrievedIncident.GetAttributeValue<OptionSetValue>("statecode").Value);
         }
 
         [Fact]
         public void TestRemovalOfResolutionsAfterClose()
         {
-            var incident = new Incident
+            var incident = new Entity("incident")
             {
-                Title = "TestRemovalOfResolutionsAfterClose"
+                ["title"] = "TestRemovalOfResolutionsAfterClose"
             };
             incident.Id = orgAdminUIService.Create(incident);
 
-            var incidentResolution = new IncidentResolution
+            var incidentResolution = new Entity("incidentresolution")
             {
-                Subject = "Resolved Sample Incident",
-                IncidentId = incident.ToEntityReference()
+                ["subject"] = "Resolved Sample Incident",
+                ["incidentid"] = incident.ToEntityReference()
             };
             var closeIncidentRequest = new CloseIncidentRequest
             {
                 IncidentResolution = incidentResolution,
-                Status = new OptionSetValue((int)Incident_StatusCode.ProblemSolved)
+                Status = new OptionSetValue(5)
             };
             orgAdminUIService.Execute(closeIncidentRequest);
 
-            using (var context = new Xrm(orgAdminUIService))
+            var resolutionQuery = new QueryExpression("incidentresolution")
             {
-                var retrievedIncidentResolutions = context.IncidentResolutionSet.Where(x => x.IncidentId.Id == incident.Id);
-                Assert.Empty(retrievedIncidentResolutions);
-            }
+                ColumnSet = new ColumnSet(true),
+                Criteria =
+                {
+                    Conditions = { new ConditionExpression("incidentid", ConditionOperator.Equal, incident.Id) }
+                }
+            };
+            var retrievedIncidentResolutions = orgAdminUIService.RetrieveMultiple(resolutionQuery).Entities;
+            Assert.Empty(retrievedIncidentResolutions);
         }
 
         [Fact]
         public void TestUpdateIncidentAsResolvedFails()
         {
-            var incident = new Incident();
+            var incident = new Entity("incident");
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.StateCode = IncidentState.Resolved;
-            incident.StatusCode = Incident_StatusCode.ProblemSolved;
+            incident["statecode"] = new OptionSetValue(1);
+            incident["statuscode"] = new OptionSetValue(5);
 
             Assert.Throws<FaultException>(() => orgAdminService.Update(incident));
         }
@@ -547,19 +559,18 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestCanUpdateOpenIncident()
         {
-            var incident = new Incident
+            var incident = new Entity("incident")
             {
-                Description = nameof(TestCanUpdateOpenIncident)
+                ["description"] = nameof(TestCanUpdateOpenIncident)
             };
 
             incident.Id = orgAdminUIService.Create(incident);
 
-            incident.Description = "Updated description";
+            incident["description"] = "Updated description";
             orgAdminService.Update(incident);
 
-            var retrievedIncident = Incident.Retrieve(orgAdminService, incident.Id);
-            Assert.Equal("Updated description", retrievedIncident.Description);
+            var retrievedIncident = orgAdminService.Retrieve("incident", incident.Id, new ColumnSet(true));
+            Assert.Equal("Updated description", retrievedIncident.GetAttributeValue<string>("description"));
         }
-#endif
     }
 }

@@ -145,6 +145,44 @@ public class XrmMockupFixture : IDisposable
             PrimaryEntity = "",
             Rank = 10,
             Stage = 40
+        },
+        // Late-bound re-creation of the old IncidentDeleteAllRelatedResolutionsOnClose plugin: on an
+        // incident statecode change (Active -> not-Active) for the test incident, deletes related
+        // incidentresolution records. Needs pre+post images on statecode (and title for the gate).
+        new MetaPlugin()
+        {
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+            AssemblyName = "DG.Delegate.TSTOnboarding.Plugins.IncidentDeleteResolutionsOnClose",
+            MessageName = "Update",
+            PrimaryEntity = "incident",
+            Rank = 10,
+            Stage = 40,
+            FilteredAttributes = "statecode",
+            Images = new System.Collections.Generic.List<MetaImage>
+            {
+                new MetaImage { Name = "PreImage", EntityAlias = "PreImage", ImageType = 0, Attributes = "statecode,title" }, // PreImage
+                new MetaImage { Name = "PostImage", EntityAlias = "PostImage", ImageType = 1, Attributes = "statecode" },     // PostImage
+            }
+        },
+        // Late-bound re-creation of the old OpportunityWinLose plugin: stamps the opportunity's
+        // description with "SetFromWinLose" on the Win and Lose messages (post-operation).
+        new MetaPlugin()
+        {
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+            AssemblyName = "DG.Delegate.TSTOnboarding.Plugins.OpportunityWinLoseDescription",
+            MessageName = "Win",
+            PrimaryEntity = "opportunity",
+            Rank = 10,
+            Stage = 40
+        },
+        new MetaPlugin()
+        {
+            PluginTypeAssemblyName = "TestPluginAssembly365",
+            AssemblyName = "DG.Delegate.TSTOnboarding.Plugins.OpportunityWinLoseDescription",
+            MessageName = "Lose",
+            PrimaryEntity = "opportunity",
+            Rank = 10,
+            Stage = 40
         }
     };
 }
