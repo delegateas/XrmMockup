@@ -80,6 +80,8 @@ namespace DG.Tools.XrmMockup.Internal
                     return IsEqual(attr, values);
 
                 case ConditionOperator.NotEqual:
+                    // Dataverse excludes null-valued records for "not" conditions (NULL <> value is unknown).
+                    if (attr == null) return false;
                     return !Matches(attr, ConditionOperator.Equal, values);
 
                 case ConditionOperator.GreaterThan:
@@ -89,6 +91,7 @@ namespace DG.Tools.XrmMockup.Internal
                     return Compare((IComparable)attr, op, (IComparable)ValueConverter.ConvertTo(values.First(), attr?.GetType()));
 
                 case ConditionOperator.NotLike:
+                    if (attr == null) return false;
                     return !Matches(attr, ConditionOperator.Like, values);
 
                 case ConditionOperator.Like:
@@ -129,6 +132,8 @@ namespace DG.Tools.XrmMockup.Internal
                     return values.Contains(ValueConverter.ConvertTo(attr, values.FirstOrDefault()?.GetType()));
 
                 case ConditionOperator.NotIn:
+                    // Only exclude nulls when there are values to compare; an empty NotIn matches all rows.
+                    if (attr == null && values.Any()) return false;
                     return !Matches(attr, ConditionOperator.In, values);
 
                 case ConditionOperator.BeginsWith:
@@ -144,6 +149,7 @@ namespace DG.Tools.XrmMockup.Internal
                     }
 
                 case ConditionOperator.DoesNotBeginWith:
+                    if (attr == null) return false;
                     return !Matches(attr, ConditionOperator.BeginsWith, values);
 
                 case ConditionOperator.EndsWith:
@@ -159,6 +165,7 @@ namespace DG.Tools.XrmMockup.Internal
                     }
 
                 case ConditionOperator.DoesNotEndWith:
+                    if (attr == null) return false;
                     return !Matches(attr, ConditionOperator.EndsWith, values);
                 default:
                     throw new NotImplementedException($"The ConditionOperator '{op}' has not been implemented yet.");
