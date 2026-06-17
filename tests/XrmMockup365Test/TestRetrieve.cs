@@ -76,10 +76,13 @@ namespace DG.XrmMockupTest
                 entity = (Account)orgAdminUIService.Retrieve(Account.EntityLogicalName, _accountId, new ColumnSet("name"));
                 Assert.Equal(_accountId, entity.Id);
 
-                var calId = orgAdminUIService.Create(new Entity("calendar"));
-                var cal = orgAdminUIService.Retrieve("calendar", calId, new ColumnSet(true));
+                // Substituted calendar (not in the leaned environment) with ctx_parent: same check —
+                // an entity created with no attributes, retrieved with ColumnSet(true) and with a
+                // single lookup-only column, still has its Id populated on the returned entity.
+                var calId = orgAdminUIService.Create(new Entity("ctx_parent"));
+                var cal = orgAdminUIService.Retrieve("ctx_parent", calId, new ColumnSet(true));
                 Assert.Equal(calId, cal.Id);
-                cal = orgAdminUIService.Retrieve("calendar", calId, new ColumnSet("createdby"));
+                cal = orgAdminUIService.Retrieve("ctx_parent", calId, new ColumnSet("createdby"));
                 Assert.Equal(calId, cal.Id);
 
             }

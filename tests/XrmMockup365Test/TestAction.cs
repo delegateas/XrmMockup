@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using DG.XrmFramework.BusinessDomain.ServiceContext;
@@ -23,6 +24,12 @@ namespace DG.XrmMockupTest
         {
             using (var context = new Xrm(orgAdminUIService))
             {
+                // The 'Full action' custom action (category=Action) was registered in the original
+                // environment's metadata; the leaned environment doesn't contain it, so load its
+                // definition from the regen-safe fixture folder. It only echoes its typed inputs back
+                // as Output (no entity-specific logic), so it migrates as-is.
+                crm.AddWorkflow(Path.Combine("../../..", "Metadata", "OtherWorkflows", "Fullaction.xml"));
+
                 var stringInput = "A string";
                 var datetimeInput = DateTime.Now;
                 var boolInput = true;
