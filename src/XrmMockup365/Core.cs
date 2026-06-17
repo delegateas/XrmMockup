@@ -129,7 +129,6 @@ namespace DG.Tools.XrmMockup
             OnlineDataService = initData.OnlineDataService;
             db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineDataService);
             entityTypeMap = initData.EntityTypeMap;
-            EnsureFileAttachmentMetadata();
             FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
             security = new Security(this, initData.Metadata, initData.SecurityRoles, db);
@@ -1418,7 +1417,6 @@ namespace DG.Tools.XrmMockup
 
             pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
-            EnsureFileAttachmentMetadata();
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
@@ -1537,54 +1535,6 @@ namespace DG.Tools.XrmMockup
         internal void AddSecurityRole(SecurityRole role)
         {
             security.AddSecurityRole(role);
-        }
-
-        private void EnsureFileAttachmentMetadata()
-        {
-            if (db.IsValidEntity("fileattachment"))
-                return;
-
-            var entityMetadata = new EntityMetadata();
-            SetMetadataProperty(entityMetadata, "LogicalName", "fileattachment");
-            SetMetadataProperty(entityMetadata, "PrimaryIdAttribute", "fileattachmentid");
-            SetMetadataProperty(entityMetadata, "PrimaryNameAttribute", "filename");
-
-            var attributes = new AttributeMetadata[]
-            {
-                CreateAttributeMetadata<UniqueIdentifierAttributeMetadata>("fileattachmentid", AttributeTypeCode.Uniqueidentifier),
-                CreateAttributeMetadata<StringAttributeMetadata>("filename", AttributeTypeCode.String),
-                CreateAttributeMetadata<DateTimeAttributeMetadata>("createdon", AttributeTypeCode.DateTime),
-                CreateAttributeMetadata<BigIntAttributeMetadata>("filesizeinbytes", AttributeTypeCode.BigInt),
-                CreateAttributeMetadata<StringAttributeMetadata>("mimetype", AttributeTypeCode.String),
-                CreateAttributeMetadata<StringAttributeMetadata>("objecttypecode", AttributeTypeCode.String),
-                CreateAttributeMetadata<StringAttributeMetadata>("regardingfieldname", AttributeTypeCode.String),
-                CreateAttributeMetadata<LookupAttributeMetadata>("objectid", AttributeTypeCode.Lookup)
-            };
-
-            SetMetadataProperty(entityMetadata, "Attributes", attributes);
-            db.RegisterEntityMetadata(entityMetadata);
-        }
-
-        private static void SetMetadataProperty(object metadata, string propertyName, object value)
-        {
-            var property = metadata.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            if (property != null && property.CanWrite)
-            {
-                property.SetValue(metadata, value);
-                return;
-            }
-
-            var field = metadata.GetType().GetField($"_{char.ToLower(propertyName[0])}{propertyName.Substring(1)}",
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            field?.SetValue(metadata, value);
-        }
-
-        private static T CreateAttributeMetadata<T>(string logicalName, AttributeTypeCode typeCode) where T : AttributeMetadata, new()
-        {
-            var attribute = new T();
-            SetMetadataProperty(attribute, "LogicalName", logicalName);
-            SetMetadataProperty(attribute, "AttributeType", typeCode);
-            return attribute;
         }
 
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,

@@ -103,14 +103,6 @@ namespace DG.Tools.XrmMockup.Database {
             return EntityMetadata.TryGetValue(entityLogicalName, out EntityMetadata entityMetadata);
         }
 
-        internal void RegisterEntityMetadata(EntityMetadata entityMetadata)
-        {
-            if (entityMetadata is null)
-                throw new ArgumentNullException(nameof(entityMetadata));
-
-            EntityMetadata[entityMetadata.LogicalName] = entityMetadata;
-        }
-
         internal void PrefillDBWithOnlineData(QueryExpression queryExpr)
         {
             if (OnlineDataService != null)
