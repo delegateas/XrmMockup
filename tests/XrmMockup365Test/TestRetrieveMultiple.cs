@@ -904,9 +904,9 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestQueryExpressionLinkEntityNotEqualExcludesNull()
         {
-            // lead1 (-> contact1) has Address1_PostalCode = "MK111DW"; lead2 (-> contact2) has none (null).
-            // A NotEqual link-criteria must exclude the contact whose linked lead has a null value,
-            // matching real Dataverse (NULL <> value is unknown -> row excluded).
+            // Migrated from lead -> ctx_parent: p1 (-> contact1) has ctx_postalcode = "MK111DW";
+            // p2 (-> contact2) has none (null). A NotEqual link-criteria must exclude the contact whose
+            // linked ctx_parent has a null value, matching real Dataverse (NULL <> value -> row excluded).
             var query = new QueryExpression("contact")
             {
                 ColumnSet = new ColumnSet("lastname")
@@ -916,15 +916,15 @@ namespace DG.XrmMockupTest
 
             var linkEntity = new LinkEntity()
             {
-                LinkToEntityName = "lead",
-                LinkToAttributeName = "parentcontactid",
+                LinkToEntityName = "ctx_parent",
+                LinkToAttributeName = "ctx_contactid",
                 LinkFromEntityName = "contact",
                 LinkFromAttributeName = "contactid",
-                Columns = new ColumnSet("address1_postalcode"),
-                EntityAlias = "lead"
+                Columns = new ColumnSet("ctx_postalcode"),
+                EntityAlias = "ctxp"
             };
             linkEntity.LinkCriteria = new FilterExpression(LogicalOperator.And);
-            linkEntity.LinkCriteria.AddCondition(new ConditionExpression("lead", "address1_postalcode", ConditionOperator.NotEqual, "ZZZ"));
+            linkEntity.LinkCriteria.AddCondition(new ConditionExpression("ctxp", "ctx_postalcode", ConditionOperator.NotEqual, "ZZZ"));
             query.LinkEntities.Add(linkEntity);
 
             var res = orgAdminService.RetrieveMultiple(query).Entities;
@@ -935,35 +935,36 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestQueryExpressionNotEqualExcludesNull()
         {
-            // Only lead1 has a postal code; leads 2-4 are null. NotEqual must exclude the null rows.
-            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
-            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.NotEqual, "ZZZ"));
+            // Migrated from lead -> ctx_parent: only p1 has a postal code; the others are null.
+            // NotEqual must exclude the null rows.
+            var query = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("ctx_postalcode", ConditionOperator.NotEqual, "ZZZ"));
 
-            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<ctx_parent>().ToList();
             Assert.Single(res);
-            Assert.Equal(lead1.Id, res[0].Id);
+            Assert.Equal(p1.Id, res[0].Id);
         }
 
         [Fact]
         public void TestQueryExpressionNotInExcludesNull()
         {
-            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
-            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.NotIn, new[] { "AAA", "BBB" }));
+            var query = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("ctx_postalcode", ConditionOperator.NotIn, new[] { "AAA", "BBB" }));
 
-            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<ctx_parent>().ToList();
             Assert.Single(res);
-            Assert.Equal(lead1.Id, res[0].Id);
+            Assert.Equal(p1.Id, res[0].Id);
         }
 
         [Fact]
         public void TestQueryExpressionDoesNotBeginWithExcludesNull()
         {
-            var query = new QueryExpression("lead") { ColumnSet = new ColumnSet(true) };
-            query.Criteria.AddCondition(new ConditionExpression("address1_postalcode", ConditionOperator.DoesNotBeginWith, "ZZ"));
+            var query = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet(true) };
+            query.Criteria.AddCondition(new ConditionExpression("ctx_postalcode", ConditionOperator.DoesNotBeginWith, "ZZ"));
 
-            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<Lead>().ToList();
+            var res = orgAdminService.RetrieveMultiple(query).Entities.Cast<ctx_parent>().ToList();
             Assert.Single(res);
-            Assert.Equal(lead1.Id, res[0].Id);
+            Assert.Equal(p1.Id, res[0].Id);
         }
 
         [Fact]
