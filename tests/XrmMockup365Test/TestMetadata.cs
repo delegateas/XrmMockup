@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Messages;
@@ -66,12 +67,31 @@ namespace DG.XrmMockupTest
             }
         }
 
-        // DISABLED: this verified create/update restrictions on the system rollup field
-        // account.opendeals_state, which is not present in the lean regenerated metadata (the
-        // OpenDeals_State property is no longer generated).
-        [Fact(Skip = "account.opendeals_state is not in the regenerated metadata.")]
+        [Fact]
         public void TestCRURestrictions()
         {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                // Migrated from account.opendeals_state (a read-only system rollup absent from the lean
+                // metadata) to ctx_parent.ctx_totalallowance (also a rollup, hence read-only): a value
+                // written on create/update is stripped, so it never round-trips. The non-readable-field
+                // check stays on account.isprivate (still present in metadata).
+                var parent = new ctx_parent();
+                parent.Attributes.Add("ctx_totalallowance", new Money(22));
+                parent.Id = orgAdminUIService.Create(parent);
+
+                var retrieved = orgAdminUIService.Retrieve(ctx_parent.EntityLogicalName, parent.Id, new ColumnSet("ctx_totalallowance")) as ctx_parent;
+                Assert.NotEqual(22m, retrieved.ctx_TotalAllowance);
+
+                orgAdminUIService.Update(parent);
+                retrieved = orgAdminUIService.Retrieve(ctx_parent.EntityLogicalName, parent.Id, new ColumnSet("ctx_totalallowance")) as ctx_parent;
+                Assert.NotEqual(22m, retrieved.ctx_TotalAllowance);
+
+                var acc = new Account();
+                acc.Id = orgAdminUIService.Create(acc);
+                var accRetrieved = orgAdminUIService.Retrieve(Account.EntityLogicalName, acc.Id, new ColumnSet("isprivate")) as Account;
+                Assert.False(accRetrieved.Attributes.ContainsKey("isprivate"));
+            }
         }
 
 
