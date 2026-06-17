@@ -1,24 +1,81 @@
+﻿using System;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
+using DG.XrmFramework.BusinessDomain.ServiceContext;
 using Xunit;
 
 namespace DG.XrmMockupTest
 {
-    // DISABLED: Opportunity / OpportunityClose were removed from the environment. The Win/Lose
-    // opportunity messages and the opportunity Won/Lost state machine have no equivalent on the
-    // available entities (account/contact), so these tests cannot be reproduced. Kept as skipped
-    // stubs to document intent; original bodies are in git history (and the OpportunityWinLose
-    // plugin is disabled in TestPluginAssembly365).
     public class TestOpportunity : UnitTestBase
     {
         public TestOpportunity(XrmMockupFixture fixture) : base(fixture) { }
 
-        private const string SkipReason =
-            "Opportunity/OpportunityClose removed from environment; Win/Lose messages and the opportunity " +
-            "state machine have no equivalent on the available entities.";
+        // These tests exercise XrmMockup's WinOpportunity / LoseOpportunity request handlers against the
+        // Opportunity / OpportunityClose entities, which were removed from the environment. They are
+        // preserved in original form behind an undefined compile symbol so the team can decide the fix:
+        // to re-enable, provision the Opportunity entities, regenerate the context, then define
+        // INCLUDE_REMOVED_ENTITY_TESTS.
+#if INCLUDE_REMOVED_ENTITY_TESTS
 
-        [Fact(Skip = SkipReason)]
-        public void TestWinOpportunity() { }
+        [Fact]
+        public void TestWinOpportunity()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var opportunity = new Opportunity();
+                opportunity.Id = orgAdminUIService.Create(opportunity);
 
-        [Fact(Skip = SkipReason)]
-        public void TestLoseOpportunity() { }
+                var winReq = new WinOpportunityRequest();
+                var opclose = new OpportunityClose()
+                {
+                    ActualRevenue = 1000m,
+                    ActualEnd = DateTime.Now,
+                    StateCode = OpportunityCloseState.Completed,
+                    StatusCode = OpportunityClose_StatusCode.Completed,
+                    OpportunityId = opportunity.ToEntityReference()
+                };
+                winReq.OpportunityClose = opclose;
+                winReq.Status = new OptionSetValue((int)Opportunity_StatusCode.Won);
+
+                orgAdminUIService.Execute(winReq);
+
+                var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
+                Assert.Equal(OpportunityState.Won, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Won, retrieved.StatusCode);
+                Assert.True(crm.ContainsEntity(opclose));
+                Assert.Equal("SetFromWinLose", retrieved.Description);
+            }
+        }
+
+        [Fact]
+        public void TestLoseOpportunity()
+        {
+            using (var context = new Xrm(orgAdminUIService))
+            {
+                var opportunity = new Opportunity();
+                opportunity.Id = orgAdminUIService.Create(opportunity);
+
+                var loseReq = new LoseOpportunityRequest();
+                var opclose = new OpportunityClose()
+                {
+                    ActualRevenue = 1000m,
+                    ActualEnd = DateTime.Now,
+                    StatusCode = OpportunityClose_StatusCode.Canceled,
+                    OpportunityId = opportunity.ToEntityReference()
+                };
+                loseReq.OpportunityClose = opclose;
+                loseReq.Status = new OptionSetValue((int)Opportunity_StatusCode.Canceled);
+
+                orgAdminUIService.Execute(loseReq);
+
+                var retrieved = orgAdminUIService.Retrieve(Opportunity.EntityLogicalName, opportunity.Id, new ColumnSet(true)) as Opportunity;
+                Assert.Equal(OpportunityState.Lost, retrieved.StateCode);
+                Assert.Equal(Opportunity_StatusCode.Canceled, retrieved.StatusCode);
+                Assert.True(crm.ContainsEntity(opclose));
+                Assert.Equal("SetFromWinLose", retrieved.Description);
+            }
+        }
+#endif
     }
 }

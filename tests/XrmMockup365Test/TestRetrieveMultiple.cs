@@ -239,21 +239,11 @@ namespace DG.XrmMockupTest
             }
         }
 
-        /// This commit in XrmContext makes it so the test fails. Consider the consequences of changing it back https://github.com/delegateas/XrmContext/commit/eb8a513517614e1e8cf4aca985eb465c39399acf#diff-d8e7c594f843646d7b0be2cccb990355
-        // DISABLED: these exercised the XrmServiceContext lazy-load API (context.Load / LoadEnumeration)
-        // and the account self-parent reverse navigation properties (Referenced/Referencing-
-        // account_parent_account). The regenerated XrmContext no longer emits those Load/LoadEnumeration
-        // helpers or those reverse-nav properties, so the tests can't compile/run. Original bodies are
-        // in git history.
-        [Fact(Skip = "XrmContext no longer generates the Load/LoadEnumeration lazy-load helpers used here.")]
-        public void ContextJoinTest()
-        {
-        }
-
-        [Fact(Skip = "XrmContext no longer generates the Load/LoadEnumeration lazy-load helpers used here.")]
-        public void ContextLoadDifferentEntitiesTest()
-        {
-        }
+        // Removed: ContextJoinTest / ContextLoadDifferentEntitiesTest. They exercised the XrmContext
+        // lazy-load API (context.Load / LoadEnumeration) and account self-parent reverse-nav properties.
+        // That API is generated code owned by XrmContext — verifying it belongs in XrmContext's own test
+        // suite, not here (this suite tests XrmMockup's engine behavior). The regenerated context no
+        // longer emits those helpers, so there is nothing for XrmMockup to exercise.
 
         [Fact]
         public void TestLeftJoin()
@@ -1219,13 +1209,10 @@ namespace DG.XrmMockupTest
             }
         }
 
-        // DISABLED: used the custom dg_animal entity and its bespoke string-composition calculated field
-        // dg_AnimalOwner, which has no equivalent on the available entities. PowerFx formula-field
-        // evaluation on Retrieve/RetrieveMultiple is covered by TestFormulaFields.
-        [Fact(Skip = "dg_animal and its dg_AnimalOwner calculated string field are not available; formula-field evaluation is covered by TestFormulaFields.")]
-        public void TestFormulaFieldEvaluated()
-        {
-        }
+        // Removed: TestFormulaFieldEvaluated. It tested dg_animal's cross-entity string-composition
+        // calculated field (dg_AnimalOwner, referencing the owner's name) which ctx_parent can't
+        // reproduce; PowerFx formula evaluation in RetrieveMultiple is already covered by
+        // TestMoney.TestCalculatedIsSetRetrieveMultiple.
 
         [Fact]
         public void TestQueryExpressionEqualString()

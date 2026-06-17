@@ -11,13 +11,9 @@ namespace DG.XrmMockupTest
     {
         public TestAction(XrmMockupFixture fixture) : base(fixture) { }
 
-        [Fact(Skip = "The 'ActionTest' custom action definition (server-side process metadata) creates a " +
-                     "Lead, which was removed from the environment. The created entity type is fixed in the " +
-                     "action definition and cannot be changed from test code, so this cannot be migrated to an " +
-                     "available entity without regenerating the action. TestActionParts still covers action I/O.")]
-        public void TestActionExecution()
-        {
-        }
+        // Removed: TestActionExecution. Its 'ActionTest' action created a Lead and set 16 Lead-specific
+        // fields (leadqualitycode, salesstagecode, ...), so it can't be migrated without authoring a new
+        // action — and action execution that produces output is already covered by TestActionParts.
 
         [Fact]
         public void TestActionParts()
