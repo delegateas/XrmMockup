@@ -68,7 +68,7 @@ namespace DG.Tools.XrmMockup
             };
             temporaryPlugins = new Dictionary<EventOperation, StageToTriggerMap>();
 
-            var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes);
+            var pluginCacheKey = GeneratePluginCacheKey(basePluginTypes, plugins);
             var systemCacheKey = "system_plugins";
 
             // Check if we have cached results
@@ -476,16 +476,28 @@ namespace DG.Tools.XrmMockup
             plugins.ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, _core));
         }
 
-        private string GeneratePluginCacheKey(IEnumerable<Type> basePluginTypes)
+        private string GeneratePluginCacheKey(IEnumerable<Type> basePluginTypes, IEnumerable<MetaPlugin> plugins)
         {
-            if (basePluginTypes == null) return "null_types";
+            var typeNames = (basePluginTypes ?? Enumerable.Empty<Type>())
+                .Where(t => t != null).Select(t => t.FullName).OrderBy(n => n);
 
-            var typeNames = basePluginTypes.Where(t => t != null).Select(t => t.FullName).OrderBy(n => n);
-            var combinedTypes = string.Join("|", typeNames);
+            // The registered plugin set depends on the supplied plugin metadata (e.g. IPluginMetadata),
+            // not just the base types. Two settings with the same base types but different plugin
+            // metadata must NOT share a cache entry, otherwise the registrations leak between them
+            // depending on which Core is constructed first (order-dependent failures).
+            var pluginKeys = (plugins ?? Enumerable.Empty<MetaPlugin>())
+                .Select(p => string.Join("~",
+                    p.PluginTypeAssemblyName, p.AssemblyName, p.MessageName, p.PrimaryEntity,
+                    p.Stage, p.Rank, p.Mode, p.FilteredAttributes, p.AsyncAutoDelete, p.ImpersonatingUserId,
+                    p.Images == null ? "" : string.Join(",", p.Images
+                        .Select(i => $"{i.Name}/{i.EntityAlias}/{i.ImageType}/{i.Attributes}").OrderBy(s => s))))
+                .OrderBy(s => s);
+
+            var combined = string.Join("|", typeNames) + "##" + string.Join("|", pluginKeys);
 
             using (var sha256 = SHA256.Create())
             {
-                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedTypes));
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combined));
                 return Convert.ToBase64String(hash);
             }
         }
