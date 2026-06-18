@@ -132,6 +132,15 @@ namespace WorkflowExecuter
             {
                 foreach (var variable in variables)
                 {
+                    // "True"/"False" are reserved boolean constants seeded by WorkflowTree.Reset().
+                    // CRM-generated calculated-field XAML re-declares a local variable named "True"
+                    // with Default="False"; materializing it would clobber the constant and make every
+                    // ConditionBranch (whose Condition is "[True]") evaluate false, skipping the whole
+                    // calculation. Leave the engine constants untouched.
+                    if (variable.Name == "True" || variable.Name == "False")
+                    {
+                        continue;
+                    }
                     if (variable.Default != null)
                     {
                         if (variable.Type.StartsWith("scg:Dictionary"))

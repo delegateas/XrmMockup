@@ -16,8 +16,8 @@ namespace DG.XrmMockupTest
         [Fact]
         public void TestImpersonatingUserIds()
         {
-            var user1 = crm.CreateUser(orgAdminService, crm.RootBusinessUnit, SecurityRoles.Salesperson); 
-            var user2 = crm.CreateUser(orgAdminService, crm.RootBusinessUnit, SecurityRoles.Salesperson);
+            var user1 = crm.CreateUser(orgAdminService, crm.RootBusinessUnit, SecurityRoles.XrmMockupTestUser); 
+            var user2 = crm.CreateUser(orgAdminService, crm.RootBusinessUnit, SecurityRoles.XrmMockupTestUser);
 
             var user1Service = crm.CreateOrganizationService(user1.Id);
 
@@ -120,8 +120,9 @@ namespace DG.XrmMockupTest
                 var acc = new Account();
                 orgAdminUIService.Create(acc);
 
-                var leads = context.LeadSet.ToList();
-                Assert.True(leads.Count > 0);
+                // AccountPostPlugin / LegacyAccountPlugin create ctx_parent records (migrated from Lead).
+                var created = context.ctx_parentSet.ToList();
+                Assert.True(created.Count > 0);
             }
         }
 
@@ -183,11 +184,12 @@ namespace DG.XrmMockupTest
             var createdAccount = Account.Retrieve(orgAdminUIService, id);
             Assert.Equal("TestAccount", createdAccount.Name);
 
-            // Check if the plugin executed
+            // Check if the plugin executed (LegacyAccountPlugin creates a ctx_parent, migrated from Lead;
+            // ParentAccountId -> ctx_AccountId, Subject -> ctx_Name).
             using (var xrm = new Xrm(orgAdminService))
             {
-                var createdLead = xrm.LeadSet.Single(l => l.ParentAccountId != null && l.ParentAccountId.Id == id && l.Subject.StartsWith(nameof(LegacyAccountPlugin)));
-                Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead ", createdLead.Subject);
+                var createdParent = xrm.ctx_parentSet.Single(p => p.ctx_AccountId != null && p.ctx_AccountId.Id == id && p.ctx_Name.StartsWith(nameof(LegacyAccountPlugin)));
+                Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead ", createdParent.ctx_Name);
             }
         }
 
@@ -205,18 +207,19 @@ namespace DG.XrmMockupTest
             var updatedAccount = Account.Retrieve(orgAdminUIService, id);
             Assert.Equal("UpdatedAccount", updatedAccount.Name);
 
-            // Check if the plugin executed
+            // Check if the plugin executed (LegacyAccountPlugin now creates Email records, migrated from
+            // Lead): one on Create and one on Update, both regarding the account.
             using (var xrm = new Xrm(orgAdminService))
             {
-                var createdLead = xrm.LeadSet
-                    .Where(l => l.ParentAccountId != null
-                        && l.ParentAccountId.Id == id
-                        && l.Subject.StartsWith(nameof(LegacyAccountPlugin)))
+                var createdParents = xrm.ctx_parentSet
+                    .Where(p => p.ctx_AccountId != null
+                        && p.ctx_AccountId.Id == id
+                        && p.ctx_Name.StartsWith(nameof(LegacyAccountPlugin)))
                     .ToList();
 
-                Assert.Collection(createdLead,
-                    lead => Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead ", lead.Subject),
-                    lead => Assert.StartsWith(nameof(LegacyAccountPlugin) + " Update: Some new lead ", lead.Subject)
+                Assert.Collection(createdParents,
+                    p => Assert.StartsWith(nameof(LegacyAccountPlugin) + " Create: Some new lead ", p.ctx_Name),
+                    p => Assert.StartsWith(nameof(LegacyAccountPlugin) + " Update: Some new lead ", p.ctx_Name)
                 );
             }
         }

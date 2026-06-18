@@ -23,14 +23,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -54,8 +54,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedEmail = context.EmailSet.FirstOrDefault();
-                Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
-                Assert.Equal(Email_StatusCode.PendingSend, retrievedEmail.StatusCode);
+                Assert.Equal(email_statecode.Completed, retrievedEmail.StateCode);
+                Assert.Equal(email_statuscode.PendingSend, retrievedEmail.StatusCode);
             }
         }
 
@@ -71,14 +71,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -101,8 +101,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedEmail = context.EmailSet.FirstOrDefault();
-                Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
-                Assert.Equal(Email_StatusCode.Sent, retrievedEmail.StatusCode);
+                Assert.Equal(email_statecode.Completed, retrievedEmail.StateCode);
+                Assert.Equal(email_statuscode.Sent, retrievedEmail.StatusCode);
             }
         }
 
@@ -111,14 +111,14 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -142,8 +142,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedEmail = context.EmailSet.FirstOrDefault();
-                Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
-                Assert.Equal(Email_StatusCode.PendingSend, retrievedEmail.StatusCode);
+                Assert.Equal(email_statecode.Completed, retrievedEmail.StateCode);
+                Assert.Equal(email_statuscode.PendingSend, retrievedEmail.StatusCode);
             }
         }
 
@@ -159,14 +159,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -174,7 +174,7 @@ namespace DG.XrmMockupTest
                     }
                 },
                 Subject = "Test Email",
-                StatusCode = Email_StatusCode.Failed
+                StatusCode = email_statuscode.Failed
             };
             email.Id = orgAdminUIService.Create(email);
 
@@ -191,8 +191,8 @@ namespace DG.XrmMockupTest
             using (var context = new Xrm(orgAdminUIService))
             {
                 var retrievedEmail = context.EmailSet.FirstOrDefault();
-                Assert.Equal(EmailState.Completed, retrievedEmail.StateCode);
-                Assert.Equal(Email_StatusCode.PendingSend, retrievedEmail.StatusCode);
+                Assert.Equal(email_statecode.Completed, retrievedEmail.StateCode);
+                Assert.Equal(email_statuscode.PendingSend, retrievedEmail.StatusCode);
             }
         }
 
@@ -208,14 +208,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -242,14 +242,14 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -295,7 +295,7 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -318,7 +318,7 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty()
                     {
@@ -341,7 +341,7 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty(),
                     new ActivityParty(),
@@ -362,7 +362,7 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -385,14 +385,14 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty()
                 }
@@ -418,14 +418,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -449,14 +449,14 @@ namespace DG.XrmMockupTest
         {
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {
@@ -490,14 +490,14 @@ namespace DG.XrmMockupTest
 
             var email = new Email
             {
-                From = new ActivityParty[]
+                from = new ActivityParty[]
                 {
                     new ActivityParty
                     {
                         PartyId = crm.AdminUser
                     }
                 },
-                To = new ActivityParty[]
+                to = new ActivityParty[]
                 {
                     new ActivityParty
                     {

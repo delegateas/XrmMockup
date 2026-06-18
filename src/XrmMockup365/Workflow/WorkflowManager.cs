@@ -452,6 +452,14 @@ namespace DG.Tools.XrmMockup {
         internal void AddWorkflow(Entity workflow) {
             if (workflow.LogicalName != LogicalNames.Workflow) return;
             var name = workflow.GetAttributeValue<string>("name") ?? workflow.Id.ToString();
+            // Category 3 = Action. Register it so it can be invoked by message name (Core dispatches
+            // to ExecuteAction via GetActionDefaultNull); otherwise an added action would be mis-filed
+            // as a workflow and never be reachable.
+            if (workflow.GetAttributeValue<OptionSetValue>("category")?.Value == 3) {
+                actions.Add(workflow);
+                _logger.LogDebug("Added action: {WorkflowName}", name);
+                return;
+            }
             if (workflow.GetOptionSetValue<Workflow_Mode>("mode") == Workflow_Mode.Background) {
                 asynchronousWorkflows.Add(workflow);
                 _logger.LogDebug("Added async workflow: {WorkflowName}", name);

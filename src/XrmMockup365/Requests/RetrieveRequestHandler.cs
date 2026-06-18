@@ -37,12 +37,10 @@ namespace DG.Tools.XrmMockup {
                 throw new FaultException($"Calling user with id '{userRef.Id}' does not have permission to read entity '{row.Table.TableName}'");
             }
 
-            core.ExecuteCalculatedFields(row);
-
-            row = db.GetDbRow(request.Target);
-
-            // Calculate the formula fields before we filter the fetched columns
+            // Calculate the (on-demand, never-persisted) calculated and formula fields onto the
+            // entity we are about to return, before we filter the fetched columns.
             var looseEntity = row.ToEntity();
+            core.ExecuteCalculatedFields(row.Metadata, looseEntity);
             core.ExecuteFormulaFields(row.Metadata, looseEntity).GetAwaiter().GetResult();
 
             var entity = core.GetStronglyTypedEntity(looseEntity, row.Metadata, request.ColumnSet);

@@ -105,11 +105,19 @@ namespace DG.XrmMockupTest
             }
         }
 
+        // Migrated from Account.Retrieve_dg_name -> ctx_parent.Retrieve_ctx_NameKey. The provisioner
+        // creates the ctx_NameKey alternate key (on ctx_name), so XrmContext generates this
+        // retrieve-by-key helper. Verifies a record can be retrieved via its alternate key.
         [Fact]
-
         public void AltKeyRetrieveWithoutEntityTypeInDb()
         {
-            var y = Account.Retrieve_dg_name(orgAdminUIService, "woop", x => x.AccountNumber);
+            var created = new ctx_parent { ctx_Name = "woop" };
+            created.Id = orgAdminUIService.Create(created);
+
+            var y = ctx_parent.Retrieve_ctx_NameKey(orgAdminUIService, "woop", x => x.ctx_Name);
+            Assert.NotNull(y);
+            Assert.Equal(created.Id, y.Id);
+            Assert.Equal("woop", y.ctx_Name);
         }
     }
 }

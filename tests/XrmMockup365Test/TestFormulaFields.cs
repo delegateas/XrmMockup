@@ -40,13 +40,14 @@ namespace DG.XrmMockupTest
             var evaluator = new FormulaFieldEvaluator(serviceFactory);
 
             var adminUserId = Guid.Parse("3b961284-cd7a-4fa3-af7e-89802e88dd5c");
-            var animal = Create(new dg_animal { dg_name = "Fluffy", OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId) });
-            var animalFood = Create(new dg_animalfood { dg_AnimalId = new EntityReference(dg_animal.EntityLogicalName, animal.Id), dg_name = "Meatballs" });
+            var parent = Create(new ctx_parent { ctx_Name = "Fluffy", OwnerId = new EntityReference(SystemUser.EntityLogicalName, adminUserId) });
+            var child = Create(new ctx_child { ctx_ParentId = new EntityReference(ctx_parent.EntityLogicalName, parent.Id), ctx_Name = "Meatballs" });
 
-            var result = await evaluator.Evaluate("\"Test: \" & dg_animalowner", animal, TimeSpan.Zero);
-            Assert.Equal("Test: Fluffy is a very good animal, and Admin loves them very much", result);
+            // ctx_TrimLeft is a Power Fx formula column defined as Mid(ctx_name, 3).
+            var result = await evaluator.Evaluate("\"Test: \" & Mid(ctx_name, 3)", parent, TimeSpan.Zero);
+            Assert.Equal("Test: uffy", result);
 
-            result = await evaluator.Evaluate("If(dg_AnimalId.dg_name = \"Fluffy\", \"Test: \" & dg_AnimalId.dg_name & \" eats \" & dg_name, \"New telegraph, who dis?\")", animalFood, TimeSpan.Zero);
+            result = await evaluator.Evaluate("If(ctx_ParentId.ctx_name = \"Fluffy\", \"Test: \" & ctx_ParentId.ctx_name & \" eats \" & ctx_name, \"New telegraph, who dis?\")", child, TimeSpan.Zero);
             Assert.Equal("Test: Fluffy eats Meatballs", result);
         }
 

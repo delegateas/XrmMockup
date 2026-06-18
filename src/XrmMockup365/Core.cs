@@ -130,7 +130,6 @@ namespace DG.Tools.XrmMockup
             OnlineDataService = initData.OnlineDataService;
             db = new XrmDb(initData.Metadata.EntityMetadata, initData.OnlineDataService);
             entityTypeMap = initData.EntityTypeMap;
-            EnsureFileAttachmentMetadata();
             FileBlockStore = new FileBlockStore();
             snapshots = new Dictionary<string, Snapshot>();
             security = new Security(this, initData.Metadata, initData.SecurityRoles, db);
@@ -1119,7 +1118,6 @@ namespace DG.Tools.XrmMockup
 
             pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
-            EnsureFileAttachmentMetadata();
             this.RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
             security.ResetEnvironment(db);
@@ -1135,9 +1133,9 @@ namespace DG.Tools.XrmMockup
             return entityMetadata;
         }
 
-        internal void ExecuteCalculatedFields(DbRow row)
+        internal void ExecuteCalculatedFields(EntityMetadata entityMetadata, Entity entity)
         {
-            var attributes = row.Metadata.Attributes.Where(
+            var attributes = entityMetadata.Attributes.Where(
                 m => m.SourceType == (int)SourceType.CalculatedAttribute && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
 
             foreach (var attr in attributes)
@@ -1153,8 +1151,18 @@ namespace DG.Tools.XrmMockup
 
                 var tree = WorkflowConstructor.ParseCalculated(definition, $"{attr.EntityLogicalName}.{attr.LogicalName}");
                 var factory = ServiceFactory;
-                tree.Execute(row.ToEntity().CloneEntity(row.Metadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
+                // Calculated fields are evaluated on demand and projected onto the entity being
+                // returned. Unlike rollup fields they are never persisted to the database, so we run
+                // the calculation workflow against a clone and copy the computed value back onto the
+                // returned entity (the workflow leaves its result in the "primaryEntity" variable).
+                var resultTree = tree.Execute(entity.CloneEntity(entityMetadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
                     factory, factory.GetService<ITracingService>());
+
+                if (resultTree.Variables.TryGetValue("InputEntities(\"primaryEntity\")", out var resultObj)
+                    && resultObj is Entity result && result.Contains(attr.LogicalName))
+                {
+                    entity[attr.LogicalName] = result[attr.LogicalName];
+                }
             }
         }
 
@@ -1175,7 +1183,43 @@ namespace DG.Tools.XrmMockup
                     continue;
                 }
 
-                entity[attr.LogicalName] = await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset);
+                try
+                {
+                    entity[attr.LogicalName] = CoerceFormulaValue(await FormulaFieldEvaluator.Evaluate(definition, entity, TimeOffset), attr);
+                }
+                catch (Exception ex)
+                {
+                    // In Dataverse a formula field whose expression errors at runtime (e.g. referencing
+                    // a blank source, like Mid(name, 3) on an empty name) surfaces as a blank value on
+                    // that field — it does not fail the whole Retrieve. Mirror that: trace and leave the
+                    // field unset rather than letting one formula column break reading the record.
+                    var trace = ServiceFactory.GetService<ITracingService>();
+                    trace.Trace($"Formula field on {attr.EntityLogicalName} field {attr.LogicalName} could not be evaluated: {ex.Message}");
+                }
+            }
+        }
+
+        // PowerFx evaluates numeric expressions to decimal. Coerce the result to the formula
+        // attribute's declared CLR type so the strongly-typed accessors (e.g. int? for a whole-number
+        // formula column) don't fail casting decimal to the target type.
+        private static object CoerceFormulaValue(object value, AttributeMetadata attr)
+        {
+            if (value == null) return null;
+
+            switch (attr.AttributeType)
+            {
+                case AttributeTypeCode.Integer:
+                    return Convert.ToInt32(value);
+                case AttributeTypeCode.BigInt:
+                    return Convert.ToInt64(value);
+                case AttributeTypeCode.Double:
+                    return Convert.ToDouble(value);
+                case AttributeTypeCode.Decimal:
+                    return value is decimal ? value : Convert.ToDecimal(value);
+                case AttributeTypeCode.Money:
+                    return value is Money ? value : new Money(Convert.ToDecimal(value));
+                default:
+                    return value;
             }
         }
 
@@ -1192,54 +1236,6 @@ namespace DG.Tools.XrmMockup
         internal void AddSecurityRole(SecurityRole role)
         {
             security.AddSecurityRole(role);
-        }
-
-        private void EnsureFileAttachmentMetadata()
-        {
-            if (db.IsValidEntity("fileattachment"))
-                return;
-
-            var entityMetadata = new EntityMetadata();
-            SetMetadataProperty(entityMetadata, "LogicalName", "fileattachment");
-            SetMetadataProperty(entityMetadata, "PrimaryIdAttribute", "fileattachmentid");
-            SetMetadataProperty(entityMetadata, "PrimaryNameAttribute", "filename");
-
-            var attributes = new AttributeMetadata[]
-            {
-                CreateAttributeMetadata<UniqueIdentifierAttributeMetadata>("fileattachmentid", AttributeTypeCode.Uniqueidentifier),
-                CreateAttributeMetadata<StringAttributeMetadata>("filename", AttributeTypeCode.String),
-                CreateAttributeMetadata<DateTimeAttributeMetadata>("createdon", AttributeTypeCode.DateTime),
-                CreateAttributeMetadata<BigIntAttributeMetadata>("filesizeinbytes", AttributeTypeCode.BigInt),
-                CreateAttributeMetadata<StringAttributeMetadata>("mimetype", AttributeTypeCode.String),
-                CreateAttributeMetadata<StringAttributeMetadata>("objecttypecode", AttributeTypeCode.String),
-                CreateAttributeMetadata<StringAttributeMetadata>("regardingfieldname", AttributeTypeCode.String),
-                CreateAttributeMetadata<LookupAttributeMetadata>("objectid", AttributeTypeCode.Lookup)
-            };
-
-            SetMetadataProperty(entityMetadata, "Attributes", attributes);
-            db.RegisterEntityMetadata(entityMetadata);
-        }
-
-        private static void SetMetadataProperty(object metadata, string propertyName, object value)
-        {
-            var property = metadata.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            if (property != null && property.CanWrite)
-            {
-                property.SetValue(metadata, value);
-                return;
-            }
-
-            var field = metadata.GetType().GetField($"_{char.ToLower(propertyName[0])}{propertyName.Substring(1)}",
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            field?.SetValue(metadata, value);
-        }
-
-        private static T CreateAttributeMetadata<T>(string logicalName, AttributeTypeCode typeCode) where T : AttributeMetadata, new()
-        {
-            var attribute = new T();
-            SetMetadataProperty(attribute, "LogicalName", logicalName);
-            SetMetadataProperty(attribute, "AttributeType", typeCode);
-            return attribute;
         }
 
         public void TriggerExtension(IOrganizationService service, OrganizationRequest request, Entity currentEntity,
