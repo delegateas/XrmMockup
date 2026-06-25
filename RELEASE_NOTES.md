@@ -1,3 +1,6 @@
+### 1.18.2 - 25 June 2026
+* Fix: Top level link criteria were unioned instead of cross joined
+
 ### 1.18.1 - 15 June 2026
 * Fix: LinkCriteria and negative conditions did work correctly
 
