@@ -871,6 +871,83 @@ namespace DG.XrmMockupTest
             Assert.Equal(2, res.Count());
         }
 
+        [Fact]
+        public void TestQueryExpressionMultipleLinkEntitiesAreAndJoined()
+        {
+            // Two sibling links, each with its own LinkCriteria, must be combined with AND
+            // (cross join) semantics like real Dataverse. Previously each link was evaluated
+            // independently and the results unioned, so a parent matching only one link still
+            // came back.
+            var accA = new Account { Name = "ReproA", Address1_City = "ReproCityA" };
+            var accB = new Account { Name = "ReproB", Address1_City = "ReproCityB" };
+            accA.Id = orgAdminService.Create(accA);
+            accB.Id = orgAdminService.Create(accB);
+
+            var conX = new Contact { LastName = "ReproX" };
+            var conY = new Contact { LastName = "ReproY" };
+            conX.Id = orgAdminService.Create(conX);
+            conY.Id = orgAdminService.Create(conY);
+
+            // pAX matches both link criteria; pAY matches only the account link; pBX only the contact link.
+            var pAX = new ctx_parent { ctx_Name = "pAX", ctx_AccountId = accA.ToEntityReference(), ctx_ContactId = conX.ToEntityReference() };
+            var pAY = new ctx_parent { ctx_Name = "pAY", ctx_AccountId = accA.ToEntityReference(), ctx_ContactId = conY.ToEntityReference() };
+            var pBX = new ctx_parent { ctx_Name = "pBX", ctx_AccountId = accB.ToEntityReference(), ctx_ContactId = conX.ToEntityReference() };
+            pAX.Id = orgAdminService.Create(pAX);
+            pAY.Id = orgAdminService.Create(pAY);
+            pBX.Id = orgAdminService.Create(pBX);
+
+            var query = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet("ctx_name") };
+
+            var accountLink = query.AddLink("account", "ctx_accountid", "accountid");
+            accountLink.EntityAlias = "acc";
+            accountLink.Columns = new ColumnSet("address1_city");
+            accountLink.LinkCriteria.AddCondition("address1_city", ConditionOperator.Equal, "ReproCityA");
+
+            var contactLink = query.AddLink("contact", "ctx_contactid", "contactid");
+            contactLink.EntityAlias = "con";
+            contactLink.Columns = new ColumnSet("lastname");
+            contactLink.LinkCriteria.AddCondition("lastname", ConditionOperator.Equal, "ReproX");
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+
+            Assert.Single(res);
+            var match = res[0];
+            Assert.Equal(pAX.Id, match.Id);
+            Assert.Equal("pAX", match.GetAttributeValue<string>("ctx_name"));
+            // The cross-join must carry the aliased columns from BOTH links onto the single result row.
+            Assert.Equal("ReproCityA", match.GetAttributeValue<AliasedValue>("acc.address1_city")?.Value);
+            Assert.Equal("ReproX", match.GetAttributeValue<AliasedValue>("con.lastname")?.Value);
+        }
+
+        [Fact]
+        public void TestQueryExpressionSiblingLinkDoesNotBreakOtherLinkCriteria()
+        {
+            // Regression for the reported bug: adding a second sibling link must not relax the
+            // first link's criteria. Here no parent satisfies both criteria simultaneously, so
+            // the result must be empty (it previously returned the OR of the two links).
+            var accA = new Account { Name = "ReproC", Address1_City = "ReproCityC" };
+            accA.Id = orgAdminService.Create(accA);
+
+            var conY = new Contact { LastName = "ReproZ" };
+            conY.Id = orgAdminService.Create(conY);
+
+            // Matches the account link only; its contact does not match the contact link.
+            var p = new ctx_parent { ctx_Name = "pOnlyAccount", ctx_AccountId = accA.ToEntityReference(), ctx_ContactId = conY.ToEntityReference() };
+            p.Id = orgAdminService.Create(p);
+
+            var query = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet("ctx_name") };
+
+            var accountLink = query.AddLink("account", "ctx_accountid", "accountid");
+            accountLink.LinkCriteria.AddCondition("address1_city", ConditionOperator.Equal, "ReproCityC");
+
+            var contactLink = query.AddLink("contact", "ctx_contactid", "contactid");
+            contactLink.LinkCriteria.AddCondition("lastname", ConditionOperator.Equal, "NoSuchLastName");
+
+            var res = orgAdminService.RetrieveMultiple(query).Entities;
+
+            Assert.Empty(res);
+        }
+
 
         [Fact]
         public void TestQueryExpressionLinkEntityNoSetEntityNameAndAlias()

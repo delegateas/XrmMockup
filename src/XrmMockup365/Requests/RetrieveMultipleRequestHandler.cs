@@ -60,20 +60,25 @@ namespace DG.Tools.XrmMockup
 
                 if (queryExpr.LinkEntities.Count > 0)
                 {
-                    //foreach (var linkEntity in queryExpr.LinkEntities)
-                    Parallel.ForEach(queryExpr.LinkEntities, linkEntity =>
+                    // Every top-level link must be satisfied simultaneously (AND / cross join),
+                    // mirroring Dataverse inner-join semantics. Computing each link independently
+                    // and unioning the results would instead OR the links together, letting a
+                    // parent through if it matched any single link. Compute each link's aliased
+                    // results, then cross-join them so a parent is only returned when all links
+                    // match, with each result row carrying every link's aliased attributes.
+                    var perLinkResults = queryExpr.LinkEntities
+                        .Select(linkEntity => GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db))
+                        .ToList();
+                    var matchingValues = CombineLinkResults(toAdd, perLinkResults)
+                        .Where(e => EntityMatcher.MatchesCriteria(e, queryExpr.Criteria));
+                    foreach (var m in matchingValues)
                     {
-                        var alliasedValues = GetAliasedValuesFromLinkentity(linkEntity, entity, toAdd, db);
-                        var matchingValues = alliasedValues.Where(e => EntityMatcher.MatchesCriteria(e, queryExpr.Criteria));
-                        Parallel.ForEach(matchingValues, m =>
+                        if (security.HasPermission(m, AccessRights.ReadAccess, userRef))
                         {
-                            if (security.HasPermission(m, AccessRights.ReadAccess, userRef))
-                            {
-                                Utility.SetFormattedValues(db, m, entityMetadata);
-                                collection.Add(new KeyValuePair<DbRow, Entity>(row, m));
-                            }
-                        });
-                    });
+                            Utility.SetFormattedValues(db, m, entityMetadata);
+                            collection.Add(new KeyValuePair<DbRow, Entity>(row, m));
+                        }
+                    }
                 }
                 else if (EntityMatcher.MatchesCriteria(toAdd, queryExpr.Criteria))
                 {
@@ -182,16 +187,18 @@ namespace DG.Tools.XrmMockup
 
                         if (linkEntity.LinkEntities.Count > 0)
                         {
-                            var subEntities = new List<Entity>();
+                            // Multiple nested links under this link must all be satisfied (AND /
+                            // cross join), just like multiple top-level links. Unioning them would
+                            // OR the nested links together.
+                            var perNestedResults = new List<List<Entity>>();
                             foreach (var nestedLinkEntity in linkEntity.LinkEntities)
                             {
                                 nestedLinkEntity.LinkFromEntityName = linkEntity.LinkToEntityName;
-                                var alliasedLinkValues = GetAliasedValuesFromLinkentity(
-                                        nestedLinkEntity, linkedEntity, aliasedEntity, db);
-                                subEntities.AddRange(alliasedLinkValues
-                                        .Where(e => EntityMatcher.MatchesCriteria(e, linkEntity.LinkCriteria)));
+                                perNestedResults.Add(GetAliasedValuesFromLinkentity(
+                                        nestedLinkEntity, linkedEntity, aliasedEntity, db));
                             }
-                            collection.AddRange(subEntities);
+                            collection.AddRange(CombineLinkResults(aliasedEntity, perNestedResults)
+                                    .Where(e => EntityMatcher.MatchesCriteria(e, linkEntity.LinkCriteria)));
                         }
                         else if (EntityMatcher.MatchesCriteria(aliasedEntity, linkEntity.LinkCriteria))
                         {
@@ -226,6 +233,39 @@ namespace DG.Tools.XrmMockup
                 parentClone.Attributes.Add(alias + "." + attr, new AliasedValue(alias, attr, attributes[attr]));
             }
             return parentClone;
+        }
+
+        // Cross-joins the per-link aliased result lists for sibling links into a single set of
+        // combined rows. Each combined row is a clone of the base entity carrying the aliased
+        // attributes of one pick from every link. If any link produced no rows (an inner link
+        // with no match), the product is empty and the parent is dropped; LeftOuter/NotAny links
+        // already contribute the parent itself, so outer joins keep the parent.
+        private List<Entity> CombineLinkResults(Entity baseEntity, List<List<Entity>> perLinkResults)
+        {
+            IEnumerable<Entity> combined = new[] { baseEntity };
+            foreach (var linkResults in perLinkResults)
+            {
+                combined = combined
+                    .SelectMany(acc => linkResults.Select(linked => MergeAliasAttributes(acc, linked)))
+                    .ToList();
+            }
+            return combined.ToList();
+        }
+
+        // Returns a clone of baseEntity (preserving any aliased attributes it already carries)
+        // augmented with the aliased attributes from withAliases.
+        private Entity MergeAliasAttributes(Entity baseEntity, Entity withAliases)
+        {
+            var merged = core.GetStronglyTypedEntity(baseEntity,
+                    metadata.EntityMetadata.GetMetadata(baseEntity.LogicalName), null);
+            foreach (var attr in withAliases.Attributes.Where(a => a.Key.Contains('.')))
+            {
+                if (!merged.Attributes.ContainsKey(attr.Key))
+                {
+                    merged.Attributes.Add(attr.Key, attr.Value);
+                }
+            }
+            return merged;
         }
 
         private void KeepAttributesAndAliasAttributes(Entity entity, ColumnSet toKeep)
