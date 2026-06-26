@@ -725,7 +725,27 @@ namespace DG.Tools.XrmMockup.Internal
             }
 
             var files = Directory.GetFiles(pathToWorkflows, "*.xml");
-            return files.Select(GetWorkflow).ToList();
+            var workflowsByFile = files.ToDictionary(f => f, GetWorkflow);
+
+            // Detect duplicate workflow ids across files. This typically indicates leftover files
+            // from older metadata generations whose tooling did not clear the Workflows folder
+            // before writing renamed workflows back to disk. Picking a winner silently would risk
+            // running a stale version, so we fail loud with an actionable message.
+            var duplicates = workflowsByFile
+                .GroupBy(kvp => kvp.Value.Id)
+                .Where(g => g.Count() > 1)
+                .ToList();
+            if (duplicates.Count > 0)
+            {
+                var details = string.Join("; ", duplicates.Select(g =>
+                    $"workflow id {g.Key} appears in: {string.Join(", ", g.Select(kvp => Path.GetFileName(kvp.Key)))}"));
+                throw new MockupException(
+                    $"Duplicate workflow ids found in '{pathToWorkflows}'. {details}. " +
+                    "This usually means leftover XML files from a previous metadata generation. " +
+                    "Delete the Workflows folder and re-generate metadata.");
+            }
+
+            return workflowsByFile.Values.ToList();
         }
 
         internal static Entity GetWorkflow(string path)
