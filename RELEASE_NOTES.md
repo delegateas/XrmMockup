@@ -1,3 +1,6 @@
+### 1.18.3 - 26 June 2026
+* Fix: When the Workflows folder contained multiple XML files referencing the same workflow id (typically leftover files from older metadata generations), initialization threw a confusing internal "record already exists" FaultException. It now throws a `MockupException` at load time listing the conflicting files and instructing the user to re-generate metadata
+
 ### 1.18.2 - 25 June 2026
 * Fix: Top level link criteria were unioned instead of cross joined
 
