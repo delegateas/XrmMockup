@@ -1133,10 +1133,20 @@ namespace DG.Tools.XrmMockup
             return entityMetadata;
         }
 
-        internal void ExecuteCalculatedFields(EntityMetadata entityMetadata, Entity entity)
+        internal void ExecuteCalculatedFields(EntityMetadata entityMetadata, Entity entity, ISet<string> requestedAttributes = null)
         {
+            // requestedAttributes == null means "all columns" (e.g. ColumnSet(true)); only filter when
+            // the caller has supplied an explicit list. Skipping unrequested calculated columns avoids
+            // running their formulas, which is both faster and prevents a broken/unused calculated
+            // field from blocking unrelated reads (the original cast bug was surfaced this way: a
+            // mixed-type Concat in one calc field blew up every Retrieve, even when the column was
+            // never selected).
             var attributes = entityMetadata.Attributes.Where(
                 m => m.SourceType == (int)SourceType.CalculatedAttribute && !(m is MoneyAttributeMetadata && m.LogicalName.EndsWith("_base")));
+            if (requestedAttributes != null)
+            {
+                attributes = attributes.Where(m => requestedAttributes.Contains(m.LogicalName));
+            }
 
             foreach (var attr in attributes)
             {
@@ -1166,12 +1176,16 @@ namespace DG.Tools.XrmMockup
             }
         }
 
-        internal async System.Threading.Tasks.Task ExecuteFormulaFields(EntityMetadata entityMetadata, Entity entity)
+        internal async System.Threading.Tasks.Task ExecuteFormulaFields(EntityMetadata entityMetadata, Entity entity, ISet<string> requestedAttributes = null)
         {
             if (!settings.EnablePowerFxFields)
                 return;
 
             var attributes = entityMetadata.Attributes.Where(m => m.SourceType == (int)SourceType.FormulaAttribute);
+            if (requestedAttributes != null)
+            {
+                attributes = attributes.Where(m => requestedAttributes.Contains(m.LogicalName));
+            }
             foreach (var attr in attributes)
             {
                 var definition = Utility.GetFormulaDefinition(attr, SourceType.FormulaAttribute);

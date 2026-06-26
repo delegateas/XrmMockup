@@ -1,11 +1,13 @@
 ### 1.18.3 - 26 June 2026
-* Fix: When the Workflows folder contained multiple XML files referencing the same workflow id (typically leftover files from older metadata generations), initialization threw a confusing internal "record already exists" FaultException. It now throws a `MockupException` at load time listing the conflicting files and instructing the user to re-generate metadata
+* Fix: Classic calculated-field Concat threw `InvalidCastException` when a non-string column was concatenated with a string column, blocking Retrieve/RetrieveMultiple even if the calculated column was not requested (#338)
+* Improvement: Retrieve and RetrieveMultiple now skip evaluating calculated and formula fields that are not referenced by the ColumnSet (or, for calc fields, by the criteria/orders/links) (#338)
+* Fix: When the Workflows folder contained multiple XML files referencing the same workflow id (typically leftover files from older metadata generations), initialization threw a confusing internal "record already exists" FaultException. It now throws a `MockupException` at load time listing the conflicting files and instructing the user to re-generate metadata (#337)
 
 ### 1.18.2 - 25 June 2026
-* Fix: Top level link criteria were unioned instead of cross joined
+* Fix: Top level link criteria were unioned instead of cross joined (#336)
 
 ### 1.18.1 - 15 June 2026
-* Fix: LinkCriteria and negative conditions did work correctly
+* Fix: LinkCriteria and negative conditions did work correctly (#333)
 
 ### 1.18.0 - 23 March 2026
 * Add: Added ability to log startup sequence and Plugin/API detection to a file (#314)
