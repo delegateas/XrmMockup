@@ -1,3 +1,7 @@
+### 1.18.3 - 26 June 2026
+* Fix: Classic calculated-field Concat threw `InvalidCastException` when a non-string column was concatenated with a string column, blocking Retrieve/RetrieveMultiple even if the calculated column was not requested
+* Improvement: Retrieve and RetrieveMultiple now skip evaluating calculated and formula fields that are not referenced by the ColumnSet (or, for calc fields, by the criteria/orders/links)
+
 ### 1.18.2 - 25 June 2026
 * Fix: Top level link criteria were unioned instead of cross joined
 

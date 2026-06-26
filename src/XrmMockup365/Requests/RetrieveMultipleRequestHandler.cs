@@ -46,6 +46,15 @@ namespace DG.Tools.XrmMockup
 
             var entityMetadata = metadata.EntityMetadata[queryExpr.EntityName];
 
+            // Calculated fields must be projected onto each row before criteria matching, so the set
+            // of "needed" calc columns is the union of the ColumnSet and any column referenced by the
+            // filter/order. Formula fields are only used after filtering, so they only need to honour
+            // the ColumnSet. A null set means "all columns" (e.g. ColumnSet(true) or an unbounded
+            // query); when populated, unrequested computed columns are skipped to avoid paying their
+            // workflow cost and to stop a broken calc field on one column from blocking every read.
+            var calculatedNeeded = GetNeededAttributesForCalculatedFields(queryExpr);
+            var formulaNeeded = GetRequestedAttributes(queryExpr.ColumnSet);
+
             var collection = new ConcurrentBag<KeyValuePair<DbRow, Entity>>();
 
             Parallel.ForEach(rows, row =>
@@ -54,7 +63,7 @@ namespace DG.Tools.XrmMockup
 
                 // Calculated fields are evaluated on demand (never persisted); project them onto the
                 // in-memory entity before criteria matching so filters can reference them.
-                core.ExecuteCalculatedFields(row.Metadata, entity);
+                core.ExecuteCalculatedFields(row.Metadata, entity, calculatedNeeded);
 
                 var toAdd = core.GetStronglyTypedEntity(entity, row.Metadata, null);
 
@@ -122,7 +131,7 @@ namespace DG.Tools.XrmMockup
             var orderedEntities = tempSortedList.Select(x => x.Value).ToArray();
 
             // Calculate formula fields before we filter the fetched columns
-            Parallel.ForEach(orderedEntities, entity => core.ExecuteFormulaFields(entityMetadata, entity).GetAwaiter().GetResult());
+            Parallel.ForEach(orderedEntities, entity => core.ExecuteFormulaFields(entityMetadata, entity, formulaNeeded).GetAwaiter().GetResult());
 
             // Refine and filter the columns
             var entitiesToReturn = RefineEntityAttributes(orderedEntities, queryExpr.ColumnSet);
@@ -327,6 +336,47 @@ namespace DG.Tools.XrmMockup
                 return;
             }
             condition.EntityName = alias;
+        }
+
+        // Returns null when every column on the primary entity is in play (AllColumns / no
+        // ColumnSet), otherwise the set of attribute names referenced anywhere a calc column could
+        // be observed: ColumnSet, criteria, orders, and the link-from sides of inner links (where a
+        // null on a calc column would silently change join semantics). When non-null, the Core can
+        // skip evaluating any other calculated column for the row.
+        private static ISet<string> GetNeededAttributesForCalculatedFields(QueryExpression query)
+        {
+            if (query.ColumnSet == null || query.ColumnSet.AllColumns) return null;
+
+            var set = new HashSet<string>(query.ColumnSet.Columns, StringComparer.OrdinalIgnoreCase);
+            CollectFilterAttributes(query.Criteria, set);
+            foreach (var order in query.Orders)
+            {
+                if (!string.IsNullOrEmpty(order.AttributeName)) set.Add(order.AttributeName);
+            }
+            foreach (var link in query.LinkEntities)
+            {
+                if (!string.IsNullOrEmpty(link.LinkFromAttributeName)) set.Add(link.LinkFromAttributeName);
+            }
+            return set;
+        }
+
+        private static ISet<string> GetRequestedAttributes(ColumnSet columnSet)
+        {
+            if (columnSet == null || columnSet.AllColumns) return null;
+            return new HashSet<string>(columnSet.Columns, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static void CollectFilterAttributes(FilterExpression filter, HashSet<string> set)
+        {
+            if (filter == null) return;
+            foreach (var cond in filter.Conditions)
+            {
+                if (!string.IsNullOrEmpty(cond.AttributeName)) set.Add(cond.AttributeName);
+            }
+            foreach (var sub in filter.Filters)
+            {
+                CollectFilterAttributes(sub, set);
+            }
         }
     }
 }
