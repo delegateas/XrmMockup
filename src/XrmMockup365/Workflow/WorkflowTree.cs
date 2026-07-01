@@ -118,11 +118,11 @@ namespace WorkflowExecuter
                 throw new WorkflowException("The primary entity must have an id");
             }
             Reset();
-            // Set after Reset(), which reinitializes Variables and would otherwise drop this flag.
-            if (suppressWrites)
-            {
-                Variables[SuppressWritesKey] = true;
-            }
+            // Set unconditionally after Reset() (which doesn't touch this key): a WorkflowTree instance
+            // can be reused across executions, so the flag must reflect only the current call - never a
+            // value left over from a previous suppressWrites: true run, which would otherwise silently
+            // suppress a real workflow's Update.
+            Variables[SuppressWritesKey] = suppressWrites;
             Variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
             Variables["ExecutionTime"] = DateTime.Now.Add(timeOffset);
             var transactioncurrencyid = "transactioncurrencyid";
