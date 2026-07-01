@@ -88,6 +88,43 @@ namespace DG.XrmMockupTest
             // Dropped assertion on dg_AllConditions: no equivalent field exists on ctx_parent.
         }
 
+        // Regression for the calculated-field write-as-update bug: evaluating a calculated field during
+        // a Retrieve/RetrieveMultiple must only compute a value and project it onto the returned entity —
+        // it must never re-Update the record. Before the fix, calc evaluation reached the terminal
+        // SetAttributeValue workflow node which called orgService.Update; that spurious write ran the full
+        // update pipeline (bumping modifiedon, firing update plugins, and running UpdateRequestHandler's
+        // HasCircularReference guard — the "circular reference" FaultException in the original report).
+        //
+        // We detect the write via modifiedon: capture it after create, advance the mock clock, then read
+        // the calc field. If the spurious Update still fires, Touch() rewrites modifiedon to the advanced
+        // time; a compute-only read leaves it untouched. The clock advance makes the two cases
+        // unambiguously distinguishable.
+        [Fact]
+        public void TestCalculatedFieldRetrieveDoesNotPersistAsUpdate()
+        {
+            var bus = new ctx_parent { ctx_Name = "CalcRead", ctx_Amount = 30 };
+            bus.Id = orgAdminService.Create(bus);
+
+            var createdModifiedOn = orgAdminService
+                .Retrieve(ctx_parent.EntityLogicalName, bus.Id, new ColumnSet("modifiedon"))
+                .GetAttributeValue<DateTime>("modifiedon");
+
+            // Advance the clock so any spurious Touch() produces a clearly different modifiedon.
+            crm.AddDays(5);
+
+            // Retrieve selecting the calculated column (ctx_AmountCalcClassic = ctx_Amount * 20).
+            var retrieved = ctx_parent.Retrieve(orgAdminService, bus.Id, x => x.ctx_AmountCalcClassic, x => x.ModifiedOn);
+            Assert.Equal(30m * 20, retrieved.ctx_AmountCalcClassic); // calc value still projected
+            // Before the fix modifiedon jumped forward 5 days (the spurious Update); after, it is unchanged.
+            Assert.Equal(createdModifiedOn, retrieved.ModifiedOn);
+
+            // Same via RetrieveMultiple (the code path in the original bug report).
+            var q = new QueryExpression("ctx_parent") { ColumnSet = new ColumnSet(true) };
+            var multi = (ctx_parent)orgAdminService.RetrieveMultiple(q).Entities.Single(e => e.Id == bus.Id);
+            Assert.Equal(30m * 20, multi.ctx_AmountCalcClassic);
+            Assert.Equal(createdModifiedOn, multi.ModifiedOn);
+        }
+
         [Fact]
         public void TestRollUp()
         {

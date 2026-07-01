@@ -1166,7 +1166,7 @@ namespace DG.Tools.XrmMockup
                 // the calculation workflow against a clone and copy the computed value back onto the
                 // returned entity (the workflow leaves its result in the "primaryEntity" variable).
                 var resultTree = tree.Execute(entity.CloneEntity(entityMetadata, new ColumnSet(true)), TimeOffset, GetWorkflowService(),
-                    factory, factory.GetService<ITracingService>());
+                    factory, factory.GetService<ITracingService>(), suppressWrites: true);
 
                 if (resultTree.Variables.TryGetValue("InputEntities(\"primaryEntity\")", out var resultObj)
                     && resultObj is Entity result && result.Contains(attr.LogicalName))

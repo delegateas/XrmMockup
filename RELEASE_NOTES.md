@@ -1,3 +1,7 @@
+### 1.18.5 - 1 July 2026
+* Fix: Evaluating a classic calculated field during Retrieve/RetrieveMultiple no longer issues a spurious `Update` of the record. The calculated value is now computed and projected onto the returned entity without persisting, so reads no longer bump `modifiedon`, fire update plugins, or trip the update-time circular-reference guard (which rejected records carrying a self-referential lookup, e.g. a `systemuser` whose `createdby` is itself). Real workflows and rollup fields still update as before.
+* Fix: RetrieveMultiple no longer throws when building the formatted value for a Money attribute that has no associated `transactioncurrencyid` (e.g. a calculated Money column projected onto a record without a currency); the formatted value is simply omitted.
+
 ### 1.18.4 - 1 July 2026
 * Fix: AppendTo/security checks for business- and organization-owned entities (#339)
 
