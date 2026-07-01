@@ -101,14 +101,28 @@ namespace WorkflowExecuter
             this.Output = Output;
         }
 
+        // A calculated/formula field is evaluated on demand during a Retrieve and must never persist:
+        // it should only compute a value and leave it in the "primaryEntity" variable for the caller to
+        // project onto the returned entity. When suppressWrites is true the terminal SetAttributeValue
+        // node skips its orgService.Update, so calc evaluation cannot fire the update pipeline, mutate
+        // data, or trip the update-time circular-reference guard. Real workflows and rollups pass the
+        // default (false) so their genuine "update record" steps still write.
+        public const string SuppressWritesKey = "SuppressWrites";
+
         public WorkflowTree Execute(Entity primaryEntity, TimeSpan timeOffset,
-            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace)
+            IOrganizationService orgService, IOrganizationServiceFactory factory, ITracingService trace,
+            bool suppressWrites = false)
         {
             if (primaryEntity.Id == Guid.Empty)
             {
                 throw new WorkflowException("The primary entity must have an id");
             }
             Reset();
+            // Set after Reset(), which reinitializes Variables and would otherwise drop this flag.
+            if (suppressWrites)
+            {
+                Variables[SuppressWritesKey] = true;
+            }
             Variables["InputEntities(\"primaryEntity\")"] = primaryEntity;
             Variables["ExecutionTime"] = DateTime.Now.Add(timeOffset);
             var transactioncurrencyid = "transactioncurrencyid";

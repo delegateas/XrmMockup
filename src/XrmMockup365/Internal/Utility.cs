@@ -883,12 +883,19 @@ namespace DG.Tools.XrmMockup.Internal
 
             if (metadataAtt is MoneyAttributeMetadata)
             {
-                var currencysymbol =
-                    db.GetEntity(
-                        db.GetEntity(entity.ToEntityReference())
-                        .GetAttributeValue<EntityReference>("transactioncurrencyid"))
-                    .GetAttributeValue<string>("currencysymbol");
+                // A Money value can be present without an associated transactioncurrencyid — e.g. a
+                // calculated Money field projected onto the entity during a read (which, unlike a real
+                // write, does not run HandleCurrencies to backfill the currency). Without a currency we
+                // cannot resolve a symbol, so skip the formatted value rather than dereferencing a null
+                // currency reference (which previously threw and broke RetrieveMultiple's formatting).
+                var currencyRef = db.GetEntity(entity.ToEntityReference())
+                    .GetAttributeValue<EntityReference>("transactioncurrencyid");
+                if (currencyRef == null)
+                {
+                    return null;
+                }
 
+                var currencysymbol = db.GetEntity(currencyRef).GetAttributeValue<string>("currencysymbol");
                 return currencysymbol + (value as Money).Value.ToString();
             }
 
