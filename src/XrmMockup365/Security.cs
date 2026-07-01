@@ -562,8 +562,11 @@ namespace DG.Tools.XrmMockup
 
             var recordBu = GetOwningBusinessUnit(entity);
 
-            // No business unit to scope against; treat as accessible.
-            if (recordBu == null) return true;
+            // Fail closed: a business-owned record whose owning business unit can't be resolved
+            // must not be widened to every caller. In practice this is always resolvable (the
+            // record, or its stored row, carries a business unit); denying here only guards
+            // against a malformed record or an unexpectedly ownerless business-owned table.
+            if (recordBu == null) return false;
 
             var callerRow = Core.GetDbRowOrNull(caller);
             if (callerRow == null) return false;
@@ -593,7 +596,31 @@ namespace DG.Tools.XrmMockup
 
             var bu = entity.GetAttributeValue<EntityReference>("businessunitid")
                      ?? entity.GetAttributeValue<EntityReference>("owningbusinessunit");
-            return bu?.Id;
+            if (bu != null) return bu.Id;
+
+            // The supplied entity may be a partial projection (e.g. a RetrieveMultiple result
+            // that didn't select the business unit column), so resolve from the stored record
+            // rather than trusting the instance - a missing column must not silently widen access.
+            if (entity.Id == Guid.Empty) return null;
+
+            var row = Core.GetDbRowOrNull(entity.ToEntityReference());
+            if (row == null) return null;
+
+            return GetBusinessUnitColumnId(row, "businessunitid")
+                   ?? GetBusinessUnitColumnId(row, "owningbusinessunit");
+        }
+
+        private static Guid? GetBusinessUnitColumnId(DbRow row, string attribute)
+        {
+            // DbRow's indexer throws for attributes absent from the table's metadata, so guard first.
+            if (!row.AttributeMetadata.ContainsKey(attribute)) return null;
+
+            switch (row[attribute])
+            {
+                case DbRow dbRow: return dbRow.Id;
+                case EntityReference reference: return reference.Id;
+                default: return null;
+            }
         }
 
         private bool IsBusinessUnitInTree(Guid businessUnitId, Guid rootBusinessUnitId)
