@@ -452,15 +452,22 @@ namespace DG.Tools.XrmMockup
 
         internal bool HasTeamMemberPermission(Entity entity, AccessRights access, EntityReference caller)
         {
-            if (!entity.Attributes.ContainsKey("ownerid") || caller.LogicalName != LogicalNames.SystemUser)
+            if (caller.LogicalName != LogicalNames.SystemUser)
                 return false;
 
-            var owner = entity.GetAttributeValue<EntityReference>("ownerid");
-
-            // Check if owner is a team, and if user is member of that team, then check access for that team
-            if (owner.LogicalName == LogicalNames.Team && IsMemberOfTeam(owner, caller))
+            // Owner-team check only applies to owned entities. Business-owned and
+            // organization-owned entities (e.g. systemuser) have no ownerid, but the caller
+            // may still be granted access through a security role assigned to one of their
+            // teams, so we must still enumerate team memberships below.
+            if (entity.Attributes.ContainsKey("ownerid"))
             {
-                return HasPermission(entity, access, owner);
+                var owner = entity.GetAttributeValue<EntityReference>("ownerid");
+
+                // Check if owner is a team, and if user is member of that team, then check access for that team
+                if (owner.LogicalName == LogicalNames.Team && IsMemberOfTeam(owner, caller))
+                {
+                    return HasPermission(entity, access, owner);
+                }
             }
 
             // Check if any teams that the user is a member of have access 
@@ -497,7 +504,15 @@ namespace DG.Tools.XrmMockup
                 entity["ownerid"] = caller;
             }
 
-            if (!entity.Attributes.ContainsKey("ownerid")) return false;
+            if (!entity.Attributes.ContainsKey("ownerid"))
+            {
+                // User/team-owned records always carry an ownerid. Records without one are
+                // business-owned or organization-owned (e.g. systemuser, team, businessunit),
+                // whose access is scoped by the owning business unit rather than an owner.
+                // Without this, holding a non-global privilege (e.g. AppendTo on systemuser)
+                // would always be denied because the ownerid-based checks below cannot apply.
+                return HasBusinessScopedPermission(entity, maxRole, caller);
+            }
 
             var owner = entity.GetAttributeValue<EntityReference>("ownerid");
 
@@ -521,6 +536,102 @@ namespace DG.Tools.XrmMockup
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines access for entities that have no ownerid (business-owned or
+        /// organization-owned entities). Organization-owned entities have a single
+        /// (organization) privilege scope, so any granted privilege applies to every
+        /// record. Business-owned entities are scoped by their owning business unit.
+        /// </summary>
+        private bool HasBusinessScopedPermission(Entity entity, PrivilegeDepth maxRole, EntityReference caller)
+        {
+            var ownershipType = Metadata.EntityMetadata.GetMetadata(entity.LogicalName).OwnershipType;
+
+            // Organization-owned entities have a single (organization) privilege scope,
+            // so holding the privilege at any depth grants access to every record.
+            if (ownershipType.HasValue && ownershipType.Value.HasFlag(OwnershipTypes.OrganizationOwned))
+                return true;
+
+            // User (Basic) access is ownership-based: per Dataverse it grants records the user
+            // owns plus records shared with them. Business-owned records (systemuser, team,
+            // businessunit) have no user owner, so the only such record a caller "owns" is their
+            // own (e.g. their own systemuser record). Shares are handled by HasSharePermission.
+            if (maxRole == PrivilegeDepth.Basic)
+                return entity.Id == caller.Id;
+
+            var recordBu = GetOwningBusinessUnit(entity);
+
+            // Fail closed: a business-owned record whose owning business unit can't be resolved
+            // must not be widened to every caller. In practice this is always resolvable (the
+            // record, or its stored row, carries a business unit); denying here only guards
+            // against a malformed record or an unexpectedly ownerless business-owned table.
+            if (recordBu == null) return false;
+
+            var callerRow = Core.GetDbRowOrNull(caller);
+            if (callerRow == null) return false;
+
+            var callerBu = callerRow.GetColumn<DbRow>("businessunitid")?.Id;
+            if (callerBu == null) return false;
+
+            switch (maxRole)
+            {
+                // Business Unit (Local): records whose owning business unit is the caller's.
+                case PrivilegeDepth.Local:
+                    return recordBu.Value == callerBu.Value;
+
+                // Parent: Child (Deep): the caller's business unit and all subordinate units.
+                case PrivilegeDepth.Deep:
+                    return IsBusinessUnitInTree(recordBu.Value, callerBu.Value);
+
+                default:
+                    return false;
+            }
+        }
+
+        private Guid? GetOwningBusinessUnit(Entity entity)
+        {
+            if (entity.LogicalName == LogicalNames.BusinessUnit)
+                return entity.Id;
+
+            var bu = entity.GetAttributeValue<EntityReference>("businessunitid")
+                     ?? entity.GetAttributeValue<EntityReference>("owningbusinessunit");
+            if (bu != null) return bu.Id;
+
+            // The supplied entity may be a partial projection (e.g. a RetrieveMultiple result
+            // that didn't select the business unit column), so resolve from the stored record
+            // rather than trusting the instance - a missing column must not silently widen access.
+            if (entity.Id == Guid.Empty) return null;
+
+            var row = Core.GetDbRowOrNull(entity.ToEntityReference());
+            if (row == null) return null;
+
+            return GetBusinessUnitColumnId(row, "businessunitid")
+                   ?? GetBusinessUnitColumnId(row, "owningbusinessunit");
+        }
+
+        private static Guid? GetBusinessUnitColumnId(DbRow row, string attribute)
+        {
+            // DbRow's indexer throws for attributes absent from the table's metadata, so guard first.
+            if (!row.AttributeMetadata.ContainsKey(attribute)) return null;
+
+            switch (row[attribute])
+            {
+                case DbRow dbRow: return dbRow.Id;
+                case EntityReference reference: return reference.Id;
+                default: return null;
+            }
+        }
+
+        private bool IsBusinessUnitInTree(Guid businessUnitId, Guid rootBusinessUnitId)
+        {
+            if (businessUnitId == rootBusinessUnitId) return true;
+
+            var childBusinessUnits = Core.GetDbTable(LogicalNames.BusinessUnit)
+                .Select(x => x.ToEntity())
+                .Where(b => b.GetAttributeValue<EntityReference>("parentbusinessunitid")?.Id == rootBusinessUnitId);
+
+            return childBusinessUnits.Any(b => IsBusinessUnitInTree(businessUnitId, b.Id));
         }
 
         internal bool HasSharePermission(Entity entity, AccessRights access, EntityReference caller)
@@ -571,7 +682,10 @@ namespace DG.Tools.XrmMockup
                     var refEntity = Core.GetDbRowOrNull(new EntityReference(pcr.ReferencedEntity, Utility.GetGuidFromReference(entity[pcr.ReferencingAttribute])));
                     if (refEntity != null)
                     {
-                        if (refEntity.GetColumn<DbRow>("ownerid").Id == caller.Id)
+                        // Business-owned / organization-owned parents (e.g. systemuser) have no
+                        // ownerid, so there is no owner to match the caller against.
+                        var refOwner = refEntity.GetColumn<DbRow>("ownerid");
+                        if (refOwner != null && refOwner.Id == caller.Id)
                         {
                             return true;
                         }
