@@ -1,3 +1,6 @@
+### 1.18.4 - 1 July 2026
+* Fix: AppendTo/security checks for business- and organization-owned entities (#339)
+
 ### 1.18.3 - 26 June 2026
 * Fix: Classic calculated-field Concat threw `InvalidCastException` when a non-string column was concatenated with a string column, blocking Retrieve/RetrieveMultiple even if the calculated column was not requested (#338)
 * Improvement: Retrieve and RetrieveMultiple now skip evaluating calculated and formula fields that are not referenced by the ColumnSet (or, for calc fields, by the criteria/orders/links) (#338)
