@@ -63,7 +63,7 @@ namespace DG.Tools.XrmMockup
         /// custom <see cref="XrmMockupSettings.TracingServiceFactory"/> has not been supplied.</para>
         /// </summary>
         public IReadOnlyList<string> TraceLog =>
-            (Core.TracingServiceFactory as TracingServiceFactory)?.TraceLog ?? new List<string>();
+            (Core.TracingServiceFactory as TracingServiceFactory)?.TraceLog ?? Array.Empty<string>();
 
         /// <summary>
         /// Clears all collected trace messages from the <see cref="TraceLog"/>.

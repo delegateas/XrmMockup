@@ -44,8 +44,11 @@ namespace DG.Tools.XrmMockup
             }
             catch (TargetInvocationException e) when (unwrapTargetInvocation)
             {
-                exceptionDetails = (e.InnerException ?? e).ToString();
-                ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+                // Fall back to the TargetInvocationException itself when there is no inner
+                // exception, so Capture is never handed null (which would mask the failure).
+                var toThrow = e.InnerException ?? (Exception)e;
+                exceptionDetails = toThrow.ToString();
+                ExceptionDispatchInfo.Capture(toThrow).Throw();
             }
             catch (Exception e)
             {

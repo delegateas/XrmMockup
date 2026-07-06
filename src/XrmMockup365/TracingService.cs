@@ -22,7 +22,7 @@ namespace DG.Tools.XrmMockup
 		/// service is created per plugin/workflow execution, this scopes the messages to that
 		/// single execution and lets them be grouped into a <see cref="PluginTraceLog"/>.
 		/// </summary>
-		public IReadOnlyList<string> Messages => _messages;
+		public IReadOnlyList<string> Messages => _messages.AsReadOnly();
 
 		public void Trace(string format, params object[] args)
 		{
