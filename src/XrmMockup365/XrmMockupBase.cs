@@ -56,6 +56,21 @@ namespace DG.Tools.XrmMockup
         private readonly Dictionary<string, long> timers;
         public IReadOnlyDictionary<string, long> Timers => new ReadOnlyDictionary<string, long>(timers);
 
+        /// <summary>
+        /// A snapshot of the trace messages emitted to <see cref="ITracingService"/> during
+        /// plugin, workflow and custom API execution, allowing tests to assert on them.
+        /// <para>Only populated when using the default tracing service factory, i.e. when a
+        /// custom <see cref="XrmMockupSettings.TracingServiceFactory"/> has not been supplied.</para>
+        /// </summary>
+        public IReadOnlyList<string> TraceLog =>
+            (Core.TracingServiceFactory as TracingServiceFactory)?.TraceLog ?? new List<string>();
+
+        /// <summary>
+        /// Clears all collected trace messages from the <see cref="TraceLog"/>.
+        /// </summary>
+        public void ClearTraceLog() =>
+            (Core.TracingServiceFactory as TracingServiceFactory)?.Clear();
+
         protected XrmMockupSettings Settings { get; }
         protected MetadataSkeleton Metadata { get; }
         protected List<Entity> Workflows { get; }
@@ -190,6 +205,7 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         public void ResetEnvironment() {
             Core.ResetEnvironment();
+            ClearTraceLog();
         }
 
 
