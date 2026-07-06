@@ -128,54 +128,18 @@ namespace DG.Tools.XrmMockup
         /// </summary>
         private void ExecuteAndRecord(MockupServiceProviderAndFactory provider, PluginContext ctx, ICoreOperations core, bool unwrapTargetInvocation, bool record)
         {
-            var startTime = DateTime.UtcNow.Add(core.TimeOffset);
-            var stopwatch = Stopwatch.StartNew();
-            string exceptionDetails = null;
-            try
-            {
-                PluginExecute(provider);
-            }
-            catch (TargetInvocationException e) when (unwrapTargetInvocation)
-            {
-                exceptionDetails = (e.InnerException ?? e).ToString();
-                ExceptionDispatchInfo.Capture(e.InnerException).Throw();
-            }
-            catch (Exception e)
-            {
-                exceptionDetails = e.ToString();
-                throw;
-            }
-            finally
-            {
-                stopwatch.Stop();
-                if (record)
-                {
-                    RecordTrace(provider, ctx, startTime, stopwatch.Elapsed.TotalMilliseconds, exceptionDetails, core);
-                }
-            }
-        }
-
-        private void RecordTrace(MockupServiceProviderAndFactory provider, PluginContext ctx, DateTime startTime, double durationMs, string exceptionDetails, ICoreOperations core)
-        {
-            var messages = (provider.GetService<ITracingService>() as TracingService)?.Messages.ToList()
-                ?? new List<string>();
-
-            core.RecordPluginTrace(new PluginTraceLog
-            {
-                TypeName = PluginExecute.Target?.GetType().FullName,
-                MessageName = !string.IsNullOrEmpty(ctx.MessageName) ? ctx.MessageName : Operation,
-                PrimaryEntity = string.IsNullOrEmpty(ctx.PrimaryEntityName) ? "none" : ctx.PrimaryEntityName,
-                OperationType = PluginTraceOperationType.Plugin,
-                Depth = ctx.Depth,
-                CorrelationId = ctx.CorrelationId,
-                Mode = this.Mode,
-                RequestId = ctx.RequestId,
-                ExecutionStartTime = startTime,
-                ExecutionDurationMs = durationMs,
-                MessageBlock = messages,
-                ExceptionDetails = exceptionDetails,
-                // Configuration, SecureConfiguration and PluginStepId are not modeled by XrmMockup.
-            });
+            PluginTraceRecorder.Run(
+                core,
+                provider,
+                ctx,
+                typeName: PluginExecute.Target?.GetType().FullName,
+                messageName: !string.IsNullOrEmpty(ctx.MessageName) ? ctx.MessageName : Operation,
+                primaryEntity: ctx.PrimaryEntityName,
+                operationType: PluginTraceOperationType.Plugin,
+                mode: this.Mode,
+                execute: () => PluginExecute(provider),
+                unwrapTargetInvocation: unwrapTargetInvocation,
+                record: record);
         }
 
         private void CheckInfiniteLoop(PluginContext pluginContext)

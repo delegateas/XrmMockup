@@ -156,8 +156,20 @@ namespace DG.Tools.XrmMockup
             thisPluginContext.Mode = 0;
 
             var serviceProvider = new MockupServiceProviderAndFactory(_core, thisPluginContext, _core.TracingServiceFactory);
-            registeredApis[request.RequestName](serviceProvider);
-            
+            var api = registeredApis[request.RequestName];
+            PluginTraceRecorder.Run(
+                _core,
+                serviceProvider,
+                thisPluginContext,
+                typeName: api.Target?.GetType().FullName,
+                messageName: request.RequestName,
+                primaryEntity: thisPluginContext.PrimaryEntityName,
+                operationType: PluginTraceOperationType.Plugin,
+                mode: XrmPluginCore.Enums.ExecutionMode.Synchronous,
+                execute: () => api(serviceProvider),
+                unwrapTargetInvocation: false,
+                record: true);
+
             pluginContext.OutputParameters.Clear();
             pluginContext.OutputParameters.AddRange(thisPluginContext.OutputParameters);
 

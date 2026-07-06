@@ -102,5 +102,38 @@ namespace DG.XrmMockupTest
             Assert.NotNull(entry.ExceptionDetails);
             Assert.Contains(DG.Some.Namespace.AccountTraceThrowPlugin.ThrowMessage, entry.ExceptionDetails);
         }
+
+        [Fact]
+        public void PluginTraceLogCapturesCustomApiExecution()
+        {
+            crm.ClearPluginTraceLog();
+
+            orgAdminService.Execute(new OrganizationRequest("dg_TraceApi"));
+
+            var entry = Assert.Single(crm.PluginTraceLog.Where(l => l.TypeName == typeof(DG.Some.Namespace.TraceApi).FullName));
+
+            Assert.Equal("dg_TraceApi", entry.MessageName);
+            Assert.Equal(PluginTraceOperationType.Plugin, entry.OperationType);
+            Assert.Equal(XrmPluginCore.Enums.ExecutionMode.Synchronous, entry.Mode);
+            Assert.Contains("TraceApi running", entry.MessageBlock);
+            Assert.Contains("TraceApi step 2", entry.MessageBlock);
+            Assert.Null(entry.ExceptionDetails);
+        }
+
+        [Fact]
+        public void PluginTraceLogCapturesWorkflowActivityExecution()
+        {
+            crm.AddWorkflow(System.IO.Path.Combine("../../..", "Metadata", "OtherWorkflows", "Activeworkflow.xml"));
+            crm.ClearPluginTraceLog();
+
+            var account = new Account { Name = "Wap" };
+            account.Id = orgAdminUIService.Create(account);
+
+            var entry = Assert.Single(crm.PluginTraceLog.Where(l => l.OperationType == PluginTraceOperationType.WorkflowActivity));
+
+            Assert.Equal("account", entry.PrimaryEntity);
+            Assert.Contains(entry.MessageBlock, m => m.StartsWith("AccountWorkflowActivity executing for"));
+            Assert.Null(entry.ExceptionDetails);
+        }
     }
 }

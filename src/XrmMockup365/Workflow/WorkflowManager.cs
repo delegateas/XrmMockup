@@ -123,7 +123,7 @@ namespace DG.Tools.XrmMockup {
             {
                 Entity primaryEntity = _core.GetDbRow(workflowContext.primaryRef).ToEntity();
 
-                var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext);
+                var execution = ExecuteWorkflow(workflowContext.workflow, primaryEntity, workflowContext.pluginContext, workflowContext.workflowName);
 
                 if (execution.Variables["Wait"] != null)
                 {
@@ -166,12 +166,14 @@ namespace DG.Tools.XrmMockup {
             public WorkflowTree workflow;
             public PluginContext pluginContext;
             public EntityReference primaryRef;
+            public string workflowName;
 
-            public WorkflowExecutionContext(WorkflowTree workflow,PluginContext pluginContext, EntityReference primaryRef)
+            public WorkflowExecutionContext(WorkflowTree workflow,PluginContext pluginContext, EntityReference primaryRef, string workflowName = null)
             {
                 this.workflow = workflow;
                 this.pluginContext = pluginContext;
                 this.primaryRef = primaryRef;
+                this.workflowName = workflowName;
             }
         }
 
@@ -243,7 +245,7 @@ namespace DG.Tools.XrmMockup {
             var parsedWorkflow = ParseWorkflow(workflow);
             if (parsedWorkflow == null) return;
 
-            pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid)));
+            pendingAsyncWorkflows.Enqueue(new WorkflowExecutionContext(parsedWorkflow, thisPluginContext, new EntityReference(logicalName, guid), workflow.GetAttributeValue<string>("name")));
         }
 
         private bool ShouldStage(Entity workflow, string operation, ExecutionStage stage,
@@ -391,13 +393,14 @@ namespace DG.Tools.XrmMockup {
             var parsedWorkflow = ParseWorkflow(workflow);
 
             WorkflowTree postExecution = null;
+            var workflowName = workflow.GetAttributeValue<string>("name");
             if (thisStage == workflow_stage.Preoperation)
             {
-                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext);
+                postExecution = ExecuteWorkflow(parsedWorkflow, preImage.CloneEntity(), thisPluginContext, workflowName);
             }
             else
             {
-                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext);
+                postExecution = ExecuteWorkflow(parsedWorkflow, postImage.CloneEntity(), thisPluginContext, workflowName);
             }
 
             if (postExecution.Variables["Wait"] != null)
@@ -406,11 +409,27 @@ namespace DG.Tools.XrmMockup {
             }
         }
 
-        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext) {
+        internal WorkflowTree ExecuteWorkflow(WorkflowTree workflow, Entity primaryEntity, PluginContext pluginContext, string workflowName = null) {
             var provider = _core.CreateServiceProviderAndFactory(pluginContext);
             var triggerWorkflows = _core.GetMockupSettings().TriggerWorkflows ?? true;
             var service = provider.CreateAdminOrganizationService(new MockupServiceSettings(true, triggerWorkflows, true, MockupServiceSettings.Role.SDK));
-            return workflow.Execute(primaryEntity, _core.TimeOffset, service, provider, provider.GetService<ITracingService>());
+
+            WorkflowTree result = null;
+            // A null plugin context indicates a directly-invoked workflow/action (ExecuteWorkflowRequest);
+            // without context metadata we run it but skip recording a grouped trace entry.
+            PluginTraceRecorder.Run(
+                _core,
+                provider,
+                pluginContext,
+                typeName: workflowName,
+                messageName: pluginContext?.MessageName,
+                primaryEntity: pluginContext?.PrimaryEntityName ?? primaryEntity?.LogicalName,
+                operationType: PluginTraceOperationType.WorkflowActivity,
+                mode: pluginContext != null ? (ExecutionMode)pluginContext.Mode : ExecutionMode.Synchronous,
+                execute: () => result = workflow.Execute(primaryEntity, _core.TimeOffset, service, provider, provider.GetService<ITracingService>()),
+                unwrapTargetInvocation: false,
+                record: pluginContext != null);
+            return result;
         }
 
         internal WorkflowTree ParseWorkflow(Entity workflow) {
