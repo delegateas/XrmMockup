@@ -71,6 +71,20 @@ namespace DG.Tools.XrmMockup
         public void ClearTraceLog() =>
             (Core.TracingServiceFactory as TracingServiceFactory)?.Clear();
 
+        /// <summary>
+        /// The trace messages emitted during plugin execution, grouped by the plugin execution
+        /// that produced them, mirroring the plugintracelog records of a real Dynamics 365
+        /// environment. Each entry carries the invoking type, message, primary entity, depth,
+        /// correlation id, mode, timing, the ordered list of trace messages and any exception.
+        /// <para>Internal XrmMockup system plugins are excluded.</para>
+        /// </summary>
+        public IReadOnlyList<PluginTraceLog> PluginTraceLog => Core.PluginTraceLogs;
+
+        /// <summary>
+        /// Clears all collected <see cref="PluginTraceLog"/> entries.
+        /// </summary>
+        public void ClearPluginTraceLog() => Core.ClearPluginTraceLogs();
+
         protected XrmMockupSettings Settings { get; }
         protected MetadataSkeleton Metadata { get; }
         protected List<Entity> Workflows { get; }

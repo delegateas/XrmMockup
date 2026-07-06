@@ -58,5 +58,49 @@ namespace DG.XrmMockupTest
             crm.ClearTraceLog();
             Assert.Empty(crm.TraceLog);
         }
+
+        [Fact]
+        public void PluginTraceLogGroupsMessagesByExecutionWithMetadata()
+        {
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, typeof(DG.Some.Namespace.AccountTracePlugin));
+            crm.ClearPluginTraceLog();
+
+            var account = new Account { Name = "Contoso" };
+            account.Id = orgAdminService.Create(account);
+
+            var entry = Assert.Single(crm.PluginTraceLog.Where(l => l.TypeName == typeof(DG.Some.Namespace.AccountTracePlugin).FullName));
+
+            Assert.Equal("Create", entry.MessageName);
+            Assert.Equal("account", entry.PrimaryEntity);
+            Assert.Equal(XrmPluginCore.Enums.ExecutionMode.Synchronous, entry.Mode);
+            Assert.Equal(PluginTraceOperationType.Plugin, entry.OperationType);
+            Assert.Equal(1, entry.Depth);
+            Assert.Null(entry.ExceptionDetails);
+
+            // Both Trace calls from this execution are grouped together, in order. (The plugin
+            // base class also emits its own Entered/Exiting trace messages around the handler.)
+            Assert.Contains("Creating account", entry.MessageBlock);
+            Assert.Contains("Account name is Contoso", entry.MessageBlock);
+            Assert.True(
+                entry.MessageBlock.ToList().IndexOf("Creating account") < entry.MessageBlock.ToList().IndexOf("Account name is Contoso"),
+                "Trace messages should be recorded in the order they were emitted");
+            Assert.Contains("Creating account", entry.MessageBlockText);
+        }
+
+        [Fact]
+        public void PluginTraceLogCapturesExceptionDetails()
+        {
+            crm.RegisterAdditionalPlugins(PluginRegistrationScope.Temporary, typeof(DG.Some.Namespace.AccountTraceThrowPlugin));
+            crm.ClearPluginTraceLog();
+
+            var account = new Account { Name = "Contoso" };
+            Assert.ThrowsAny<System.Exception>(() => orgAdminService.Create(account));
+
+            var entry = Assert.Single(crm.PluginTraceLog.Where(l => l.TypeName == typeof(DG.Some.Namespace.AccountTraceThrowPlugin).FullName));
+
+            Assert.Contains("About to throw", entry.MessageBlock);
+            Assert.NotNull(entry.ExceptionDetails);
+            Assert.Contains(DG.Some.Namespace.AccountTraceThrowPlugin.ThrowMessage, entry.ExceptionDetails);
+        }
     }
 }

@@ -55,6 +55,9 @@ namespace DG.Tools.XrmMockup.Internal
         ITracingServiceFactory TracingServiceFactory { get; }
         MockupServiceProviderAndFactory CreateServiceProviderAndFactory(PluginContext pluginContext);
 
+        // Grouped trace log — PluginTrigger records one entry per plugin execution
+        void RecordPluginTrace(PluginTraceLog log);
+
         // Settings — used by WorkflowManager
         XrmMockupSettings GetMockupSettings();
     }

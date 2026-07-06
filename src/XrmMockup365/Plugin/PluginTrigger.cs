@@ -75,13 +75,18 @@ namespace DG.Tools.XrmMockup
             {
                 // Create the plugin context
                 var thisPluginContext = CreatePluginContext(pluginContext, guid, logicalName, preImage, postImage);
-                return new PluginExecutionProvider(PluginExecute, core.CreateServiceProviderAndFactory(thisPluginContext));
+                var provider = core.CreateServiceProviderAndFactory(thisPluginContext);
+                // Preserve async exception semantics (no TargetInvocationException unwrapping), but
+                // still time the execution and capture its trace messages into the grouped trace log.
+                return new PluginExecutionProvider(
+                    p => ExecuteAndRecord(p, thisPluginContext, core, unwrapTargetInvocation: false, record: true),
+                    provider);
             }
 
             return null;
         }
 
-        public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core)
+        public void ExecuteIfMatch(object entityObject, Entity preImage, Entity postImage, PluginContext pluginContext, ICoreOperations core, bool recordTrace = true)
         {
             // Check if it is supposed to execute. Returns preemptively, if it should not.
             var entity = entityObject as Entity;
@@ -107,20 +112,70 @@ namespace DG.Tools.XrmMockup
 
                 //Create Serviceprovider, and execute plugin
                 MockupServiceProviderAndFactory provider = core.CreateServiceProviderAndFactory(thisPluginContext);
-                try
-                {
-                    PluginExecute(provider);
-                }
-                catch (TargetInvocationException e)
-                {
-                    ExceptionDispatchInfo.Capture(e.InnerException).Throw();
-                }
+                ExecuteAndRecord(provider, thisPluginContext, core, unwrapTargetInvocation: true, record: recordTrace);
 
                 foreach (var parameter in thisPluginContext.SharedVariables)
                 {
                     pluginContext.SharedVariables[parameter.Key] = parameter.Value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Executes the plugin while timing it and capturing any thrown exception, then (when
+        /// <paramref name="record"/> is true) records a grouped <see cref="PluginTraceLog"/> entry
+        /// containing this execution's trace messages and metadata.
+        /// </summary>
+        private void ExecuteAndRecord(MockupServiceProviderAndFactory provider, PluginContext ctx, ICoreOperations core, bool unwrapTargetInvocation, bool record)
+        {
+            var startTime = DateTime.UtcNow.Add(core.TimeOffset);
+            var stopwatch = Stopwatch.StartNew();
+            string exceptionDetails = null;
+            try
+            {
+                PluginExecute(provider);
+            }
+            catch (TargetInvocationException e) when (unwrapTargetInvocation)
+            {
+                exceptionDetails = (e.InnerException ?? e).ToString();
+                ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+            }
+            catch (Exception e)
+            {
+                exceptionDetails = e.ToString();
+                throw;
+            }
+            finally
+            {
+                stopwatch.Stop();
+                if (record)
+                {
+                    RecordTrace(provider, ctx, startTime, stopwatch.Elapsed.TotalMilliseconds, exceptionDetails, core);
+                }
+            }
+        }
+
+        private void RecordTrace(MockupServiceProviderAndFactory provider, PluginContext ctx, DateTime startTime, double durationMs, string exceptionDetails, ICoreOperations core)
+        {
+            var messages = (provider.GetService<ITracingService>() as TracingService)?.Messages.ToList()
+                ?? new List<string>();
+
+            core.RecordPluginTrace(new PluginTraceLog
+            {
+                TypeName = PluginExecute.Target?.GetType().FullName,
+                MessageName = !string.IsNullOrEmpty(ctx.MessageName) ? ctx.MessageName : Operation,
+                PrimaryEntity = string.IsNullOrEmpty(ctx.PrimaryEntityName) ? "none" : ctx.PrimaryEntityName,
+                OperationType = PluginTraceOperationType.Plugin,
+                Depth = ctx.Depth,
+                CorrelationId = ctx.CorrelationId,
+                Mode = this.Mode,
+                RequestId = ctx.RequestId,
+                ExecutionStartTime = startTime,
+                ExecutionDurationMs = durationMs,
+                MessageBlock = messages,
+                ExceptionDetails = exceptionDetails,
+                // Configuration, SecureConfiguration and PluginStepId are not modeled by XrmMockup.
+            });
         }
 
         private void CheckInfiniteLoop(PluginContext pluginContext)

@@ -1,11 +1,13 @@
 using Microsoft.Xrm.Sdk;
 using System;
+using System.Collections.Generic;
 
 namespace DG.Tools.XrmMockup
 {
 	internal sealed class TracingService : ITracingService
 	{
 		private readonly Action<string> _sink;
+		private readonly List<string> _messages = new List<string>();
 
 		public TracingService() : this(null) { }
 
@@ -14,6 +16,13 @@ namespace DG.Tools.XrmMockup
 		{
 			_sink = sink;
 		}
+
+		/// <summary>
+		/// The trace messages emitted through this service instance, in order. Because a fresh
+		/// service is created per plugin/workflow execution, this scopes the messages to that
+		/// single execution and lets them be grouped into a <see cref="PluginTraceLog"/>.
+		/// </summary>
+		public IReadOnlyList<string> Messages => _messages;
 
 		public void Trace(string format, params object[] args)
 		{
@@ -27,6 +36,7 @@ namespace DG.Tools.XrmMockup
 				: string.Format(format, args);
 
 			Console.WriteLine(message);
+			_messages.Add(message);
 			_sink?.Invoke(message);
 		}
 	}

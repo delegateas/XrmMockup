@@ -473,7 +473,9 @@ namespace DG.Tools.XrmMockup
                 return;
             }
 
-            plugins.ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, _core));
+            // System plugins are XrmMockup's own internal simulation, not user-registered steps,
+            // so they are excluded from the grouped plugin trace log.
+            plugins.ForEach(p => p.ExecuteIfMatch(entity, preImage, postImage, pluginContext, _core, recordTrace: false));
         }
 
         private string GeneratePluginCacheKey(IEnumerable<Type> basePluginTypes, IEnumerable<MetaPlugin> plugins)
