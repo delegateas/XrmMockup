@@ -837,6 +837,36 @@ namespace DG.Tools.XrmMockup
             return new MockupServiceProviderAndFactory(this, pluginContext, TracingServiceFactory);
         }
 
+        private readonly List<PluginTraceLog> _pluginTraceLogs = new List<PluginTraceLog>();
+        private readonly object _pluginTraceLogLock = new object();
+
+        public void RecordPluginTrace(PluginTraceLog log)
+        {
+            lock (_pluginTraceLogLock)
+            {
+                _pluginTraceLogs.Add(log);
+            }
+        }
+
+        internal IReadOnlyList<PluginTraceLog> PluginTraceLogs
+        {
+            get
+            {
+                lock (_pluginTraceLogLock)
+                {
+                    return _pluginTraceLogs.ToList();
+                }
+            }
+        }
+
+        internal void ClearPluginTraceLogs()
+        {
+            lock (_pluginTraceLogLock)
+            {
+                _pluginTraceLogs.Clear();
+            }
+        }
+
         // ──────────────────────────────────────────────────────────────────────────
 
         internal void AddTime(TimeSpan offset)
@@ -1116,6 +1146,7 @@ namespace DG.Tools.XrmMockup
             this.TimeOffset = new TimeSpan();
             workflowManager.ResetWorkflows(settings.IncludeAllWorkflows);
 
+            ClearPluginTraceLogs();
             pluginManager.ResetPlugins();
             this.db = new XrmDb(metadata.EntityMetadata, OnlineDataService);
             this.RequestHandlers = GetRequestHandlers(db);
