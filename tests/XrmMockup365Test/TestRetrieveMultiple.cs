@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.ServiceModel;
 using Xunit;
 
 namespace DG.XrmMockupTest
@@ -1866,6 +1867,91 @@ namespace DG.XrmMockupTest
             Assert.NotNull(retrievedAccount.ParentAccountId);
             Assert.Equal(parentAccount.Id, retrievedAccount.ParentAccountId.Id);
             Assert.Equal("FetchXml Parent Account", retrievedAccount.ParentAccountId.Name);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFilterOnInvalidAttributeFails()
+        {
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name")
+            };
+            query.Criteria.AddCondition("nonexistentattribute", ConditionOperator.Equal, "whatever");
+
+            var ex = Assert.Throws<FaultException<OrganizationServiceFault>>(
+                () => orgAdminService.RetrieveMultiple(query));
+            Assert.Equal(
+                "'Account' entity doesn't contain attribute with Name = 'nonexistentattribute' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
+                ex.Message);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFilterAttributeLookupIsCaseSensitive()
+        {
+            // "Name" (capitalised) is not the logical name; the lookup must be case-sensitive and fault.
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name")
+            };
+            query.Criteria.AddCondition("Name", ConditionOperator.Equal, "account1");
+
+            var ex = Assert.Throws<FaultException<OrganizationServiceFault>>(
+                () => orgAdminService.RetrieveMultiple(query));
+            Assert.Equal(
+                "'Account' entity doesn't contain attribute with Name = 'Name' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
+                ex.Message);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFilterOnValidAttributeSucceeds()
+        {
+            var account = new Account { Name = "ValidAttributeFilterAccount" };
+            account.Id = orgAdminService.Create(account);
+
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name")
+            };
+            query.Criteria.AddCondition("name", ConditionOperator.Equal, "ValidAttributeFilterAccount");
+
+            var result = orgAdminService.RetrieveMultiple(query);
+            Assert.Single(result.Entities);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleFetchXmlFilterOnInvalidAttributeFails()
+        {
+            var fetchXml = @"<fetch>
+                <entity name='account'>
+                    <attribute name='name' />
+                    <filter>
+                        <condition attribute='nonexistentattribute' operator='eq' value='x' />
+                    </filter>
+                </entity>
+            </fetch>";
+
+            var ex = Assert.Throws<FaultException<OrganizationServiceFault>>(
+                () => orgAdminService.RetrieveMultiple(new FetchExpression(fetchXml)));
+            Assert.Equal(
+                "'Account' entity doesn't contain attribute with Name = 'nonexistentattribute' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
+                ex.Message);
+        }
+
+        [Fact]
+        public void TestRetrieveMultipleLinkEntityFilterOnInvalidAttributeFails()
+        {
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name")
+            };
+            var link = query.AddLink(Contact.EntityLogicalName, "primarycontactid", "contactid");
+            link.LinkCriteria.AddCondition("nonexistentattribute", ConditionOperator.Equal, "x");
+
+            var ex = Assert.Throws<FaultException<OrganizationServiceFault>>(
+                () => orgAdminService.RetrieveMultiple(query));
+            Assert.Equal(
+                "'Contact' entity doesn't contain attribute with Name = 'nonexistentattribute' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
+                ex.Message);
         }
     }
 }
