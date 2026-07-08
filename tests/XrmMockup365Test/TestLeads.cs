@@ -217,6 +217,36 @@ namespace DG.XrmMockupTest
         }
 
         [Fact]
+        public void TestQualifyLeadInvalidCurrencyTypeThrows()
+        {
+            var leadId = CreateLead();
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Execute(new QualifyLeadRequest
+            {
+                LeadId = new EntityReference("lead", leadId),
+                CreateOpportunity = true,
+                OpportunityCurrencyId = new EntityReference("account", Guid.NewGuid()),
+                Status = new OptionSetValue(LeadStatusQualified),
+            }));
+            Assert.Contains("transactioncurrency", ex.Message);
+        }
+
+        [Fact]
+        public void TestQualifyLeadNonexistentCurrencyThrowsFault()
+        {
+            // A currency that does not exist must surface as a FaultException from the create
+            // pipeline, not an unhandled NullReferenceException.
+            var leadId = CreateLead();
+            var ex = Assert.Throws<FaultException>(() => orgAdminService.Execute(new QualifyLeadRequest
+            {
+                LeadId = new EntityReference("lead", leadId),
+                CreateOpportunity = true,
+                OpportunityCurrencyId = new EntityReference("transactioncurrency", Guid.NewGuid()),
+                Status = new OptionSetValue(LeadStatusQualified),
+            }));
+            Assert.DoesNotContain("NullReference", ex.Message);
+        }
+
+        [Fact]
         public void TestQualifyLeadInvalidCustomerTypeThrows()
         {
             var leadId = CreateLead();
@@ -274,7 +304,7 @@ namespace DG.XrmMockupTest
             {
                 private readonly List<string> _warnings;
                 public CaptureLogger(List<string> warnings) { _warnings = warnings; }
-                public IDisposable BeginScope<TState>(TState state) => null;
+                public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
                 public bool IsEnabled(LogLevel logLevel) => true;
                 public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
                 {
@@ -282,6 +312,12 @@ namespace DG.XrmMockupTest
                     {
                         lock (_warnings) { _warnings.Add(formatter(state, exception)); }
                     }
+                }
+
+                private sealed class NullScope : IDisposable
+                {
+                    public static NullScope Instance { get; } = new NullScope();
+                    public void Dispose() { }
                 }
             }
         }

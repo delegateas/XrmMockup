@@ -99,9 +99,10 @@ namespace DG.Tools.XrmMockup
 
             // GetMetadata throws a descriptive fault if the entity is unknown to the metadata cache.
             var leadMetadata = metadata.EntityMetadata.GetMetadata(request.LeadId.LogicalName);
-            if (request.OpportunityCurrencyId != null)
+            if (request.OpportunityCurrencyId != null &&
+                request.OpportunityCurrencyId.LogicalName != LogicalNames.TransactionCurrency)
             {
-                metadata.EntityMetadata.GetMetadata(request.OpportunityCurrencyId.LogicalName);
+                throw new FaultException($"OpportunityCurrencyId must reference a '{LogicalNames.TransactionCurrency}'.");
             }
             if (request.OpportunityCustomerId != null)
             {
