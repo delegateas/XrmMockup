@@ -40,6 +40,11 @@ namespace DG.Tools.XrmMockup
 
             FillAliasIfEmpty(queryExpr);
 
+            // Reject up-front any filter that references an attribute that does not exist on the
+            // targeted entity, mirroring Dataverse (which faults instead of silently ignoring the
+            // condition). Run after FillAliasIfEmpty so link-criteria conditions carry their alias.
+            ValidateFilterAttributes(queryExpr);
+
             db.PrefillDBWithOnlineData(queryExpr);
             // Create a snapshot for thread-safe enumeration during calculated field execution
             var rows = db.GetDBEntityRows(queryExpr.EntityName).ToList();
@@ -364,6 +369,90 @@ namespace DG.Tools.XrmMockup
         {
             if (columnSet == null || columnSet.AllColumns) return null;
             return new HashSet<string>(columnSet.Columns, StringComparer.OrdinalIgnoreCase);
+        }
+
+        // Validates that every attribute referenced in the query's filters exists on the entity it
+        // targets. Conditions carry an EntityName (the primary entity or a link alias) that decides
+        // which entity's metadata the attribute is looked up against; the lookup is case-sensitive,
+        // matching Dataverse.
+        private void ValidateFilterAttributes(QueryExpression query)
+        {
+            // alias/logical-name -> metadata for the primary entity and every (nested) link entity.
+            var scopes = new Dictionary<string, EntityMetadata>(StringComparer.Ordinal);
+            if (metadata.EntityMetadata.TryGetValue(query.EntityName, out var primaryMeta))
+            {
+                scopes[query.EntityName] = primaryMeta;
+            }
+            foreach (var link in query.LinkEntities)
+            {
+                CollectLinkScopes(link, scopes);
+            }
+
+            ValidateFilterAttributes(query.Criteria, query.EntityName, scopes);
+            foreach (var link in query.LinkEntities)
+            {
+                ValidateLinkCriteria(link, scopes);
+            }
+        }
+
+        private void CollectLinkScopes(LinkEntity link, Dictionary<string, EntityMetadata> scopes)
+        {
+            var scopeKey = GetLinkScopeKey(link);
+            if (!scopes.ContainsKey(scopeKey) &&
+                metadata.EntityMetadata.TryGetValue(link.LinkToEntityName, out var meta))
+            {
+                scopes[scopeKey] = meta;
+            }
+            foreach (var nested in link.LinkEntities)
+            {
+                CollectLinkScopes(nested, scopes);
+            }
+        }
+
+        private void ValidateLinkCriteria(LinkEntity link, Dictionary<string, EntityMetadata> scopes)
+        {
+            ValidateFilterAttributes(link.LinkCriteria, GetLinkScopeKey(link), scopes);
+            foreach (var nested in link.LinkEntities)
+            {
+                ValidateLinkCriteria(nested, scopes);
+            }
+        }
+
+        // FillAliasIfEmpty only assigns an alias when one is null, so a link whose EntityAlias is an
+        // explicit empty string keeps it. Fall back to the linked entity's logical name in that case
+        // so the link's criteria are still validated against the correct metadata.
+        private static string GetLinkScopeKey(LinkEntity link)
+        {
+            return string.IsNullOrEmpty(link.EntityAlias) ? link.LinkToEntityName : link.EntityAlias;
+        }
+
+        private void ValidateFilterAttributes(FilterExpression filter, string defaultScope, Dictionary<string, EntityMetadata> scopes)
+        {
+            if (filter == null) return;
+
+            foreach (var condition in filter.Conditions)
+            {
+                // A null/empty attribute name is a filter on the primary id, not a real column.
+                if (string.IsNullOrEmpty(condition.AttributeName)) continue;
+
+                var scopeKey = string.IsNullOrEmpty(condition.EntityName) ? defaultScope : condition.EntityName;
+                // If the scope can't be resolved to a known entity we can't validate it; leave it be
+                // rather than risk rejecting a legitimate query.
+                if (scopeKey == null || !scopes.TryGetValue(scopeKey, out var meta)) continue;
+
+                if (!Utility.IsValidAttribute(condition.AttributeName, meta))
+                {
+                    var entityName = string.IsNullOrEmpty(meta.SchemaName) ? meta.LogicalName : meta.SchemaName;
+                    throw new FaultException<OrganizationServiceFault>(
+                        new OrganizationServiceFault(),
+                        $"'{entityName}' entity doesn't contain attribute with Name = '{condition.AttributeName}' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)");
+                }
+            }
+
+            foreach (var sub in filter.Filters)
+            {
+                ValidateFilterAttributes(sub, defaultScope, scopes);
+            }
         }
 
         private static void CollectFilterAttributes(FilterExpression filter, HashSet<string> set)
