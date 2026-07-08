@@ -397,10 +397,11 @@ namespace DG.Tools.XrmMockup
 
         private void CollectLinkScopes(LinkEntity link, Dictionary<string, EntityMetadata> scopes)
         {
-            if (!string.IsNullOrEmpty(link.EntityAlias) && !scopes.ContainsKey(link.EntityAlias) &&
+            var scopeKey = GetLinkScopeKey(link);
+            if (!scopes.ContainsKey(scopeKey) &&
                 metadata.EntityMetadata.TryGetValue(link.LinkToEntityName, out var meta))
             {
-                scopes[link.EntityAlias] = meta;
+                scopes[scopeKey] = meta;
             }
             foreach (var nested in link.LinkEntities)
             {
@@ -410,11 +411,19 @@ namespace DG.Tools.XrmMockup
 
         private void ValidateLinkCriteria(LinkEntity link, Dictionary<string, EntityMetadata> scopes)
         {
-            ValidateFilterAttributes(link.LinkCriteria, link.EntityAlias, scopes);
+            ValidateFilterAttributes(link.LinkCriteria, GetLinkScopeKey(link), scopes);
             foreach (var nested in link.LinkEntities)
             {
                 ValidateLinkCriteria(nested, scopes);
             }
+        }
+
+        // FillAliasIfEmpty only assigns an alias when one is null, so a link whose EntityAlias is an
+        // explicit empty string keeps it. Fall back to the linked entity's logical name in that case
+        // so the link's criteria are still validated against the correct metadata.
+        private static string GetLinkScopeKey(LinkEntity link)
+        {
+            return string.IsNullOrEmpty(link.EntityAlias) ? link.LinkToEntityName : link.EntityAlias;
         }
 
         private void ValidateFilterAttributes(FilterExpression filter, string defaultScope, Dictionary<string, EntityMetadata> scopes)

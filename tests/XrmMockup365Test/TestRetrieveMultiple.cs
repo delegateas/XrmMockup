@@ -1953,5 +1953,25 @@ namespace DG.XrmMockupTest
                 "'Contact' entity doesn't contain attribute with Name = 'nonexistentattribute' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
                 ex.Message);
         }
+
+        [Fact]
+        public void TestRetrieveMultipleLinkEntityWithEmptyAliasFilterOnInvalidAttributeFails()
+        {
+            // An explicit empty alias is not replaced by alias-filling; the link criteria must still
+            // be validated against the linked entity's metadata.
+            var query = new QueryExpression(Account.EntityLogicalName)
+            {
+                ColumnSet = new ColumnSet("name")
+            };
+            var link = query.AddLink(Contact.EntityLogicalName, "primarycontactid", "contactid");
+            link.EntityAlias = "";
+            link.LinkCriteria.AddCondition("nonexistentattribute", ConditionOperator.Equal, "x");
+
+            var ex = Assert.Throws<FaultException<OrganizationServiceFault>>(
+                () => orgAdminService.RetrieveMultiple(query));
+            Assert.Equal(
+                "'Contact' entity doesn't contain attribute with Name = 'nonexistentattribute' and NameMapping = 'Logical' (look up attribute by name is case-sensitive)",
+                ex.Message);
+        }
     }
 }
