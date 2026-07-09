@@ -70,6 +70,9 @@ namespace DG.Tools.XrmMockup
         private List<string> systemAttributeNames;
         internal FileBlockStore FileBlockStore { get; private set; }
 
+        /// <summary>Logger scoped to the mockup engine; used by request handlers to surface warnings.</summary>
+        internal ILogger Logger { get; private set; }
+
         /// <summary>
         /// Creates a new instance of Core
         /// </summary>
@@ -121,6 +124,7 @@ namespace DG.Tools.XrmMockup
             var sw = Stopwatch.StartNew();
             var loggerFactory = initData.LoggerFactory ?? NullLoggerFactory.Instance;
             var coreLogger = loggerFactory.CreateLogger(typeof(Core).FullName);
+            Logger = coreLogger;
 
             TimeOffset = new TimeSpan();
             settings = initData.Settings;
@@ -415,6 +419,7 @@ namespace DG.Tools.XrmMockup
             new RevokeAccessRequestHandler(this, db, metadata, security),
             new WinOpportunityRequestHandler(this, db, metadata, security),
             new LoseOpportunityRequestHandler(this, db, metadata, security),
+            new QualifyLeadRequestHandler(this, db, metadata, security),
             new RetrieveAllOptionSetsRequestHandler(this, db, metadata, security),
             new RetrieveOptionSetRequestHandler(this, db, metadata, security),
             new RetrieveExchangeRateRequestHandler(this, db, metadata, security),

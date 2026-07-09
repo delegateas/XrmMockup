@@ -1159,6 +1159,7 @@ namespace DG.Tools.XrmMockup.Internal
         public const string Workflow = "workflow";
         public const string Team = "team";
         public const string Contact = "contact";
+        public const string Account = "account";
         public const string Lead = "lead";
         public const string Opportunity = "opportunity";
         public const string TeamMembership = "teammembership";
