@@ -1,3 +1,6 @@
+### 1.18.8 - UNRELEASED
+* Fix: Align plugin Target with Dataverse for system-managed fields (#344)
+
 ### 1.18.7 - 9 July 2026
 * Add: `QualifyLead` request support. (Based on code from @ladekarl in #51) (#343)
 * Fix: Reject RetrieveMultiple queries filtering on non-existent attributes (#342)
