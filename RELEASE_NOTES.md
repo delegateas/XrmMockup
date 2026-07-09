@@ -1,5 +1,6 @@
-### 1.18.7 - 7 July 2026
-* Add: `QualifyLead` request support. Qualifying a lead optionally creates an account, contact, and/or opportunity (copying the standard mapped fields from the lead), links the opportunity back via `originatingleadid`, and closes the lead in the status/state supplied on the request. Attributes not present on the target entity's metadata are skipped with a warning rather than failing the request.
+### 1.18.7 - 9 July 2026
+* Add: `QualifyLead` request support. (Based on code from @ladekarl in #51) (#343)
+* Fix: Reject RetrieveMultiple queries filtering on non-existent attributes (#342)
 
 ### 1.18.6 - 7 July 2026
 * Add: Collect Plugin Trace Logs and handle invalid formatting strings correctly (by throwing formatting exceptions) (#341)
