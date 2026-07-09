@@ -174,7 +174,15 @@ namespace DG.Tools.XrmMockup
                 workflowManager.AsynchronousWorkflowCount,
                 customApiManager.RegisteredApiCount);
 
-            systemAttributeNames = new List<string>() { "createdon", "createdby", "modifiedon", "modifiedby" };
+            // System-managed attributes that Dataverse resolves during the main operation. They are
+            // not present in the Target during the pre-stages, but are copied back onto the Target for
+            // post-operation plugins (and are always available via the post-image).
+            systemAttributeNames = new List<string>()
+            {
+                "createdon", "createdby", "modifiedon", "modifiedby",
+                "ownerid", "owningbusinessunit", "owninguser", "owningteam",
+                "statecode", "statuscode"
+            };
 
             RequestHandlers = GetRequestHandlers(db);
             InitializeDB();
@@ -785,15 +793,17 @@ namespace DG.Tools.XrmMockup
             {
                 if (postImage.Contains(systemAttributeName))
                 {
-                    if (postImage[systemAttributeName] is EntityReference)
+                    if (postImage[systemAttributeName] is EntityReference reference)
                     {
-                        target[systemAttributeName] = new EntityReference(
-                            postImage.GetAttributeValue<EntityReference>(systemAttributeName).LogicalName,
-                            postImage.GetAttributeValue<EntityReference>(systemAttributeName).Id);
+                        target[systemAttributeName] = new EntityReference(reference.LogicalName, reference.Id);
                     }
-                    else if (postImage[systemAttributeName] is DateTime)
+                    else if (postImage[systemAttributeName] is DateTime dateTime)
                     {
-                        target[systemAttributeName] = postImage.GetAttributeValue<DateTime>(systemAttributeName);
+                        target[systemAttributeName] = dateTime;
+                    }
+                    else if (postImage[systemAttributeName] is OptionSetValue optionSet)
+                    {
+                        target[systemAttributeName] = new OptionSetValue(optionSet.Value);
                     }
                 }
             }
@@ -807,11 +817,11 @@ namespace DG.Tools.XrmMockup
                 if (entity.Id == Guid.Empty)
                     entity.Id = Guid.NewGuid();
 
-                if (entity.GetAttributeValue<EntityReference>("ownerid") == null &&
-                    Utility.IsValidAttribute("ownerid", metadata.EntityMetadata.GetMetadata(entity.LogicalName)))
-                {
-                    entity["ownerid"] = userRef;
-                }
+                // Note: ownerid is intentionally NOT defaulted here. In Dataverse the owner is
+                // resolved during the main operation (stage 30), so it must not be visible in the
+                // Target during the PreValidation/PreOperation stages. The persisted default (calling
+                // user) is applied by CreateRequestHandler.Execute, and the resolved value surfaces
+                // afterwards via the post-image and the post-operation Target.
             }
         }
 

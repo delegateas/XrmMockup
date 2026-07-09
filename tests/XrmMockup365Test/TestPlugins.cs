@@ -6,6 +6,7 @@ using DG.Tools.XrmMockup;
 using Microsoft.Xrm.Sdk;
 using Xunit;
 using TestPluginAssembly365.Plugins.LegacyDaxif;
+using DG.Some.Namespace;
 
 namespace DG.XrmMockupTest
 {
@@ -109,6 +110,58 @@ namespace DG.XrmMockupTest
                 con = Contact.Retrieve(orgAdminService, con.Id, x => x.LastName, x => x.CreatedOn);
                 Assert.True(!string.IsNullOrEmpty(con.LastName));
                 Assert.Equal(con.CreatedOn.ToString(), con.LastName);
+            }
+        }
+
+        [Fact]
+        public void TestSystemFieldsAbsentFromPreStageTargetOnCreate()
+        {
+            // Matches Dataverse: system-managed fields the caller did not set must not appear in the
+            // Target during the PreValidation/PreOperation stages.
+            var contact = new Contact { FirstName = ContactSystemFieldsProbePlugin.Marker };
+            contact.Id = orgAdminService.Create(contact);
+
+            var probed = Contact.Retrieve(orgAdminService, contact.Id,
+                x => x.Address1_Line1, x => x.Address1_Line2);
+
+            // Empty flag strings are normalised to null on create, confirming no system fields were present.
+            Assert.True(string.IsNullOrEmpty(probed.Address1_Line1)); // PreValidation Target
+            Assert.True(string.IsNullOrEmpty(probed.Address1_Line2)); // PreOperation Target
+        }
+
+        [Fact]
+        public void TestCallerSetOwnerVisibleInPreStageTargetOnCreate()
+        {
+            // A system field the caller DID set stays visible in the pre-stage Target.
+            var contact = new Contact
+            {
+                FirstName = ContactSystemFieldsProbePlugin.Marker,
+                OwnerId = testUser1.ToEntityReference(),
+            };
+            contact.Id = orgAdminService.Create(contact);
+
+            var probed = Contact.Retrieve(orgAdminService, contact.Id,
+                x => x.Address1_Line1, x => x.Address1_Line2);
+
+            Assert.Contains("ownerid", probed.Address1_Line1);         // PreValidation Target
+            Assert.Contains("ownerid", probed.Address1_Line2);         // PreOperation Target
+            Assert.DoesNotContain("createdon", probed.Address1_Line1); // still resolved later
+        }
+
+        [Fact]
+        public void TestSystemFieldsPresentInPostImageAndPostTargetOnCreate()
+        {
+            var contact = new Contact { FirstName = ContactSystemFieldsProbePlugin.Marker };
+            contact.Id = orgAdminService.Create(contact);
+
+            var probed = Contact.Retrieve(orgAdminService, contact.Id,
+                x => x.Address1_Line3, x => x.Address1_City);
+
+            foreach (var field in new[]
+                { "ownerid", "createdon", "createdby", "modifiedon", "modifiedby", "statecode", "statuscode" })
+            {
+                Assert.Contains(field, probed.Address1_Line3); // post-image
+                Assert.Contains(field, probed.Address1_City);  // post-operation Target
             }
         }
 
