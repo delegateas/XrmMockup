@@ -1,4 +1,4 @@
-### 1.18.8 - UNRELEASED
+### 1.18.8 - 14 July 2026
 * Fix: Align plugin Target with Dataverse for system-managed fields (#344)
 
 ### 1.18.7 - 9 July 2026
